@@ -1,0 +1,259 @@
+{
+    "name": "music-time",
+    "displayName": "Music Time",
+    "version": "1.1.3",
+    "publisher": "softwaredotcom",
+    "description": "Music Time is an open source plugin that curates and launches playlists for coding right from your editor.",
+    "author": {
+        "name": "Software.com"
+    },
+    "license": "SEE LICENSE IN LICENSE",
+    "icon": "images/app-icon-blue.png",
+    "galleryBanner": {
+        "color": "#384356",
+        "theme": "dark"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/swdotcom/swdc-vscode"
+    },
+    "remote.extensionKind": {
+        "softwaredotcom.swdc-vscode": "ui"
+    },
+    "categories": [
+        "Other"
+    ],
+    "keywords": [
+        "time tracking",
+        "productivity",
+        "timer",
+        "git",
+        "spotify"
+    ],
+    "activationEvents": [
+        "*"
+    ],
+    "engines": {
+        "vscode": "^1.35.0"
+    },
+    "main": "./out/extension",
+    "scripts": {
+        "start": "node initializer && tsc -watch -p ./",
+        "vscode:prepublish": "tsc -p ./",
+        "compile": "tsc -watch -p ./"
+    },
+    "contributes": {
+        "commands": [
+            {
+                "command": "musictime.next",
+                "title": "Play Next Song"
+            },
+            {
+                "command": "musictime.previous",
+                "title": "Play Previous Song"
+            },
+            {
+                "command": "musictime.play",
+                "title": "Play",
+                "icon": {
+                    "light": "resources/light/play.svg",
+                    "dark": "resources/dark/play.svg"
+                }
+            },
+            {
+                "command": "musictime.copyTrack",
+                "title": "Copy Track Link",
+                "icon": {
+                    "light": "resources/light/icons8-copy-to-clipboard-16.png",
+                    "dark": "resources/dark/icons8-copy-to-clipboard-16.png"
+                }
+            },
+            {
+                "command": "musictime.copyPlaylist",
+                "title": "Copy Playlist Link",
+                "icon": {
+                    "light": "resources/light/icons8-copy-to-clipboard-16.png",
+                    "dark": "resources/dark/icons8-copy-to-clipboard-16.png"
+                }
+            },
+            {
+                "command": "musictime.shareTrack",
+                "title": "Share Track",
+                "icon": {
+                    "light": "resources/light/share.svg",
+                    "dark": "resources/dark/share.svg"
+                }
+            },
+            {
+                "command": "musictime.sharePlaylist",
+                "title": "Share Playlist",
+                "icon": {
+                    "light": "resources/light/share.svg",
+                    "dark": "resources/dark/share.svg"
+                }
+            },
+            {
+                "command": "musictime.pause",
+                "title": "Stop",
+                "icon": {
+                    "light": "resources/light/stop.svg",
+                    "dark": "resources/dark/stop.svg"
+                }
+            },
+            {
+                "command": "musictime.itunesPlaylist",
+                "title": "Launch iTunes",
+                "icon": {
+                    "light": "resources/light/itunes-logo.svg",
+                    "dark": "resources/dark/itunes-logo.svg"
+                }
+            },
+            {
+                "command": "musictime.spotifyPlaylist",
+                "title": "Launch Spotify",
+                "icon": {
+                    "light": "resources/light/spotify-logo.svg",
+                    "dark": "resources/dark/spotify-logo.svg"
+                }
+            },
+            {
+                "command": "musictime.reconcilePlaylist",
+                "title": "Reconcile Playlists",
+                "icon": {
+                    "light": "resources/light/sync.svg",
+                    "dark": "resources/dark/sync.svg"
+                }
+            },
+            {
+                "command": "musictime.sortAlphabetically",
+                "title": "Sort A-Z"
+            },
+            {
+                "command": "musictime.sortToOriginal",
+                "title": "Sort Latest"
+            },
+            {
+                "command": "musictime.like",
+                "title": "Like Song"
+            },
+            {
+                "command": "musictime.unlike",
+                "title": "Unlike Song"
+            },
+            {
+                "command": "musictime.menu",
+                "title": "Click to see more from Music Time"
+            },
+            {
+                "command": "musictime.currentSong",
+                "title": "Click to view track"
+            },
+            {
+                "command": "musictime.spotifyPremiumRequired",
+                "title": "Connect to your premium Spotify account to use the play, pause, next, and previous controls"
+            },
+            {
+                "command": "musictime.connectSpotify",
+                "title": "Connect your Spotify account",
+                "tooltip": "Connect your Spotify account to view your playlists"
+            },
+            {
+                "command": "musictime.connectSlack",
+                "title": "Connect your Slack account",
+                "tooltip": "Connect your Slack account to share your playlists or tracks"
+            },
+            {
+                "command": "musictime.disconnectSpotify",
+                "title": "Disconnect your Spotify account",
+                "tooltip": "Disconnect your Spotify account"
+            },
+            {
+                "command": "musictime.disconnectSlack",
+                "title": "Disconnect your Slack account",
+                "tooltip": "Disconnect your Slack account"
+            },
+            {
+                "command": "musictime.refreshSettings",
+                "title": "Refresh Settings"
+            },
+            {
+                "command": "musictime.refreshPlaylist",
+                "title": "Refresh Playlists"
+            }
+        ],
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "music-time",
+                    "title": "Music Time",
+                    "icon": "resources/dark/headphone-symbol.svg"
+                }
+            ]
+        },
+        "views": {
+            "music-time": [
+                {
+                    "id": "my-playlists",
+                    "name": "My Playlists"
+                }
+            ]
+        },
+        "menus": {
+            "view/item/context": [
+                {
+                    "command": "musictime.play",
+                    "when": "viewItem =~ /.*item-notplaying$/",
+                    "group": "inline@1"
+                },
+                {
+                    "command": "musictime.pause",
+                    "when": "viewItem =~ /.*item-playing$/",
+                    "group": "inline@1"
+                },
+                {
+                    "command": "musictime.sharePlaylist",
+                    "when": "viewItem =~ /spotify-playlist-item.*/",
+                    "group": "inline@2"
+                },
+                {
+                    "command": "musictime.shareTrack",
+                    "when": "viewItem =~ /track-item.*/",
+                    "group": "inline@2"
+                }
+            ],
+            "view/title": [
+                {
+                    "command": "musictime.reconcilePlaylist",
+                    "group": "navigation",
+                    "when": "view =~ /.*-playlists/"
+                },
+                {
+                    "command": "musictime.sortAlphabetically",
+                    "group": "inline",
+                    "when": "view =~ /.*-playlists/"
+                },
+                {
+                    "command": "musictime.sortToOriginal",
+                    "group": "inline",
+                    "when": "view =~ /.*-playlists/"
+                }
+            ]
+        }
+    },
+    "devDependencies": {
+        "@types/mocha": "5.2.6",
+        "@types/node": "12.0.4",
+        "typescript": "^3.5.1",
+        "@types/vscode": "^1.35.0"
+    },
+    "dependencies": {
+        "@slack/web-api": "^5.0.1",
+        "aws-sdk": "^2.470.0",
+        "axios": "^0.19.0",
+        "clipboardy": "^2.1.0",
+        "cody-music": "2.6.70",
+        "moment-timezone": "^0.5.25",
+        "open": "^6.4.0",
+        "vsls": "0.3.1291"
+    }
+}

@@ -1,0 +1,11 @@
+{
+	"files.exclude": {
+		"out": false
+	},
+	"search.exclude": {
+		"out": true
+	},
+	"editor.tabSize": 4,
+	"editor.insertSpaces": false,
+	"workbench.colorCustomizations": {}
+}

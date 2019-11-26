@@ -1,0 +1,45 @@
+{
+    "version": "2.0.0",
+    "command": "yarn",
+    "type": "shell",
+    "reveal": "silent",
+    "args": ["run", "compile"],
+    "isBackground": true,
+    "problemMatcher": {
+        "owner": "typescript",
+        "fileLocation": "relative",
+        "pattern": {
+            "regexp": "^([^\\s].*)\\((\\d+|\\,\\d+|\\d+,\\d+,\\d+,\\d+)\\):\\s+(error|warning|info)\\s+(TS\\d+)\\s*:\\s*(.*)$",
+            "file": 1,
+            "location": 2,
+            "severity": 3,
+            "code": 4,
+            "message": 5
+        },
+        "background": {
+            "activeOnStart": true,
+            "beginsPattern": "^\\s*\\d{1,2}:\\d{1,2}:\\d{1,2}(?: AM| PM)? - File change detected\\. Starting incremental compilation\\.\\.\\.",
+            "endsPattern": "^\\s*\\d{1,2}:\\d{1,2}:\\d{1,2}(?: AM| PM)? - Compilation complete\\. Watching for file changes\\."
+        }
+    },
+    "tasks": [
+        {
+            "label": "prebuildmusictime",
+            "type": "npm",
+            "script": "prebuildmusictime",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "prebuildcodetime",
+            "type": "npm",
+            "script": "prebuildcodetime",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}
