@@ -1,11 +1,10 @@
-import { commands, Disposable, workspace, window, TreeView } from "vscode";
+import { commands, Disposable, window, TreeView } from "vscode";
 import {
     MusicControlManager,
     connectSpotify,
     disconnectSpotify,
     disconnectSlack
 } from "./music/MusicControlManager";
-import { updatePreferences } from "./DataController";
 import {
     launchWebUrl,
     codeTimeExtInstalled,
@@ -264,11 +263,6 @@ export function createCommands(): {
             }
         );
         cmds.push(top40Cmd);
-
-        const configChangesHandler = workspace.onDidChangeConfiguration(e =>
-            updatePreferences()
-        );
-        cmds.push(configChangesHandler);
     }
 
     return Disposable.from(...cmds);

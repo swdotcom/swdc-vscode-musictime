@@ -1,4 +1,4 @@
-import { workspace, ConfigurationTarget, env, window, commands } from "vscode";
+import { workspace, window, commands } from "vscode";
 
 import {
     softwareGet,
@@ -33,24 +33,19 @@ import {
     getTopSpotifyTracks
 } from "cody-music";
 import {
-    updateShowMusicMetrics,
     buildWebDashboardUrl,
-    fetchCodeTimeMetricsDashboard,
-    clearLastMomentDate
+    fetchCodeTimeMetricsDashboard
 } from "./MenuManager";
 import {
     getSessionSummaryData,
     updateStatusBarWithSummaryData,
-    clearSessionSummaryData,
     saveSessionSummaryToDisk
 } from "./OfflineManager";
 import { MusicManager } from "./music/MusicManager";
-import { DEFAULT_SESSION_THRESHOLD_SECONDS } from "./Constants";
 const fs = require("fs");
 const moment = require("moment-timezone");
 
 let loggedInCacheState = null;
-let initializedPrefs = false;
 let serverAvailable = true;
 let serverAvailableLastCheck = 0;
 let toggleFileEventLogging = null;
@@ -354,8 +349,6 @@ async function isLoggedOn(serverIsOnline) {
                 if (pluginJwt && pluginJwt !== jwt) {
                     // update it
                     setItem("jwt", pluginJwt);
-                    // re-initialize preferences
-                    initializedPrefs = false;
                 }
 
                 let checkStatus = getItem("check_status");
@@ -412,11 +405,6 @@ export async function getUserStatus(serverIsOnline) {
     ) {
         sendHeartbeat(`STATE_CHANGE:LOGGED_IN:${loggedIn}`, serverIsOnline);
 
-        if (loggedIn) {
-            // they've logged in, update the preferences
-            initializePreferences(serverIsOnline);
-        }
-
         setTimeout(() => {
             // update the statusbar
             fetchSessionSummaryInfo();
@@ -450,151 +438,6 @@ export async function getUser(serverIsOnline, jwt) {
         }
     }
     return null;
-}
-
-export async function initializePreferences(serverIsOnline) {
-    let jwt = getItem("jwt");
-    // use a default if we're unable to get the user or preferences
-    let sessionThresholdInSec = DEFAULT_SESSION_THRESHOLD_SECONDS;
-
-    if (jwt && serverIsOnline) {
-        let user = await getUser(serverIsOnline, jwt);
-        if (user && user.preferences) {
-            // obtain the session threshold in seconds "sessionThresholdInSec"
-            sessionThresholdInSec =
-                user.preferences.sessionThresholdInSec ||
-                DEFAULT_SESSION_THRESHOLD_SECONDS;
-
-            let userId = parseInt(user.id, 10);
-            let prefs = user.preferences;
-            let prefsShowMusic =
-                prefs.showMusic !== null && prefs.showMusic !== undefined
-                    ? prefs.showMusic
-                    : null;
-            let prefsShowGit =
-                prefs.showGit !== null && prefs.showGit !== undefined
-                    ? prefs.showGit
-                    : null;
-            let prefsShowRank =
-                prefs.showRank !== null && prefs.showRank !== undefined
-                    ? prefs.showRank
-                    : null;
-
-            if (
-                prefsShowMusic === null ||
-                prefsShowGit === null ||
-                prefsShowRank === null
-            ) {
-                await sendPreferencesUpdate(userId, prefs);
-            } else {
-                if (prefsShowMusic !== null) {
-                    // await workspace
-                    //     .getConfiguration()
-                    //     .update(
-                    //         "showMusicMetrics",
-                    //         prefsShowMusic,
-                    //         ConfigurationTarget.Global
-                    //     );
-                    // updateShowMusicMetrics(prefsShowMusic);
-                }
-                if (prefsShowGit !== null) {
-                    await workspace
-                        .getConfiguration()
-                        .update(
-                            "showGitMetrics",
-                            prefsShowGit,
-                            ConfigurationTarget.Global
-                        );
-                }
-                if (prefsShowRank !== null) {
-                    // await workspace
-                    //     .getConfiguration()
-                    //     .update(
-                    //         "showWeeklyRanking",
-                    //         prefsShowRank,
-                    //         ConfigurationTarget.Global
-                    //     );
-                }
-            }
-        }
-    }
-
-    // update the session threshold in seconds config
-    setItem("sessionThresholdInSec", sessionThresholdInSec);
-}
-
-async function sendPreferencesUpdate(userId, userPrefs) {
-    let api = `/users/${userId}`;
-    // let showMusicMetrics = workspace.getConfiguration().get("showMusicMetrics");
-    let showGitMetrics = workspace.getConfiguration().get("showGitMetrics");
-    // let showWeeklyRanking = workspace
-    //     .getConfiguration()
-    //     .get("showWeeklyRanking");
-    // userPrefs["showMusic"] = showMusicMetrics;
-    userPrefs["showGit"] = showGitMetrics;
-    // userPrefs["showRank"] = showWeeklyRanking;
-
-    // updateShowMusicMetrics(showMusicMetrics);
-
-    // update the preferences
-    // /:id/preferences
-    api = `/users/${userId}/preferences`;
-    let resp = await softwarePut(api, userPrefs, getItem("jwt"));
-    if (isResponseOk(resp)) {
-        logIt("update user code time preferences");
-    }
-}
-
-export async function updatePreferences() {
-    toggleFileEventLogging = workspace
-        .getConfiguration()
-        .get("toggleFileEventLogging");
-
-    // let showMusicMetrics = workspace.getConfiguration().get("showMusicMetrics");
-    let showGitMetrics = workspace.getConfiguration().get("showGitMetrics");
-    // let showWeeklyRanking = workspace
-    //     .getConfiguration()
-    //     .get("showWeeklyRanking");
-
-    // updateShowMusicMetrics(showMusicMetrics);
-
-    // get the user's preferences and update them if they don't match what we have
-    let jwt = getItem("jwt");
-    let serverIsOnline = await serverIsAvailable();
-    if (jwt && serverIsOnline) {
-        let user = await getUser(serverIsOnline, jwt);
-        if (!user) {
-            return;
-        }
-        let api = `/users/${user.id}`;
-        let resp = await softwareGet(api, jwt);
-        if (isResponseOk(resp)) {
-            if (
-                resp &&
-                resp.data &&
-                resp.data.data &&
-                resp.data.data.preferences
-            ) {
-                let prefs = resp.data.data.preferences;
-                let prefsShowMusic =
-                    prefs.showMusic !== null && prefs.showMusic !== undefined
-                        ? prefs.showMusic
-                        : null;
-                let prefsShowGit =
-                    prefs.showGit !== null && prefs.showGit !== undefined
-                        ? prefs.showGit
-                        : null;
-                let prefsShowRank =
-                    prefs.showRank !== null && prefs.showRank !== undefined
-                        ? prefs.showRank
-                        : null;
-
-                if (prefsShowGit === null || prefsShowGit !== showGitMetrics) {
-                    await sendPreferencesUpdate(parseInt(user.id, 10), prefs);
-                }
-            }
-        }
-    }
 }
 
 export function refetchSlackConnectStatusLazily(tryCountUntilFound = 40) {

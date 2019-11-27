@@ -30,7 +30,6 @@ export const DEFAULT_SESSION_THRESHOLD_SECONDS = 60 * 15;
 export const CODE_TIME_EXT_ID = "softwaredotcom.swdc-vscode";
 export const MUSIC_TIME_EXT_ID = "softwaredotcom.music-time";
 
-export const CODE_TIME_TYPE = "codetime";
 export const MUSIC_TIME_TYPE = "musictime";
 
 export const SPOTIFY_CLIENT_ID: string = "eb67e22ba1c6474aad8ec8067480d9dc";

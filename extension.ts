@@ -2,12 +2,11 @@
 
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import { window, ExtensionContext } from "vscode";
+import { ExtensionContext } from "vscode";
 import {
     getUserStatus,
     sendHeartbeat,
-    serverIsAvailable,
-    initializePreferences
+    serverIsAvailable
 } from "./lib/DataController";
 import {
     nowInSecs,
@@ -85,9 +84,6 @@ export async function intializePlugin(ctx: ExtensionContext) {
     logIt(`Loaded ${getPluginName()} v${getVersion()}`);
 
     let serverIsOnline = await serverIsAvailable();
-
-    // get the user preferences whether it's music time or code time
-    await initializePreferences(serverIsOnline);
 
     //
     // add the player commands before we show the playlist

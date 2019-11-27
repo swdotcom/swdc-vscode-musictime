@@ -6,21 +6,15 @@ import {
     launch_url,
     NOT_NOW_LABEL,
     LOGIN_LABEL,
-    CODE_TIME_PLUGIN_ID,
     MUSIC_TIME_PLUGIN_ID,
-    MUSIC_TIME_TYPE,
-    CODE_TIME_TYPE
+    MUSIC_TIME_TYPE
 } from "./Constants";
 import {
     refetchUserStatusLazily,
     fetchSessionSummaryInfo,
     getToggleFileEventLoggingState
 } from "./DataController";
-import {
-    incrementSessionSummaryData,
-    saveSessionSummaryToDisk,
-    getSessionSummaryData
-} from "./OfflineManager";
+import { incrementSessionSummaryData } from "./OfflineManager";
 const moment = require("moment-timezone");
 
 const open = require("open");

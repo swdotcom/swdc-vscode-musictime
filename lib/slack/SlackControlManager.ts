@@ -9,8 +9,11 @@ import { showQuickPick } from "../MenuManager";
  */
 export async function connectSlack() {
     const jwt = getItem("jwt");
+    const encodedJwt = encodeURIComponent(jwt);
+    const qryStr = `integrate=slack&plugin=musictime&token=${encodedJwt}`;
+
     // authorize the user for slack
-    const endpoint = `${api_endpoint}/auth/slack?integrate=slack&plugin=musictime&token=${jwt}`;
+    const endpoint = `${api_endpoint}/auth/slack?${qryStr}`;
     launchWebUrl(endpoint);
     refetchSlackConnectStatusLazily();
 }
