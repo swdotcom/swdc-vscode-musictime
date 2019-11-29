@@ -106,61 +106,6 @@ export async function sendBatchPayload(batch) {
 }
 
 /**
- * send the offline data
- */
-export async function sendOfflineData() {
-    let isonline = await serverIsAvailable();
-    if (!isonline) {
-        return;
-    }
-    const dataStoreFile = getSoftwareDataStoreFile();
-    try {
-        if (fs.existsSync(dataStoreFile)) {
-            const content = fs.readFileSync(dataStoreFile).toString();
-            // we're online so just delete the datastore file
-            deleteFile(getSoftwareDataStoreFile());
-            if (content) {
-                logEvent(`sending batch payloads: ${content}`);
-                const payloads = content
-                    .split(/\r?\n/)
-                    .map(item => {
-                        let obj = null;
-                        if (item) {
-                            try {
-                                obj = JSON.parse(item);
-                            } catch (e) {
-                                //
-                            }
-                        }
-                        if (obj) {
-                            return obj;
-                        }
-                    })
-                    .filter(item => item);
-
-                // send 50 at a time
-                let batch = [];
-                for (let i = 0; i < payloads.length; i++) {
-                    if (batch.length >= batch_limit) {
-                        await sendBatchPayload(batch);
-                        batch = [];
-                    }
-                    batch.push(payloads[i]);
-                }
-                if (batch.length > 0) {
-                    await sendBatchPayload(batch);
-                }
-            }
-        }
-    } catch (e) {
-        //
-    }
-
-    // update the statusbar (only fetch if it's a new day)
-    await fetchSessionSummaryInfo();
-}
-
-/**
  * send any music tracks
  */
 export async function sendMusicData(trackData) {
@@ -618,30 +563,6 @@ export async function sendHeartbeat(reason, serverIsOnline) {
             }
         });
     }
-}
-
-export async function handleCodeTimeLogin() {
-    if (!(await serverIsAvailable())) {
-        showOfflinePrompt(false);
-    } else {
-        let loginUrl = await buildLoginUrl();
-        launchWebUrl(loginUrl);
-        // each retry is 10 seconds long
-        refetchUserStatusLazily();
-    }
-}
-
-export async function handleKpmClickedEvent() {
-    let serverIsOnline = await serverIsAvailable();
-    // {loggedIn: true|false}
-    let userStatus = await getUserStatus(serverIsOnline);
-    let webUrl = await buildWebDashboardUrl();
-
-    if (!userStatus.loggedIn) {
-        webUrl = await buildLoginUrl();
-        refetchUserStatusLazily();
-    }
-    launchWebUrl(webUrl);
 }
 
 export async function fetchSessionSummaryInfo() {

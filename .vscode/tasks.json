@@ -31,15 +31,6 @@
                 "kind": "build",
                 "isDefault": true
             }
-        },
-        {
-            "label": "prebuildcodetime",
-            "type": "npm",
-            "script": "prebuildcodetime",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
         }
     ]
 }

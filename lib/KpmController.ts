@@ -1,4 +1,4 @@
-import { workspace, Disposable, languages } from "vscode";
+import { workspace, Disposable } from "vscode";
 import { KpmDataManager } from "./KpmDataManager";
 import { UNTITLED, UNTITLED_WORKSPACE } from "./Constants";
 import { DEFAULT_DURATION } from "./Constants";
@@ -14,13 +14,11 @@ import {
     getFileAgeInDays,
     getFileType
 } from "./Util";
-import { sendOfflineData } from "./DataController";
 import {
     getRepoContributorInfo,
     getRepoFileCount,
     getFileContributorCount
 } from "./KpmRepoManager";
-const moment = require("moment-timezone");
 
 const NO_PROJ_NAME = "Unnamed";
 

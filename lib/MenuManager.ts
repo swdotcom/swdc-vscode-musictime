@@ -1,10 +1,4 @@
-import {
-    window,
-    workspace,
-    QuickPickOptions,
-    ViewColumn,
-    commands
-} from "vscode";
+import { window, workspace, QuickPickOptions, commands } from "vscode";
 import {
     launchWebUrl,
     getItem,
@@ -17,8 +11,7 @@ import {
     getSectionHeader
 } from "./Util";
 import { softwareGet, isResponseOk } from "./HttpClient";
-import { getSessionSummaryStatus } from "./DataController";
-import { launch_url, LOGIN_LABEL } from "./Constants";
+import { launch_url } from "./Constants";
 const moment = require("moment-timezone");
 
 const fs = require("fs");
@@ -153,22 +146,5 @@ export async function fetchCodeTimeMetricsDashboard(summary) {
                 `Error writing to the code time dashboard content file: ${err.message}`
             );
         }
-    });
-}
-
-export async function displayCodeTimeMetricsDashboard() {
-    let filePath = getDashboardFile();
-
-    let result = await getSessionSummaryStatus();
-
-    if (result.status === "OK") {
-        fetchCodeTimeMetricsDashboard(result.data);
-    }
-
-    workspace.openTextDocument(filePath).then(doc => {
-        // only focus if it's not already open
-        window.showTextDocument(doc, ViewColumn.One, false).then(e => {
-            // done
-        });
     });
 }

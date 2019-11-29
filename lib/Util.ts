@@ -41,7 +41,6 @@ let lastTooltip = null;
 let showStatusBarText = true;
 let extensionName = null;
 let extensionDisplayName = null; // Code Time or Music Time
-let whoami = null;
 
 export function getEditorSessionToken() {
     if (!editorSessiontoken) {
