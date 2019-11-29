@@ -257,11 +257,6 @@ export function showStatus(fullMsg, tooltip) {
     updateStatusBar(fullMsg, tooltip);
 }
 
-export function showTacoTimeStatus(fullMsg, tooltip) {
-    getStatusBarItem().command = "extension.orderGrubCommand";
-    updateStatusBar(fullMsg, tooltip);
-}
-
 export function handleCodeTimeStatusToggle() {
     toggleStatusBar();
 }

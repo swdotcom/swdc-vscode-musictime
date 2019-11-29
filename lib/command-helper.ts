@@ -257,7 +257,7 @@ export function createCommands(): {
         cmds.push(kpmController);
 
         const top40Cmd = commands.registerCommand(
-            "extension.viewSoftwareTop40",
+            "musictime.viewSoftwareTop40",
             () => {
                 launchWebUrl("https://api.software.com/music/top40");
             }
