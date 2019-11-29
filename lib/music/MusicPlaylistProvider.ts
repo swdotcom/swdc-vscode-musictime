@@ -531,9 +531,6 @@ export class PlaylistTreeItem extends TreeItem {
             // no matching tag, remove the tree item icon path
             delete this.iconPath;
         }
-
-        console.log("this.iconPath.light: ", this.iconPath.light);
-        console.log("this.iconPath.dark: ", this.iconPath.dark);
     }
 
     get tooltip(): string {

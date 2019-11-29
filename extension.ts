@@ -6,7 +6,8 @@ import { ExtensionContext } from "vscode";
 import {
     getUserStatus,
     sendHeartbeat,
-    serverIsAvailable
+    serverIsAvailable,
+    isLoggedOn
 } from "./lib/DataController";
 import {
     nowInSecs,
@@ -89,6 +90,9 @@ export async function intializePlugin(ctx: ExtensionContext) {
     // add the player commands before we show the playlist
     //
     ctx.subscriptions.push(createCommands());
+
+    // check if we're already logged on
+    await isLoggedOn(serverIsOnline);
 
     // initialize the music player
     setTimeout(() => {

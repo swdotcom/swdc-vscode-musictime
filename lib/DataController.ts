@@ -263,58 +263,39 @@ export async function getSlackOauth(serverIsOnline) {
 export async function getSpotifyOauth(serverIsOnline) {
     let jwt = getItem("jwt");
     if (serverIsOnline && jwt) {
-        let spotifyOauth = null;
-        const loggedInState = await isLoggedOn(serverIsOnline);
-        let user = null;
-        if (loggedInState.loggedOn) {
-            // logged on, we've updated the JWT in the isLoggedOn call
-            // update the new jwt
-            jwt = getItem("jwt");
-            user = await getUser(serverIsOnline, jwt);
-        }
-        if (user && user.auths) {
-            // get the one that is "spotify"
+        const isLoggedOnResult = await isLoggedOn(serverIsOnline);
+
+        return isLoggedOnResult;
+    }
+    return { loggedOn: false, state: "UNKNOWN", auth: null };
+}
+
+async function isRegisteredUser(serverIsOnline) {
+    const jwt = getItem("jwt");
+    const user = await getUser(serverIsOnline, jwt);
+    if (user) {
+        // check if they have a spotify access token
+        if (user.auths && user.auths.length > 0) {
             for (let i = 0; i < user.auths.length; i++) {
-                if (user.auths[i].type === "spotify") {
-                    // update it to null, they've logged in
+                const auth = user.auths[i];
+                if (auth.type === "spotify" && auth.access_token) {
                     setItem("check_status", null);
-                    spotifyOauth = user.auths[i];
+                    MusicManager.getInstance().updateSpotifyAccessInfo(auth);
                     break;
                 }
             }
         }
 
-        await MusicManager.getInstance().updateSpotifyAccessInfo(spotifyOauth);
-        if (spotifyOauth) {
-            return { loggedOn: true, state: "OK", auth: spotifyOauth };
+        // update jwt to what the jwt is for this spotify user
+        setItem("name", user.email);
+        if (jwt !== user.plugin_jwt) {
+            setItem("jwt", user.plugin_jwt);
         }
-    }
-    return { loggedOn: false, state: "UNKNOWN", auth: null };
-}
 
-async function isNonAnonUser(serverIsOnline) {
-    const user = await getUser(serverIsOnline, getItem("jwt"));
-    if (user) {
         // check if they have a password, google access token,
         // or github access token
-        if (
-            user.password ||
-            user.google_access_token ||
-            user.github_access_token
-        ) {
+        if (user.registered === 1) {
             return true;
-        }
-
-        // check if they have a spotify access token
-        if (user.auths && user.auths.length > 0) {
-            for (let i = 0; i < user.auths.length; i++) {
-                if (
-                    user.auths[i].type === "spotify" &&
-                    user.auths[i].access_token
-                ) {
-                    return true;
-                }
-            }
         }
     } else if (!serverIsOnline) {
         // do we have an email in the session.json?
@@ -326,29 +307,33 @@ async function isNonAnonUser(serverIsOnline) {
     return false;
 }
 
-async function isLoggedOn(serverIsOnline) {
-    if (await isNonAnonUser(serverIsOnline)) {
+export async function isLoggedOn(serverIsOnline) {
+    if (await isRegisteredUser(serverIsOnline)) {
         return { loggedOn: true, state: "OK" };
     }
 
-    let jwt = getItem("jwt");
+    // We don't have a user yet, check the users via the plugin/state
+    const jwt = getItem("jwt");
     if (serverIsOnline && jwt) {
-        let api = "/users/plugin/state";
-        let resp = await softwareGet(api, jwt);
+        const api = "/users/plugin/state";
+        const resp = await softwareGet(api, jwt);
         if (isResponseOk(resp) && resp.data) {
             // NOT_FOUND, ANONYMOUS, OK, UNKNOWN
             let state = resp.data.state ? resp.data.state : "UNKNOWN";
             if (state === "OK") {
-                let sessionEmail = getItem("name");
-                let email = resp.data.email;
-                if (sessionEmail !== email) {
-                    setItem("name", email);
+                /**
+                 * stateData only contains:
+                 * {email, jwt, state}
+                 */
+                const stateData = resp.data;
+                const sessionEmail = getItem("name");
+                if (sessionEmail !== stateData.email) {
+                    setItem("name", stateData.email);
                 }
                 // check the jwt
-                let pluginJwt = resp.data.jwt;
-                if (pluginJwt && pluginJwt !== jwt) {
+                if (stateData.jwt && stateData.jwt !== jwt) {
                     // update it
-                    setItem("jwt", pluginJwt);
+                    setItem("jwt", stateData.jwt);
                 }
 
                 let checkStatus = getItem("check_status");
@@ -356,6 +341,9 @@ async function isLoggedOn(serverIsOnline) {
                     // update it to null, they've logged in
                     setItem("check_status", null);
                 }
+
+                // update the spotify access by calling the user info again
+                await isRegisteredUser(serverIsOnline);
 
                 return { loggedOn: true, state };
             }
@@ -430,10 +418,7 @@ export async function getUser(serverIsOnline, jwt) {
         if (isResponseOk(resp)) {
             if (resp && resp.data && resp.data.data) {
                 const user = resp.data.data;
-                // update jwt to what the jwt is for this spotify user
-                setItem("name", user.email);
-                setItem("jwt", user.plugin_jwt);
-                return resp.data.data;
+                return user;
             }
         }
     }
@@ -481,7 +466,7 @@ export function refetchSpotifyConnectStatusLazily(tryCountUntilFound = 40) {
 async function spotifyConnectStatusHandler(tryCountUntilFound) {
     let serverIsOnline = await serverIsAvailable();
     let oauthResult = await getSpotifyOauth(serverIsOnline);
-    if (!oauthResult.auth) {
+    if (!oauthResult.loggedOn) {
         // try again if the count is not zero
         if (tryCountUntilFound > 0) {
             tryCountUntilFound -= 1;
@@ -489,8 +474,7 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
         }
     } else {
         const musicMgr = MusicManager.getInstance();
-        // oauth is not null, initialize spotify
-        await musicMgr.updateSpotifyAccessInfo(oauthResult.auth);
+
         // update the login status
         await getUserStatus(serverIsOnline);
         window.showInformationMessage(`Successfully connected to Spotify`);
