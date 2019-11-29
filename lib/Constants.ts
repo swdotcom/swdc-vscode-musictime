@@ -18,12 +18,12 @@ export const MUSIC_TIME_PLUGIN_ID = 13;
 // API ENDPOINT
 //
 // "http://localhost:5000", "https://qaapi.software.com", "https://stagingapi.software.com", "https://api.software.com"
-export const api_endpoint = "https://api.software.com";
+export const api_endpoint = "http://localhost:5000"; //"https://api.software.com";
 
 // DASHBOARD URL
 //
 // "http://localhost:3000", "https://qa.software.com", "https://staging.software.com", "https://app.software.com"
-export const launch_url = "https://app.software.com";
+export const launch_url = "http://localhost:3000"; //"https://app.software.com";
 
 export const DEFAULT_SESSION_THRESHOLD_SECONDS = 60 * 15;
 
