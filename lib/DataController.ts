@@ -358,9 +358,12 @@ export async function isLoggedOn(serverIsOnline) {
  * check if the user is registered or not
  * return {loggedIn: true|false}
  */
-export async function getUserStatus(serverIsOnline) {
-    if (loggedInCacheState !== null && loggedInCacheState === true) {
-        // commands.executeCommand("setContext", "codetime:loggedIn", true);
+export async function getUserStatus(serverIsOnline, ignoreCache = false) {
+    if (
+        !ignoreCache &&
+        loggedInCacheState !== null &&
+        loggedInCacheState === true
+    ) {
         return { loggedIn: true };
     }
 
@@ -476,7 +479,7 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
         const musicMgr = MusicManager.getInstance();
 
         // update the login status
-        await getUserStatus(serverIsOnline);
+        await getUserStatus(serverIsOnline, true /*ignoreCache*/);
         window.showInformationMessage(`Successfully connected to Spotify`);
 
         // send the "Liked Songs" to software app so we can be in sync

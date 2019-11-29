@@ -10,22 +10,14 @@ import {
     getItem,
     getDashboardFile,
     isLinux,
-    toggleStatusBar,
     logIt,
     getDashboardRow,
     humanizeMinutes,
     getSummaryInfoFile,
-    launchLogin,
-    getSectionHeader,
-    isStatusBarTextVisible
+    getSectionHeader
 } from "./Util";
 import { softwareGet, isResponseOk } from "./HttpClient";
-import {
-    getUserStatus,
-    serverIsAvailable,
-    getLoggedInCacheState,
-    getSessionSummaryStatus
-} from "./DataController";
+import { getSessionSummaryStatus } from "./DataController";
 import { launch_url, LOGIN_LABEL } from "./Constants";
 const moment = require("moment-timezone");
 
@@ -34,18 +26,10 @@ const fs = require("fs");
 const SERVICE_NOT_AVAIL =
     "Our service is temporarily unavailable.\n\nPlease try again later.\n";
 
-let showMusicMetrics = false;
 let lastMomentDate = null;
 
 export function clearLastMomentDate() {
     lastMomentDate = null;
-}
-
-/**
- * fetch the show music metrics flag
- */
-export function updateShowMusicMetrics(val) {
-    showMusicMetrics = val;
 }
 
 /**
@@ -82,92 +66,6 @@ export function showQuickPick(pickOptions): any {
 
 export async function buildWebDashboardUrl() {
     return launch_url;
-}
-
-export async function showMenuOptions() {
-    let loggedInCacheState = getLoggedInCacheState();
-    let serverIsOnline = await serverIsAvailable();
-    let userStatus = {
-        loggedIn: loggedInCacheState
-    };
-    if (loggedInCacheState === null) {
-        // update it since it's null
-        // {loggedIn: true|false}
-        userStatus = await getUserStatus(serverIsOnline);
-    }
-
-    // {placeholder, items: [{label, description, url, details, tooltip},...]}
-    let kpmMenuOptions = {
-        items: []
-    };
-
-    kpmMenuOptions.items.push({
-        label: "Code Time Dashboard",
-        detail: "View your latest coding metrics right here in your editor",
-        url: null,
-        cb: displayCodeTimeMetricsDashboard
-    });
-
-    let loginMsgDetail =
-        "To see your coding data in Code Time, please log in to your account";
-    if (!serverIsOnline) {
-        loginMsgDetail =
-            "Our service is temporarily unavailable. Please try again later.";
-    }
-    if (!userStatus.loggedIn) {
-        kpmMenuOptions.items.push({
-            label: LOGIN_LABEL,
-            detail: loginMsgDetail,
-            url: null,
-            cb: launchLogin
-        });
-    }
-
-    let toggleStatusBarTextLabel = "Hide Status Bar Metrics";
-    if (!isStatusBarTextVisible()) {
-        toggleStatusBarTextLabel = "Show Status Bar Metrics";
-    }
-    kpmMenuOptions.items.push({
-        label: toggleStatusBarTextLabel,
-        detail: "Toggle the Code Time status bar metrics text",
-        url: null,
-        cb: toggleStatusBar
-    });
-
-    // if (userStatus.loggedIn && showMusicMetrics) {
-    //     kpmMenuOptions.items.push({
-    //         label: "Software Top 40",
-    //         detail:
-    //             "Top 40 most popular songs developers around the world listen to as they code",
-    //         url: "https://api.software.com/music/top40",
-    //         cb: null
-    //     });
-    // }
-
-    kpmMenuOptions.items.push({
-        label: "Submit an issue on GitHub",
-        detail: "Encounter a bug? Submit an issue on our GitHub page",
-        url: "https://github.com/swdotcom/swdc-vscode/issues",
-        cb: null
-    });
-
-    kpmMenuOptions.items.push({
-        label: "Submit Feedback",
-        detail: "Send us an email at cody@software.com.",
-        url: "mailto:cody@software.com",
-        cb: null
-    });
-
-    if (userStatus.loggedIn) {
-        kpmMenuOptions.items.push({
-            label: "Web Dashboard",
-            detail: "See rich data visualizations in the web app",
-            url: null,
-            cb: launchWebDashboardView
-        });
-    }
-
-    showQuickPick(kpmMenuOptions);
 }
 
 export async function launchWebDashboardView() {
