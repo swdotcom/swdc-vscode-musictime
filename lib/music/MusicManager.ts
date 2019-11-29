@@ -350,7 +350,7 @@ export class MusicManager {
             })) || [];
 
         // fetch the saved playlists from software app
-        if (this._savedPlaylists.length === 0) {
+        if (this._savedPlaylists.length === 0 && !needsSpotifyAccess) {
             await this.fetchSavedPlaylists(serverIsOnline);
         }
 
