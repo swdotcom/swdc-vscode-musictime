@@ -118,21 +118,41 @@ export class MusicControlManager {
     async setLiked(liked: boolean) {
         let track: Track = this.musicMgr.runningTrack;
         if (track && track.id) {
+            let updatePlayerState = true;
+            if (track.playerType !== PlayerType.MacItunesDesktop) {
+                let msg = "";
+                if (liked) {
+                    msg = `Would you like to also add this to your Spotify 'Liked Songs' playlist as well?`;
+                } else {
+                    msg = `Would you like to also remove this to your Spotify 'Liked Songs' playlist as well?`;
+                }
+
+                const buttonSelection = await window.showInformationMessage(
+                    msg,
+                    ...["Not Now", "Yes"]
+                );
+                updatePlayerState = buttonSelection === "Yes";
+            }
+
             // show loading until the liked/unliked is complete
             MusicCommandManager.syncControls(track, true);
 
-            if (track.playerType === PlayerType.MacItunesDesktop) {
-                // await so that the stateCheckHandler fetches
-                // the latest version of the itunes track
-                await setItunesLoved(liked).catch(err => {
-                    logIt(`Error updating itunes loved state: ${err.message}`);
-                });
-            } else {
-                // save the spotify track to the users liked songs playlist
-                if (liked) {
-                    await saveToSpotifyLiked([track.id]);
+            if (updatePlayerState) {
+                if (track.playerType === PlayerType.MacItunesDesktop) {
+                    // await so that the stateCheckHandler fetches
+                    // the latest version of the itunes track
+                    await setItunesLoved(liked).catch(err => {
+                        logIt(
+                            `Error updating itunes loved state: ${err.message}`
+                        );
+                    });
                 } else {
-                    await removeFromSpotifyLiked([track.id]);
+                    // save the spotify track to the users liked songs playlist
+                    if (liked) {
+                        await saveToSpotifyLiked([track.id]);
+                    } else {
+                        await removeFromSpotifyLiked([track.id]);
+                    }
                 }
             }
 
