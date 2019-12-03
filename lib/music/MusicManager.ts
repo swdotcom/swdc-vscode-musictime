@@ -46,7 +46,7 @@ import {
     getUserStatus,
     getAppJwt
 } from "../DataController";
-import { getItem, setItem, launchLogin, isMac, logIt } from "../Util";
+import { getItem, setItem, isMac, logIt } from "../Util";
 import {
     isResponseOk,
     softwareGet,
@@ -215,20 +215,7 @@ export class MusicManager {
         this._playlistTrackMap = {};
     }
 
-    tryRefreshAgain() {
-        this.refreshPlaylists();
-    }
-
     async refreshPlaylists() {
-        if (!this._initialized) {
-            return;
-        }
-        if (this._buildingPlaylists) {
-            // try again in a second
-            setTimeout(() => {
-                this.tryRefreshAgain();
-            }, 1000);
-        }
         this._buildingPlaylists = true;
 
         let serverIsOnline = await serverIsAvailable();
@@ -239,8 +226,6 @@ export class MusicManager {
             await this.showSpotifyPlaylists(serverIsOnline);
         }
         MusicCommandManager.syncControls(this._runningTrack);
-
-        this._buildingPlaylists = false;
     }
 
     getPlaylistById(playlist_id: string) {
@@ -538,30 +523,6 @@ export class MusicManager {
         }
     }
 
-    /**
-     * The call to add this button has been commented out.
-     * @param serverIsOnline
-     * @param items
-     */
-    async addSoftwareLoginButtonIfRequired(
-        serverIsOnline,
-        items: PlaylistItem[]
-    ) {
-        let loggedInCacheState = getLoggedInCacheState();
-        let userStatus = {
-            loggedIn: loggedInCacheState
-        };
-        if (loggedInCacheState === null) {
-            // update it since it's null
-            // {loggedIn: true|false}
-            userStatus = await getUserStatus(serverIsOnline);
-        }
-
-        if (!userStatus.loggedIn) {
-            items.push(this.getSoftwareLoginButton());
-        }
-    }
-
     getSpotifyLikedPlaylistFolder() {
         const item: PlaylistItem = new PlaylistItem();
         item.type = "playlist";
@@ -650,19 +611,6 @@ export class MusicManager {
             PlayerType.WebSpotify,
             "Connect Spotify",
             "Connect Spotify to view your playlists"
-        );
-    }
-
-    getSoftwareLoginButton() {
-        return this.buildActionItem(
-            "login",
-            "login",
-            null,
-            PlayerType.NotAssigned,
-            LOGIN_LABEL,
-            "To see your music data in Music Time, please log in to your account",
-            null,
-            launchLogin
         );
     }
 
@@ -1179,7 +1127,6 @@ export class MusicManager {
         }
 
         setTimeout(() => {
-            this.clearSpotify();
             commands.executeCommand("musictime.refreshPlaylist");
         }, 500);
 
@@ -1404,7 +1351,6 @@ export class MusicManager {
             launchPlayer(playerName);
         }
 
-        this.clearPlaylists();
         setTimeout(() => {
             commands.executeCommand("musictime.refreshPlaylist");
         }, 500);
@@ -1448,8 +1394,6 @@ export class MusicManager {
 
         // sycn the controls so it shows the correct state
         MusicCommandManager.syncControls(track);
-
-        commands.executeCommand("musictime.refreshPlaylist");
     }
 
     hasSpotifyPlaybackAccess() {

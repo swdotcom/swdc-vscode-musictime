@@ -20,8 +20,7 @@ import {
     launchAndPlaySpotifyTrack,
     playSpotifyMacDesktopTrack,
     getSpotifyDevices,
-    launchPlayer,
-    isSpotifyRunning
+    launchPlayer
 } from "cody-music";
 import { MusicControlManager } from "./MusicControlManager";
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
@@ -42,7 +41,6 @@ const createPlaylistTreeItem = (
 };
 
 let checkSpotifyStateTimeout = null;
-let checkedLaunchConfirmation = false;
 
 export const checkSpotifySongState = (missingDevices: boolean) => {
     if (checkSpotifyStateTimeout) {
