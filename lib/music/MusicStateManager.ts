@@ -1,4 +1,4 @@
-import { commands } from "vscode";
+import { commands, window } from "vscode";
 import {
     getMusicSessionDataStoreFile,
     deleteFile,
@@ -278,15 +278,20 @@ export class MusicStateManager {
             };
 
             // send songSession in a second due to waiting on the data file processing
-            setTimeout(async () => {
-                songSession = {
-                    ...songSession,
-                    ...this.getMusicCodingData()
-                };
+            if (window.state.focused) {
+                setTimeout(async () => {
+                    songSession = {
+                        ...songSession,
+                        ...this.getMusicCodingData()
+                    };
 
-                // send off the ended song session
-                await sendMusicData(songSession);
-            }, 1000);
+                    // send off the ended song session
+                    await sendMusicData(songSession);
+                }, 1000);
+            } else {
+                // just gather the data so it can be deleted
+                this.getMusicCodingData();
+            }
 
             // clear the track.
             this.existingTrack = {};
