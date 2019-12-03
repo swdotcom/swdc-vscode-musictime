@@ -4,13 +4,10 @@ import {
     CODE_TIME_EXT_ID,
     MUSIC_TIME_EXT_ID,
     launch_url,
-    NOT_NOW_LABEL,
-    LOGIN_LABEL,
     MUSIC_TIME_PLUGIN_ID,
     MUSIC_TIME_TYPE
 } from "./Constants";
 import {
-    refetchUserStatusLazily,
     fetchSessionSummaryInfo,
     getToggleFileEventLoggingState
 } from "./DataController";
@@ -748,30 +745,6 @@ export function humanizeMinutes(min) {
         str = min.toFixed(0) + " min";
     }
     return str;
-}
-
-export async function launchLogin() {
-    let loginUrl = await buildLoginUrl();
-    launchWebUrl(loginUrl);
-    refetchUserStatusLazily();
-}
-
-/**
- * check if the user needs to see the login prompt or not
- */
-export async function showLoginPrompt() {
-    let extDisplayName = getExtensionDisplayName();
-    let infoMsg = `To see your coding data in ${extDisplayName}, please log in to your account.`;
-    // set the last update time so we don't try to ask too frequently
-    window
-        .showInformationMessage(infoMsg, ...[NOT_NOW_LABEL, LOGIN_LABEL])
-        .then(async selection => {
-            if (selection === LOGIN_LABEL) {
-                let loginUrl = await buildLoginUrl();
-                launchWebUrl(loginUrl);
-                refetchUserStatusLazily();
-            }
-        });
 }
 
 export async function buildLoginUrl() {

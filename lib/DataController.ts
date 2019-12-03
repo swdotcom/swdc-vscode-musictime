@@ -395,9 +395,9 @@ async function slackConnectStatusHandler(tryCountUntilFound) {
     } else {
         window.showInformationMessage(`Successfully connected to Slack`);
 
-        setTimeout(() => {
-            commands.executeCommand("musictime.refreshPlaylist");
-        }, 1000);
+        // setTimeout(() => {
+        //     commands.executeCommand("musictime.refreshPlaylist");
+        // }, 1000);
     }
 }
 
@@ -506,39 +506,6 @@ async function seedTopSpotifySongs() {
             .catch(e => {
                 return { status: "fail" };
             });
-    }
-}
-
-export function refetchUserStatusLazily(tryCountUntilFoundUser = 40) {
-    if (userFetchTimeout) {
-        return;
-    }
-    userFetchTimeout = setTimeout(() => {
-        userFetchTimeout = null;
-        userStatusFetchHandler(tryCountUntilFoundUser);
-    }, 10000);
-}
-
-async function userStatusFetchHandler(tryCountUntilFoundUser) {
-    let serverIsOnline = await serverIsAvailable();
-    let userStatus = await getUserStatus(serverIsOnline);
-    if (!userStatus.loggedIn) {
-        // try again if the count is not zero
-        if (tryCountUntilFoundUser > 0) {
-            tryCountUntilFoundUser -= 1;
-            refetchUserStatusLazily(tryCountUntilFoundUser);
-        } else {
-            // set the check_status to true
-            setItem("check_status", true);
-        }
-    } else {
-        const message = "Successfully logged on to Music Time";
-        MusicManager.getInstance().fetchSavedPlaylists(serverIsOnline);
-        setTimeout(() => {
-            commands.executeCommand("musictime.refreshPlaylist");
-        }, 1000);
-
-        window.showInformationMessage(message);
     }
 }
 
