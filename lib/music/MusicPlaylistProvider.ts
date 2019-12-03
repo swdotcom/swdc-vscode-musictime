@@ -20,13 +20,14 @@ import {
     launchAndPlaySpotifyTrack,
     playSpotifyMacDesktopTrack,
     getSpotifyDevices,
-    launchPlayer
+    launchPlayer,
+    isSpotifyRunning
 } from "cody-music";
 import { MusicControlManager } from "./MusicControlManager";
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
 import { MusicManager } from "./MusicManager";
 import { MusicCommandManager } from "./MusicCommandManager";
-import { logIt } from "../Util";
+import { logIt, isMac } from "../Util";
 
 /**
  * Create the playlist tree item (root or leaf)
@@ -41,6 +42,7 @@ const createPlaylistTreeItem = (
 };
 
 let checkSpotifyStateTimeout = null;
+let checkedLaunchConfirmation = false;
 
 export const checkSpotifySongState = (missingDevices: boolean) => {
     if (checkSpotifyStateTimeout) {
@@ -70,15 +72,30 @@ export const checkSpotifySongState = (missingDevices: boolean) => {
 
 export const playSelectedItem = async (
     playlistItem: PlaylistItem,
-    isExpand = true
+    isExpand: boolean
 ) => {
     const musicCtrlMgr = new MusicControlManager();
     const musicMgr: MusicManager = MusicManager.getInstance();
 
-    const isTrackOrPlaylist =
-        playlistItem.type === "track" || playlistItem.type === "playlist";
+    let playerName = musicMgr.getPlayerNameForPlayback();
+    // this is another way to check if the player is running or not
+    // let isRunning = await isSpotifyRunning();
+    if (!isExpand && playerName !== PlayerName.ItunesDesktop && isMac()) {
+        const devices = await getSpotifyDevices();
+        const hasDevices = devices && devices.length > 0 ? true : false;
 
-    const playerName = musicMgr.getPlayerNameForPlayback();
+        if (!hasDevices) {
+            // ask to launch
+            const selectedButton = await window.showInformationMessage(
+                `Spotify is currently not running, would you like to launch the desktop or use the web player?`,
+                ...["Desktop", "Web Player"]
+            );
+            if (selectedButton === "Desktop") {
+                // launch the desktop
+                playerName = PlayerName.SpotifyDesktop;
+            }
+        }
+    }
 
     // is this a track or playlist item?
     if (playlistItem.type === "track") {
@@ -149,20 +166,6 @@ export const playSelectedItem = async (
                     launchAndPlaySpotifyWebPlaylistTrack(false /*isTrack*/);
                 }
             }
-        }
-    }
-
-    // check spotify song state if the device list is empty. this will
-    // alert the user they may need to log on to spotify if we're unable to
-    // play a track
-    if (
-        !isExpand &&
-        isTrackOrPlaylist &&
-        playlistItem.playerType !== PlayerType.MacItunesDesktop
-    ) {
-        const devices = await getSpotifyDevices();
-        if (!devices || devices.length === 0) {
-            checkSpotifySongState(true /*missingDevices*/);
         }
     }
 };
@@ -270,8 +273,10 @@ export const connectPlaylistTreeView = (view: TreeView<PlaylistItem>) => {
                 return;
             }
 
+            const isExpand = playlistItem.type === "playlist" ? true : false;
+
             // play it
-            playSelectedItem(playlistItem);
+            playSelectedItem(playlistItem, isExpand);
         }),
         view.onDidChangeVisibility(e => {
             if (e.visible) {
