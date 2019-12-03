@@ -216,6 +216,9 @@ export class MusicManager {
     }
 
     async refreshPlaylists() {
+        if (this._buildingPlaylists) {
+            return;
+        }
         this._buildingPlaylists = true;
 
         let serverIsOnline = await serverIsAvailable();
@@ -225,7 +228,9 @@ export class MusicManager {
         } else {
             await this.showSpotifyPlaylists(serverIsOnline);
         }
-        MusicCommandManager.syncControls(this._runningTrack);
+        await MusicCommandManager.syncControls(this._runningTrack);
+
+        this._buildingPlaylists = false;
     }
 
     getPlaylistById(playlist_id: string) {
