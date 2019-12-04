@@ -23,7 +23,7 @@ import {
     launchPlayer
 } from "cody-music";
 import { MusicControlManager } from "./MusicControlManager";
-import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
+import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME, OK_LABEL } from "../Constants";
 import { MusicManager } from "./MusicManager";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { logIt, isMac } from "../Util";
@@ -41,6 +41,7 @@ const createPlaylistTreeItem = (
 };
 
 let checkSpotifyStateTimeout = null;
+let initializedPlaylist = false;
 
 export const checkSpotifySongState = (missingDevices: boolean) => {
     if (checkSpotifyStateTimeout) {
@@ -59,7 +60,7 @@ export const checkSpotifySongState = (missingDevices: boolean) => {
             // they're not logged in
             window.showInformationMessage(
                 "We're unable to play the selected Spotify track. Please make sure you are logged in to your account. You will need the Spotify desktop app if you have a non-premium Spotify account.",
-                ...["Ok"]
+                ...[OK_LABEL]
             );
         } else if (missingDevices) {
             // refresh the playlist
@@ -278,7 +279,11 @@ export const connectPlaylistTreeView = (view: TreeView<PlaylistItem>) => {
         }),
         view.onDidChangeVisibility(e => {
             if (e.visible) {
-                //
+                if (!initializedPlaylist) {
+                    // fetch the playlist
+                    commands.executeCommand("musictime.refreshPlaylist");
+                    initializedPlaylist = true;
+                }
             }
         })
     );
