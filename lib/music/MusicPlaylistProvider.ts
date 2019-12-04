@@ -20,7 +20,8 @@ import {
     launchAndPlaySpotifyTrack,
     playSpotifyMacDesktopTrack,
     getSpotifyDevices,
-    launchPlayer
+    launchPlayer,
+    isSpotifyRunning
 } from "cody-music";
 import { MusicControlManager } from "./MusicControlManager";
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME, OK_LABEL } from "../Constants";
@@ -78,12 +79,12 @@ export const playSelectedItem = async (
 
     let playerName = musicMgr.getPlayerNameForPlayback();
     // this is another way to check if the player is running or not
-    // let isRunning = await isSpotifyRunning();
+    let isRunning = await isSpotifyRunning();
     if (!isExpand && playerName !== PlayerName.ItunesDesktop && isMac()) {
-        const devices = await getSpotifyDevices();
-        const hasDevices = devices && devices.length > 0 ? true : false;
+        // const devices = await getSpotifyDevices();
+        let isRunning = await isSpotifyRunning();
 
-        if (!hasDevices) {
+        if (!isRunning) {
             // ask to launch
             const selectedButton = await window.showInformationMessage(
                 `Spotify is currently not running, would you like to launch the desktop or use the web player?`,
