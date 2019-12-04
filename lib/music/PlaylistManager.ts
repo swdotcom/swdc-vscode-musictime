@@ -10,10 +10,9 @@ const codyPlaylistNames = [
     "My AI Top 40",
     "Custom Top 40",
     "My Custom Top 40",
-    "AI-generated Custom Top 40"
+    "AI-generated Custom Top 40",
+    "Software Top 40"
 ];
-
-const restrictedNames = ["Software Top 40"];
 
 export class PlaylistManager {
     private static instance: PlaylistManager;
@@ -72,7 +71,6 @@ export class PlaylistManager {
                 const playlist: PlaylistItem = spotifyPlaylists[i];
                 if (
                     codyPlaylistNames.includes(playlist.name) &&
-                    !restrictedNames.includes(playlist.name) &&
                     playlist.duplicateIds &&
                     playlist.duplicateIds.length > 0
                 ) {

@@ -41,6 +41,7 @@ const createPlaylistTreeItem = (
 };
 
 let checkSpotifyStateTimeout = null;
+let initializedPlaylist = false;
 
 export const checkSpotifySongState = (missingDevices: boolean) => {
     if (checkSpotifyStateTimeout) {
@@ -278,7 +279,11 @@ export const connectPlaylistTreeView = (view: TreeView<PlaylistItem>) => {
         }),
         view.onDidChangeVisibility(e => {
             if (e.visible) {
-                //
+                if (!initializedPlaylist) {
+                    // fetch the playlist
+                    commands.executeCommand("musictime.refreshPlaylist");
+                    initializedPlaylist = true;
+                }
             }
         })
     );
