@@ -31,19 +31,17 @@ import {
     REFRESH_CUSTOM_PLAYLIST_TOOLTIP,
     GENERATE_CUSTOM_PLAYLIST_TOOLTIP,
     SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
-    LOGIN_LABEL,
     SOFTWARE_TOP_40_PLAYLIST_ID,
     SPOTIFY_CLIENT_ID,
     SPOTIFY_CLIENT_SECRET,
-    SHOW_ITUNES_LAUNCH_BUTTON
+    SHOW_ITUNES_LAUNCH_BUTTON,
+    OK_LABEL
 } from "../Constants";
 import { commands, window } from "vscode";
 import {
     serverIsAvailable,
     getSpotifyOauth,
     getSlackOauth,
-    getLoggedInCacheState,
-    getUserStatus,
     getAppJwt
 } from "../DataController";
 import { getItem, setItem, isMac, logIt } from "../Util";
@@ -57,6 +55,7 @@ import {
 import { SpotifyUser } from "cody-music/dist/lib/profile";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { MusicControlManager } from "./MusicControlManager";
+import { PlaylistManager } from "./PlaylistManager";
 
 export class MusicManager {
     private static instance: MusicManager;
@@ -191,6 +190,10 @@ export class MusicManager {
         if (this._currentPlayerName === PlayerName.ItunesDesktop) {
             return this._itunesPlaylists;
         }
+        return this._spotifyPlaylists;
+    }
+
+    get spotifyPlaylists(): PlaylistItem[] {
         return this._spotifyPlaylists;
     }
 
@@ -511,6 +514,8 @@ export class MusicManager {
             });
 
             this._spotifyPlaylists = items;
+
+            await PlaylistManager.getInstance().checkForDups();
         }
     }
 
@@ -1071,7 +1076,7 @@ export class MusicManager {
             if (playlistResult.state === CodyResponseType.Failed) {
                 window.showErrorMessage(
                     `There was an unexpected error adding tracks to the playlist. ${playlistResult.message}`,
-                    ...["OK"]
+                    ...[OK_LABEL]
                 );
                 this._buildingCustomPlaylist = false;
                 return;
@@ -1120,13 +1125,13 @@ export class MusicManager {
 
                     window.showInformationMessage(
                         `Successfully refreshed ${PERSONAL_TOP_SONGS_NAME}.`,
-                        ...["OK"]
+                        ...[OK_LABEL]
                     );
                 }
             } else {
                 window.showInformationMessage(
                     `Successfully created ${PERSONAL_TOP_SONGS_NAME}, but we're unable to add any songs at the moment.`,
-                    ...["OK"]
+                    ...[OK_LABEL]
                 );
             }
         }
@@ -1152,12 +1157,12 @@ export class MusicManager {
             if (addTracksResult.state === CodyResponseType.Success) {
                 window.showInformationMessage(
                     `Successfully created ${name} and added tracks.`,
-                    ...["OK"]
+                    ...[OK_LABEL]
                 );
             } else {
                 window.showErrorMessage(
                     `There was an unexpected error adding tracks to the playlist. ${addTracksResult.message}`,
-                    ...["OK"]
+                    ...[OK_LABEL]
                 );
             }
         }
@@ -1364,7 +1369,7 @@ export class MusicManager {
     launchSpotifyPlayer() {
         window.showInformationMessage(
             `After you select and play your first song in Spotify, standard controls (play, pause, next, etc.) will appear in your status bar.`,
-            ...["OK"]
+            ...[OK_LABEL]
         );
         setTimeout(() => {
             launchPlayer(PlayerName.SpotifyWeb);

@@ -44,7 +44,8 @@ import {
     SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
     PERSONAL_TOP_SONGS_PLID,
     NOT_NOW_LABEL,
-    YES_LABEL
+    YES_LABEL,
+    OK_LABEL
 } from "../Constants";
 import { MusicStateManager } from "./MusicStateManager";
 import { SocialShareManager } from "../social/SocialShareManager";
@@ -129,7 +130,7 @@ export class MusicControlManager {
 
                 const buttonSelection = await window.showInformationMessage(
                     msg,
-                    ...["Not Now", "Yes"]
+                    ...[NOT_NOW_LABEL, "Yes"]
                 );
                 updatePlayerState = buttonSelection === "Yes";
             }
@@ -189,7 +190,7 @@ export class MusicControlManager {
             clipboardy.writeSync(link);
             window.showInformationMessage(
                 `Spotify ${messageContext} link copied to clipboard.`,
-                ...["OK"]
+                ...[OK_LABEL]
             );
         } catch (err) {
             logIt(`Unable to copy to clipboard, error: ${err.message}`);
@@ -223,7 +224,7 @@ export class MusicControlManager {
     launchSpotifyPlayer() {
         window.showInformationMessage(
             `After you select and play your first song in Spotify, standard controls (play, pause, next, etc.) will appear in your status bar.`,
-            ...["OK"]
+            ...[OK_LABEL]
         );
         setTimeout(() => {
             launchPlayer(PlayerName.SpotifyWeb);
