@@ -2,7 +2,7 @@
 
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import { ExtensionContext } from "vscode";
+import { ExtensionContext, window } from "vscode";
 import {
     getUserStatus,
     sendHeartbeat,
@@ -111,7 +111,9 @@ export async function intializePlugin(ctx: ExtensionContext) {
 
     // 5 second interval to check music info
     gather_music_interval = setInterval(() => {
-        MusicStateManager.getInstance().gatherMusicInfo();
+        if (window.state.focused) {
+            MusicStateManager.getInstance().gatherMusicInfo();
+        }
     }, 1000 * 5);
 
     initializeLiveshare();
