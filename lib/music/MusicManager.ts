@@ -1136,11 +1136,9 @@ export class MusicManager {
             }
         }
 
-        setTimeout(() => {
-            commands.executeCommand("musictime.refreshPlaylist");
-        }, 500);
-
         await this.fetchSavedPlaylists(serverIsOnline);
+
+        commands.executeCommand("musictime.refreshPlaylist");
 
         // update building custom playlist to false
         this._buildingCustomPlaylist = false;
