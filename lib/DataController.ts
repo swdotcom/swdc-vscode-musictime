@@ -249,6 +249,7 @@ async function isRegisteredUser(serverIsOnline) {
             return true;
         }
     }
+
     return false;
 }
 
