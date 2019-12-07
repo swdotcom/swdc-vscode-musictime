@@ -1252,8 +1252,7 @@ export class MusicManager {
         // update the user info
         await getMusicTimeUserStatus(serverIsOnline);
 
-        // initialize slack
-        await getSlackOauth(serverIsOnline);
+        this.updateCodyConfig();
 
         // initialize the music player
         MusicCommandManager.initialize();

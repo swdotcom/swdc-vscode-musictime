@@ -217,7 +217,7 @@ export async function getMusicTimeUserStatus(serverIsOnline) {
         const resp = await softwareGet(api, jwt, additionalHeaders);
         if (isResponseOk(resp) && resp.data) {
             // NOT_FOUND, ANONYMOUS, OK, UNKNOWN
-            let state = resp.data.state ? resp.data.state : "UNKNOWN";
+            const state = resp.data.state ? resp.data.state : "UNKNOWN";
             if (state === "OK") {
                 /**
                  * stateData only contains:
@@ -234,20 +234,15 @@ export async function getMusicTimeUserStatus(serverIsOnline) {
                     setItem("jwt", stateData.jwt);
                 }
 
-                let checkStatus = getItem("check_status");
-                if (checkStatus) {
-                    // update it to null, they've logged in
-                    setItem("check_status", null);
-                }
-
+                // get the user from the payload
                 const user = resp.data.user;
 
                 if (user.auths && user.auths.length > 0) {
                     for (let i = 0; i < user.auths.length; i++) {
                         const auth = user.auths[i];
-                        if (auth.type === "spotify" && auth.access_token) {
-                            setItem("check_status", null);
 
+                        // update the spotify access info if the auth matches
+                        if (auth.type === "spotify" && auth.access_token) {
                             // update spotify access info
                             MusicManager.getInstance().updateSpotifyAccessInfo(
                                 auth

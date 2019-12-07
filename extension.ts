@@ -89,7 +89,6 @@ export async function intializePlugin(ctx: ExtensionContext) {
 
     // init the music manager and cody config
     musicMgr = MusicManager.getInstance();
-    musicMgr.updateCodyConfig();
 
     // This will initialize the user and spotify
     // this needs to happen first to enable spotify playlist and control logic
