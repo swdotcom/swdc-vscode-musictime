@@ -2,13 +2,8 @@
 
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import { ExtensionContext, window } from "vscode";
-import {
-    getUserStatus,
-    sendHeartbeat,
-    serverIsAvailable,
-    isLoggedOn
-} from "./lib/DataController";
+import { ExtensionContext } from "vscode";
+import { sendHeartbeat, serverIsAvailable } from "./lib/DataController";
 import {
     nowInSecs,
     getOffsetSecends,
@@ -19,7 +14,6 @@ import {
 import { manageLiveshareSession } from "./lib/LiveshareManager";
 import * as vsls from "vsls/vscode";
 import { MusicStateManager } from "./lib/music/MusicStateManager";
-import { MusicCommandManager } from "./lib/music/MusicCommandManager";
 import { createCommands } from "./lib/command-helper";
 import { setSessionSummaryLiveshareMinutes } from "./lib/OfflineManager";
 import { MusicManager } from "./lib/music/MusicManager";
@@ -91,19 +85,13 @@ export async function intializePlugin(ctx: ExtensionContext) {
     //
     ctx.subscriptions.push(createCommands());
 
-    // check if we're already logged on
-    await isLoggedOn(serverIsOnline);
-
-    // initialize the music player
-    setTimeout(() => {
-        MusicCommandManager.initialize();
-    }, 1000);
-
     let musicMgr: MusicManager = null;
 
     // init the music manager and cody config
     musicMgr = MusicManager.getInstance();
     musicMgr.updateCodyConfig();
+
+    // This will initialize the user and spotify
     // this needs to happen first to enable spotify playlist and control logic
     await musicMgr.initializeSpotify();
     // check if the user has a slack integration already connected
@@ -115,14 +103,7 @@ export async function intializePlugin(ctx: ExtensionContext) {
     }, 1000 * 5);
 
     initializeLiveshare();
-    initializeUserInfo(serverIsOnline);
-}
-
-async function initializeUserInfo(serverIsOnline: boolean) {
-    // {loggedIn: true|false}
-    await getUserStatus(serverIsOnline);
-
-    // send a heartbeat
+    // initializeUserInfo(serverIsOnline);
     sendHeartbeat("INITIALIZED", serverIsOnline);
 }
 

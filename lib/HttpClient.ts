@@ -30,9 +30,16 @@ export async function spotifyApiPut(api, payload, accessToken) {
  * @param api
  * @param jwt
  */
-export async function softwareGet(api, jwt) {
+export async function softwareGet(api, jwt, additionHeaders = null) {
     if (jwt) {
         beApi.defaults.headers.common["Authorization"] = jwt;
+    }
+
+    if (additionHeaders) {
+        beApi.defaults.headers.common = {
+            ...beApi.defaults.headers.common,
+            ...additionHeaders
+        };
     }
 
     return await beApi.get(api).catch(err => {

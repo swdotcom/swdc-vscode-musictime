@@ -205,64 +205,16 @@ export async function getSlackOauth(serverIsOnline) {
     }
 }
 
-export async function getSpotifyOauth(serverIsOnline) {
-    let jwt = getItem("jwt");
-    if (serverIsOnline && jwt) {
-        const isLoggedOnResult = await isLoggedOn(serverIsOnline);
-
-        return isLoggedOnResult;
-    }
-    return { loggedOn: false, state: "UNKNOWN", auth: null };
-}
-
-async function isRegisteredUser(serverIsOnline) {
-    const jwt = getItem("jwt");
-    const user = await getUser(serverIsOnline, jwt);
-    if (user) {
-        // check if they have a spotify access token
-        if (user.auths && user.auths.length > 0) {
-            for (let i = 0; i < user.auths.length; i++) {
-                const auth = user.auths[i];
-                if (auth.type === "spotify" && auth.access_token) {
-                    setItem("check_status", null);
-                    MusicManager.getInstance().updateSpotifyAccessInfo(auth);
-                    break;
-                }
-            }
-        }
-
-        // update jwt to what the jwt is for this spotify user
-        setItem("name", user.email);
-        if (jwt !== user.plugin_jwt) {
-            setItem("jwt", user.plugin_jwt);
-        }
-
-        // check if they have a password, google access token,
-        // or github access token
-        if (user.registered === 1) {
-            return true;
-        }
-    } else if (!serverIsOnline) {
-        // do we have an email in the session.json?
-        const email = getItem("name");
-        if (email) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-export async function isLoggedOn(serverIsOnline) {
-    if (await isRegisteredUser(serverIsOnline)) {
-        return { loggedOn: true, state: "OK" };
-    }
-
+export async function getMusicTimeUserStatus(serverIsOnline) {
     // We don't have a user yet, check the users via the plugin/state
     const jwt = getItem("jwt");
-    if (serverIsOnline && jwt) {
+    const spotify_refresh_token = getItem("spotify_refresh_token");
+    if (serverIsOnline && (jwt || spotify_refresh_token)) {
         const api = "/users/plugin/state";
-        const resp = await softwareGet(api, jwt);
+        const additionalHeaders = spotify_refresh_token
+            ? { spotify_refresh_token }
+            : null;
+        const resp = await softwareGet(api, jwt, additionalHeaders);
         if (isResponseOk(resp) && resp.data) {
             // NOT_FOUND, ANONYMOUS, OK, UNKNOWN
             let state = resp.data.state ? resp.data.state : "UNKNOWN";
@@ -288,8 +240,22 @@ export async function isLoggedOn(serverIsOnline) {
                     setItem("check_status", null);
                 }
 
-                // update the spotify access by calling the user info again
-                await isRegisteredUser(serverIsOnline);
+                const user = resp.data.user;
+
+                if (user.auths && user.auths.length > 0) {
+                    for (let i = 0; i < user.auths.length; i++) {
+                        const auth = user.auths[i];
+                        if (auth.type === "spotify" && auth.access_token) {
+                            setItem("check_status", null);
+
+                            // update spotify access info
+                            MusicManager.getInstance().updateSpotifyAccessInfo(
+                                auth
+                            );
+                            break;
+                        }
+                    }
+                }
 
                 return { loggedOn: true, state };
             }
@@ -298,66 +264,6 @@ export async function isLoggedOn(serverIsOnline) {
         }
     }
     return { loggedOn: false, state: "UNKNOWN" };
-}
-
-/**
- * check if the user is registered or not
- * return {loggedIn: true|false}
- */
-export async function getUserStatus(serverIsOnline, ignoreCache = false) {
-    if (
-        !ignoreCache &&
-        loggedInCacheState !== null &&
-        loggedInCacheState === true
-    ) {
-        return { loggedIn: true };
-    }
-
-    let loggedIn = false;
-    if (serverIsOnline) {
-        // refetch the jwt then check if they're logged on
-        let loggedInResp = await getSpotifyOauth(serverIsOnline);
-        // set the loggedIn bool value
-        loggedIn = loggedInResp.loggedOn;
-    }
-
-    logIt(`Checking login status, logged in: ${loggedIn}`);
-
-    let userStatus = {
-        loggedIn
-    };
-
-    if (!loggedIn) {
-        let name = getItem("name");
-        // only update the name if it's not null
-        if (name) {
-            setItem("name", null);
-        }
-    }
-
-    if (
-        serverIsOnline &&
-        loggedInCacheState !== null &&
-        loggedInCacheState !== loggedIn
-    ) {
-        sendHeartbeat(`STATE_CHANGE:LOGGED_IN:${loggedIn}`, serverIsOnline);
-
-        setTimeout(() => {
-            // update the statusbar
-            fetchSessionSummaryInfo();
-        }, 1000);
-
-        if (requiresSpotifyAccessInfo()) {
-            // check if they have a connected spotify auth
-            setTimeout(() => {
-                refetchSpotifyConnectStatusLazily(1);
-            }, 1000);
-        }
-    }
-
-    loggedInCacheState = loggedIn;
-
-    return userStatus;
 }
 
 export async function getUser(serverIsOnline, jwt) {
@@ -414,7 +320,7 @@ export function refetchSpotifyConnectStatusLazily(tryCountUntilFound = 40) {
 
 async function spotifyConnectStatusHandler(tryCountUntilFound) {
     let serverIsOnline = await serverIsAvailable();
-    let oauthResult = await getSpotifyOauth(serverIsOnline);
+    let oauthResult = await getMusicTimeUserStatus(serverIsOnline);
     if (!oauthResult.loggedOn) {
         // try again if the count is not zero
         if (tryCountUntilFound > 0) {
@@ -425,7 +331,7 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
         const musicMgr = MusicManager.getInstance();
 
         // update the login status
-        await getUserStatus(serverIsOnline, true /*ignoreCache*/);
+        // await getUserStatus(serverIsOnline, true /*ignoreCache*/);
         window.showInformationMessage(`Successfully connected to Spotify`);
 
         // send the "Liked Songs" to software app so we can be in sync

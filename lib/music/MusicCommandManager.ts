@@ -52,14 +52,9 @@ export class MusicCommandManager {
      * Create the list of status bar buttons that will be displayed.
      */
     public static async initialize() {
-        const name = getItem("name");
-        let musicTimeTooltip = "Click to see more from Music Time";
-        if (name) {
-            musicTimeTooltip = `${musicTimeTooltip} (${name})`;
-        }
-
+        const musictimeMenuTooltip = this.getMusicMenuTooltip();
         // start with 100 0and go down in sequence
-        this.createButton("🎧", musicTimeTooltip, "musictime.menu", 1000);
+        this.createButton("🎧", musictimeMenuTooltip, "musictime.menu", 1000);
         this.createButton("...", "updating", "musictime.progress", 999);
         this.createButton(
             "Connect Spotify",
@@ -203,6 +198,9 @@ export class MusicCommandManager {
             const isProgressButton = btnCmd === "musictime.progress";
 
             if (isMusicTimeMenuButton || isProgressButton) {
+                if (isMusicTimeMenuButton) {
+                    button.tooltip = this.getMusicMenuTooltip();
+                }
                 // always show the headphones button for the launch controls function
                 button.statusBarItem.show();
             } else {
@@ -235,6 +233,7 @@ export class MusicCommandManager {
                 button.statusBarItem.text === "Connect Premium";
 
             if (isMusicTimeMenuButton) {
+                button.tooltip = this.getMusicMenuTooltip();
                 // always show the headphones button for the launch controls function
                 button.statusBarItem.show();
             } else if (
@@ -284,6 +283,9 @@ export class MusicCommandManager {
             const isNextButton = btnCmd === "musictime.next";
 
             if (isMusicTimeMenuButton || isPrevButton || isNextButton) {
+                if (isMusicTimeMenuButton) {
+                    button.tooltip = this.getMusicMenuTooltip();
+                }
                 // always show the headphones menu icon
                 button.statusBarItem.show();
             } else if (isLikedButton) {
@@ -335,7 +337,7 @@ export class MusicCommandManager {
 
         this._buttons.map(button => {
             const btnCmd = button.statusBarItem.command;
-            const isMusicTimeMenu = btnCmd === "musictime.menu";
+            const isMusicTimeMenuButton = btnCmd === "musictime.menu";
             const isPauseButton = btnCmd === "musictime.pause";
             const isLikedButton = btnCmd === "musictime.like";
             const isUnLikedButton = btnCmd === "musictime.unlike";
@@ -343,7 +345,10 @@ export class MusicCommandManager {
             const isPrevButton = btnCmd === "musictime.previous";
             const isNextButton = btnCmd === "musictime.next";
 
-            if (isMusicTimeMenu || isPrevButton || isNextButton) {
+            if (isMusicTimeMenuButton || isPrevButton || isNextButton) {
+                if (isMusicTimeMenuButton) {
+                    button.tooltip = this.getMusicMenuTooltip();
+                }
                 // always show the headphones menu icon
                 button.statusBarItem.show();
             } else if (isLikedButton) {
@@ -380,10 +385,13 @@ export class MusicCommandManager {
     private static showProgress(progressLabel: string) {
         this._buttons.map(button => {
             const btnCmd = button.statusBarItem.command;
-            const isMusicTimeMenu = btnCmd === "musictime.menu";
+            const isMusicTimeMenuButton = btnCmd === "musictime.menu";
             const isMusicTimeProgress = btnCmd === "musictime.progress";
 
-            if (isMusicTimeMenu || isMusicTimeProgress) {
+            if (isMusicTimeMenuButton || isMusicTimeProgress) {
+                if (isMusicTimeMenuButton) {
+                    button.tooltip = this.getMusicMenuTooltip();
+                }
                 if (isMusicTimeProgress) {
                     button.statusBarItem.text = progressLabel;
                 }
@@ -394,6 +402,21 @@ export class MusicCommandManager {
                 button.statusBarItem.hide();
             }
         });
+    }
+
+    private static getMusicMenuTooltip() {
+        const musicMgr: MusicManager = MusicManager.getInstance();
+        const needsSpotifyAccess = musicMgr.requiresSpotifyAccess();
+        if (needsSpotifyAccess) {
+            return "Connect Spotify";
+        }
+
+        const name = getItem("name");
+        let musicTimeTooltip = "Click to see more from Music Time";
+        if (name) {
+            musicTimeTooltip = `${musicTimeTooltip} (${name})`;
+        }
+        return musicTimeTooltip;
     }
 
     private static getSpotifyState() {

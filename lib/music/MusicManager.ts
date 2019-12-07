@@ -40,9 +40,9 @@ import {
 import { commands, window } from "vscode";
 import {
     serverIsAvailable,
-    getSpotifyOauth,
     getSlackOauth,
-    getAppJwt
+    getAppJwt,
+    getMusicTimeUserStatus
 } from "../DataController";
 import { getItem, setItem, isMac, logIt } from "../Util";
 import {
@@ -1249,22 +1249,14 @@ export class MusicManager {
         this._spotifyClientId = clientId;
         this._spotifyClientSecret = clientSecret;
 
-        if (
-            !getItem("spotify_access_token") ||
-            !getItem("spotify_refresh_token")
-        ) {
-            // initialize spotify oauth
-            await getSpotifyOauth(serverIsOnline);
-        } else {
-            const spotifyOauth = {
-                access_token: getItem("spotify_access_token"),
-                refresh_token: getItem("spotify_refresh_token")
-            };
-            await this.updateSpotifyAccessInfo(spotifyOauth);
-        }
+        // update the user info
+        await getMusicTimeUserStatus(serverIsOnline);
 
         // initialize slack
         await getSlackOauth(serverIsOnline);
+
+        // initialize the music player
+        MusicCommandManager.initialize();
 
         this.initialized = true;
 
