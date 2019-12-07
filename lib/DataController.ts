@@ -19,7 +19,6 @@ import {
     getHostname,
     getEditorSessionToken,
     showOfflinePrompt,
-    buildLoginUrl,
     launchWebUrl,
     logIt,
     getPluginId,

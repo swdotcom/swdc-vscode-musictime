@@ -742,18 +742,6 @@ export function humanizeMinutes(min) {
     return str;
 }
 
-export async function buildLoginUrl() {
-    let jwt = getItem("jwt");
-    if (jwt) {
-        const encodedJwt = encodeURIComponent(jwt);
-        const loginUrl = `${launch_url}/onboarding?token=${encodedJwt}&plugin=${getPluginType()}`;
-        return loginUrl;
-    } else {
-        // no need to build an onboarding url if we dn't have the token
-        return launch_url;
-    }
-}
-
 export function showInformationMessage(message: string) {
     return window.showInformationMessage(`${message}`);
 }
