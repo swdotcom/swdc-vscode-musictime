@@ -595,12 +595,6 @@ export function getNowTimes() {
 }
 
 export function storePayload(payload) {
-    // calculate it and call
-    // add to the minutes
-    let keystrokes = parseInt(payload.keystrokes, 10) || 0;
-    // this will increment and store it offline
-    incrementSessionSummaryData(keystrokes);
-
     setTimeout(() => {
         // update the statusbar
         fetchSessionSummaryInfo();
@@ -610,12 +604,13 @@ export function storePayload(payload) {
     const musicFile = getMusicSessionDataStoreFile();
 
     // also store the payload into the MusicSession.json file
-    fs.appendFile(musicFile, JSON.stringify(payload) + os.EOL, err => {
-        if (err)
-            logIt(
-                `Error appending to the music session data store file: ${err.message}`
-            );
-    });
+    try {
+        fs.appendFileSync(musicFile, JSON.stringify(payload) + os.EOL);
+    } catch (err) {
+        logIt(
+            `Error appending to the music session data store file: ${err.message}`
+        );
+    }
 }
 
 export function randomCode() {

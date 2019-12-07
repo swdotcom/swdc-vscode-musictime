@@ -20,23 +20,14 @@ import { MusicCommandManager } from "./music/MusicCommandManager";
 import { SocialShareManager } from "./social/SocialShareManager";
 import { connectSlack } from "./slack/SlackControlManager";
 import { MusicManager } from "./music/MusicManager";
-import { MusicStateManager } from "./music/MusicStateManager";
 
 export function createCommands(): {
     dispose: () => void;
 } {
     let cmds = [];
 
-    //
-    // Add the keystroke controller to the ext ctx, which
-    // will then listen for text document changes.
-    //
-    const kpmController = new KpmController();
-
     const controller = new MusicControlManager();
     const musicMgr: MusicManager = MusicManager.getInstance();
-
-    MusicStateManager.getInstance().setKpmController(kpmController);
 
     // playlist tree view
     const treePlaylistProvider = new MusicPlaylistProvider();
@@ -253,9 +244,8 @@ export function createCommands(): {
     cmds.push(launchMusicAnalyticsCommand);
 
     if (!codeTimeExtInstalled()) {
-        // code time is not installed, load the kpm controller for music time
-        cmds.push(kpmController);
-
+        // initialize the kpm controller to start the listener
+        KpmController.getInstance();
         const top40Cmd = commands.registerCommand(
             "musictime.viewSoftwareTop40",
             () => {

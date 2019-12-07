@@ -12,13 +12,17 @@ import {
     getNowTimes,
     logEvent,
     getFileAgeInDays,
-    getFileType
+    getFileType,
+    logIt,
+    deleteFile,
+    getMusicSessionDataStoreFile
 } from "./Util";
 import {
     getRepoContributorInfo,
     getRepoFileCount,
     getFileContributorCount
 } from "./KpmRepoManager";
+const fs = require("fs");
 
 const NO_PROJ_NAME = "Unnamed";
 
@@ -26,16 +30,24 @@ let _keystrokeMap = {};
 let _staticInfoMap = {};
 
 export class KpmController {
-    private _disposable: Disposable;
-    private _lastDayOfMonth: number = -1;
+    private static instance: KpmController;
 
-    constructor() {
+    private _disposable: Disposable;
+
+    private constructor() {
         let subscriptions: Disposable[] = [];
 
         workspace.onDidOpenTextDocument(this._onOpenHandler, this);
         workspace.onDidCloseTextDocument(this._onCloseHandler, this);
         workspace.onDidChangeTextDocument(this._onEventHandler, this);
         this._disposable = Disposable.from(...subscriptions);
+    }
+    static getInstance(): KpmController {
+        if (!KpmController.instance) {
+            KpmController.instance = new KpmController();
+        }
+
+        return KpmController.instance;
     }
 
     public async sendKeystrokeDataIntervalHandler() {
@@ -445,7 +457,7 @@ export class KpmController {
         };
         keystrokeCount.source[fileName] = fileInfo;
 
-        setTimeout(() => keystrokeCount.postData(true /*sendNow*/), 0);
+        setTimeout(() => keystrokeCount.postData(), 0);
     }
 
     private async initializeKeystrokesCount(filename, rootPath) {
@@ -546,6 +558,45 @@ export class KpmController {
         }, DEFAULT_DURATION * 1000);
 
         return keystrokeCount;
+    }
+
+    public async gatherAllCodingData() {
+        let payloads = [];
+        await this.sendKeystrokeDataIntervalHandler();
+        try {
+            const file = getMusicSessionDataStoreFile();
+            if (fs.existsSync(file)) {
+                const content = fs.readFileSync(file).toString();
+                // we're online so just delete the datastore file
+                deleteFile(file);
+                if (content) {
+                    payloads = content
+                        .split(/\r?\n/)
+                        .map(item => {
+                            let obj = null;
+                            if (item) {
+                                try {
+                                    obj = JSON.parse(item);
+                                } catch (e) {
+                                    //
+                                }
+                            }
+                            if (obj) {
+                                return obj;
+                            }
+                        })
+                        .filter(item => item);
+
+                    // build the aggregated payload
+                }
+            } else {
+                console.log("No keystroke data to send with the song session");
+            }
+        } catch (e) {
+            logIt(`Unable to aggregate music session data: ${e.message}`);
+        }
+
+        return payloads;
     }
 
     public dispose() {

@@ -111,9 +111,7 @@ export async function intializePlugin(ctx: ExtensionContext) {
 
     // 5 second interval to check music info
     gather_music_interval = setInterval(() => {
-        if (window.state.focused) {
-            MusicStateManager.getInstance().gatherMusicInfo();
-        }
+        MusicStateManager.getInstance().gatherMusicInfo();
     }, 1000 * 5);
 
     initializeLiveshare();

@@ -74,7 +74,7 @@ export class KpmDataManager {
     /**
      * send the payload
      */
-    postData(sendNow: boolean = false) {
+    postData() {
         const payload = JSON.parse(JSON.stringify(this));
 
         // set the end time for the session
@@ -109,11 +109,7 @@ export class KpmDataManager {
             payload.project = null;
         }
 
-        if (sendNow) {
-            sendBatchPayload([payload]);
-        } else {
-            storePayload(payload);
-            logIt(`storing kpm metrics`);
-        }
+        logIt(`storing kpm metrics`);
+        storePayload(payload);
     }
 }

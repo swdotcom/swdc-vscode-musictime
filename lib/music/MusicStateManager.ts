@@ -1,15 +1,11 @@
-import { commands, window } from "vscode";
+import { commands } from "vscode";
 import {
-    getMusicSessionDataStoreFile,
-    deleteFile,
-    logIt,
     nowInSecs,
     getOffsetSecends,
     getOs,
     getVersion,
     getPluginId,
-    isValidJson,
-    isMac
+    isValidJson
 } from "../Util";
 import { sendMusicData } from "../DataController";
 import {
@@ -24,7 +20,6 @@ import {
 import { MusicManager } from "./MusicManager";
 import { KpmController } from "../KpmController";
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
-const fs = require("fs");
 
 export class MusicStateManager {
     static readonly WINDOWS_SPOTIFY_TRACK_FIND: string =
@@ -34,8 +29,7 @@ export class MusicStateManager {
 
     private existingTrack: any = {};
     private endInRangeTrackId: string = "";
-
-    private kpmControllerInstance: KpmController;
+    private gatheringSong: boolean = false;
 
     private musicMgr: MusicManager;
 
@@ -51,10 +45,6 @@ export class MusicStateManager {
             MusicStateManager.instance = new MusicStateManager();
         }
         return MusicStateManager.instance;
-    }
-
-    public setKpmController(kpmController: KpmController) {
-        this.kpmControllerInstance = kpmController;
     }
 
     /**
@@ -198,12 +188,7 @@ export class MusicStateManager {
         track["start"] = now;
         track["local_start"] = now - offset_sec;
         track["end"] = now + 1;
-        track = {
-            ...track,
-            ...this.getMusicCodingData()
-        };
-
-        sendMusicData(track);
+        this.gatherCodingDataAndSendSongSession(track);
     }
 
     private allowSetRunningTrack() {
@@ -225,6 +210,11 @@ export class MusicStateManager {
      * Core logic in gathering tracks. This is called every 5 seconds.
      */
     public async gatherMusicInfo(): Promise<any> {
+        if (this.gatheringSong) {
+            return;
+        }
+
+        this.gatheringSong = true;
         const playingTrack = (await getRunningTrack()) || new Track();
 
         const changeStatus = this.getChangeStatus(playingTrack);
@@ -241,15 +231,9 @@ export class MusicStateManager {
             (changeStatus.ended || changeStatus.endPrevTrack) &&
             this.existingTrack.id
         ) {
-            // gather the coding metrics
-            // but first end the kpm data collecting
-            if (this.kpmControllerInstance) {
-                await this.kpmControllerInstance.sendKeystrokeDataIntervalHandler();
-            }
-
             // just set it to playing
             this.existingTrack.state = TrackStatus.Playing;
-            this.existingTrack["end"] = utcLocalTimes.utc - 2;
+            this.existingTrack["end"] = utcLocalTimes.utc;
             this.existingTrack["local_end"] = utcLocalTimes.local;
 
             // if this track doesn't have album json data null it out
@@ -273,20 +257,12 @@ export class MusicStateManager {
             }
 
             // copy the existing track to "songSession"
-            let songSession = {
+            const songSession = {
                 ...this.existingTrack
             };
 
-            // send songSession in a second due to waiting on the data file processing
-            setTimeout(async () => {
-                songSession = {
-                    ...songSession,
-                    ...this.getMusicCodingData()
-                };
-
-                // send off the ended song session
-                await sendMusicData(songSession);
-            }, 1000);
+            // gather coding and send the track
+            this.gatherCodingDataAndSendSongSession(songSession);
 
             // clear the track.
             this.existingTrack = {};
@@ -301,6 +277,7 @@ export class MusicStateManager {
         ) {
             await this.musicMgr.getServerTrack(playingTrack);
 
+            // set the start times
             playingTrack["start"] = utcLocalTimes.utc;
             playingTrack["local_start"] = utcLocalTimes.local;
             playingTrack["end"] = 0;
@@ -338,6 +315,8 @@ export class MusicStateManager {
         } else {
             this.musicMgr.runningTrack = new Track();
         }
+
+        this.gatheringSong = false;
     }
 
     private async playNextLikedSpotifyCheck(changeStatus) {
@@ -365,8 +344,8 @@ export class MusicStateManager {
         }
     }
 
-    public getMusicCodingData() {
-        const file = getMusicSessionDataStoreFile();
+    public async gatherCodingDataAndSendSongSession(songSession) {
+        const payloads = await KpmController.getInstance().gatherAllCodingData();
         const initialValue = {
             add: 0,
             paste: 0,
@@ -387,43 +366,14 @@ export class MusicStateManager {
             repoFileCount: 0,
             repoContributorCount: 0
         };
-        try {
-            if (fs.existsSync(file)) {
-                const content = fs.readFileSync(file).toString();
-                // we're online so just delete the datastore file
-                deleteFile(file);
-                if (content) {
-                    const payloads = content
-                        .split(/\r?\n/)
-                        .map(item => {
-                            let obj = null;
-                            if (item) {
-                                try {
-                                    obj = JSON.parse(item);
-                                } catch (e) {
-                                    //
-                                }
-                            }
-                            if (obj) {
-                                return obj;
-                            }
-                        })
-                        .filter(item => item);
+        const songData = this.buildAggregateData(payloads, initialValue);
 
-                    // build the aggregated payload
-                    const musicCodingData = this.buildAggregateData(
-                        payloads,
-                        initialValue
-                    );
-                    return musicCodingData;
-                }
-            } else {
-                console.log("No keystroke data to send with the song session");
-            }
-        } catch (e) {
-            logIt(`Unable to aggregate music session data: ${e.message}`);
-        }
-        return initialValue;
+        songSession = {
+            ...songSession,
+            ...songData
+        };
+
+        sendMusicData(songSession);
     }
 
     /**
