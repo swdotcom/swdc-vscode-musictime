@@ -1074,8 +1074,17 @@ export class MusicManager {
             );
 
             if (playlistResult.state === CodyResponseType.Failed) {
+                // format the message
+                let errMsg = "";
+                if (playlistResult.message) {
+                    errMsg = playlistResult.message;
+                    var hasEndingPeriod = errMsg.lastIndexOf(".") === errMsg.length - 1;
+                    if (!hasEndingPeriod) {
+                        errMsg = `${errMsg}.`;
+                    }
+                }
                 window.showErrorMessage(
-                    `There was an unexpected error adding tracks to the playlist. ${playlistResult.message}`,
+                    `There was an unexpected error adding tracks to the playlist. ${errMsg} Refresh the playlist and try again if you feel the problem has been resolved.`,
                     ...[OK_LABEL]
                 );
                 this._buildingCustomPlaylist = false;
