@@ -405,13 +405,13 @@ export class MusicCommandManager {
     }
 
     private static getMusicMenuTooltip() {
+        const name = getItem("name");
         const musicMgr: MusicManager = MusicManager.getInstance();
         const needsSpotifyAccess = musicMgr.requiresSpotifyAccess();
         if (needsSpotifyAccess) {
             return "Connect Spotify";
         }
 
-        const name = getItem("name");
         let musicTimeTooltip = "Click to see more from Music Time";
         if (name) {
             musicTimeTooltip = `${musicTimeTooltip} (${name})`;

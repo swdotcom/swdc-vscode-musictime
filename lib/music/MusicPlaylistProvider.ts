@@ -24,7 +24,12 @@ import {
     isSpotifyRunning
 } from "cody-music";
 import { MusicControlManager } from "./MusicControlManager";
-import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME, OK_LABEL } from "../Constants";
+import {
+    SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
+    OK_LABEL,
+    NOT_NOW_LABEL,
+    YES_LABEL
+} from "../Constants";
 import { MusicManager } from "./MusicManager";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { logIt, isMac } from "../Util";
@@ -87,10 +92,10 @@ export const playSelectedItem = async (
         if (!isRunning) {
             // ask to launch
             const selectedButton = await window.showInformationMessage(
-                `Spotify is currently not running, would you like to launch the desktop or use the web player?`,
-                ...["Desktop", "Web Player"]
+                `Spotify is currently not running, would you like to launch the desktop instead of the the web player?`,
+                ...[NOT_NOW_LABEL, YES_LABEL]
             );
-            if (selectedButton === "Desktop") {
+            if (selectedButton === YES_LABEL) {
                 // launch the desktop
                 playerName = PlayerName.SpotifyDesktop;
             }
