@@ -118,21 +118,20 @@ export class MusicControlManager {
 
     async setLiked(liked: boolean) {
         let track: Track = this.musicMgr.runningTrack;
+        let updatePlayerState = true;
+
+        // const isLikedSongTrack = track.id === "Liked Songs" ? true : false;
+
         if (track && track.id) {
-            let updatePlayerState = true;
-            if (track.playerType !== PlayerType.MacItunesDesktop) {
-                let msg = "";
-                if (liked) {
-                    msg = `Would you like to also add this to your Spotify 'Liked Songs' playlist as well?`;
-                } else {
-                    msg = `Would you like to also remove this to your Spotify 'Liked Songs' playlist as well?`;
-                }
+            if (track.playerType !== PlayerType.MacItunesDesktop && liked) {
+                const msg = "Add to your 'Liked Songs' playlist as well?";
 
                 const buttonSelection = await window.showInformationMessage(
                     msg,
-                    ...[NOT_NOW_LABEL, "Yes"]
+                    ...[NOT_NOW_LABEL, YES_LABEL]
                 );
-                updatePlayerState = buttonSelection === "Yes";
+                updatePlayerState =
+                    buttonSelection === YES_LABEL ? true : false;
             }
 
             // show loading until the liked/unliked is complete
@@ -169,6 +168,10 @@ export class MusicControlManager {
 
             // get the server track. this will sync the controls
             await this.musicMgr.getServerTrack(track);
+        }
+
+        if (updatePlayerState) {
+            commands.executeCommand("musictime.refreshPlaylist");
         }
     }
 
