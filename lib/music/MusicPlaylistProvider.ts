@@ -89,7 +89,8 @@ export const playSelectedItem = async (
         // const devices = await getSpotifyDevices();
         let isRunning = await isSpotifyRunning();
 
-        if (!isRunning) {
+        // ask to show the desktop if they're a premium user
+        if (!isRunning && musicMgr.isSpotifyPremium()) {
             // ask to launch
             const selectedButton = await window.showInformationMessage(
                 `Spotify is currently not running, would you like to launch the desktop instead of the the web player?`,
