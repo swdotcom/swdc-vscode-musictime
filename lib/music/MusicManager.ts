@@ -337,10 +337,10 @@ export class MusicManager {
             allowSpotifyPlaylistFetch && !isSpotifyPremium;
 
         // fetch the playlists
-        const playlists: PlaylistItem[] =
-            (await getPlaylists(playerName, {
-                all: true
-            })) || [];
+        let playlists: PlaylistItem[] = [];
+        if (!needsSpotifyAccess) {
+            playlists = await getPlaylists(playerName, { all: true });
+        }
 
         // fetch the saved playlists from software app
         if (this._savedPlaylists.length === 0 && !needsSpotifyAccess) {
@@ -351,6 +351,7 @@ export class MusicManager {
         // one we've generated, or the name has changed
         if (
             serverIsOnline &&
+            !needsSpotifyAccess &&
             playerName === PlayerName.SpotifyWeb &&
             this._savedPlaylists.length > 0 &&
             playlists.length > 0
@@ -492,7 +493,7 @@ export class MusicManager {
             }
 
             // add Liked Songs folder within the software playlist section
-            if (allowSpotifyPlaylistFetch) {
+            if (!needsSpotifyAccess && allowSpotifyPlaylistFetch) {
                 // only add the "Liked Songs" playlist if there are tracks found in that playlist
                 this._spotifyLikedSongs = await getSpotifyLikedSongs();
                 if (
@@ -1078,7 +1079,8 @@ export class MusicManager {
                 let errMsg = "";
                 if (playlistResult.message) {
                     errMsg = playlistResult.message;
-                    var hasEndingPeriod = errMsg.lastIndexOf(".") === errMsg.length - 1;
+                    var hasEndingPeriod =
+                        errMsg.lastIndexOf(".") === errMsg.length - 1;
                     if (!hasEndingPeriod) {
                         errMsg = `${errMsg}.`;
                     }

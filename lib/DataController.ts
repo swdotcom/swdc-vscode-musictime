@@ -326,7 +326,9 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
 
         // update the login status
         // await getUserStatus(serverIsOnline, true /*ignoreCache*/);
-        window.showInformationMessage(`Successfully connected to Spotify`);
+        window.showInformationMessage(
+            `Successfully connected to Spotify. Loading playlists.`
+        );
 
         // send the "Liked Songs" to software app so we can be in sync
         await seedLikedSongsToSoftware();
