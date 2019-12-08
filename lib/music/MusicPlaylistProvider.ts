@@ -96,7 +96,7 @@ export const playSelectedItem = async (
                 `Spotify is currently not running, would you like to launch the desktop instead of the the web player?`,
                 ...[NOT_NOW_LABEL, YES_LABEL]
             );
-            if (selectedButton === YES_LABEL) {
+            if (selectedButton && selectedButton === YES_LABEL) {
                 // launch the desktop
                 playerName = PlayerName.SpotifyDesktop;
             }

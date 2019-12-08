@@ -58,7 +58,7 @@ export class PlaylistManager {
                 `We found duplicate 'Music Time' generated playlist names. Would you like to unfollow those?`,
                 ...[NOT_NOW_LABEL, OK_LABEL]
             );
-            if (selectedLabel === OK_LABEL) {
+            if (selectedLabel && selectedLabel === OK_LABEL) {
                 await this.deleteDuplicateSpotifyPlaylists();
             }
         }

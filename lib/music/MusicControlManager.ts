@@ -12,7 +12,8 @@ import {
     playTrackInContext,
     playTrack,
     saveToSpotifyLiked,
-    removeFromSpotifyLiked
+    removeFromSpotifyLiked,
+    requiresSpotifyAccessInfo
 } from "cody-music";
 import { window, ViewColumn, Uri, commands } from "vscode";
 import { MusicCommandManager } from "./MusicCommandManager";
@@ -131,7 +132,9 @@ export class MusicControlManager {
                     ...[NOT_NOW_LABEL, YES_LABEL]
                 );
                 updatePlayerState =
-                    buttonSelection === YES_LABEL ? true : false;
+                    buttonSelection && buttonSelection === YES_LABEL
+                        ? true
+                        : false;
             }
 
             // show loading until the liked/unliked is complete
@@ -420,6 +423,23 @@ export async function connectSpotify() {
         jwt = await getAppJwt(true);
         await setItem("jwt", jwt);
     }
+
+    // check if they're already connected, if so then ask if they would
+    // like to continue as we'll need to disconnect the current connection
+    const needsSpotifyAccess = MusicManager.getInstance().requiresSpotifyAccess();
+    if (!needsSpotifyAccess) {
+        // disconnectSpotify
+        const selection = await window.showInformationMessage(
+            `Would you like to connect as a new Spotify user?`,
+            ...[NOT_NOW_LABEL, YES_LABEL]
+        );
+        if (!selection || selection === NOT_NOW_LABEL) {
+            return;
+        }
+        // disconnect the current connection
+        await disconnectSpotify(false /*confirmDisconnect*/);
+    }
+
     const encodedJwt = encodeURIComponent(jwt);
     const mac = isMac() ? "true" : "false";
     const qryStr = `token=${encodedJwt}&mac=${mac}`;
@@ -428,19 +448,21 @@ export async function connectSpotify() {
     refetchSpotifyConnectStatusLazily();
 }
 
-export async function disconnectSpotify() {
-    disconnectOauth("Spotify");
+export async function disconnectSpotify(confirmDisconnect = true) {
+    disconnectOauth("Spotify", confirmDisconnect);
 }
 
-export async function disconnectSlack() {
+export async function disconnectSlack(confirmDisconnect = true) {
     disconnectOauth("Slack");
 }
 
-export async function disconnectOauth(type: string) {
-    const selection = await window.showInformationMessage(
-        `Are you sure you would like to disconnect ${type}?`,
-        ...[NOT_NOW_LABEL, YES_LABEL]
-    );
+export async function disconnectOauth(type: string, confirmDisconnect = true) {
+    const selection = confirmDisconnect
+        ? await window.showInformationMessage(
+              `Are you sure you would like to disconnect ${type}?`,
+              ...[NOT_NOW_LABEL, YES_LABEL]
+          )
+        : YES_LABEL;
 
     if (selection === YES_LABEL) {
         let serverIsOnline = await serverIsAvailable();
@@ -466,7 +488,7 @@ export async function disconnectOauth(type: string) {
                 // refresh the playlist
                 setTimeout(() => {
                     commands.executeCommand("musictime.refreshPlaylist");
-                }, 1000);
+                }, 500);
             }
         } else {
             window.showInformationMessage(
