@@ -1,13 +1,6 @@
 import { window, StatusBarAlignment, StatusBarItem } from "vscode";
 import { getSongDisplayName, isMac, getItem } from "../Util";
-import {
-    TrackStatus,
-    Track,
-    PlaylistItem,
-    PlayerName,
-    pause,
-    play
-} from "cody-music";
+import { TrackStatus, Track, PlaylistItem, PlayerName } from "cody-music";
 import { MusicPlaylistProvider } from "./MusicPlaylistProvider";
 import { MusicManager } from "./MusicManager";
 import { serverIsAvailable } from "../DataController";

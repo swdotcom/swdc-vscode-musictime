@@ -6,7 +6,6 @@ import {
     getNowTimes,
     getPluginId
 } from "./Util";
-import { sendBatchPayload } from "./DataController";
 
 // ? marks that the parameter is optional
 type Project = {

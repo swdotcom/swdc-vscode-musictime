@@ -1,6 +1,5 @@
 import { MusicManager } from "./MusicManager";
 import { PlaylistItem, deletePlaylist } from "cody-music";
-import { bool } from "aws-sdk/clients/signer";
 import { NOT_NOW_LABEL, OK_LABEL } from "../Constants";
 import { window, commands } from "vscode";
 

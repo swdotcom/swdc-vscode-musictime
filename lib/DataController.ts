@@ -9,8 +9,6 @@ import {
 import {
     getItem,
     setItem,
-    getSoftwareDataStoreFile,
-    deleteFile,
     nowInSecs,
     getOsUsername,
     getSessionFileCreateTime,
@@ -18,30 +16,18 @@ import {
     getVersion,
     getHostname,
     getEditorSessionToken,
-    showOfflinePrompt,
-    launchWebUrl,
     logIt,
     getPluginId,
-    logEvent,
     getOffsetSecends
 } from "./Util";
-import {
-    requiresSpotifyAccessInfo,
-    getSpotifyLikedSongs,
-    Track,
-    getTopSpotifyTracks
-} from "cody-music";
-import {
-    buildWebDashboardUrl,
-    fetchCodeTimeMetricsDashboard
-} from "./MenuManager";
+import { getSpotifyLikedSongs, Track } from "cody-music";
+import { fetchCodeTimeMetricsDashboard } from "./MenuManager";
 import {
     getSessionSummaryData,
     updateStatusBarWithSummaryData,
     saveSessionSummaryToDisk
 } from "./OfflineManager";
 import { MusicManager } from "./music/MusicManager";
-const fs = require("fs");
 const moment = require("moment-timezone");
 
 let loggedInCacheState = null;
@@ -51,10 +37,6 @@ let toggleFileEventLogging = null;
 
 let slackFetchTimeout = null;
 let spotifyFetchTimeout = null;
-let userFetchTimeout = null;
-
-// batch offline payloads in 50. backend has a 100k body limit
-const batch_limit = 50;
 
 let currentDayHour = null;
 

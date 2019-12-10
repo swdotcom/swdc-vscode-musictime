@@ -9,7 +9,8 @@ import {
     getOffsetSecends,
     getVersion,
     logIt,
-    getPluginName
+    getPluginName,
+    codeTimeExtInstalled
 } from "./lib/Util";
 import { manageLiveshareSession } from "./lib/LiveshareManager";
 import * as vsls from "vsls/vscode";
@@ -17,6 +18,7 @@ import { MusicStateManager } from "./lib/music/MusicStateManager";
 import { createCommands } from "./lib/command-helper";
 import { setSessionSummaryLiveshareMinutes } from "./lib/OfflineManager";
 import { MusicManager } from "./lib/music/MusicManager";
+import { KpmController } from "./lib/KpmController";
 
 let TELEMETRY_ON = true;
 let statusBarItem = null;
@@ -100,6 +102,16 @@ export async function intializePlugin(ctx: ExtensionContext) {
     gather_music_interval = setInterval(() => {
         MusicStateManager.getInstance().gatherMusicInfo();
     }, 1000 * 5);
+
+    // every half hour, send offline data
+    // every hour, look for repo members
+    const hourly_interval_ms = 1000 * 60 * 60;
+    const half_hour_ms = hourly_interval_ms / 2;
+    offline_data_interval = setInterval(() => {
+        if (!codeTimeExtInstalled()) {
+            KpmController.getInstance().processOfflineKeystrokes();
+        }
+    }, half_hour_ms);
 
     initializeLiveshare();
     // initializeUserInfo(serverIsOnline);
