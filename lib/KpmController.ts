@@ -22,12 +22,16 @@ import {
     getRepoFileCount,
     getFileContributorCount
 } from "./KpmRepoManager";
+import { sendBatchPayload } from "./DataController";
 const fs = require("fs");
 
 const NO_PROJ_NAME = "Unnamed";
 
 let _keystrokeMap = {};
 let _staticInfoMap = {};
+
+// batch offline payloads in 50. backend has a 100k body limit
+const batch_limit = 50;
 
 export class KpmController {
     private static instance: KpmController;
@@ -560,9 +564,17 @@ export class KpmController {
         return keystrokeCount;
     }
 
-    public async gatherAllCodingData() {
+    /**
+     * This will send the keystrokes batch data along with returning all of the gathered keystrokes.
+     * If track ends, it will also request to send the current keystrokes. The 30 minute timer will
+     * not request to send the current keystrokes as those will be used if a track is currently playing.
+     * @param sendCurrentKeystrokes
+     */
+    public async processOfflineKeystrokes(sendCurrentKeystrokes = false) {
         let payloads = [];
-        await this.sendKeystrokeDataIntervalHandler();
+        if (sendCurrentKeystrokes) {
+            await this.sendKeystrokeDataIntervalHandler();
+        }
         try {
             const file = getMusicSessionDataStoreFile();
             if (fs.existsSync(file)) {
@@ -588,6 +600,18 @@ export class KpmController {
                         .filter(item => item);
 
                     // build the aggregated payload
+                    // send 50 at a time
+                    let batch = [];
+                    for (let i = 0; i < payloads.length; i++) {
+                        if (batch.length >= batch_limit) {
+                            await sendBatchPayload(batch);
+                            batch = [];
+                        }
+                        batch.push(payloads[i]);
+                    }
+                    if (batch.length > 0) {
+                        await sendBatchPayload(batch);
+                    }
                 }
             } else {
                 console.log("No keystroke data to send with the song session");

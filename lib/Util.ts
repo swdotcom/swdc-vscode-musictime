@@ -11,7 +11,6 @@ import {
     fetchSessionSummaryInfo,
     getToggleFileEventLoggingState
 } from "./DataController";
-import { incrementSessionSummaryData } from "./OfflineManager";
 const moment = require("moment-timezone");
 
 const open = require("open");
@@ -61,20 +60,6 @@ export function getPluginType() {
 export function getVersion() {
     const extension = extensions.getExtension(MUSIC_TIME_EXT_ID);
     return extension.packageJSON.version;
-}
-
-export function isCodeTimeMetricsFocused() {
-    if (!codeTimeMetricsIsFocused) {
-        // check if it's the only one in the editor. the other files
-        // may have been closed
-        if (
-            getNumberOfTextDocumentsOpen() === 1 &&
-            isFileOpen(getDashboardFile())
-        ) {
-            codeTimeMetricsIsFocused = true;
-        }
-    }
-    return codeTimeMetricsIsFocused;
 }
 
 export function updateCodeTimeMetricsFileFocus(isFocused) {

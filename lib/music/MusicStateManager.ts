@@ -75,9 +75,10 @@ export class MusicStateManager {
     }
 
     private getChangeStatus(playingTrack: Track): any {
-        const existingTrackId = this.existingTrack
-            ? this.existingTrack.id || null
-            : null;
+        const existingTrackId =
+            this.existingTrack && this.existingTrack.id
+                ? this.existingTrack.id || null
+                : null;
         const playingTrackId = playingTrack.id || null;
         const existingTrackState = this.existingTrack
             ? this.existingTrack.state || TrackStatus.NotAssigned
@@ -97,7 +98,8 @@ export class MusicStateManager {
         // existing track should be existing and playing
 
         const tracksMatch = existingTrackId === playingTrackId;
-        const endPrevTrack = !tracksMatch && existingTrackId ? true : false;
+        const endPrevTrack =
+            !tracksMatch && existingTrackId && playingTrackId ? true : false;
 
         let playerName = this.musicMgr.currentPlayerName;
         let playerNameChanged = false;
@@ -345,7 +347,9 @@ export class MusicStateManager {
     }
 
     public async gatherCodingDataAndSendSongSession(songSession) {
-        const payloads = await KpmController.getInstance().gatherAllCodingData();
+        const payloads = await KpmController.getInstance().processOfflineKeystrokes(
+            true /*sendCurrentKeystrokes*/
+        );
         const initialValue = {
             add: 0,
             paste: 0,
