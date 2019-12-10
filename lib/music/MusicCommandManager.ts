@@ -211,6 +211,9 @@ export class MusicCommandManager {
         });
     }
 
+    /**
+     * Show launch is when the user needs to connect to spotify
+     */
     private static async showLaunchPlayerControls() {
         if (!this._buttons || this._buttons.length === 0) {
             return;

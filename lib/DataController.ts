@@ -330,11 +330,13 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
             `Successfully connected to Spotify. Loading playlists.`
         );
 
+        const likedSongs: Track[] = await getSpotifyLikedSongs();
+
         // send the "Liked Songs" to software app so we can be in sync
-        await seedLikedSongsToSoftware();
+        await seedLikedSongsToSoftware(likedSongs);
 
         // send the top spotify songs from the users playlists to help seed song sessions
-        await seedTopSpotifySongs();
+        await seedTopSpotifySongs(likedSongs);
 
         setTimeout(() => {
             musicMgr.clearSpotify();
@@ -343,11 +345,10 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
     }
 }
 
-async function seedLikedSongsToSoftware() {
+async function seedLikedSongsToSoftware(likedSongs) {
     // send the "Liked Songs" to software app so we can be in sync
-    let tracks: Track[] = await getSpotifyLikedSongs();
-    if (tracks && tracks.length > 0) {
-        let uris = tracks.map(track => {
+    if (likedSongs && likedSongs.length > 0) {
+        let uris = likedSongs.map(track => {
             return track.uri;
         });
         const api = `/music/liked/tracks?type=spotify`;
@@ -355,7 +356,7 @@ async function seedLikedSongsToSoftware() {
     }
 }
 
-async function seedTopSpotifySongs() {
+async function seedTopSpotifySongs(likedSongs) {
     /**
      * album:Object {album_type: "ALBUM", artists: Array(1), available_markets: Array(79), …}
     artists:Array(1) [Object]
@@ -388,10 +389,9 @@ async function seedTopSpotifySongs() {
         repoFileCount: 0,
         repoContributorCount: 0
     };
-    let tracks: Track[] = await getTopSpotifyTracks();
-    if (tracks && tracks.length > 0) {
+    if (likedSongs && likedSongs.length > 0) {
         // add the empty file metrics
-        const tracksToSave = tracks.map(track => {
+        const tracksToSave = likedSongs.map(track => {
             return {
                 ...track,
                 ...fileMetrics

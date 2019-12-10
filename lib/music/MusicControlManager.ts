@@ -12,8 +12,7 @@ import {
     playTrackInContext,
     playTrack,
     saveToSpotifyLiked,
-    removeFromSpotifyLiked,
-    requiresSpotifyAccessInfo
+    removeFromSpotifyLiked
 } from "cody-music";
 import { window, ViewColumn, Uri, commands } from "vscode";
 import { MusicCommandManager } from "./MusicCommandManager";
@@ -354,6 +353,19 @@ export class MusicControlManager {
             }
         }
 
+        showQuickPick(menuOptions);
+    }
+
+    showRecommendationsMenu() {
+        let menuOptions = {
+            items: []
+        };
+        menuOptions.items.push({
+            label: "$(triangle-right) Hold On, Loud Forest",
+            detail: "Recommendation based on night time coding",
+            url: null,
+            command: "musictime.play"
+        });
         showQuickPick(menuOptions);
     }
 }
