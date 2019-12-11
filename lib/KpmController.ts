@@ -15,14 +15,15 @@ import {
     getFileType,
     logIt,
     deleteFile,
-    getMusicSessionDataStoreFile
+    getMusicSessionDataStoreFile,
+    codeTimeExtInstalled
 } from "./Util";
 import {
     getRepoContributorInfo,
     getRepoFileCount,
     getFileContributorCount
 } from "./KpmRepoManager";
-import { sendBatchPayload } from "./DataController";
+import { sendBatchPayload, serverIsAvailable } from "./DataController";
 const fs = require("fs");
 
 const NO_PROJ_NAME = "Unnamed";
@@ -58,7 +59,9 @@ export class KpmController {
         //
         // Go through all keystroke count objects found in the map and send
         // the ones that have data (data is greater than 1), then clear the map
+        // And only if code time is not instaled, post the data
         //
+        let latestPayloads = [];
         if (_keystrokeMap && !isEmptyObj(_keystrokeMap)) {
             let keys = Object.keys(_keystrokeMap);
             // use a normal for loop since we have an await within the loop
@@ -72,7 +75,11 @@ export class KpmController {
                     // post the payload offline until the batch interval sends it out
 
                     // post it to the file right away so the song session can obtain it
-                    await keystrokeCount.postData();
+                    if (!codeTimeExtInstalled()) {
+                        await keystrokeCount.postData();
+                    } else {
+                        latestPayloads.push(keystrokeCount.getLatestPayload());
+                    }
                 }
             }
         }
@@ -82,6 +89,8 @@ export class KpmController {
 
         // clear out the static info map
         _staticInfoMap = {};
+
+        return latestPayloads;
     }
 
     /**
@@ -89,7 +98,7 @@ export class KpmController {
      * @param event
      */
     private async _onCloseHandler(event) {
-        if (!event || !window.state.focused) {
+        if (!event) {
             return;
         }
         const staticInfo = await this.getStaticEventInfo(event);
@@ -122,7 +131,7 @@ export class KpmController {
      * @param event
      */
     private async _onOpenHandler(event) {
-        if (!event || !window.state.focused) {
+        if (!event) {
             return;
         }
         const staticInfo = await this.getStaticEventInfo(event);
@@ -157,7 +166,8 @@ export class KpmController {
      * @param event
      */
     private async _onEventHandler(event) {
-        if (!window.state.focused) {
+        if (!event) {
+            // code time is installed, let it gather the event data
             return;
         }
         const staticInfo = await this.getStaticEventInfo(event);
@@ -430,40 +440,6 @@ export class KpmController {
         return true;
     }
 
-    public buildBootstrapKpmPayload() {
-        let rootPath = NO_PROJ_NAME;
-        let fileName = "Untitled";
-        let name = UNTITLED_WORKSPACE;
-
-        // send the code time bootstrap payload
-        let keystrokeCount = new KpmDataManager({
-            // project.directory is used as an object key, must be string
-            directory: rootPath,
-            name,
-            identifier: "",
-            resource: {}
-        });
-        keystrokeCount["keystrokes"] = 1;
-        let fileInfo = {
-            add: 1,
-            netkeys: 0,
-            paste: 0,
-            open: 0,
-            close: 0,
-            delete: 0,
-            length: 0,
-            lines: 0,
-            linesAdded: 0,
-            linesRemoved: 0,
-            syntax: "",
-            fileAgeDays: 0,
-            repoFileContributorCount: 0
-        };
-        keystrokeCount.source[fileName] = fileInfo;
-
-        setTimeout(() => keystrokeCount.postData(), 0);
-    }
-
     private async initializeKeystrokesCount(filename, rootPath) {
         // the rootPath (directory) is used as the map key, must be a string
         rootPath = rootPath || NO_PROJ_NAME;
@@ -571,9 +547,14 @@ export class KpmController {
      * @param sendCurrentKeystrokes
      */
     public async processOfflineKeystrokes(sendCurrentKeystrokes = false) {
+        const isonline = await serverIsAvailable();
+        if (!isonline) {
+            return;
+        }
         let payloads = [];
-        if (sendCurrentKeystrokes) {
-            await this.sendKeystrokeDataIntervalHandler();
+        let latestPayloads = [];
+        if (!codeTimeExtInstalled() && sendCurrentKeystrokes) {
+            latestPayloads = await this.sendKeystrokeDataIntervalHandler();
         }
         try {
             const file = getMusicSessionDataStoreFile();
@@ -618,6 +599,13 @@ export class KpmController {
             }
         } catch (e) {
             logIt(`Unable to aggregate music session data: ${e.message}`);
+        }
+
+        if (latestPayloads.length > 0) {
+            // code time is installed since we have latest payloads
+            latestPayloads.forEach(payload => {
+                payloads.push(latestPayloads);
+            });
         }
 
         return payloads;

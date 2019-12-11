@@ -70,11 +70,16 @@ export class KpmDataManager {
         return foundKpmData;
     }
 
+    getLatestPayload() {
+        const payload = JSON.parse(JSON.stringify(this));
+        return payload;
+    }
+
     /**
      * send the payload
      */
     postData() {
-        const payload = JSON.parse(JSON.stringify(this));
+        const payload = this.getLatestPayload();
 
         // set the end time for the session
         let nowTimes = getNowTimes();
