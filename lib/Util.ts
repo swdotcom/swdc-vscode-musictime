@@ -11,6 +11,7 @@ import {
     fetchSessionSummaryInfo,
     getToggleFileEventLoggingState
 } from "./DataController";
+import { PlaylistItem, TrackStatus } from "cody-music";
 const moment = require("moment-timezone");
 
 const open = require("open");
@@ -18,6 +19,7 @@ const { exec } = require("child_process");
 const fs = require("fs");
 const os = require("os");
 const crypto = require("crypto");
+import * as path from "path";
 
 export const alpha = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 export const DASHBOARD_LABEL_WIDTH = 25;
@@ -831,4 +833,63 @@ export function getFileType(fileName: string) {
         fileType = fileName.substring(lastDotIdx + 1);
     }
     return fileType;
+}
+
+const resourcePath: string = path.join(__filename, "..", "..", "resources");
+
+export function getPlaylistIcon(treeItem: PlaylistItem) {
+    const stateVal =
+        treeItem.state !== TrackStatus.Playing ? "notplaying" : "playing";
+    this.contextValue = "";
+
+    if (treeItem.tag === "action") {
+        this.contextValue = "treeitem-action";
+    } else if (
+        treeItem["itemType"] === "track" ||
+        treeItem["itemType"] === "playlist"
+    ) {
+        if (treeItem.tag === "paw") {
+            // we use the paw to show as the music time playlist, but
+            // make sure the contextValue has spotify in it
+            this.contextValue = `spotify-${treeItem.type}-item-${stateVal}`;
+        } else {
+            this.contextValue = `${treeItem.tag}-${treeItem.type}-item-${stateVal}`;
+        }
+    }
+
+    let lightPath = null;
+    let darkPath = null;
+
+    if (treeItem.tag.includes("spotify") || treeItem.type.includes("spotify")) {
+        const spotifySvg =
+            treeItem.tag === "disabled"
+                ? "spotify-disconnected.svg"
+                : "spotify-logo.svg";
+        lightPath = path.join(resourcePath, "light", spotifySvg);
+        darkPath = path.join(resourcePath, "dark", spotifySvg);
+    } else if (treeItem.tag === "itunes" || treeItem.type === "itunes") {
+        lightPath = path.join(resourcePath, "light", "itunes-logo.svg");
+        darkPath = path.join(resourcePath, "dark", "itunes-logo.svg");
+    } else if (treeItem.tag === "paw") {
+        lightPath = path.join(resourcePath, "light", "sw-paw-circle.svg");
+        darkPath = path.join(resourcePath, "dark", "sw-paw-circle.svg");
+    } else if (treeItem.type === "connected") {
+        lightPath = path.join(resourcePath, "light", "radio-tower.svg");
+        darkPath = path.join(resourcePath, "dark", "radio-tower.svg");
+    } else if (treeItem.type === "offline") {
+        lightPath = path.join(resourcePath, "light", "nowifi.svg");
+        darkPath = path.join(resourcePath, "dark", "nowifi.svg");
+    } else if (treeItem.type === "action" || treeItem.tag === "action") {
+        lightPath = path.join(resourcePath, "light", "gear.svg");
+        darkPath = path.join(resourcePath, "dark", "gear.svg");
+    } else if (treeItem.type === "login" || treeItem.tag === "login") {
+        lightPath = path.join(resourcePath, "light", "sign-in.svg");
+        darkPath = path.join(resourcePath, "dark", "sign-in.svg");
+    } else if (treeItem.type === "divider") {
+        lightPath = path.join(resourcePath, "light", "blue-line-96.png");
+        darkPath = path.join(resourcePath, "dark", "blue-line-96.png");
+    } else {
+        return null;
+    }
+    return { lightPath, darkPath };
 }

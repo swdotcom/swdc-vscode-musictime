@@ -4,6 +4,7 @@ import { TrackStatus, Track, PlaylistItem, PlayerName } from "cody-music";
 import { MusicPlaylistProvider } from "./MusicPlaylistProvider";
 import { MusicManager } from "./MusicManager";
 import { serverIsAvailable } from "../DataController";
+import { MusicRecommendationProvider } from "./MusicRecommendationProvider";
 
 export interface Button {
     /**
@@ -31,6 +32,7 @@ export class MusicCommandManager {
     private static _buttons: Button[] = [];
     private static _hideSongTimeout = null;
     private static _treeProvider: MusicPlaylistProvider;
+    private static _recTreeProvider: MusicRecommendationProvider;
 
     private constructor() {
         // private to prevent non-singleton usage
@@ -38,6 +40,10 @@ export class MusicCommandManager {
 
     public static setTreeProvider(provider: MusicPlaylistProvider) {
         this._treeProvider = provider;
+    }
+
+    public static setRecTreeProvider(provider: MusicRecommendationProvider) {
+        this._recTreeProvider = provider;
     }
 
     /**

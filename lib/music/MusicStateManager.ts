@@ -370,7 +370,11 @@ export class MusicStateManager {
             repoFileCount: 0,
             repoContributorCount: 0
         };
-        const songData = this.buildAggregateData(payloads, initialValue);
+        const songData = this.buildAggregateData(
+            payloads,
+            initialValue,
+            songSession.start
+        );
 
         songSession = {
             ...songSession,
@@ -403,7 +407,7 @@ export class MusicStateManager {
         repoFileCount: 0,
         repoContributorCount: 0,
      */
-    private buildAggregateData(payloads, initialValue) {
+    private buildAggregateData(payloads, initialValue, start) {
         const numerics = [
             "add",
             "paste",
@@ -417,7 +421,14 @@ export class MusicStateManager {
         ];
         let totalKeystrokes = 0;
         if (payloads && payloads.length > 0) {
-            payloads.forEach(element => {
+            for (let i = 0; i < payloads.length; i++) {
+                const element = payloads[i];
+
+                // if the file's end time is before the song session start, ignore it
+                if (element.end < start) {
+                    continue;
+                }
+
                 // set repoContributorCount and repoFileCount
                 // if not already set
                 if (initialValue.repoFileCount === 0) {
@@ -480,7 +491,7 @@ export class MusicStateManager {
                         });
                     }
                 }
-            });
+            }
         }
         initialValue.keystrokes = totalKeystrokes;
         return initialValue;

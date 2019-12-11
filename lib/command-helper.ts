@@ -20,6 +20,7 @@ import { MusicCommandManager } from "./music/MusicCommandManager";
 import { SocialShareManager } from "./social/SocialShareManager";
 import { connectSlack } from "./slack/SlackControlManager";
 import { MusicManager } from "./music/MusicManager";
+import { MusicRecommendationProvider } from "./music/MusicRecommendationProvider";
 
 export function createCommands(): {
     dispose: () => void;
@@ -41,6 +42,19 @@ export function createCommands(): {
     MusicCommandManager.setTreeProvider(treePlaylistProvider);
     treePlaylistProvider.bindView(playlistTreeView);
     cmds.push(connectPlaylistTreeView(playlistTreeView));
+
+    // recommended tracks tree view
+    // const recTreePlaylistProvider = new MusicRecommendationProvider();
+    // const recPlaylistTreeView: TreeView<PlaylistItem> = window.createTreeView(
+    //     "track-recommendations",
+    //     {
+    //         treeDataProvider: recTreePlaylistProvider,
+    //         showCollapseAll: false
+    //     }
+    // );
+    // MusicCommandManager.setRecTreeProvider(recTreePlaylistProvider);
+    // recTreePlaylistProvider.bindView(recPlaylistTreeView);
+    // cmds.push(connectPlaylistTreeView(recPlaylistTreeView));
 
     const nextCmd = commands.registerCommand("musictime.next", () => {
         controller.nextSong();

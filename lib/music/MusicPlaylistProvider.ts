@@ -32,7 +32,7 @@ import {
 } from "../Constants";
 import { MusicManager } from "./MusicManager";
 import { MusicCommandManager } from "./MusicCommandManager";
-import { logIt, isMac } from "../Util";
+import { logIt, isMac, getPlaylistIcon } from "../Util";
 
 /**
  * Create the playlist tree item (root or leaf)
@@ -48,32 +48,6 @@ const createPlaylistTreeItem = (
 
 let checkSpotifyStateTimeout = null;
 let initializedPlaylist = false;
-
-export const checkSpotifySongState = (missingDevices: boolean) => {
-    if (checkSpotifyStateTimeout) {
-        clearTimeout(checkSpotifyStateTimeout);
-    }
-    checkSpotifyStateTimeout = setTimeout(async () => {
-        const musicMgr: MusicManager = MusicManager.getInstance();
-        // make sure we get that song, if not then they may not be logged in
-        let playingTrack = musicMgr.runningTrack;
-
-        if (
-            !playingTrack ||
-            (playingTrack.state !== TrackStatus.Paused &&
-                playingTrack.state !== TrackStatus.Playing)
-        ) {
-            // they're not logged in
-            window.showInformationMessage(
-                "We're unable to play the selected Spotify track. Please make sure you are logged in to your account. You will need the Spotify desktop app if you have a non-premium Spotify account.",
-                ...[OK_LABEL]
-            );
-        } else if (missingDevices) {
-            // refresh the playlist
-            commands.executeCommand("musictime.refreshPlaylist");
-        }
-    }, 8000);
-};
 
 export const playSelectedItem = async (
     playlistItem: PlaylistItem,
@@ -411,14 +385,6 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
  * based on that value.
  */
 export class PlaylistTreeItem extends TreeItem {
-    private resourcePath: string = path.join(
-        __filename,
-        "..",
-        "..",
-        "..",
-        "resources"
-    );
-
     constructor(
         private readonly treeItem: PlaylistItem,
         public readonly collapsibleState: TreeItemCollapsibleState,
@@ -426,125 +392,13 @@ export class PlaylistTreeItem extends TreeItem {
     ) {
         super(treeItem.name, collapsibleState);
 
-        // set the track's context value to the playlist item state
-        // if it's a track that's playing or paused it will show the appropriate button.
-        // if it's a playlist folder that has a track that is playing or paused it will show the appropriate button
-        const stateVal =
-            treeItem.state !== TrackStatus.Playing ? "notplaying" : "playing";
-        this.contextValue = "";
-        if (treeItem.tag === "action") {
-            this.contextValue = "treeitem-action";
-        } else if (
-            treeItem["itemType"] === "track" ||
-            treeItem["itemType"] === "playlist"
-        ) {
-            if (treeItem.tag === "paw") {
-                // we use the paw to show as the music time playlist, but
-                // make sure the contextValue has spotify in it
-                this.contextValue = `spotify-${treeItem.type}-item-${stateVal}`;
-            } else {
-                this.contextValue = `${treeItem.tag}-${treeItem.type}-item-${stateVal}`;
-            }
-        }
-
-        if (
-            treeItem.tag.includes("spotify") ||
-            treeItem.type.includes("spotify")
-        ) {
-            const spotifySvg =
-                treeItem.tag === "disabled"
-                    ? "spotify-disconnected.svg"
-                    : "spotify-logo.svg";
-            this.iconPath.light = path.join(
-                this.resourcePath,
-                "light",
-                spotifySvg
-            );
-            this.iconPath.dark = path.join(
-                this.resourcePath,
-                "dark",
-                spotifySvg
-            );
-        } else if (treeItem.tag === "itunes" || treeItem.type === "itunes") {
-            this.iconPath.light = path.join(
-                this.resourcePath,
-                "light",
-                "itunes-logo.svg"
-            );
-            this.iconPath.dark = path.join(
-                this.resourcePath,
-                "dark",
-                "itunes-logo.svg"
-            );
-        } else if (treeItem.tag === "paw") {
-            this.iconPath.light = path.join(
-                this.resourcePath,
-                "light",
-                "sw-paw-circle.svg"
-            );
-            this.iconPath.dark = path.join(
-                this.resourcePath,
-                "dark",
-                "sw-paw-circle.svg"
-            );
-        } else if (treeItem.type === "connected") {
-            this.iconPath.light = path.join(
-                this.resourcePath,
-                "light",
-                "radio-tower.svg"
-            );
-            this.iconPath.dark = path.join(
-                this.resourcePath,
-                "dark",
-                "radio-tower.svg"
-            );
-        } else if (treeItem.type === "offline") {
-            this.iconPath.light = path.join(
-                this.resourcePath,
-                "light",
-                "nowifi.svg"
-            );
-            this.iconPath.dark = path.join(
-                this.resourcePath,
-                "dark",
-                "nowifi.svg"
-            );
-        } else if (treeItem.type === "action" || treeItem.tag === "action") {
-            this.iconPath.light = path.join(
-                this.resourcePath,
-                "light",
-                "gear.svg"
-            );
-            this.iconPath.dark = path.join(
-                this.resourcePath,
-                "dark",
-                "gear.svg"
-            );
-        } else if (treeItem.type === "login" || treeItem.tag === "login") {
-            this.iconPath.light = path.join(
-                this.resourcePath,
-                "light",
-                "sign-in.svg"
-            );
-            this.iconPath.dark = path.join(
-                this.resourcePath,
-                "dark",
-                "sign-in.svg"
-            );
-        } else if (treeItem.type === "divider") {
-            this.iconPath.light = path.join(
-                this.resourcePath,
-                "light",
-                "blue-line-96.png"
-            );
-            this.iconPath.dark = path.join(
-                this.resourcePath,
-                "dark",
-                "blue-line-96.png"
-            );
-        } else {
+        const pathIcons = getPlaylistIcon(treeItem);
+        if (!pathIcons) {
             // no matching tag, remove the tree item icon path
             delete this.iconPath;
+        } else {
+            this.iconPath.light = pathIcons.lightPath;
+            this.iconPath.dark = pathIcons.darkPath;
         }
     }
 
