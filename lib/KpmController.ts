@@ -604,7 +604,7 @@ export class KpmController {
         if (latestPayloads.length > 0) {
             // code time is installed since we have latest payloads
             latestPayloads.forEach(payload => {
-                payloads.push(latestPayloads);
+                payloads.push(payload);
             });
         }
 
