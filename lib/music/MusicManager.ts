@@ -525,9 +525,9 @@ export class MusicManager {
 
                     // refresh the recommendation tracks
                     if (this.recommendationTracks.length === 0) {
-                        // commands.executeCommand(
-                        //     "musictime.refreshRecommendations"
-                        // );
+                        commands.executeCommand(
+                            "musictime.refreshRecommendations"
+                        );
                     }
                 }
             }
@@ -1060,7 +1060,7 @@ export class MusicManager {
      */
     async syncUsersWeeklyTopSongs() {
         const response = await softwareGet(
-            "/music/playlist/favorites",
+            "/music/recommendations?limit=40",
             getItem("jwt")
         );
 
@@ -1149,7 +1149,12 @@ export class MusicManager {
             // list of [{trackId, artist, name}...]
             if (this._userTopSongs && this._userTopSongs.length > 0) {
                 let tracksToAdd: string[] = this._userTopSongs.map(item => {
-                    return item.trackId;
+                    if (item.uri) {
+                        return item.uri;
+                    } else if (item.trackId) {
+                        return item.trackId;
+                    }
+                    return item.id;
                 });
 
                 if (!customPlaylist) {

@@ -14,7 +14,9 @@ import {
     PlaylistItem,
     getRecommendationsForTracks,
     Track,
-    playSpotifyMacDesktopTrack
+    playSpotifyMacDesktopTrack,
+    PlaylistTrackInfo,
+    PlayerType
 } from "cody-music";
 import { logIt, getPlaylistIcon } from "../Util";
 import { MusicManager } from "./MusicManager";
@@ -51,13 +53,14 @@ export const getRecommendedTracks = async (trackIds, limit = 10) => {
                     0
                 );
                 item.tag = "spotify";
-                item.type = "action";
+                item.type = "recommendation";
                 items.push(item);
             }
         }
     } catch (e) {
         //
     }
+
     return items;
 };
 
