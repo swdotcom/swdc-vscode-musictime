@@ -20,7 +20,10 @@ import { MusicCommandManager } from "./music/MusicCommandManager";
 import { SocialShareManager } from "./social/SocialShareManager";
 import { connectSlack } from "./slack/SlackControlManager";
 import { MusicManager } from "./music/MusicManager";
-import { MusicRecommendationProvider } from "./music/MusicRecommendationProvider";
+import {
+    MusicRecommendationProvider,
+    connectRecommendationPlaylistTreeView
+} from "./music/MusicRecommendationProvider";
 
 export function createCommands(): {
     dispose: () => void;
@@ -52,9 +55,8 @@ export function createCommands(): {
     //         showCollapseAll: false
     //     }
     // );
-    // MusicCommandManager.setRecTreeProvider(recTreePlaylistProvider);
     // recTreePlaylistProvider.bindView(recPlaylistTreeView);
-    // cmds.push(connectPlaylistTreeView(recPlaylistTreeView));
+    // cmds.push(connectRecommendationPlaylistTreeView(recPlaylistTreeView));
 
     const nextCmd = commands.registerCommand("musictime.next", () => {
         controller.nextSong();
@@ -214,6 +216,13 @@ export function createCommands(): {
         }
     );
     cmds.push(refreshPlaylistCommand);
+
+    // const refreshRecPlaylistCommand = commands.registerCommand(
+    //     "musictime.refreshRecommendations",
+    //     async () => {
+    //         recTreePlaylistProvider.refresh();
+    //     }
+    // );
 
     const launchSpotifyCommand = commands.registerCommand(
         "musictime.launchSpotify",

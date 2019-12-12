@@ -840,7 +840,7 @@ const resourcePath: string = path.join(__filename, "..", "..", "resources");
 export function getPlaylistIcon(treeItem: PlaylistItem) {
     const stateVal =
         treeItem.state !== TrackStatus.Playing ? "notplaying" : "playing";
-    this.contextValue = "";
+    let contextValue = "";
 
     if (treeItem.tag === "action") {
         this.contextValue = "treeitem-action";
@@ -851,9 +851,9 @@ export function getPlaylistIcon(treeItem: PlaylistItem) {
         if (treeItem.tag === "paw") {
             // we use the paw to show as the music time playlist, but
             // make sure the contextValue has spotify in it
-            this.contextValue = `spotify-${treeItem.type}-item-${stateVal}`;
+            contextValue = `spotify-${treeItem.type}-item-${stateVal}`;
         } else {
-            this.contextValue = `${treeItem.tag}-${treeItem.type}-item-${stateVal}`;
+            contextValue = `${treeItem.tag}-${treeItem.type}-item-${stateVal}`;
         }
     }
 
@@ -888,8 +888,6 @@ export function getPlaylistIcon(treeItem: PlaylistItem) {
     } else if (treeItem.type === "divider") {
         lightPath = path.join(resourcePath, "light", "blue-line-96.png");
         darkPath = path.join(resourcePath, "dark", "blue-line-96.png");
-    } else {
-        return null;
     }
-    return { lightPath, darkPath };
+    return { lightPath, darkPath, contextValue };
 }

@@ -153,6 +153,14 @@ export class MusicManager {
         this._sortAlphabetically = sortAlpha;
     }
 
+    get spotifyLikedSongs() {
+        return this._spotifyLikedSongs;
+    }
+
+    set spotifyLikedSongs(likedSongs: Track[]) {
+        this._spotifyLikedSongs = likedSongs;
+    }
+
     /**
      * Get the current player: spotify-web or itunes
      */
@@ -495,12 +503,13 @@ export class MusicManager {
             // add Liked Songs folder within the software playlist section
             if (!needsSpotifyAccess && allowSpotifyPlaylistFetch) {
                 // only add the "Liked Songs" playlist if there are tracks found in that playlist
-                this._spotifyLikedSongs = await getSpotifyLikedSongs();
+                this.spotifyLikedSongs = await getSpotifyLikedSongs();
                 if (
-                    this._spotifyLikedSongs &&
-                    this._spotifyLikedSongs.length > 0
+                    this.spotifyLikedSongs &&
+                    this.spotifyLikedSongs.length > 0
                 ) {
                     items.push(this.getSpotifyLikedPlaylistFolder());
+                    // commands.executeCommand("musictime.refreshRecommendations");
                 }
             }
 
@@ -863,6 +872,7 @@ export class MusicManager {
         playlistItem.artist = track.artist;
         playlistItem.playerType = track.playerType;
         playlistItem.itemType = "track";
+
         delete playlistItem.tracks;
 
         if (track.id === this._runningTrack.id) {

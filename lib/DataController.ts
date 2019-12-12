@@ -225,7 +225,7 @@ export async function getMusicTimeUserStatus(serverIsOnline) {
                         // update the spotify access info if the auth matches
                         if (auth.type === "spotify" && auth.access_token) {
                             // update spotify access info
-                            MusicManager.getInstance().updateSpotifyAccessInfo(
+                            await MusicManager.getInstance().updateSpotifyAccessInfo(
                                 auth
                             );
                             break;
@@ -313,6 +313,7 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
         );
 
         const likedSongs: Track[] = await getSpotifyLikedSongs();
+        musicMgr.spotifyLikedSongs = likedSongs;
 
         // send the "Liked Songs" to software app so we can be in sync
         await seedLikedSongsToSoftware(likedSongs);

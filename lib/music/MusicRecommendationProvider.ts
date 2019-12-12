@@ -10,9 +10,16 @@ import {
     commands
 } from "vscode";
 import * as path from "path";
-import { PlaylistItem, TrackStatus } from "cody-music";
+import {
+    PlaylistItem,
+    TrackStatus,
+    getRecommendationsForTracks,
+    Track,
+    playSpotifyMacDesktopTrack
+} from "cody-music";
 import { RecommendationManager } from "./RecommendationManager";
 import { logIt, getPlaylistIcon } from "../Util";
+import { MusicManager } from "./MusicManager";
 
 /**
  * Create the playlist tree item (root or leaf)
@@ -26,10 +33,41 @@ const createPlaylistTreeItem = (
     return new PlaylistTreeItem(p, cstate);
 };
 
+export const getRecommendedTracks = async (trackIds, limit = 10) => {
+    let items: PlaylistItem[] = [];
+    // only takes Up to 5
+    trackIds = trackIds.splice(0, 5);
+    try {
+        const tracks: Track[] = await getRecommendationsForTracks(
+            trackIds,
+            limit,
+            "" /*market*/,
+            10 /*min_popularity*/
+        );
+        // turn the tracks into playlist item
+        if (tracks && tracks.length > 0) {
+            for (let i = 0; i < tracks.length; i++) {
+                const track: Track = tracks[i];
+                const item: PlaylistItem = MusicManager.getInstance().createPlaylistItemFromTrack(
+                    track,
+                    0
+                );
+                item.tag = "spotify";
+                items.push(item);
+            }
+        }
+    } catch (e) {
+        //
+    }
+    return items;
+};
+
 /**
  * Handles the playlist onDidChangeSelection event
  */
-export const connectPlaylistTreeView = (view: TreeView<PlaylistItem>) => {
+export const connectRecommendationPlaylistTreeView = (
+    view: TreeView<PlaylistItem>
+) => {
     // view is {selection: Array[n], visible, message}
     return Disposable.from(
         // e is {selection: Array[n]}
@@ -49,10 +87,11 @@ export const connectPlaylistTreeView = (view: TreeView<PlaylistItem>) => {
                 return;
             }
 
-            const isExpand = playlistItem.type === "playlist" ? true : false;
+            // const isExpand = playlistItem.type === "playlist" ? true : false;
 
             // play it
             // playSelectedItem(playlistItem, isExpand);
+            playSpotifyMacDesktopTrack(playlistItem.id);
         }),
         view.onDidChangeVisibility(e => {
             if (e.visible) {
@@ -131,47 +170,21 @@ export class MusicRecommendationProvider
     }
 
     getTreeItem(p: PlaylistItem): PlaylistTreeItem {
-        // let treeItem: PlaylistTreeItem = null;
-        // if (p.type === "playlist") {
-        //     // it's a track parent (playlist)
-        //     if (p && p.tracks && p.tracks["total"] && p.tracks["total"] > 0) {
-        //         const folderState: TreeItemCollapsibleState = this.isTrackInPlaylistRunning(
-        //             p
-        //         )
-        //             ? TreeItemCollapsibleState.Expanded
-        //             : TreeItemCollapsibleState.Collapsed;
-        //         return createPlaylistTreeItem(p, folderState);
-        //     }
-        //     treeItem = createPlaylistTreeItem(p, TreeItemCollapsibleState.None);
-        // } else {
-        //     // it's a track or a title
-        //     treeItem = createPlaylistTreeItem(p, TreeItemCollapsibleState.None);
-        // }
-
-        // return treeItem;
-        return null;
+        const treeItem: PlaylistTreeItem = createPlaylistTreeItem(
+            p,
+            TreeItemCollapsibleState.None
+        );
+        return treeItem;
     }
 
     async getChildren(element?: PlaylistItem): Promise<PlaylistItem[]> {
-        // const musicMgr: MusicManager = MusicManager.getInstance();
-
-        // if (element) {
-        //     // return the playlist tracks
-        //     let tracks: PlaylistItem[] = await musicMgr.getPlaylistItemTracksForPlaylistId(
-        //         element.id
-        //     );
-        //     return tracks;
-        // } else {
-        //     // get the top level playlist parents
-        //     let playlistChildren: PlaylistItem[] = musicMgr.currentPlaylists;
-        //     if (!playlistChildren || playlistChildren.length === 0) {
-        //         // try again if we've just initialized the plugin
-        //         await musicMgr.refreshPlaylists();
-        //         playlistChildren = musicMgr.currentPlaylists;
-        //     }
-        //     return musicMgr.currentPlaylists;
-        // }
-        return null;
+        // get the 1st 6 tracks from the liked songs
+        const likedSongs: Track[] = MusicManager.getInstance()
+            .spotifyLikedSongs;
+        const trackIds = likedSongs.map((track: Track) => {
+            return track.id;
+        });
+        return getRecommendedTracks(trackIds, 10);
     }
 }
 
@@ -188,14 +201,15 @@ export class PlaylistTreeItem extends TreeItem {
     ) {
         super(treeItem.name, collapsibleState);
 
-        const pathIcons = getPlaylistIcon(treeItem);
-        if (!pathIcons) {
+        const { lightPath, darkPath, contextValue } = getPlaylistIcon(treeItem);
+        if (lightPath && darkPath) {
+            this.iconPath.light = lightPath;
+            this.iconPath.dark = darkPath;
+        } else {
             // no matching tag, remove the tree item icon path
             delete this.iconPath;
-        } else {
-            this.iconPath.light = pathIcons.lightPath;
-            this.iconPath.dark = pathIcons.darkPath;
         }
+        this.contextValue = contextValue;
     }
 
     get tooltip(): string {

@@ -26,7 +26,6 @@ import {
 import { MusicControlManager } from "./MusicControlManager";
 import {
     SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
-    OK_LABEL,
     NOT_NOW_LABEL,
     YES_LABEL
 } from "../Constants";
@@ -46,7 +45,6 @@ const createPlaylistTreeItem = (
     return new PlaylistTreeItem(p, cstate);
 };
 
-let checkSpotifyStateTimeout = null;
 let initializedPlaylist = false;
 
 export const playSelectedItem = async (
@@ -58,10 +56,9 @@ export const playSelectedItem = async (
 
     let playerName = musicMgr.getPlayerNameForPlayback();
     // this is another way to check if the player is running or not
-    let isRunning = await isSpotifyRunning();
     if (!isExpand && playerName !== PlayerName.ItunesDesktop && isMac()) {
         // const devices = await getSpotifyDevices();
-        let isRunning = await isSpotifyRunning();
+        const isRunning = await isSpotifyRunning();
 
         // ask to show the desktop if they're a premium user
         if (!isRunning && musicMgr.isSpotifyPremium()) {
@@ -392,14 +389,15 @@ export class PlaylistTreeItem extends TreeItem {
     ) {
         super(treeItem.name, collapsibleState);
 
-        const pathIcons = getPlaylistIcon(treeItem);
-        if (!pathIcons) {
+        const { lightPath, darkPath, contextValue } = getPlaylistIcon(treeItem);
+        if (lightPath && darkPath) {
+            this.iconPath.light = lightPath;
+            this.iconPath.dark = darkPath;
+        } else {
             // no matching tag, remove the tree item icon path
             delete this.iconPath;
-        } else {
-            this.iconPath.light = pathIcons.lightPath;
-            this.iconPath.dark = pathIcons.darkPath;
         }
+        this.contextValue = contextValue;
     }
 
     get tooltip(): string {
