@@ -18,7 +18,8 @@ import {
     getEditorSessionToken,
     logIt,
     getPluginId,
-    getOffsetSecends
+    getOffsetSecends,
+    storeMusicSessionPayload
 } from "./Util";
 import { getSpotifyLikedSongs, Track } from "cody-music";
 import { fetchCodeTimeMetricsDashboard } from "./MenuManager";
@@ -90,6 +91,8 @@ export async function sendBatchPayload(batch) {
  * send any music tracks
  */
 export async function sendMusicData(trackData) {
+    const serverIsOnline = await serverIsAvailable();
+
     if (trackData.available_markets) {
         delete trackData.available_markets;
     }
@@ -103,20 +106,26 @@ export async function sendMusicData(trackData) {
         delete trackData.href;
     }
 
-    logIt(`sending ${JSON.stringify(trackData)}`);
-    // add the "local_start", "start", and "end"
-    // POST the kpm to the PluginManager
-    let api = `/music/session`;
-    return softwarePost(api, trackData, getItem("jwt"))
-        .then(resp => {
-            if (!isResponseOk(resp)) {
+    if (serverIsOnline) {
+        logIt(`sending ${JSON.stringify(trackData)}`);
+
+        // add the "local_start", "start", and "end"
+        // POST the kpm to the PluginManager
+        let api = `/music/session`;
+        return softwarePost(api, trackData, getItem("jwt"))
+            .then(resp => {
+                if (!isResponseOk(resp)) {
+                    return { status: "fail" };
+                }
+                return { status: "ok" };
+            })
+            .catch(e => {
                 return { status: "fail" };
-            }
-            return { status: "ok" };
-        })
-        .catch(e => {
-            return { status: "fail" };
-        });
+            });
+    } else {
+        // store it
+        storeMusicSessionPayload(trackData);
+    }
 }
 
 /**
@@ -368,7 +377,7 @@ async function seedTopSpotifySongs(likedSongs) {
         pluginId: getPluginId(),
         os: getOs(),
         version: getVersion(),
-        source: {},
+        source: [],
         repoFileCount: 0,
         repoContributorCount: 0
     };
@@ -416,51 +425,4 @@ export async function sendHeartbeat(reason, serverIsOnline) {
             }
         });
     }
-}
-
-export async function fetchSessionSummaryInfo() {
-    // make sure we send the beginning of the day
-    let result = await getSessionSummaryStatus();
-
-    if (result.status === "OK") {
-        fetchCodeTimeMetricsDashboard(result.data);
-    }
-}
-
-export async function getSessionSummaryStatus() {
-    let sessionSummaryData = getSessionSummaryData();
-    let status = "OK";
-
-    // check if we need to get new dashboard data
-    if (isNewHour()) {
-        let serverIsOnline = await serverIsAvailable();
-        if (serverIsOnline) {
-            // Provides...
-            // data: { averageDailyKeystrokes:982.1339, averageDailyKpm:26, averageDailyMinutes:38,
-            // currentDayKeystrokes:8362, currentDayKpm:26, currentDayMinutes:332.99999999999983,
-            // currentSessionGoalPercent:0, dailyMinutesGoal:38, inFlow:true, lastUpdatedToday:true,
-            // latestPayloadTimestamp:1573050489, liveshareMinutes:null, timePercent:876, velocityPercent:100,
-            // volumePercent:851 }
-            const result = await softwareGet(
-                `/sessions/summary`,
-                getItem("jwt")
-            ).catch(err => {
-                return null;
-            });
-            if (isResponseOk(result) && result.data) {
-                // get the lastStart
-                const lastStart = sessionSummaryData.lastStart;
-                // update it from the app
-                sessionSummaryData = result.data;
-                sessionSummaryData.lastStart = lastStart;
-                // update the file
-                saveSessionSummaryToDisk(sessionSummaryData);
-            } else {
-                status = "NO_DATA";
-            }
-        }
-    }
-
-    updateStatusBarWithSummaryData();
-    return { data: sessionSummaryData, status };
 }

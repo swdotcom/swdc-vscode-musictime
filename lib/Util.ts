@@ -7,10 +7,7 @@ import {
     MUSIC_TIME_PLUGIN_ID,
     MUSIC_TIME_TYPE
 } from "./Constants";
-import {
-    fetchSessionSummaryInfo,
-    getToggleFileEventLoggingState
-} from "./DataController";
+import { getToggleFileEventLoggingState } from "./DataController";
 import { PlaylistItem, TrackStatus } from "cody-music";
 const moment = require("moment-timezone");
 
@@ -397,6 +394,16 @@ export function getMusicTimeMarkdownFile() {
     return file;
 }
 
+export function getMusicSessionFile() {
+    let file = getSoftwareDir();
+    if (isWindows()) {
+        file += "\\musicData.json";
+    } else {
+        file += "/musicData.json";
+    }
+    return file;
+}
+
 export function getSoftwareDir(autoCreate = true) {
     const homedir = os.homedir();
     let softwareDataDir = homedir;
@@ -441,16 +448,6 @@ export function getSoftwareDataStoreFile() {
         file += "\\data.json";
     } else {
         file += "/data.json";
-    }
-    return file;
-}
-
-export function getMusicSessionDataStoreFile() {
-    let file = getSoftwareDir();
-    if (isWindows()) {
-        file += "\\MusicSession.json";
-    } else {
-        file += "/MusicSession.json";
     }
     return file;
 }
@@ -582,15 +579,24 @@ export function getNowTimes() {
 }
 
 export function storePayload(payload) {
-    setTimeout(() => {
-        // update the statusbar
-        fetchSessionSummaryInfo();
-    }, 1000);
-
     // store the payload into the data.json file
-    const musicFile = getMusicSessionDataStoreFile();
+    const codetimeFile = getSoftwareDataStoreFile();
 
-    // also store the payload into the MusicSession.json file
+    // also store the payload into the data.json file
+    try {
+        fs.appendFileSync(codetimeFile, JSON.stringify(payload) + os.EOL);
+    } catch (err) {
+        logIt(
+            `Error appending to the code time data store file: ${err.message}`
+        );
+    }
+}
+
+export function storeMusicSessionPayload(payload) {
+    // store the payload into the data.json file
+    const musicFile = getMusicSessionFile();
+
+    // also store the payload into the musicData.json file
     try {
         fs.appendFileSync(musicFile, JSON.stringify(payload) + os.EOL);
     } catch (err) {

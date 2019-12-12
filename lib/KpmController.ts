@@ -15,8 +15,8 @@ import {
     getFileType,
     logIt,
     deleteFile,
-    getMusicSessionDataStoreFile,
-    codeTimeExtInstalled
+    codeTimeExtInstalled,
+    getSoftwareDataStoreFile
 } from "./Util";
 import {
     getRepoContributorInfo,
@@ -557,7 +557,7 @@ export class KpmController {
             latestPayloads = await this.sendKeystrokeDataIntervalHandler();
         }
         try {
-            const file = getMusicSessionDataStoreFile();
+            const file = getSoftwareDataStoreFile();
             if (fs.existsSync(file)) {
                 const content = fs.readFileSync(file).toString();
                 // we're online so just delete the datastore file

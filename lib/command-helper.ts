@@ -47,16 +47,16 @@ export function createCommands(): {
     cmds.push(connectPlaylistTreeView(playlistTreeView));
 
     // recommended tracks tree view
-    const recTreePlaylistProvider = new MusicRecommendationProvider();
-    const recPlaylistTreeView: TreeView<PlaylistItem> = window.createTreeView(
-        "track-recommendations",
-        {
-            treeDataProvider: recTreePlaylistProvider,
-            showCollapseAll: false
-        }
-    );
-    recTreePlaylistProvider.bindView(recPlaylistTreeView);
-    cmds.push(connectRecommendationPlaylistTreeView(recPlaylistTreeView));
+    // const recTreePlaylistProvider = new MusicRecommendationProvider();
+    // const recPlaylistTreeView: TreeView<PlaylistItem> = window.createTreeView(
+    //     "track-recommendations",
+    //     {
+    //         treeDataProvider: recTreePlaylistProvider,
+    //         showCollapseAll: false
+    //     }
+    // );
+    // recTreePlaylistProvider.bindView(recPlaylistTreeView);
+    // cmds.push(connectRecommendationPlaylistTreeView(recPlaylistTreeView));
 
     const nextCmd = commands.registerCommand("musictime.next", () => {
         controller.nextSong();
@@ -217,12 +217,13 @@ export function createCommands(): {
     );
     cmds.push(refreshPlaylistCommand);
 
-    const refreshRecPlaylistCommand = commands.registerCommand(
-        "musictime.refreshRecommendations",
-        async () => {
-            recTreePlaylistProvider.refresh();
-        }
-    );
+    // const refreshRecPlaylistCommand = commands.registerCommand(
+    //     "musictime.refreshRecommendations",
+    //     async () => {
+    //         recTreePlaylistProvider.refresh();
+    //     }
+    // );
+    // cmds.push(refreshRecPlaylistCommand);
 
     const launchSpotifyCommand = commands.registerCommand(
         "musictime.launchSpotify",

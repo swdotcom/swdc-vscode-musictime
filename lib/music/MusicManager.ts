@@ -525,9 +525,9 @@ export class MusicManager {
 
                     // refresh the recommendation tracks
                     if (this.recommendationTracks.length === 0) {
-                        commands.executeCommand(
-                            "musictime.refreshRecommendations"
-                        );
+                        // commands.executeCommand(
+                        //     "musictime.refreshRecommendations"
+                        // );
                     }
                 }
             }
@@ -1085,6 +1085,10 @@ export class MusicManager {
             return;
         }
 
+        window.showInformationMessage(
+            `Creating and populating the ${PERSONAL_TOP_SONGS_NAME} playlist, please wait.`
+        );
+
         if (this.requiresSpotifyAccess()) {
             // don't create or refresh, no spotify access provided
             return;
@@ -1230,10 +1234,10 @@ export class MusicManager {
     async initializeSlack() {
         const serverIsOnline = await serverIsAvailable();
         if (serverIsOnline) {
-            const spotifyOauth = await getSlackOauth(serverIsOnline);
-            if (spotifyOauth) {
+            const slackOauth = await getSlackOauth(serverIsOnline);
+            if (slackOauth) {
                 // update the CodyMusic credentials
-                this.updateSlackAccessInfo(spotifyOauth);
+                this.updateSlackAccessInfo(slackOauth);
             } else {
                 setItem("slack_access_token", null);
             }

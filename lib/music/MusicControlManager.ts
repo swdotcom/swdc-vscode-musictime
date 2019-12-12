@@ -490,9 +490,7 @@ export async function disconnectOauth(type: string, confirmDisconnect = true) {
                 const musicMgr = MusicManager.getInstance();
                 // oauth is not null, initialize spotify
                 if (type_lc === "slack") {
-                    await MusicManager.getInstance().updateSlackAccessInfo(
-                        null
-                    );
+                    await musicMgr.updateSlackAccessInfo(null);
                 } else if (type_lc === "spotify") {
                     await musicMgr.clearSpotifyAccessInfo();
                 }

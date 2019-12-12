@@ -5,9 +5,12 @@ import {
     getOs,
     getVersion,
     getPluginId,
-    isValidJson
+    isValidJson,
+    getMusicSessionFile,
+    deleteFile,
+    logIt
 } from "../Util";
-import { sendMusicData } from "../DataController";
+import { sendMusicData, serverIsAvailable } from "../DataController";
 import {
     Track,
     getRunningTrack,
@@ -20,6 +23,7 @@ import {
 import { MusicManager } from "./MusicManager";
 import { KpmController } from "../KpmController";
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
+const fs = require("fs");
 
 export class MusicStateManager {
     static readonly WINDOWS_SPOTIFY_TRACK_FIND: string =
@@ -217,105 +221,110 @@ export class MusicStateManager {
         }
 
         this.gatheringSong = true;
-        const playingTrack = (await getRunningTrack()) || new Track();
+        try {
+            const playingTrack = (await getRunningTrack()) || new Track();
 
-        const changeStatus = this.getChangeStatus(playingTrack);
+            const changeStatus = this.getChangeStatus(playingTrack);
 
-        if (changeStatus.isNewTrack) {
-            // update the playlistId
-            this.updateTrackPlaylistId(playingTrack);
-        }
-
-        const utcLocalTimes = this.getUtcAndLocal();
-
-        // has the existing track ended or have we started a new track?
-        if (
-            (changeStatus.ended || changeStatus.endPrevTrack) &&
-            this.existingTrack.id
-        ) {
-            // just set it to playing
-            this.existingTrack.state = TrackStatus.Playing;
-            this.existingTrack["end"] = utcLocalTimes.utc;
-            this.existingTrack["local_end"] = utcLocalTimes.local;
-
-            // if this track doesn't have album json data null it out
-            if (this.existingTrack.album) {
-                // check if it's a valid json
-                if (!isValidJson(this.existingTrack.album)) {
-                    // null these out. the backend will populate these
-                    this.existingTrack.album = null;
-                    this.existingTrack.artists = null;
-                    this.existingTrack.features = null;
-                }
+            if (changeStatus.isNewTrack) {
+                // update the playlistId
+                this.updateTrackPlaylistId(playingTrack);
             }
 
-            // make sure duration_ms is set. it may not be defined
-            // if it's coming from one of the players
+            const utcLocalTimes = this.getUtcAndLocal();
+
+            // has the existing track ended or have we started a new track?
             if (
-                !this.existingTrack.duration_ms &&
-                this.existingTrack.duration
+                (changeStatus.ended || changeStatus.endPrevTrack) &&
+                this.existingTrack.id
             ) {
-                this.existingTrack.duration_ms = this.existingTrack.duration;
+                // just set it to playing
+                this.existingTrack.state = TrackStatus.Playing;
+                this.existingTrack["end"] = utcLocalTimes.utc;
+                this.existingTrack["local_end"] = utcLocalTimes.local;
+
+                // if this track doesn't have album json data null it out
+                if (this.existingTrack.album) {
+                    // check if it's a valid json
+                    if (!isValidJson(this.existingTrack.album)) {
+                        // null these out. the backend will populate these
+                        this.existingTrack.album = null;
+                        this.existingTrack.artists = null;
+                        this.existingTrack.features = null;
+                    }
+                }
+
+                // make sure duration_ms is set. it may not be defined
+                // if it's coming from one of the players
+                if (
+                    !this.existingTrack.duration_ms &&
+                    this.existingTrack.duration
+                ) {
+                    this.existingTrack.duration_ms = this.existingTrack.duration;
+                }
+
+                // copy the existing track to "songSession"
+                const songSession = {
+                    ...this.existingTrack
+                };
+
+                // gather coding and send the track
+                this.gatherCodingDataAndSendSongSession(songSession);
+
+                // clear the track.
+                this.existingTrack = {};
             }
 
-            // copy the existing track to "songSession"
-            const songSession = {
-                ...this.existingTrack
-            };
+            // do we have a new song or was it paused?
+            // if it was paused we'll create a new start time anyway, so recreate.
+            if (
+                changeStatus.isNewTrack &&
+                changeStatus.isActiveTrack &&
+                changeStatus.isValidTrack
+            ) {
+                await this.musicMgr.getServerTrack(playingTrack);
 
-            // gather coding and send the track
-            this.gatherCodingDataAndSendSongSession(songSession);
+                // set the start times
+                playingTrack["start"] = utcLocalTimes.utc;
+                playingTrack["local_start"] = utcLocalTimes.local;
+                playingTrack["end"] = 0;
 
-            // clear the track.
-            this.existingTrack = {};
-        }
+                this.existingTrack = { ...playingTrack };
+            }
 
-        // do we have a new song or was it paused?
-        // if it was paused we'll create a new start time anyway, so recreate.
-        if (
-            changeStatus.isNewTrack &&
-            changeStatus.isActiveTrack &&
-            changeStatus.isValidTrack
-        ) {
-            await this.musicMgr.getServerTrack(playingTrack);
+            if (changeStatus.trackStateChanged) {
+                // update the state so the requester gets this value
+                this.existingTrack.state = playingTrack.state;
+            }
 
-            // set the start times
-            playingTrack["start"] = utcLocalTimes.utc;
-            playingTrack["local_start"] = utcLocalTimes.local;
-            playingTrack["end"] = 0;
+            const needsRefresh =
+                changeStatus.isNewTrack ||
+                changeStatus.trackStateChanged ||
+                changeStatus.playerNameChanged;
 
-            this.existingTrack = { ...playingTrack };
-        }
+            if (needsRefresh) {
+                // new player (i.e. switched from itunes to spotify)
+                // refresh the entire tree view
+                commands.executeCommand("musictime.refreshPlaylist");
+            }
 
-        if (changeStatus.trackStateChanged) {
-            // update the state so the requester gets this value
-            this.existingTrack.state = playingTrack.state;
-        }
+            // If the current playlist is the Liked Songs,
+            // check if we should start the next track
+            await this.playNextLikedSpotifyCheck(changeStatus);
 
-        const needsRefresh =
-            changeStatus.isNewTrack ||
-            changeStatus.trackStateChanged ||
-            changeStatus.playerNameChanged;
-
-        if (needsRefresh) {
-            // new player (i.e. switched from itunes to spotify)
-            // refresh the entire tree view
-            commands.executeCommand("musictime.refreshPlaylist");
-        }
-
-        // If the current playlist is the Liked Songs,
-        // check if we should start the next track
-        await this.playNextLikedSpotifyCheck(changeStatus);
-
-        // !Important! This should be the only place in the code
-        // that sets the running track. If the user is offline and
-        // wanting to use spotify, then we can't set the running track due
-        // do not being able to control it, but the uer can listen to it without
-        // the editors controls
-        if (this.allowSetRunningTrack()) {
-            this.musicMgr.runningTrack = this.existingTrack;
-        } else {
-            this.musicMgr.runningTrack = new Track();
+            // !Important! This should be the only place in the code
+            // that sets the running track. If the user is offline and
+            // wanting to use spotify, then we can't set the running track due
+            // do not being able to control it, but the uer can listen to it without
+            // the editors controls
+            if (this.allowSetRunningTrack()) {
+                this.musicMgr.runningTrack = this.existingTrack;
+            } else {
+                this.musicMgr.runningTrack = new Track();
+            }
+        } catch (e) {
+            const errMsg = e.message || e;
+            logIt(`Unexpected track state processing error: ${errMsg}`);
         }
 
         this.gatheringSong = false;
@@ -350,6 +359,16 @@ export class MusicStateManager {
         const payloads = await KpmController.getInstance().processOfflineKeystrokes(
             true /*sendCurrentKeystrokes*/
         );
+        const filePayloads = [];
+        if (payloads && payloads.length) {
+            payloads.forEach(payload => {
+                Object.keys(payload.source).forEach(sourceKey => {
+                    let data = {};
+                    data[sourceKey] = payload.source[sourceKey];
+                    filePayloads.push(data);
+                });
+            });
+        }
         const initialValue = {
             add: 0,
             paste: 0,
@@ -366,7 +385,7 @@ export class MusicStateManager {
             pluginId: getPluginId(),
             os: getOs(),
             version: getVersion(),
-            source: {},
+            source: filePayloads,
             repoFileCount: 0,
             repoContributorCount: 0
         };
@@ -403,7 +422,7 @@ export class MusicStateManager {
         pluginId: getPluginId(),
         os: getOs(),
         version: getVersion(),
-        source: {},
+        source: [],
         repoFileCount: 0,
         repoContributorCount: 0,
      */
@@ -425,9 +444,9 @@ export class MusicStateManager {
                 const element = payloads[i];
 
                 // if the file's end time is before the song session start, ignore it
-                if (element.end < start) {
-                    continue;
-                }
+                // if (element.end < start) {
+                //     continue;
+                // }
 
                 // set repoContributorCount and repoFileCount
                 // if not already set
@@ -441,7 +460,7 @@ export class MusicStateManager {
 
                 if (element.source) {
                     // go through the source object
-                    initialValue.source = element.source;
+                    // initialValue.source = element.source;
                     const keys = Object.keys(element.source);
                     if (keys && keys.length > 0) {
                         keys.forEach(key => {
@@ -495,5 +514,52 @@ export class MusicStateManager {
         }
         initialValue.keystrokes = totalKeystrokes;
         return initialValue;
+    }
+
+    /**
+     * This will send the keystrokes batch data along with returning all of the gathered keystrokes.
+     * If track ends, it will also request to send the current keystrokes. The 30 minute timer will
+     * not request to send the current keystrokes as those will be used if a track is currently playing.
+     * @param sendCurrentKeystrokes
+     */
+    public async processOfflineSongSessions(sendCurrentKeystrokes = false) {
+        const isonline = await serverIsAvailable();
+        if (!isonline) {
+            return;
+        }
+
+        try {
+            const file = getMusicSessionFile();
+            if (fs.existsSync(file)) {
+                const content = fs.readFileSync(file).toString();
+                // we're online so just delete the datastore file
+                deleteFile(file);
+                if (content) {
+                    const payloads = content
+                        .split(/\r?\n/)
+                        .map(item => {
+                            let obj = null;
+                            if (item) {
+                                try {
+                                    obj = JSON.parse(item);
+                                } catch (e) {
+                                    //
+                                }
+                            }
+                            if (obj) {
+                                return obj;
+                            }
+                        })
+                        .filter(item => item);
+
+                    // send the offline song sessions
+                    for (let i = 0; i < payloads.length; i++) {
+                        await sendMusicData(payloads[i]);
+                    }
+                }
+            }
+        } catch (e) {
+            logIt(`Unable to send offline music session data: ${e.message}`);
+        }
     }
 }
