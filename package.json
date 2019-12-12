@@ -195,6 +195,10 @@
                 {
                     "id": "my-playlists",
                     "name": "My Playlists"
+                },
+                {
+                    "id": "track-recommendations",
+                    "name": "Recommendations"
                 }
             ]
         },

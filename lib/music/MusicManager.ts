@@ -81,6 +81,7 @@ export class MusicManager {
     private _spotifyClientSecret: string = "";
     private _initialized: boolean = false;
     private _sortAlphabetically: boolean = true;
+    private _recommendationTracks: Track[] = [];
 
     private constructor() {
         //
@@ -95,6 +96,10 @@ export class MusicManager {
 
     set initialized(initializedMgr: boolean) {
         this._initialized = initializedMgr;
+    }
+
+    get initialized() {
+        return this._initialized;
     }
 
     get musictimePlaylists() {
@@ -159,6 +164,14 @@ export class MusicManager {
 
     set spotifyLikedSongs(likedSongs: Track[]) {
         this._spotifyLikedSongs = likedSongs;
+    }
+
+    get recommendationTracks() {
+        return this._recommendationTracks;
+    }
+
+    set recommendationTracks(recTracks: Track[]) {
+        this._recommendationTracks = recTracks;
     }
 
     /**
@@ -509,7 +522,13 @@ export class MusicManager {
                     this.spotifyLikedSongs.length > 0
                 ) {
                     items.push(this.getSpotifyLikedPlaylistFolder());
-                    // commands.executeCommand("musictime.refreshRecommendations");
+
+                    // refresh the recommendation tracks
+                    if (this.recommendationTracks.length === 0) {
+                        commands.executeCommand(
+                            "musictime.refreshRecommendations"
+                        );
+                    }
                 }
             }
 

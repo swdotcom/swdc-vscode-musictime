@@ -12,12 +12,10 @@ import {
 import * as path from "path";
 import {
     PlaylistItem,
-    TrackStatus,
     getRecommendationsForTracks,
     Track,
     playSpotifyMacDesktopTrack
 } from "cody-music";
-import { RecommendationManager } from "./RecommendationManager";
 import { logIt, getPlaylistIcon } from "../Util";
 import { MusicManager } from "./MusicManager";
 
@@ -53,6 +51,7 @@ export const getRecommendedTracks = async (trackIds, limit = 10) => {
                     0
                 );
                 item.tag = "spotify";
+                item.type = "action";
                 items.push(item);
             }
         }
@@ -132,13 +131,6 @@ export class MusicRecommendationProvider
     }
 
     isTrackInPlaylistRunning(p: PlaylistItem) {
-        // const selectedTrack: PlaylistItem = RecommendationManager.getInstance()
-        //     .selectedTrackItem;
-        // if (selectedTrack && selectedTrack["playlist_id"] === p.id) {
-        //     this.selectTrack(selectedTrack, false /* select */);
-        //     return true;
-        // }
-        // return false;
         return false;
     }
 
