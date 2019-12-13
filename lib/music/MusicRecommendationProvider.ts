@@ -86,7 +86,7 @@ export const connectRecommendationPlaylistTreeView = (
                 return;
             }
 
-            await launchAndPlaySpotifyTrack("", playlistItem.id);
+            await launchAndPlaySpotifyTrack(playlistItem.id, "");
         }),
         view.onDidChangeVisibility(e => {
             if (e.visible) {
@@ -151,7 +151,7 @@ export class MusicRecommendationProvider
                 select: false,
                 expand: true
             });
-            await launchAndPlaySpotifyTrack("", p.id);
+            await launchAndPlaySpotifyTrack(p.id, "");
         } catch (err) {
             logIt(`Unable to select playlist: ${err.message}`);
         }
