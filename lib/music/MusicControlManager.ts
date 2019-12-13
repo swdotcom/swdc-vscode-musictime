@@ -6,13 +6,11 @@ import {
     next,
     PlayerName,
     Track,
-    setItunesLoved,
     launchPlayer,
     PlaylistItem,
     playTrackInContext,
     playTrack,
     saveToSpotifyLiked,
-    removeFromSpotifyLiked,
     CodyResponse,
     addTracksToPlaylist
 } from "cody-music";
@@ -55,6 +53,7 @@ import { SocialShareManager } from "../social/SocialShareManager";
 import { tmpdir } from "os";
 import { connectSlack } from "../slack/SlackControlManager";
 import { MusicManager } from "./MusicManager";
+
 const moment = require("moment-timezone");
 const clipboardy = require("clipboardy");
 const fs = require("fs");
@@ -121,45 +120,13 @@ export class MusicControlManager {
 
     async setLiked(liked: boolean) {
         let track: Track = this.musicMgr.runningTrack;
-        let updatePlayerState = true;
 
         // const isLikedSongTrack = track.id === "Liked Songs" ? true : false;
 
         if (track && track.id) {
-            if (track.playerType !== PlayerType.MacItunesDesktop && liked) {
-                const msg = "Add to your 'Liked Songs' playlist as well?";
-
-                const buttonSelection = await window.showInformationMessage(
-                    msg,
-                    ...[NOT_NOW_LABEL, YES_LABEL]
-                );
-                updatePlayerState =
-                    buttonSelection && buttonSelection === YES_LABEL
-                        ? true
-                        : false;
-            }
 
             // show loading until the liked/unliked is complete
             MusicCommandManager.syncControls(track, true);
-
-            if (updatePlayerState) {
-                if (track.playerType === PlayerType.MacItunesDesktop) {
-                    // await so that the stateCheckHandler fetches
-                    // the latest version of the itunes track
-                    await setItunesLoved(liked).catch(err => {
-                        logIt(
-                            `Error updating itunes loved state: ${err.message}`
-                        );
-                    });
-                } else {
-                    // save the spotify track to the users liked songs playlist
-                    if (liked) {
-                        await saveToSpotifyLiked([track.id]);
-                    } else {
-                        await removeFromSpotifyLiked([track.id]);
-                    }
-                }
-            }
 
             let type = "spotify";
             if (track.playerType === PlayerType.MacItunesDesktop) {
@@ -173,10 +140,6 @@ export class MusicControlManager {
 
             // get the server track. this will sync the controls
             await this.musicMgr.getServerTrack(track);
-        }
-
-        if (updatePlayerState) {
-            commands.executeCommand("musictime.refreshPlaylist");
         }
     }
 
@@ -517,7 +480,7 @@ export async function disconnectSpotify(confirmDisconnect = true) {
 }
 
 export async function disconnectSlack(confirmDisconnect = true) {
-    disconnectOauth("Slack");
+    disconnectOauth("Slack", confirmDisconnect);
 }
 
 export async function disconnectOauth(type: string, confirmDisconnect = true) {
