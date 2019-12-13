@@ -8,7 +8,7 @@ import {
     MUSIC_TIME_TYPE
 } from "./Constants";
 import { getToggleFileEventLoggingState } from "./DataController";
-import { PlaylistItem, TrackStatus } from "cody-music";
+import { PlaylistItem, TrackStatus, CodyResponse, CodyResponseType } from "cody-music";
 const moment = require("moment-timezone");
 
 const open = require("open");
@@ -896,4 +896,21 @@ export function getPlaylistIcon(treeItem: PlaylistItem) {
         darkPath = path.join(resourcePath, "dark", "blue-line-96.png");
     }
     return { lightPath, darkPath, contextValue };
+}
+
+export function getCodyErrorMessage(response:CodyResponse) {
+    let errMsg = null;
+    if (response.state === CodyResponseType.Failed) {
+        // format the message
+        errMsg = "";
+        if (response.message) {
+            errMsg = response.message;
+            var hasEndingPeriod =
+                errMsg.lastIndexOf(".") === errMsg.length - 1;
+            if (!hasEndingPeriod) {
+                errMsg = `${errMsg}.`;
+            }
+        }
+    }
+    return errMsg;
 }

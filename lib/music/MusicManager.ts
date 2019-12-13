@@ -44,7 +44,7 @@ import {
     getAppJwt,
     getMusicTimeUserStatus
 } from "../DataController";
-import { getItem, setItem, isMac, logIt } from "../Util";
+import { getItem, setItem, isMac, logIt, getCodyErrorMessage } from "../Util";
 import {
     isResponseOk,
     softwareGet,
@@ -1108,17 +1108,8 @@ export class MusicManager {
                 true
             );
 
-            if (playlistResult.state === CodyResponseType.Failed) {
-                // format the message
-                let errMsg = "";
-                if (playlistResult.message) {
-                    errMsg = playlistResult.message;
-                    var hasEndingPeriod =
-                        errMsg.lastIndexOf(".") === errMsg.length - 1;
-                    if (!hasEndingPeriod) {
-                        errMsg = `${errMsg}.`;
-                    }
-                }
+            const errMsg = getCodyErrorMessage(playlistResult);
+            if (errMsg) {
                 window.showErrorMessage(
                     `There was an unexpected error adding tracks to the playlist. ${errMsg} Refresh the playlist and try again if you feel the problem has been resolved.`,
                     ...[OK_LABEL]

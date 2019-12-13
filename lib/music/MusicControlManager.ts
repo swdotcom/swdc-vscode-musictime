@@ -34,7 +34,8 @@ import {
     getMusicTimeMarkdownFile,
     getSoftwareDir,
     setItem,
-    isMac
+    isMac,
+    getCodyErrorMessage
 } from "../Util";
 import { softwareGet, softwarePut, isResponseOk } from "../HttpClient";
 import {
@@ -388,17 +389,33 @@ export class MusicControlManager {
             if (matchingPlaylists.length) {
                 const matchingPlaylist = matchingPlaylists[0];
                 if (matchingPlaylist) {
+                    const playlistName = matchingPlaylist.name;
+                    let codyResponse: CodyResponse = null;
                     if (matchingPlaylist.name !== "Liked Songs") {
                         // uri:"spotify:playlist:2JHCaLTVvYjyUrCck0Uvrp" or id
-                        const addTracksResult: CodyResponse = await addTracksToPlaylist(
+                        codyResponse = await addTracksToPlaylist(
                             matchingPlaylist.id,
                             [track.uri]
                         );
                     } else {
                         // like it
-                        await saveToSpotifyLiked([track.id]);
+                        codyResponse = await saveToSpotifyLiked([track.id]);
                     }
-                    commands.executeCommand("musictime.refreshPlaylist");
+                    if (codyResponse && codyResponse.status < 300) {
+                        window.showInformationMessage(
+                            `Added ${track.name} to your '${playlistName}' playlist.`,
+                            ...[OK_LABEL]
+                        );
+                        commands.executeCommand("musictime.refreshPlaylist");
+                    } else {
+                        const errMsg = getCodyErrorMessage(codyResponse);
+                        if (errMsg) {
+                            window.showErrorMessage(
+                                `There was an unexpected error adding the track to the playlist. ${errMsg}`,
+                                ...[OK_LABEL]
+                            );
+                        }
+                    }
                 }
             }
         }
