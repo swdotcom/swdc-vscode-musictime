@@ -510,6 +510,10 @@ export async function disconnectOauth(type: string, confirmDisconnect = true) {
                     await musicMgr.clearSpotifyAccessInfo();
                 }
 
+                window.showInformationMessage(
+                    `Successfully disconnected your ${type} connection.`
+                );
+
                 // refresh the playlist
                 setTimeout(() => {
                     commands.executeCommand("musictime.refreshPlaylist");

@@ -11,8 +11,6 @@ import {
 } from "vscode";
 import {
     PlaylistItem,
-    getRecommendationsForTracks,
-    Track,
     launchAndPlaySpotifyTrack
 } from "cody-music";
 import { logIt, getPlaylistIcon } from "../Util";
@@ -30,36 +28,6 @@ const createPlaylistTreeItem = (
     return new PlaylistTreeItem(p, cstate);
 };
 
-export const getRecommendedTracks = async (trackIds, limit = 10) => {
-    let items: PlaylistItem[] = [];
-    // only takes Up to 5
-    trackIds = trackIds.splice(0, 5);
-    try {
-        const tracks: Track[] = await getRecommendationsForTracks(
-            trackIds,
-            limit,
-            "" /*market*/,
-            10 /*min_popularity*/
-        );
-        // turn the tracks into playlist item
-        if (tracks && tracks.length > 0) {
-            for (let i = 0; i < tracks.length; i++) {
-                const track: Track = tracks[i];
-                const item: PlaylistItem = MusicManager.getInstance().createPlaylistItemFromTrack(
-                    track,
-                    0
-                );
-                item.tag = "spotify";
-                item.type = "recommendation";
-                items.push(item);
-            }
-        }
-    } catch (e) {
-        //
-    }
-
-    return items;
-};
 
 /**
  * Handles the playlist onDidChangeSelection event
@@ -166,13 +134,9 @@ export class MusicRecommendationProvider
     }
 
     async getChildren(element?: PlaylistItem): Promise<PlaylistItem[]> {
-        // get the 1st 6 tracks from the liked songs
-        const likedSongs: Track[] = MusicManager.getInstance()
-            .spotifyLikedSongs;
-        const trackIds = likedSongs.map((track: Track) => {
-            return track.id;
-        });
-        return getRecommendedTracks(trackIds, 10);
+        const musicMgr: MusicManager = MusicManager.getInstance();
+        const recTrackPlaylistItems = musicMgr.convertTracksToPlaylistItems(musicMgr.recommendationTracks);
+        return recTrackPlaylistItems;
     }
 }
 

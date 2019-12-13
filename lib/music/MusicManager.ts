@@ -21,7 +21,8 @@ import {
     quitMacPlayer,
     getSpotifyDevices,
     PlayerDevice,
-    getSpotifyPlaylist
+    getSpotifyPlaylist,
+    getRecommendationsForTracks
 } from "cody-music";
 import {
     PERSONAL_TOP_SONGS_NAME,
@@ -525,9 +526,9 @@ export class MusicManager {
 
                     // refresh the recommendation tracks
                     if (this.recommendationTracks.length === 0) {
-                        commands.executeCommand(
-                            "musictime.refreshRecommendations"
-                        );
+                        setTimeout(() => {
+                            this.updateRecommendations(5);
+                        }, 1000);
                     }
                 }
             }
@@ -1464,5 +1465,54 @@ export class MusicManager {
             return PlayerName.SpotifyDesktop;
         }
         return this._currentPlayerName;
+    }
+
+    async updateRecommendations(likedSongSeedLimit:number = 5, seed_genres: string[] = []) {
+        const likedSongs: Track[] = this.spotifyLikedSongs;
+        let trackIds = likedSongs.map((track: Track) => {
+            return track.id;
+        });
+        likedSongSeedLimit = likedSongSeedLimit > 5 || likedSongSeedLimit < 0 ? 5 : likedSongSeedLimit;
+        if (trackIds.length > 0) {
+            trackIds.length = likedSongSeedLimit;
+        }
+        const tracks: Track[] = await this.getRecommendedTracks(trackIds, 10, seed_genres);
+        // set the manager's recommendation tracks
+        this.recommendationTracks = tracks;
+        
+        commands.executeCommand("musictime.refreshRecommendations");
+    }
+
+    async getRecommendedTracks(trackIds, limit = 10, seed_genres): Promise<Track[]> {
+        try {
+            return await getRecommendationsForTracks(
+                trackIds,
+                limit,
+                "" /*market*/,
+                10, /*min_popularity*/
+                seed_genres
+            );
+        } catch (e) {
+            //
+        }
+    
+        return [];
+    }
+
+    convertTracksToPlaylistItems(tracks:Track[]) {
+        let items: PlaylistItem[] = [];
+        if (tracks && tracks.length > 0) {
+            for (let i = 0; i < tracks.length; i++) {
+                const track: Track = tracks[i];
+                const item: PlaylistItem = MusicManager.getInstance().createPlaylistItemFromTrack(
+                    track,
+                    0
+                );
+                item.tag = "spotify";
+                item.type = "recommendation";
+                items.push(item);
+            }
+        }
+        return items;
     }
 }

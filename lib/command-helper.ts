@@ -22,7 +22,7 @@ import { connectSlack } from "./slack/SlackControlManager";
 import { MusicManager } from "./music/MusicManager";
 import {
     MusicRecommendationProvider,
-    connectRecommendationPlaylistTreeView
+    connectRecommendationPlaylistTreeView,
 } from "./music/MusicRecommendationProvider";
 
 export function createCommands(): {
@@ -272,6 +272,31 @@ export function createCommands(): {
         (item: PlaylistItem) => controller.addToPlaylistMenu(item)
     );
     cmds.push(addToPlaylistCommand);
+
+    // "musictime.likedSongRecs"
+    const likedSongRecsCommand = commands.registerCommand(
+        "musictime.likedSongRecs",
+        () => musicMgr.updateRecommendations(5)
+    );
+    cmds.push(likedSongRecsCommand);
+    // "musictime.soundtrackRecs"
+    const soundtrackSongRecsCommand = commands.registerCommand(
+        "musictime.soundtrackRecs",
+        () => musicMgr.updateRecommendations(0, ["soundtracks"])
+    );
+    cmds.push(soundtrackSongRecsCommand);
+    // "musictime.classicalSongRecs"
+    const classicalSongRecsCommand = commands.registerCommand(
+        "musictime.classicalSongRecs",
+        () => musicMgr.updateRecommendations(0, ["classical"])
+    );
+    cmds.push(classicalSongRecsCommand);
+    // "musictime.partySongRecs"
+    const partySongRecsCommand = commands.registerCommand(
+        "musictime.partySongRecs",
+        () => musicMgr.updateRecommendations(0, ["party"])
+    );
+    cmds.push(partySongRecsCommand);
 
     if (!codeTimeExtInstalled()) {
         // initialize the kpm controller to start the listener
