@@ -12,7 +12,9 @@ import {
     playTrackInContext,
     playTrack,
     saveToSpotifyLiked,
-    removeFromSpotifyLiked
+    removeFromSpotifyLiked,
+    CodyResponse,
+    addTracksToPlaylist
 } from "cody-music";
 import { window, ViewColumn, Uri, commands } from "vscode";
 import { MusicCommandManager } from "./MusicCommandManager";
@@ -356,7 +358,7 @@ export class MusicControlManager {
         showQuickPick(menuOptions);
     }
 
-    async addToPlaylistMenu(item: PlaylistItem) {
+    async addToPlaylistMenu(track: PlaylistItem) {
         const musicMgr: MusicManager = MusicManager.getInstance();
         let menuOptions = {
             items: []
@@ -365,7 +367,8 @@ export class MusicControlManager {
 
         // filter out the ones with itemType = playlist
         playlists = playlists.filter(
-            (n: PlaylistItem) => n.itemType === "playlist"
+            (n: PlaylistItem) =>
+                n.itemType === "playlist" && n.name !== "Software Top 40"
         );
 
         musicMgr.sortPlaylists(playlists);
@@ -384,7 +387,19 @@ export class MusicControlManager {
             );
             if (matchingPlaylists.length) {
                 const matchingPlaylist = matchingPlaylists[0];
-                // uri:"spotify:playlist:2JHCaLTVvYjyUrCck0Uvrp" or id
+                if (matchingPlaylist) {
+                    if (matchingPlaylist.name !== "Liked Songs") {
+                        // uri:"spotify:playlist:2JHCaLTVvYjyUrCck0Uvrp" or id
+                        const addTracksResult: CodyResponse = await addTracksToPlaylist(
+                            matchingPlaylist.id,
+                            [track.uri]
+                        );
+                    } else {
+                        // like it
+                        await saveToSpotifyLiked([track.id]);
+                    }
+                    commands.executeCommand("musictime.refreshPlaylist");
+                }
             }
         }
     }

@@ -9,14 +9,11 @@ import {
     TreeView,
     commands
 } from "vscode";
-import * as path from "path";
 import {
     PlaylistItem,
     getRecommendationsForTracks,
     Track,
-    playSpotifyMacDesktopTrack,
-    PlaylistTrackInfo,
-    PlayerType
+    launchAndPlaySpotifyTrack
 } from "cody-music";
 import { logIt, getPlaylistIcon } from "../Util";
 import { MusicManager } from "./MusicManager";
@@ -89,11 +86,7 @@ export const connectRecommendationPlaylistTreeView = (
                 return;
             }
 
-            // const isExpand = playlistItem.type === "playlist" ? true : false;
-
-            // play it
-            // playSelectedItem(playlistItem, isExpand);
-            playSpotifyMacDesktopTrack(playlistItem.id);
+            await launchAndPlaySpotifyTrack("", playlistItem.id);
         }),
         view.onDidChangeVisibility(e => {
             if (e.visible) {
@@ -158,7 +151,7 @@ export class MusicRecommendationProvider
                 select: false,
                 expand: true
             });
-            // playSelectedItem(p, false);
+            await launchAndPlaySpotifyTrack("", p.id);
         } catch (err) {
             logIt(`Unable to select playlist: ${err.message}`);
         }
