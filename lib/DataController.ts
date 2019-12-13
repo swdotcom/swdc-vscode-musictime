@@ -22,12 +22,6 @@ import {
     storeMusicSessionPayload
 } from "./Util";
 import { getSpotifyLikedSongs, Track } from "cody-music";
-import { fetchCodeTimeMetricsDashboard } from "./MenuManager";
-import {
-    getSessionSummaryData,
-    updateStatusBarWithSummaryData,
-    saveSessionSummaryToDisk
-} from "./OfflineManager";
 import { MusicManager } from "./music/MusicManager";
 const moment = require("moment-timezone");
 

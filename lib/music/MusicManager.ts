@@ -886,6 +886,7 @@ export class MusicManager {
         playlistItem.type = "track";
         playlistItem.name = track.name;
         playlistItem.id = track.id;
+        playlistItem.uri = track.uri;
         playlistItem.popularity = track.popularity;
         playlistItem.position = position;
         playlistItem.artist = track.artist;

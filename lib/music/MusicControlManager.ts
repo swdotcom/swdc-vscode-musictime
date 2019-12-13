@@ -356,17 +356,37 @@ export class MusicControlManager {
         showQuickPick(menuOptions);
     }
 
-    showRecommendationsMenu() {
+    async addToPlaylistMenu(item: PlaylistItem) {
+        const musicMgr: MusicManager = MusicManager.getInstance();
         let menuOptions = {
             items: []
         };
-        menuOptions.items.push({
-            label: "$(triangle-right) Hold On, Loud Forest",
-            detail: "Recommendation based on night time coding",
-            url: null,
-            command: "musictime.play"
+        let playlists: PlaylistItem[] = musicMgr.currentPlaylists;
+
+        // filter out the ones with itemType = playlist
+        playlists = playlists.filter(
+            (n: PlaylistItem) => n.itemType === "playlist"
+        );
+
+        musicMgr.sortPlaylists(playlists);
+
+        playlists.forEach((item: PlaylistItem) => {
+            menuOptions.items.push({
+                label: item.name
+            });
         });
-        showQuickPick(menuOptions);
+
+        const pick = await showQuickPick(menuOptions);
+        if (pick && pick.label) {
+            // add it to this playlist
+            const matchingPlaylists = playlists.filter(
+                (n: PlaylistItem) => n.name === pick.label
+            );
+            if (matchingPlaylists.length) {
+                const matchingPlaylist = matchingPlaylists[0];
+                // uri:"spotify:playlist:2JHCaLTVvYjyUrCck0Uvrp" or id
+            }
+        }
     }
 }
 

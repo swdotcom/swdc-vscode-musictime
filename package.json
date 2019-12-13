@@ -179,6 +179,14 @@
             {
                 "command": "musictime.refreshPlaylist",
                 "title": "Refresh Playlists"
+            },
+            {
+                "command": "musictime.addToPlaylist",
+                "title": "Add To Playlist",
+                "icon": {
+                    "light": "resources/light/plus-light-bg.svg",
+                    "dark": "resources/dark/plus-dark-bg.svg"
+                }
             }
         ],
         "viewsContainers": {
@@ -223,6 +231,11 @@
                     "command": "musictime.shareTrack",
                     "when": "viewItem =~ /track-item.*/",
                     "group": "inline@2"
+                },
+                {
+                    "command": "musictime.addToPlaylist",
+                    "when": "viewItem =~ /spotify-recommendation.*/",
+                    "group": "inline@3"
                 }
             ],
             "view/title": [

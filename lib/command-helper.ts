@@ -267,6 +267,12 @@ export function createCommands(): {
     );
     cmds.push(launchMusicAnalyticsCommand);
 
+    const addToPlaylistCommand = commands.registerCommand(
+        "musictime.addToPlaylist",
+        (item: PlaylistItem) => controller.addToPlaylistMenu(item)
+    );
+    cmds.push(addToPlaylistCommand);
+
     if (!codeTimeExtInstalled()) {
         // initialize the kpm controller to start the listener
         KpmController.getInstance();
