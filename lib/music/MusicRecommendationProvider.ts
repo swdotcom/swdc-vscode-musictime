@@ -9,10 +9,7 @@ import {
     TreeView,
     commands
 } from "vscode";
-import {
-    PlaylistItem,
-    launchAndPlaySpotifyTrack
-} from "cody-music";
+import { PlaylistItem, launchAndPlaySpotifyTrack } from "cody-music";
 import { logIt, getPlaylistIcon } from "../Util";
 import { MusicManager } from "./MusicManager";
 
@@ -27,7 +24,6 @@ const createPlaylistTreeItem = (
 ) => {
     return new PlaylistTreeItem(p, cstate);
 };
-
 
 /**
  * Handles the playlist onDidChangeSelection event
@@ -135,7 +131,9 @@ export class MusicRecommendationProvider
 
     async getChildren(element?: PlaylistItem): Promise<PlaylistItem[]> {
         const musicMgr: MusicManager = MusicManager.getInstance();
-        const recTrackPlaylistItems = musicMgr.convertTracksToPlaylistItems(musicMgr.recommendationTracks);
+        const recTrackPlaylistItems = musicMgr.convertTracksToPlaylistItems(
+            musicMgr.recommendationTracks
+        );
         return recTrackPlaylistItems;
     }
 }

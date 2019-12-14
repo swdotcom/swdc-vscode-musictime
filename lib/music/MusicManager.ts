@@ -508,10 +508,7 @@ export class MusicManager {
             }
 
             // Add the AI generated playlist
-            if (
-                this._musictimePlaylists &&
-                this._musictimePlaylists.length
-            ) {
+            if (this._musictimePlaylists && this._musictimePlaylists.length) {
                 let aiPlaylist = this._musictimePlaylists.find(element => {
                     return element.playlistTypeId === PERSONAL_TOP_SONGS_PLID;
                 });
@@ -524,16 +521,16 @@ export class MusicManager {
             if (!needsSpotifyAccess) {
                 // only add the "Liked Songs" playlist if there are tracks found in that playlist
                 this.spotifyLikedSongs = await getSpotifyLikedSongs();
-                if (
-                    this.spotifyLikedSongs &&
-                    this.spotifyLikedSongs.length
-                ) {
+                if (this.spotifyLikedSongs && this.spotifyLikedSongs.length) {
                     items.push(this.getSpotifyLikedPlaylistFolder());
 
                     // refresh the recommendation tracks
                     if (this.recommendationTracks.length === 0) {
                         setTimeout(() => {
-                            this.updateRecommendations("Similar to Liked Songs", 5);
+                            this.updateRecommendations(
+                                "Similar to Liked Songs",
+                                5
+                            );
                         }, 1000);
                     }
                 }
@@ -1473,35 +1470,59 @@ export class MusicManager {
         return this._currentPlayerName;
     }
 
-    async updateRecommendations(label: string, likedSongSeedLimit:number = 5, seed_genres: string[] = [], features: any = {}) {
+    async updateRecommendations(
+        label: string,
+        likedSongSeedLimit: number = 5,
+        seed_genres: string[] = [],
+        features: any = {}
+    ) {
         const likedSongs: Track[] = this.spotifyLikedSongs;
         let trackIds = likedSongs.map((track: Track) => {
             return track.id;
         });
-        likedSongSeedLimit = likedSongSeedLimit > 5 || likedSongSeedLimit < 0 ? 5 : likedSongSeedLimit;
+        likedSongSeedLimit =
+            likedSongSeedLimit > 5 || likedSongSeedLimit < 0
+                ? 5
+                : likedSongSeedLimit;
         if (trackIds.length > 0) {
             trackIds.length = likedSongSeedLimit;
         }
-        const tracks: Track[] = await this.getRecommendedTracks(trackIds, seed_genres, features);
+        const tracks: Track[] = await this.getRecommendedTracks(
+            trackIds,
+            seed_genres,
+            features
+        );
         // set the manager's recommendation tracks
         this.recommendationTracks = tracks;
         this.recommendationLabel = label;
-        
+
         commands.executeCommand("musictime.refreshRecommendations");
     }
 
-    async getRecommendedTracks(trackIds, seed_genres, features): Promise<Track[]> {
+    async getRecommendedTracks(
+        trackIds,
+        seed_genres,
+        features
+    ): Promise<Track[]> {
         try {
             return getRecommendationsForTracks(
-                trackIds, 10, "" /*market*/, 20, 100, seed_genres, [], features);
+                trackIds,
+                10,
+                "" /*market*/,
+                20,
+                100,
+                seed_genres,
+                [],
+                features
+            );
         } catch (e) {
             //
         }
-    
+
         return [];
     }
 
-    convertTracksToPlaylistItems(tracks:Track[]) {
+    convertTracksToPlaylistItems(tracks: Track[]) {
         let items: PlaylistItem[] = [];
         const labelButton = this.buildActionItem(
             "label",
@@ -1512,9 +1533,10 @@ export class MusicManager {
             ""
         );
         labelButton.tag = "paw";
-        items.push(labelButton);
 
         if (tracks && tracks.length > 0) {
+            // since we have recommendations, show the label button
+            items.push(labelButton);
             for (let i = 0; i < tracks.length; i++) {
                 const track: Track = tracks[i];
                 const item: PlaylistItem = MusicManager.getInstance().createPlaylistItemFromTrack(
