@@ -83,6 +83,7 @@ export class MusicManager {
     private _initialized: boolean = false;
     private _sortAlphabetically: boolean = true;
     private _recommendationTracks: Track[] = [];
+    private _recommendationLabel: string = "Similar to Liked Songs";
 
     private constructor() {
         //
@@ -173,6 +174,14 @@ export class MusicManager {
 
     set recommendationTracks(recTracks: Track[]) {
         this._recommendationTracks = recTracks;
+    }
+
+    get recommendationLabel() {
+        return this._recommendationLabel;
+    }
+
+    set recommendationLabel(label: string) {
+        this._recommendationLabel = label;
     }
 
     /**
@@ -454,7 +463,7 @@ export class MusicManager {
             this._itunesPlaylists = items;
         } else {
             // show the devices listening folder if they've already connected oauth
-            if (!needsSpotifyAccess && hasSpotifyUser) {
+            if (!needsSpotifyAccess) {
                 const {
                     title,
                     tooltip,
@@ -501,33 +510,30 @@ export class MusicManager {
             // Add the AI generated playlist
             if (
                 this._musictimePlaylists &&
-                this._musictimePlaylists.length > 0
+                this._musictimePlaylists.length
             ) {
-                for (let i = 0; i < this._musictimePlaylists.length; i++) {
-                    const musicTimePlaylist = this._musictimePlaylists[i];
-                    if (
-                        musicTimePlaylist.playlistTypeId ===
-                        PERSONAL_TOP_SONGS_PLID
-                    ) {
-                        items.push(musicTimePlaylist);
-                    }
+                let aiPlaylist = this._musictimePlaylists.find(element => {
+                    return element.playlistTypeId === PERSONAL_TOP_SONGS_PLID;
+                });
+                if (aiPlaylist) {
+                    items.push(aiPlaylist);
                 }
             }
 
             // add Liked Songs folder within the software playlist section
-            if (!needsSpotifyAccess && allowSpotifyPlaylistFetch) {
+            if (!needsSpotifyAccess) {
                 // only add the "Liked Songs" playlist if there are tracks found in that playlist
                 this.spotifyLikedSongs = await getSpotifyLikedSongs();
                 if (
                     this.spotifyLikedSongs &&
-                    this.spotifyLikedSongs.length > 0
+                    this.spotifyLikedSongs.length
                 ) {
                     items.push(this.getSpotifyLikedPlaylistFolder());
 
                     // refresh the recommendation tracks
                     if (this.recommendationTracks.length === 0) {
                         setTimeout(() => {
-                            this.updateRecommendations(5);
+                            this.updateRecommendations("Similar to Liked Songs", 5);
                         }, 1000);
                     }
                 }
@@ -1467,7 +1473,7 @@ export class MusicManager {
         return this._currentPlayerName;
     }
 
-    async updateRecommendations(likedSongSeedLimit:number = 5, seed_genres: string[] = []) {
+    async updateRecommendations(label: string, likedSongSeedLimit:number = 5, seed_genres: string[] = [], features: any = {}) {
         const likedSongs: Track[] = this.spotifyLikedSongs;
         let trackIds = likedSongs.map((track: Track) => {
             return track.id;
@@ -1476,22 +1482,18 @@ export class MusicManager {
         if (trackIds.length > 0) {
             trackIds.length = likedSongSeedLimit;
         }
-        const tracks: Track[] = await this.getRecommendedTracks(trackIds, 10, seed_genres);
+        const tracks: Track[] = await this.getRecommendedTracks(trackIds, seed_genres, features);
         // set the manager's recommendation tracks
         this.recommendationTracks = tracks;
+        this.recommendationLabel = label;
         
         commands.executeCommand("musictime.refreshRecommendations");
     }
 
-    async getRecommendedTracks(trackIds, limit = 10, seed_genres): Promise<Track[]> {
+    async getRecommendedTracks(trackIds, seed_genres, features): Promise<Track[]> {
         try {
-            return await getRecommendationsForTracks(
-                trackIds,
-                limit,
-                "" /*market*/,
-                10, /*min_popularity*/
-                seed_genres
-            );
+            return getRecommendationsForTracks(
+                trackIds, 10, "" /*market*/, 20, 100, seed_genres, [], features);
         } catch (e) {
             //
         }
@@ -1501,6 +1503,17 @@ export class MusicManager {
 
     convertTracksToPlaylistItems(tracks:Track[]) {
         let items: PlaylistItem[] = [];
+        const labelButton = this.buildActionItem(
+            "label",
+            "label",
+            null,
+            PlayerType.NotAssigned,
+            this.recommendationLabel,
+            ""
+        );
+        labelButton.tag = "paw";
+        items.push(labelButton);
+
         if (tracks && tracks.length > 0) {
             for (let i = 0; i < tracks.length; i++) {
                 const track: Track = tracks[i];

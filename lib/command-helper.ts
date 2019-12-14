@@ -273,30 +273,65 @@ export function createCommands(): {
     );
     cmds.push(addToPlaylistCommand);
 
-    // "musictime.likedSongRecs"
     const likedSongRecsCommand = commands.registerCommand(
         "musictime.likedSongRecs",
-        () => musicMgr.updateRecommendations(5)
+        () => musicMgr.updateRecommendations("Similar to Liked Songs", 5)
     );
     cmds.push(likedSongRecsCommand);
-    // "musictime.soundtrackRecs"
+
     const soundtrackSongRecsCommand = commands.registerCommand(
-        "musictime.soundtrackRecs",
-        () => musicMgr.updateRecommendations(0, ["soundtracks"])
+        "musictime.soundtrackSongRecs",
+        () => musicMgr.updateRecommendations("Soundtracks", 0, ["soundtracks"])
     );
     cmds.push(soundtrackSongRecsCommand);
-    // "musictime.classicalSongRecs"
+
     const classicalSongRecsCommand = commands.registerCommand(
         "musictime.classicalSongRecs",
-        () => musicMgr.updateRecommendations(0, ["classical"])
+        () => musicMgr.updateRecommendations("Classical", 0, ["classical"])
     );
     cmds.push(classicalSongRecsCommand);
-    // "musictime.partySongRecs"
-    const partySongRecsCommand = commands.registerCommand(
-        "musictime.partySongRecs",
-        () => musicMgr.updateRecommendations(0, ["party"])
+
+    const pianoSongRecsCommand = commands.registerCommand(
+        "musictime.pianoSongRecs",
+        () => musicMgr.updateRecommendations("Piano", 0, ["piano"])
     );
-    cmds.push(partySongRecsCommand);
+    cmds.push(pianoSongRecsCommand);
+
+    const highEnergySongRecsCommand = commands.registerCommand(
+        "musictime.highEnergySongRecs",
+        () => musicMgr.updateRecommendations("High Energy", 5, [], {min_energy: 0.6, target_energy: 1})
+    );
+    cmds.push(highEnergySongRecsCommand);
+
+    const lowEnergySongRecsCommand = commands.registerCommand(
+        "musictime.lowEnergySongRecs",
+        () => musicMgr.updateRecommendations("Low Energy", 5, [], {max_energy: 0.4, target_energy: 0})
+    );
+    cmds.push(lowEnergySongRecsCommand);
+
+    const highValenceSongRecsCommand = commands.registerCommand(
+        "musictime.highValenceSongRecs",
+        () => musicMgr.updateRecommendations("High Valence", 5, [], {min_valence: 0.6, target_valence: 1})
+    );
+    cmds.push(highValenceSongRecsCommand);
+
+    const lowValenceSongRecsCommand = commands.registerCommand(
+        "musictime.lowValenceSongRecs",
+        () => musicMgr.updateRecommendations("Low Valence", 5, [], {max_valence: 0.4, target_valence: 0})
+    );
+    cmds.push(lowValenceSongRecsCommand);
+
+    const highTempoSongRecsCommand = commands.registerCommand(
+        "musictime.highTempoSongRecs",
+        () => musicMgr.updateRecommendations("High Tempo", 5, [], {min_tempo: 145, target_tempo: 220})
+    );
+    cmds.push(highTempoSongRecsCommand);
+
+    const lowTempoSongRecsCommand = commands.registerCommand(
+        "musictime.lowTempoSongRecs",
+        () => musicMgr.updateRecommendations("Low Tempo", 5, [], {max_tempo: 95, target_tempo: 0})
+    );
+    cmds.push(lowTempoSongRecsCommand);
 
     if (!codeTimeExtInstalled()) {
         // initialize the kpm controller to start the listener
