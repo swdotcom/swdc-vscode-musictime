@@ -15,8 +15,7 @@ import {
     launchAndPlaySpotifyTrack,
     isSpotifyRunning,
     PlayerName,
-    launchPlayer,
-    playSpotifyTrack
+    launchPlayer
 } from "cody-music";
 import { logIt, getPlaylistIcon } from "../Util";
 import { MusicManager } from "./MusicManager";
@@ -26,6 +25,7 @@ import {
     RECOMMENDATIONS_PROVIDER
 } from "../Constants";
 import { playSpotifyDesktopPlaylistByTrack } from "./MusicPlaylistProvider";
+import { MusicCommandManager } from "./MusicCommandManager";
 
 const musicMgr: MusicManager = MusicManager.getInstance();
 
@@ -59,6 +59,8 @@ const playRecommendationTrack = async (track: PlaylistItem) => {
             await launchPlayer(PlayerName.SpotifyDesktop, { quietly: false });
         }
     }
+
+    MusicCommandManager.syncControls(musicMgr.runningTrack, true /*loading*/);
 
     if (!isRunning && !launchDesktop) {
         launchAndPlaySpotifyTrack(track.id);

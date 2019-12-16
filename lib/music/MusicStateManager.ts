@@ -1,4 +1,3 @@
-import { commands } from "vscode";
 import {
     nowInSecs,
     getOffsetSecends,
@@ -22,10 +21,8 @@ import {
 } from "cody-music";
 import { MusicManager } from "./MusicManager";
 import { KpmController } from "../KpmController";
-import {
-    SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
-    PLAYLISTS_PROVIDER
-} from "../Constants";
+import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
+import { MusicCommandManager } from "./MusicCommandManager";
 const fs = require("fs");
 
 export class MusicStateManager {
@@ -300,19 +297,6 @@ export class MusicStateManager {
                 this.existingTrack.state = playingTrack.state;
             }
 
-            const needsRefresh =
-                changeStatus.isNewTrack ||
-                changeStatus.trackStateChanged ||
-                changeStatus.playerNameChanged;
-
-            if (needsRefresh) {
-                // new player (i.e. switched from itunes to spotify)
-                // refresh the entire tree view
-                if (this.musicMgr.currentProvider === PLAYLISTS_PROVIDER) {
-                    commands.executeCommand("musictime.refreshPlaylist");
-                }
-            }
-
             // If the current playlist is the Liked Songs,
             // check if we should start the next track
             await this.playNextLikedSpotifyCheck(changeStatus);
@@ -326,6 +310,17 @@ export class MusicStateManager {
                 this.musicMgr.runningTrack = this.existingTrack;
             } else {
                 this.musicMgr.runningTrack = new Track();
+            }
+
+            const needsRefresh =
+                changeStatus.isNewTrack ||
+                changeStatus.trackStateChanged ||
+                changeStatus.playerNameChanged;
+            if (needsRefresh) {
+                MusicCommandManager.syncControls(
+                    this.musicMgr.runningTrack,
+                    false
+                );
             }
         } catch (e) {
             const errMsg = e.message || e;

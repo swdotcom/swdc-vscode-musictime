@@ -1,10 +1,9 @@
 import { window, StatusBarAlignment, StatusBarItem } from "vscode";
 import { getSongDisplayName, isMac, getItem } from "../Util";
-import { TrackStatus, Track, PlaylistItem, PlayerName } from "cody-music";
+import { TrackStatus, Track, PlayerName } from "cody-music";
 import { MusicPlaylistProvider } from "./MusicPlaylistProvider";
 import { MusicManager } from "./MusicManager";
 import { serverIsAvailable } from "../DataController";
-import { PLAYLISTS_PROVIDER } from "../Constants";
 
 export interface Button {
     /**
@@ -26,7 +25,7 @@ export interface Button {
     statusBarItem: StatusBarItem;
 }
 
-const songNameDisplayTimeoutMillis: number = 12000;
+// const songNameDisplayTimeoutMillis: number = 12000;
 
 export class MusicCommandManager {
     private static _buttons: Button[] = [];
@@ -106,24 +105,24 @@ export class MusicCommandManager {
     }
 
     public static async syncControls(track: Track, showLoading = false) {
-        const musicMgr: MusicManager = MusicManager.getInstance();
+        // const musicMgr: MusicManager = MusicManager.getInstance();
 
         // update the playlists provider if it's the one that's playing
-        if (musicMgr.currentProvider === PLAYLISTS_PROVIDER) {
-            const selectedPlaylist: PlaylistItem = musicMgr.selectedPlaylist;
-            if (selectedPlaylist) {
-                await musicMgr.clearPlaylistTracksForId(selectedPlaylist.id);
-                // this will get the updated state of the track
-                await musicMgr.getPlaylistItemTracksForPlaylistId(
-                    selectedPlaylist.id
-                );
-                await musicMgr.refreshPlaylistState();
+        // if (musicMgr.currentProvider === PLAYLISTS_PROVIDER) {
+        //     const selectedPlaylist: PlaylistItem = musicMgr.selectedPlaylist;
+        //     if (selectedPlaylist) {
+        //         await musicMgr.clearPlaylistTracksForId(selectedPlaylist.id);
+        //         // this will get the updated state of the track
+        //         await musicMgr.getPlaylistItemTracksForPlaylistId(
+        //             selectedPlaylist.id
+        //         );
+        //         await musicMgr.refreshPlaylistState();
 
-                if (this._treeProvider) {
-                    this._treeProvider.refreshParent(selectedPlaylist);
-                }
-            }
-        }
+        //         if (this._treeProvider) {
+        //             this._treeProvider.refreshParent(selectedPlaylist);
+        //         }
+        //     }
+        // }
 
         if (this._hideSongTimeout) {
             clearTimeout(this._hideSongTimeout);
@@ -391,9 +390,9 @@ export class MusicCommandManager {
                 if (isMusicTimeMenuButton) {
                     button.tooltip = this.getMusicMenuTooltip();
                 }
-                if (isMusicTimeProgress) {
-                    button.statusBarItem.text = progressLabel;
-                }
+                // if (isMusicTimeProgress) {
+                //     button.statusBarItem.text = progressLabel;
+                // }
                 // show progress and headphones menu buttons
                 button.statusBarItem.show();
             } else {

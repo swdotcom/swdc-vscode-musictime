@@ -119,13 +119,21 @@ export class MusicControlManager {
     }
 
     async setLiked(liked: boolean) {
+        const serverIsOnline = await serverIsAvailable();
         let track: Track = this.musicMgr.runningTrack;
+
+        if (!serverIsOnline || !track || !track.id) {
+            window.showInformationMessage(
+                `Our service is temporarily unavailable.\n\nPlease try again later.\n`
+            );
+            return;
+        }
 
         // const isLikedSongTrack = track.id === "Liked Songs" ? true : false;
 
         if (track && track.id) {
             // show loading until the liked/unliked is complete
-            MusicCommandManager.syncControls(track, true);
+            MusicCommandManager.syncControls(track, true /*loading*/);
 
             let type = "spotify";
             if (track.playerType === PlayerType.MacItunesDesktop) {

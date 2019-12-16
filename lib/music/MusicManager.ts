@@ -1427,7 +1427,7 @@ export class MusicManager {
         );
         setTimeout(() => {
             launchPlayer(PlayerName.SpotifyWeb);
-        }, 3200);
+        }, 3000);
     }
 
     async getServerTrack(track: Track) {

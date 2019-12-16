@@ -97,6 +97,11 @@ export const playSelectedItem = async (
 
         const notPlaying = playlistItem.state !== TrackStatus.Playing;
 
+        MusicCommandManager.syncControls(
+            musicMgr.runningTrack,
+            true /*loading*/
+        );
+
         if (playlistItem.playerType === PlayerType.MacItunesDesktop) {
             if (notPlaying) {
                 const pos: number = playlistItem.position || 1;
@@ -135,6 +140,11 @@ export const playSelectedItem = async (
 
             // !important! set the selected track now since it's not null
             musicMgr.selectedTrackItem = selectedTrack;
+
+            MusicCommandManager.syncControls(
+                musicMgr.runningTrack,
+                true /*loading*/
+            );
 
             if (playlistItem.playerType === PlayerType.MacItunesDesktop) {
                 const pos: number = 1;
@@ -374,6 +384,8 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
                 // try again if we've just initialized the plugin
                 await musicMgr.refreshPlaylists();
                 playlistChildren = musicMgr.currentPlaylists;
+            } else {
+                initializedPlaylist = true;
             }
             return musicMgr.currentPlaylists;
         }
