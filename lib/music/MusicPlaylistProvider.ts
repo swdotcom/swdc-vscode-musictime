@@ -27,7 +27,8 @@ import { MusicControlManager } from "./MusicControlManager";
 import {
     SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
     NOT_NOW_LABEL,
-    YES_LABEL
+    YES_LABEL,
+    PLAYLISTS_PROVIDER
 } from "../Constants";
 import { MusicManager } from "./MusicManager";
 import { MusicCommandManager } from "./MusicCommandManager";
@@ -54,6 +55,8 @@ export const playSelectedItem = async (
     const musicCtrlMgr = new MusicControlManager();
     const musicMgr: MusicManager = MusicManager.getInstance();
 
+    musicMgr.currentProvider = PLAYLISTS_PROVIDER;
+
     let playerName = musicMgr.getPlayerNameForPlayback();
     // this is another way to check if the player is running or not
     if (!isExpand && playerName !== PlayerName.ItunesDesktop && isMac()) {
@@ -70,6 +73,9 @@ export const playSelectedItem = async (
             if (selectedButton && selectedButton === YES_LABEL) {
                 // launch the desktop
                 playerName = PlayerName.SpotifyDesktop;
+                await launchPlayer(PlayerName.SpotifyDesktop, {
+                    quietly: false
+                });
             }
         }
     }
@@ -160,21 +166,19 @@ export const playSpotifyDesktopPlaylistTrack = async () => {
     const isLikedSongsPlaylist =
         selectedPlaylist.name === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME;
 
-    const devices = await getSpotifyDevices();
-
-    // launch the app if it's not already running
-    if (!devices || devices.length === 0) {
-        await launchPlayer(PlayerName.SpotifyDesktop, { quietly: false });
-    }
-
     if (isLikedSongsPlaylist) {
         // just play the 1st track
-        playSpotifyMacDesktopTrack(selectedTrack.id);
+        playSpotifyDesktopPlaylistByTrack(selectedTrack);
     } else {
         // ex: ["spotify:track:0R8P9KfGJCDULmlEoBagcO", "spotify:playlist:6ZG5lRT77aJ3btmArcykra"]
         // make sure the track has spotify:track and the playlist has spotify:playlist
         playSpotifyMacDesktopTrack(selectedTrack.id, selectedPlaylist.id);
     }
+};
+
+export const playSpotifyDesktopPlaylistByTrack = (track: PlaylistItem) => {
+    // just play the 1st track
+    playSpotifyMacDesktopTrack(track.id);
 };
 
 /**

@@ -84,6 +84,7 @@ export class MusicManager {
     private _sortAlphabetically: boolean = true;
     private _recommendationTracks: Track[] = [];
     private _recommendationLabel: string = "Similar to Liked Songs";
+    private _currentProvider: string = "playlists"; // or "recommendations"
 
     private constructor() {
         //
@@ -182,6 +183,14 @@ export class MusicManager {
 
     set recommendationLabel(label: string) {
         this._recommendationLabel = label;
+    }
+
+    get currentProvider() {
+        return this._currentProvider;
+    }
+
+    set currentProvider(provider: string) {
+        this._currentProvider = provider;
     }
 
     /**

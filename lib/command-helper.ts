@@ -22,7 +22,7 @@ import { connectSlack } from "./slack/SlackControlManager";
 import { MusicManager } from "./music/MusicManager";
 import {
     MusicRecommendationProvider,
-    connectRecommendationPlaylistTreeView,
+    connectRecommendationPlaylistTreeView
 } from "./music/MusicRecommendationProvider";
 
 export function createCommands(): {
@@ -68,6 +68,11 @@ export function createCommands(): {
     });
     cmds.push(previousCmd);
 
+    const progressCmd = commands.registerCommand("musictime.progress", () => {
+        // do nothing for now
+    });
+    cmds.push(progressCmd);
+
     const playCmd = commands.registerCommand(
         "musictime.play",
         async (p: PlaylistItem) => {
@@ -89,6 +94,8 @@ export function createCommands(): {
                 // track status is not yet assigned, play it
                 if (p.type === "track") {
                     await treePlaylistProvider.selectTrack(p, true);
+                } else if (p.type === "recommendation") {
+                    await recTreePlaylistProvider.selectTrack(p, true);
                 } else {
                     await treePlaylistProvider.selectPlaylist(p);
                 }
@@ -299,37 +306,61 @@ export function createCommands(): {
 
     const highEnergySongRecsCommand = commands.registerCommand(
         "musictime.highEnergySongRecs",
-        () => musicMgr.updateRecommendations("High Energy", 5, [], {min_energy: 0.6, target_energy: 1})
+        () =>
+            musicMgr.updateRecommendations("High Energy", 5, [], {
+                min_energy: 0.6,
+                target_energy: 1
+            })
     );
     cmds.push(highEnergySongRecsCommand);
 
     const lowEnergySongRecsCommand = commands.registerCommand(
         "musictime.lowEnergySongRecs",
-        () => musicMgr.updateRecommendations("Low Energy", 5, [], {max_energy: 0.4, target_energy: 0})
+        () =>
+            musicMgr.updateRecommendations("Low Energy", 5, [], {
+                max_energy: 0.4,
+                target_energy: 0
+            })
     );
     cmds.push(lowEnergySongRecsCommand);
 
     const highValenceSongRecsCommand = commands.registerCommand(
         "musictime.highValenceSongRecs",
-        () => musicMgr.updateRecommendations("High Valence", 5, [], {min_valence: 0.6, target_valence: 1})
+        () =>
+            musicMgr.updateRecommendations("High Valence", 5, [], {
+                min_valence: 0.6,
+                target_valence: 1
+            })
     );
     cmds.push(highValenceSongRecsCommand);
 
     const lowValenceSongRecsCommand = commands.registerCommand(
         "musictime.lowValenceSongRecs",
-        () => musicMgr.updateRecommendations("Low Valence", 5, [], {max_valence: 0.4, target_valence: 0})
+        () =>
+            musicMgr.updateRecommendations("Low Valence", 5, [], {
+                max_valence: 0.4,
+                target_valence: 0
+            })
     );
     cmds.push(lowValenceSongRecsCommand);
 
     const highTempoSongRecsCommand = commands.registerCommand(
         "musictime.highTempoSongRecs",
-        () => musicMgr.updateRecommendations("High Tempo", 5, [], {min_tempo: 145, target_tempo: 220})
+        () =>
+            musicMgr.updateRecommendations("High Tempo", 5, [], {
+                min_tempo: 145,
+                target_tempo: 220
+            })
     );
     cmds.push(highTempoSongRecsCommand);
 
     const lowTempoSongRecsCommand = commands.registerCommand(
         "musictime.lowTempoSongRecs",
-        () => musicMgr.updateRecommendations("Low Tempo", 5, [], {max_tempo: 95, target_tempo: 0})
+        () =>
+            musicMgr.updateRecommendations("Low Tempo", 5, [], {
+                max_tempo: 95,
+                target_tempo: 0
+            })
     );
     cmds.push(lowTempoSongRecsCommand);
 

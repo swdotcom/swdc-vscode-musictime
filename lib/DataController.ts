@@ -312,17 +312,17 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
         // update the login status
         // await getUserStatus(serverIsOnline, true /*ignoreCache*/);
         window.showInformationMessage(
-            `Successfully connected to Spotify. Loading playlists.`
+            `Successfully connected to Spotify. Loading playlists, please wait.`
         );
 
         const likedSongs: Track[] = await getSpotifyLikedSongs();
         musicMgr.spotifyLikedSongs = likedSongs;
 
         // send the "Liked Songs" to software app so we can be in sync
-        await seedLikedSongsToSoftware(likedSongs);
+        seedLikedSongsToSoftware(likedSongs);
 
         // send the top spotify songs from the users playlists to help seed song sessions
-        await seedTopSpotifySongs(likedSongs);
+        seedTopSpotifySongs(likedSongs);
 
         setTimeout(() => {
             musicMgr.clearSpotify();

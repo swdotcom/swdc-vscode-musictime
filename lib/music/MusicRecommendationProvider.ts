@@ -7,11 +7,27 @@ import {
     Event,
     Disposable,
     TreeView,
-    commands
+    commands,
+    window
 } from "vscode";
-import { PlaylistItem, launchAndPlaySpotifyTrack } from "cody-music";
+import {
+    PlaylistItem,
+    launchAndPlaySpotifyTrack,
+    isSpotifyRunning,
+    PlayerName,
+    launchPlayer,
+    playSpotifyTrack
+} from "cody-music";
 import { logIt, getPlaylistIcon } from "../Util";
 import { MusicManager } from "./MusicManager";
+import {
+    NOT_NOW_LABEL,
+    YES_LABEL,
+    RECOMMENDATIONS_PROVIDER
+} from "../Constants";
+import { playSpotifyDesktopPlaylistByTrack } from "./MusicPlaylistProvider";
+
+const musicMgr: MusicManager = MusicManager.getInstance();
 
 /**
  * Create the playlist tree item (root or leaf)
@@ -23,6 +39,35 @@ const createPlaylistTreeItem = (
     cstate: TreeItemCollapsibleState
 ) => {
     return new PlaylistTreeItem(p, cstate);
+};
+
+const playRecommendationTrack = async (track: PlaylistItem) => {
+    const isRunning = await isSpotifyRunning();
+
+    musicMgr.currentProvider = RECOMMENDATIONS_PROVIDER;
+
+    // ask to show the desktop if they're a premium user
+    let launchDesktop = false;
+    if (!isRunning && musicMgr.isSpotifyPremium()) {
+        // ask to launch
+        const selectedButton = await window.showInformationMessage(
+            `Spotify is currently not running, would you like to launch the desktop instead of the the web player?`,
+            ...[NOT_NOW_LABEL, YES_LABEL]
+        );
+        if (selectedButton && selectedButton === YES_LABEL) {
+            launchDesktop = true;
+            await launchPlayer(PlayerName.SpotifyDesktop, { quietly: false });
+        }
+    }
+
+    if (!isRunning && !launchDesktop) {
+        launchAndPlaySpotifyTrack(track.id);
+    } else if (launchDesktop) {
+        playSpotifyDesktopPlaylistByTrack(track);
+    } else {
+        // this will just tell spotify which track to play
+        launchAndPlaySpotifyTrack(track.id);
+    }
 };
 
 /**
@@ -50,7 +95,7 @@ export const connectRecommendationPlaylistTreeView = (
                 return;
             }
 
-            await launchAndPlaySpotifyTrack(playlistItem.id, "");
+            await playRecommendationTrack(playlistItem);
         }),
         view.onDidChangeVisibility(e => {
             if (e.visible) {
@@ -107,20 +152,6 @@ export class MusicRecommendationProvider
         }
     }
 
-    async selectPlaylist(p: PlaylistItem) {
-        try {
-            // don't "select" it though. that will invoke the pause/play action
-            await this.view.reveal(p, {
-                focus: true,
-                select: false,
-                expand: true
-            });
-            await launchAndPlaySpotifyTrack(p.id, "");
-        } catch (err) {
-            logIt(`Unable to select playlist: ${err.message}`);
-        }
-    }
-
     getTreeItem(p: PlaylistItem): PlaylistTreeItem {
         const treeItem: PlaylistTreeItem = createPlaylistTreeItem(
             p,
@@ -130,7 +161,6 @@ export class MusicRecommendationProvider
     }
 
     async getChildren(element?: PlaylistItem): Promise<PlaylistItem[]> {
-        const musicMgr: MusicManager = MusicManager.getInstance();
         const recTrackPlaylistItems = musicMgr.convertTracksToPlaylistItems(
             musicMgr.recommendationTracks
         );
