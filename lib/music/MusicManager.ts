@@ -1099,10 +1099,6 @@ export class MusicManager {
             return;
         }
 
-        window.showInformationMessage(
-            `Creating and populating the ${PERSONAL_TOP_SONGS_NAME} playlist, please wait.`
-        );
-
         if (this.requiresSpotifyAccess()) {
             // don't create or refresh, no spotify access provided
             return;
@@ -1113,6 +1109,12 @@ export class MusicManager {
         let customPlaylist = this.getMusicTimePlaylistByTypeId(
             PERSONAL_TOP_SONGS_PLID
         );
+
+        const infoMsg = !customPlaylist
+            ? `Creating and populating the ${PERSONAL_TOP_SONGS_NAME} playlist, please wait.`
+            : `Refreshing the ${PERSONAL_TOP_SONGS_NAME} playlist, please wait.`;
+
+        window.showInformationMessage(infoMsg);
 
         let playlistId = null;
         if (!customPlaylist) {

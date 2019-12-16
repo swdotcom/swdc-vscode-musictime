@@ -280,10 +280,6 @@ async function slackConnectStatusHandler(tryCountUntilFound) {
         }
     } else {
         window.showInformationMessage(`Successfully connected to Slack`);
-
-        // setTimeout(() => {
-        //     commands.executeCommand("musictime.refreshPlaylist");
-        // }, 1000);
     }
 }
 
