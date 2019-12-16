@@ -124,7 +124,6 @@ export class MusicControlManager {
         // const isLikedSongTrack = track.id === "Liked Songs" ? true : false;
 
         if (track && track.id) {
-
             // show loading until the liked/unliked is complete
             MusicCommandManager.syncControls(track, true);
 
@@ -517,6 +516,7 @@ export async function disconnectOauth(type: string, confirmDisconnect = true) {
                 // refresh the playlist
                 setTimeout(() => {
                     commands.executeCommand("musictime.refreshPlaylist");
+                    commands.executeCommand("musictime.refreshRecommendations");
                 }, 500);
             }
         } else {

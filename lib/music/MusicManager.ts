@@ -490,70 +490,79 @@ export class MusicManager {
                 items.push(this.getSwitchToItunesButton());
             }
 
+            // add the rest only if they don't need spotify access
             if (!needsSpotifyAccess) {
                 items.push(this.getWebAnalyticsButton());
-            }
 
-            // line break between actions and software playlist section
-            items.push(this.getLineBreakButton());
+                // line break between actions and software playlist section
+                items.push(this.getLineBreakButton());
 
-            // get the custom playlist button
-            if (serverIsOnline && allowSpotifyPlaylistFetch) {
-                const customPlaylistButton: PlaylistItem = this.getCustomPlaylistButton();
-                if (customPlaylistButton) {
-                    items.push(customPlaylistButton);
-                }
-            }
-
-            // get the Software Top 40 Playlist
-            const softwareTop40: PlaylistItem = await getSpotifyPlaylist(
-                SOFTWARE_TOP_40_PLAYLIST_ID
-            );
-            if (softwareTop40 && softwareTop40.id) {
-                softwareTop40.itemType = "playlist";
-                softwareTop40.tag = "paw";
-                // add it to music time playlist
-                items.push(softwareTop40);
-            }
-
-            // Add the AI generated playlist
-            if (this._musictimePlaylists && this._musictimePlaylists.length) {
-                let aiPlaylist = this._musictimePlaylists.find(element => {
-                    return element.playlistTypeId === PERSONAL_TOP_SONGS_PLID;
-                });
-                if (aiPlaylist) {
-                    items.push(aiPlaylist);
-                }
-            }
-
-            // add Liked Songs folder within the software playlist section
-            if (!needsSpotifyAccess) {
-                // only add the "Liked Songs" playlist if there are tracks found in that playlist
-                this.spotifyLikedSongs = await getSpotifyLikedSongs();
-                if (this.spotifyLikedSongs && this.spotifyLikedSongs.length) {
-                    items.push(this.getSpotifyLikedPlaylistFolder());
-
-                    // refresh the recommendation tracks
-                    if (this.recommendationTracks.length === 0) {
-                        setTimeout(() => {
-                            this.updateRecommendations(
-                                "Similar to Liked Songs",
-                                5
-                            );
-                        }, 1000);
+                // get the custom playlist button
+                if (serverIsOnline && allowSpotifyPlaylistFetch) {
+                    const customPlaylistButton: PlaylistItem = this.getCustomPlaylistButton();
+                    if (customPlaylistButton) {
+                        items.push(customPlaylistButton);
                     }
                 }
-            }
 
-            // line break between software playlist section and normal playlists
-            if (playlists.length > 0) {
-                items.push(this.getLineBreakButton());
-            }
+                // get the Software Top 40 Playlist
+                const softwareTop40: PlaylistItem = await getSpotifyPlaylist(
+                    SOFTWARE_TOP_40_PLAYLIST_ID
+                );
+                if (softwareTop40 && softwareTop40.id) {
+                    softwareTop40.itemType = "playlist";
+                    softwareTop40.tag = "paw";
+                    // add it to music time playlist
+                    items.push(softwareTop40);
+                }
 
-            // normal playlists
-            playlists.forEach(item => {
-                items.push(item);
-            });
+                // Add the AI generated playlist
+                if (
+                    this._musictimePlaylists &&
+                    this._musictimePlaylists.length
+                ) {
+                    let aiPlaylist = this._musictimePlaylists.find(element => {
+                        return (
+                            element.playlistTypeId === PERSONAL_TOP_SONGS_PLID
+                        );
+                    });
+                    if (aiPlaylist) {
+                        items.push(aiPlaylist);
+                    }
+                }
+
+                // add Liked Songs folder within the software playlist section
+                if (!needsSpotifyAccess) {
+                    // only add the "Liked Songs" playlist if there are tracks found in that playlist
+                    this.spotifyLikedSongs = await getSpotifyLikedSongs();
+                    if (
+                        this.spotifyLikedSongs &&
+                        this.spotifyLikedSongs.length
+                    ) {
+                        items.push(this.getSpotifyLikedPlaylistFolder());
+
+                        // refresh the recommendation tracks
+                        if (this.recommendationTracks.length === 0) {
+                            setTimeout(() => {
+                                this.updateRecommendations(
+                                    "Similar to Liked Songs",
+                                    5
+                                );
+                            }, 1000);
+                        }
+                    }
+                }
+
+                // line break between software playlist section and normal playlists
+                if (playlists.length > 0) {
+                    items.push(this.getLineBreakButton());
+                }
+
+                // normal playlists
+                playlists.forEach(item => {
+                    items.push(item);
+                });
+            }
 
             this._spotifyPlaylists = items;
 
@@ -1487,6 +1496,9 @@ export class MusicManager {
         seed_genres: string[] = [],
         features: any = {}
     ) {
+        if (this.requiresSpotifyAccess()) {
+            return;
+        }
         const likedSongs: Track[] = this.spotifyLikedSongs;
         let trackIds = likedSongs.map((track: Track) => {
             return track.id;
@@ -1535,28 +1547,31 @@ export class MusicManager {
 
     convertTracksToPlaylistItems(tracks: Track[]) {
         let items: PlaylistItem[] = [];
-        const labelButton = this.buildActionItem(
-            "label",
-            "label",
-            null,
-            PlayerType.NotAssigned,
-            this.recommendationLabel,
-            ""
-        );
-        labelButton.tag = "paw";
 
-        if (tracks && tracks.length > 0) {
-            // since we have recommendations, show the label button
-            items.push(labelButton);
-            for (let i = 0; i < tracks.length; i++) {
-                const track: Track = tracks[i];
-                const item: PlaylistItem = MusicManager.getInstance().createPlaylistItemFromTrack(
-                    track,
-                    0
-                );
-                item.tag = "spotify";
-                item.type = "recommendation";
-                items.push(item);
+        if (!this.requiresSpotifyAccess()) {
+            const labelButton = this.buildActionItem(
+                "label",
+                "label",
+                null,
+                PlayerType.NotAssigned,
+                this.recommendationLabel,
+                ""
+            );
+            labelButton.tag = "paw";
+
+            if (tracks && tracks.length > 0) {
+                // since we have recommendations, show the label button
+                items.push(labelButton);
+                for (let i = 0; i < tracks.length; i++) {
+                    const track: Track = tracks[i];
+                    const item: PlaylistItem = MusicManager.getInstance().createPlaylistItemFromTrack(
+                        track,
+                        0
+                    );
+                    item.tag = "spotify";
+                    item.type = "recommendation";
+                    items.push(item);
+                }
             }
         }
         return items;
