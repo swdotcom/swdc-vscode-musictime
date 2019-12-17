@@ -8,7 +8,12 @@ import {
     MUSIC_TIME_TYPE
 } from "./Constants";
 import { getToggleFileEventLoggingState } from "./DataController";
-import { PlaylistItem, TrackStatus, CodyResponse, CodyResponseType } from "cody-music";
+import {
+    PlaylistItem,
+    TrackStatus,
+    CodyResponse,
+    CodyResponseType
+} from "cody-music";
 const moment = require("moment-timezone");
 
 const open = require("open");
@@ -843,10 +848,33 @@ export function getFileType(fileName: string) {
 
 const resourcePath: string = path.join(__filename, "..", "..", "resources");
 
+const getPopulartityLevel = (level: number) => {
+    if (!level) {
+        return "";
+    }
+    if (level < 40) {
+        return "-lowpopularity";
+    } else if (level < 75) {
+        return "-medpopularity";
+    }
+    return "-highpopularity";
+};
+
 export function getPlaylistIcon(treeItem: PlaylistItem) {
     const stateVal =
         treeItem.state !== TrackStatus.Playing ? "notplaying" : "playing";
     let contextValue = "";
+
+    // itemType will be either: track | playlist
+    // type will be either: connected | action | recommendation | label | track | playlist | itunes | spotify
+    // tag will be either: action | paw | spotify | spotify-liked-songs | active
+
+    // track/playlist/action hover contextValue matching...
+    // musictime.sharePlaylist =~ /spotify-playlist-item.*/
+    // musictime.shareTrack =~ /track-item.*/
+    // musictime.addToPlaylist =~ /spotify-recommendation.*/
+    // musictime.shareTrack =~ viewItem =~ /spotify-recommendation.*/
+    // musictime.highPopularity =~ /.*-highpopularity/
 
     if (treeItem.tag === "action") {
         this.contextValue = "treeitem-action";
@@ -859,9 +887,15 @@ export function getPlaylistIcon(treeItem: PlaylistItem) {
             // make sure the contextValue has spotify in it
             contextValue = `spotify-${treeItem.type}-item-${stateVal}`;
         } else {
-            contextValue = `${treeItem.tag}-${treeItem.type}-item-${stateVal}`;
+            if (treeItem.tag) {
+                contextValue = `${treeItem.tag}-${treeItem.type}-item-${stateVal}`;
+            } else {
+                contextValue = `${treeItem.type}-item-${stateVal}`;
+            }
         }
     }
+
+    contextValue += getPopulartityLevel(treeItem.popularity);
 
     let lightPath = null;
     let darkPath = null;
@@ -898,15 +932,14 @@ export function getPlaylistIcon(treeItem: PlaylistItem) {
     return { lightPath, darkPath, contextValue };
 }
 
-export function getCodyErrorMessage(response:CodyResponse) {
+export function getCodyErrorMessage(response: CodyResponse) {
     let errMsg = null;
     if (response.state === CodyResponseType.Failed) {
         // format the message
         errMsg = "";
         if (response.message) {
             errMsg = response.message;
-            var hasEndingPeriod =
-                errMsg.lastIndexOf(".") === errMsg.length - 1;
+            var hasEndingPeriod = errMsg.lastIndexOf(".") === errMsg.length - 1;
             if (!hasEndingPeriod) {
                 errMsg = `${errMsg}.`;
             }

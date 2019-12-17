@@ -12,7 +12,9 @@ import {
     playTrack,
     saveToSpotifyLiked,
     CodyResponse,
-    addTracksToPlaylist
+    addTracksToPlaylist,
+    removeFromSpotifyLiked,
+    setItunesLoved
 } from "cody-music";
 import { window, ViewColumn, Uri, commands } from "vscode";
 import { MusicCommandManager } from "./MusicCommandManager";
@@ -132,6 +134,21 @@ export class MusicControlManager {
         // const isLikedSongTrack = track.id === "Liked Songs" ? true : false;
 
         if (track && track.id) {
+            if (track.playerType === PlayerType.MacItunesDesktop) {
+                // await so that the stateCheckHandler fetches
+                // the latest version of the itunes track
+                await setItunesLoved(liked).catch(err => {
+                    logIt(`Error updating itunes loved state: ${err.message}`);
+                });
+            } else {
+                // save the spotify track to the users liked songs playlist
+                if (liked) {
+                    await saveToSpotifyLiked([track.id]);
+                } else {
+                    await removeFromSpotifyLiked([track.id]);
+                }
+            }
+
             // show loading until the liked/unliked is complete
             MusicCommandManager.syncControls(track, true /*loading*/);
 

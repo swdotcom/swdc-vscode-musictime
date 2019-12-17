@@ -1,7 +1,7 @@
 {
     "name": "music-time",
     "displayName": "Music Time",
-    "version": "1.4.0",
+    "version": "1.4.1",
     "publisher": "softwaredotcom",
     "description": "Music Time is an open source plugin that curates and launches playlists for coding right from your editor.",
     "author": {
@@ -232,6 +232,14 @@
             {
                 "command": "musictime.lowTempoSongRecs",
                 "title": "Low Tempo"
+            },
+            {
+                "command": "musictime.highPopularity",
+                "title": "High Popularity",
+                "icon": {
+                    "light": "resources/light/rocket-light-bg.svg",
+                    "dark": "resources/dark/rocket-dark-bg.svg"
+                }
             }
         ],
         "viewsContainers": {
@@ -260,21 +268,21 @@
                 {
                     "command": "musictime.sharePlaylist",
                     "when": "viewItem =~ /spotify-playlist-item.*/",
-                    "group": "inline@2"
+                    "group": "inline@1"
                 },
                 {
                     "command": "musictime.shareTrack",
-                    "when": "viewItem =~ /track-item.*/",
-                    "group": "inline@2"
+                    "when": "viewItem =~ /track-item.*/ || viewItem =~ /spotify-recommendation.*/",
+                    "group": "inline@1"
                 },
                 {
                     "command": "musictime.addToPlaylist",
                     "when": "viewItem =~ /spotify-recommendation.*/",
-                    "group": "inline@3"
+                    "group": "inline@2"
                 },
                 {
-                    "command": "musictime.shareTrack",
-                    "when": "viewItem =~ /spotify-recommendation.*/",
+                    "command": "musictime.highPopularity",
+                    "when": "viewItem =~ /.*-highpopularity.*/",
                     "group": "inline@4"
                 }
             ],
