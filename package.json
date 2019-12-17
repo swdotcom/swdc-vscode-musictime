@@ -271,6 +271,11 @@
                     "command": "musictime.addToPlaylist",
                     "when": "viewItem =~ /spotify-recommendation.*/",
                     "group": "inline@3"
+                },
+                {
+                    "command": "musictime.shareTrack",
+                    "when": "viewItem =~ /spotify-recommendation.*/",
+                    "group": "inline@4"
                 }
             ],
             "view/title": [
