@@ -292,7 +292,7 @@ export class MusicControlManager {
 
         if (!needsSpotifyAccess) {
             menuOptions.items.push({
-                label: "See web analytics",
+                label: "See Web Analytics",
                 detail: "See music analytics in the web app",
                 command: "musictime.launchAnalytics"
             });

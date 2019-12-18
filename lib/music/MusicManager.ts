@@ -258,6 +258,12 @@ export class MusicManager {
         this._playlistTrackMap = {};
     }
 
+    updateSort(sortAlpha) {
+        this.sortAlphabetically = sortAlpha;
+        commands.executeCommand("musictime.refreshPlaylist");
+        window.showInformationMessage("Sorting playlist, please wait.");
+    }
+
     async refreshPlaylists() {
         if (this._buildingPlaylists) {
             return;
@@ -441,11 +447,6 @@ export class MusicManager {
             items.push(this.getNoMusicTimeConnectionButton());
         }
 
-        if (!needsSpotifyAccess && !hasSpotifyUser && type === "spotify") {
-            // show that we're unable to connect to spotify at the moment
-            items.push(this.getNoSpotifyConnectionButton());
-        }
-
         // show the spotify connect premium button if they're connected and a non-premium account
         if (isNonPremiumConnectedSpotify) {
             // show the spotify premium account required button
@@ -472,16 +473,12 @@ export class MusicManager {
             this._itunesPlaylists = items;
         } else {
             // show the devices listening folder if they've already connected oauth
-            if (!needsSpotifyAccess) {
-                const {
-                    title,
-                    tooltip,
-                    loggedIn
-                } = await this.getActiveSpotifyDevicesTitleAndTooltip();
+            const activeDeviceInfo = await this.getActiveSpotifyDevicesTitleAndTooltip();
+            if (activeDeviceInfo) {
                 const devicesFoundButton = this.createSpotifyDevicesButton(
-                    title,
-                    tooltip,
-                    loggedIn
+                    activeDeviceInfo.title,
+                    activeDeviceInfo.tooltip,
+                    activeDeviceInfo.loggedIn
                 );
                 items.push(devicesFoundButton);
             }
@@ -498,11 +495,9 @@ export class MusicManager {
                 items.push(this.getLineBreakButton());
 
                 // get the custom playlist button
-                if (serverIsOnline && allowSpotifyPlaylistFetch) {
-                    const customPlaylistButton: PlaylistItem = this.getCustomPlaylistButton();
-                    if (customPlaylistButton) {
-                        items.push(customPlaylistButton);
-                    }
+                const customPlaylistButton: PlaylistItem = this.getCustomPlaylistButton();
+                if (customPlaylistButton) {
+                    items.push(customPlaylistButton);
                 }
 
                 // get the Software Top 40 Playlist
@@ -606,17 +601,6 @@ export class MusicManager {
             PlayerType.NotAssigned,
             "Music Time Offline",
             "Unable to connect to Music Time"
-        );
-    }
-
-    getNoSpotifyConnectionButton() {
-        return this.buildActionItem(
-            "offline",
-            "offline",
-            null,
-            PlayerType.NotAssigned,
-            "Go Online To Load Playlists",
-            "Unable to connect to Spotify"
         );
     }
 
@@ -778,7 +762,7 @@ export class MusicManager {
                     // done, found an active device
                     return {
                         title: `Listening on ${device.name}`,
-                        tooltip: "Spotify devices available",
+                        tooltip: "Listening on a Spotify device",
                         loggedIn: true
                     };
                 } else {
@@ -789,19 +773,12 @@ export class MusicManager {
 
         if (inactiva_devices_names.length > 0) {
             return {
-                title: `Available on ${inactiva_devices_names.join(", ")}`,
-                tooltip:
-                    "Spotify devices detected but are not currently active",
+                title: `Connected on ${inactiva_devices_names.join(", ")}`,
+                tooltip: "Multiple Spotify devices connected",
                 loggedIn: true
             };
         }
-
-        return {
-            title: "No Devices Detected",
-            tooltip:
-                "No Spotify devices detected, you may need to login to your player",
-            loggedIn: false
-        };
+        return null;
     }
 
     clearPlaylistTracksForId(playlist_id) {
@@ -940,7 +917,7 @@ export class MusicManager {
         listItem.id = "launchmusicanalytics";
         listItem.command = "musictime.launchAnalytics";
         listItem.playerType = PlayerType.WebSpotify;
-        listItem.name = "See web analytics";
+        listItem.name = "See Web Analytics";
         listItem.tooltip = "See music analytics in the web app";
         return listItem;
     }

@@ -197,8 +197,7 @@ export function createCommands(): {
     const sortPlaylistAlphabeticallyCommand = commands.registerCommand(
         "musictime.sortAlphabetically",
         async () => {
-            musicMgr.sortAlphabetically = true;
-            commands.executeCommand("musictime.refreshPlaylist");
+            musicMgr.updateSort(true);
         }
     );
     cmds.push(sortPlaylistAlphabeticallyCommand);
@@ -206,8 +205,7 @@ export function createCommands(): {
     const sortPlaylistToOriginalCommand = commands.registerCommand(
         "musictime.sortToOriginal",
         async () => {
-            musicMgr.sortAlphabetically = false;
-            commands.executeCommand("musictime.refreshPlaylist");
+            musicMgr.updateSort(false);
         }
     );
     cmds.push(sortPlaylistToOriginalCommand);

@@ -852,9 +852,9 @@ const getPopulartityLevel = (level: number) => {
     if (!level) {
         return "";
     }
-    if (level < 40) {
+    if (level < 25) {
         return "-lowpopularity";
-    } else if (level < 75) {
+    } else if (level < 65) {
         return "-medpopularity";
     }
     return "-highpopularity";
@@ -871,9 +871,8 @@ export function getPlaylistIcon(treeItem: PlaylistItem) {
 
     // track/playlist/action hover contextValue matching...
     // musictime.sharePlaylist =~ /spotify-playlist-item.*/
-    // musictime.shareTrack =~ /track-item.*/
+    // musictime.shareTrack =~ /track-item.*/ or =~ /spotify-recommendation.*/
     // musictime.addToPlaylist =~ /spotify-recommendation.*/
-    // musictime.shareTrack =~ viewItem =~ /spotify-recommendation.*/
     // musictime.highPopularity =~ /.*-highpopularity/
 
     if (treeItem.tag === "action") {

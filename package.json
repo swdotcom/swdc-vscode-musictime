@@ -283,7 +283,7 @@
                 {
                     "command": "musictime.highPopularity",
                     "when": "viewItem =~ /.*-highpopularity.*/",
-                    "group": "inline@4"
+                    "group": "inline@2"
                 }
             ],
             "view/title": [

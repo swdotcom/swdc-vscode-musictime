@@ -88,13 +88,6 @@ export class MusicCommandManager {
             "musictime.currentSong",
             995
         );
-        // not online button
-        this.createButton(
-            "Not Online",
-            "Go online to see your Spotify playlists.",
-            null,
-            995
-        );
 
         const musicMgr: MusicManager = MusicManager.getInstance();
         await this.syncControls(musicMgr.runningTrack);
@@ -224,7 +217,6 @@ export class MusicCommandManager {
             const btnCmd = button.statusBarItem.command;
 
             const isMusicTimeMenuButton = btnCmd === "musictime.menu";
-            const notOnlineButton = button.statusBarItem.text === "Not Online";
             const isConnectSpotifyButton =
                 button.statusBarItem.text === "Connect Spotify";
             const isConnectPremiumSpotifyButton =
@@ -233,13 +225,6 @@ export class MusicCommandManager {
             if (isMusicTimeMenuButton) {
                 button.tooltip = this.getMusicMenuTooltip();
                 // always show the headphones button for the launch controls function
-                button.statusBarItem.show();
-            } else if (
-                notOnlineButton &&
-                !needsSpotifyAccess &&
-                !hasSpotifyUser &&
-                type === "spotify"
-            ) {
                 button.statusBarItem.show();
             } else if (isConnectSpotifyButton && needsSpotifyAccess) {
                 // show the connect button
