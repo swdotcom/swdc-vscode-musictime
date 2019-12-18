@@ -225,14 +225,6 @@ export function createCommands(): {
     );
     cmds.push(refreshPlaylistCommand);
 
-    const refreshRecPlaylistCommand = commands.registerCommand(
-        "musictime.refreshRecommendations",
-        async () => {
-            recTreePlaylistProvider.refresh();
-        }
-    );
-    cmds.push(refreshRecPlaylistCommand);
-
     const launchSpotifyCommand = commands.registerCommand(
         "musictime.launchSpotify",
         () => musicMgr.launchTrackPlayer(PlayerName.SpotifyWeb)
@@ -364,6 +356,26 @@ export function createCommands(): {
             })
     );
     cmds.push(lowTempoSongRecsCommand);
+
+    const refreshRecommendationsCommand = commands.registerCommand(
+        "musictime.refreshRecommendations",
+        async () => {
+            if (!musicMgr.requiresSpotifyAccess()) {
+                musicMgr.refreshRecommendations();
+            }
+        }
+    );
+    cmds.push(refreshRecommendationsCommand);
+
+    const refreshRecPlaylistCommand = commands.registerCommand(
+        "musictime.refreshRecommendationsTree",
+        async () => {
+            if (!musicMgr.requiresSpotifyAccess()) {
+                recTreePlaylistProvider.refresh();
+            }
+        }
+    );
+    cmds.push(refreshRecPlaylistCommand);
 
     if (!codeTimeExtInstalled()) {
         // initialize the kpm controller to start the listener

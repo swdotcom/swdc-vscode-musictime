@@ -81,10 +81,11 @@ export class MusicManager {
     private _spotifyClientId: string = "";
     private _spotifyClientSecret: string = "";
     private _initialized: boolean = false;
-    private _sortAlphabetically: boolean = true;
+    private _sortAlphabetically: boolean = false;
     private _recommendationTracks: Track[] = [];
     private _recommendationLabel: string = "Similar to Liked Songs";
     private _currentProvider: string = "playlists"; // or "recommendations"
+    private _currentRecMeta: any = {};
 
     private constructor() {
         //
@@ -123,6 +124,10 @@ export class MusicManager {
 
     get savedPlaylists(): PlaylistItem[] {
         return this._savedPlaylists;
+    }
+
+    set savedPlaylists(playlists: PlaylistItem[]) {
+        this._savedPlaylists = playlists;
     }
 
     get userTopSongs(): PlaylistItem[] {
@@ -193,6 +198,14 @@ export class MusicManager {
         this._currentProvider = provider;
     }
 
+    get currentRecMeta() {
+        return this._currentRecMeta;
+    }
+
+    set currentRecMeta(meta: any) {
+        this._currentRecMeta = meta;
+    }
+
     /**
      * Get the current player: spotify-web or itunes
      */
@@ -249,7 +262,7 @@ export class MusicManager {
     }
 
     clearSavedPlaylists() {
-        this._savedPlaylists = [];
+        this.savedPlaylists = [];
     }
 
     clearSpotify() {
@@ -391,7 +404,7 @@ export class MusicManager {
         }
 
         // fetch the saved playlists from software app
-        if (this._savedPlaylists.length === 0 && !needsSpotifyAccess) {
+        if (this.savedPlaylists.length === 0 && !needsSpotifyAccess) {
             await this.fetchSavedPlaylists(serverIsOnline);
         }
 
@@ -401,7 +414,7 @@ export class MusicManager {
             serverIsOnline &&
             !needsSpotifyAccess &&
             playerName === PlayerName.SpotifyWeb &&
-            this._savedPlaylists.length > 0 &&
+            this.savedPlaylists.length > 0 &&
             playlists.length > 0
         ) {
             await this.reconcilePlaylists(playlists);
@@ -433,7 +446,7 @@ export class MusicManager {
         }
 
         // filter out the music time playlists into it's own list if we have any
-        this.retrieveMusicTimePlaylist(playlists);
+        await this.retrieveMusicTimePlaylist(playlists);
 
         // if itunes, show the itunes connected button
         if (playerName === PlayerName.ItunesDesktop) {
@@ -997,9 +1010,9 @@ export class MusicManager {
      */
     retrieveMusicTimePlaylist(playlists: PlaylistItem[]) {
         this._musictimePlaylists = [];
-        if (this._savedPlaylists.length > 0 && playlists.length > 0) {
-            for (let i = 0; i < this._savedPlaylists.length; i++) {
-                let savedPlaylist: PlaylistItem = this._savedPlaylists[i];
+        if (this.savedPlaylists.length > 0 && playlists.length > 0) {
+            for (let i = 0; i < this.savedPlaylists.length; i++) {
+                let savedPlaylist: PlaylistItem = this.savedPlaylists[i];
                 let savedPlaylistTypeId = savedPlaylist.playlistTypeId;
 
                 for (let x = playlists.length - 1; x >= 0; x--) {
@@ -1065,7 +1078,7 @@ export class MusicManager {
                 }
             }
         }
-        this._savedPlaylists = playlists;
+        this.savedPlaylists = playlists;
     }
 
     /**
@@ -1327,8 +1340,8 @@ export class MusicManager {
     }
 
     deleteSavedPlaylists() {
-        if (this._savedPlaylists && this._savedPlaylists.length > 0) {
-            this._savedPlaylists.map(async savedPlaylist => {
+        if (this.savedPlaylists && this.savedPlaylists.length > 0) {
+            this.savedPlaylists.map(async savedPlaylist => {
                 // delete
                 await softwareDelete(
                     `/music/generatedPlaylist/${savedPlaylist.id}`,
@@ -1342,8 +1355,8 @@ export class MusicManager {
     // global and custom.  We'll remove them from our db if we're unable to find a matching
     // playlist_id we have saved.
     async reconcilePlaylists(playlists: PlaylistItem[]) {
-        for (let i = 0; i < this._savedPlaylists.length; i++) {
-            const savedPlaylist = this._savedPlaylists[i];
+        for (let i = 0; i < this.savedPlaylists.length; i++) {
+            const savedPlaylist = this.savedPlaylists[i];
 
             // find the saved playlist in the spotify playlist list
             let foundItem = playlists.find(element => {
@@ -1480,6 +1493,20 @@ export class MusicManager {
         return this._currentPlayerName;
     }
 
+    async refreshRecommendations() {
+        if (this.currentRecMeta.label) {
+            this.updateRecommendations(
+                this.currentRecMeta.label,
+                this.currentRecMeta.likedSongSeedLimit,
+                this.currentRecMeta.seed_genres,
+                this.currentRecMeta.features
+            );
+        } else {
+            // default to the similar liked songs recommendations
+            this.updateRecommendations("Similar to Liked Songs", 5);
+        }
+    }
+
     async updateRecommendations(
         label: string,
         likedSongSeedLimit: number = 5,
@@ -1489,6 +1516,12 @@ export class MusicManager {
         if (this.requiresSpotifyAccess()) {
             return;
         }
+        this.currentRecMeta = {
+            label,
+            likedSongSeedLimit,
+            seed_genres,
+            features
+        };
         const likedSongs: Track[] = this.spotifyLikedSongs;
         let trackIds = likedSongs.map((track: Track) => {
             return track.id;
@@ -1509,7 +1542,7 @@ export class MusicManager {
         this.recommendationTracks = tracks;
         this.recommendationLabel = label;
 
-        commands.executeCommand("musictime.refreshRecommendations");
+        commands.executeCommand("musictime.refreshRecommendationsTree");
     }
 
     async getRecommendedTracks(
