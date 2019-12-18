@@ -189,7 +189,9 @@ export function createCommands(): {
     const reconcilePlaylistCommand = commands.registerCommand(
         "musictime.reconcilePlaylist",
         async () => {
-            commands.executeCommand("musictime.refreshPlaylist");
+            if (!musicMgr.requiresSpotifyAccess()) {
+                commands.executeCommand("musictime.refreshPlaylist");
+            }
         }
     );
     cmds.push(reconcilePlaylistCommand);

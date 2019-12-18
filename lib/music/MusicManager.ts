@@ -259,9 +259,11 @@ export class MusicManager {
     }
 
     updateSort(sortAlpha) {
-        this.sortAlphabetically = sortAlpha;
-        commands.executeCommand("musictime.refreshPlaylist");
-        window.showInformationMessage("Sorting playlist, please wait.");
+        if (!this.requiresSpotifyAccess()) {
+            this.sortAlphabetically = sortAlpha;
+            commands.executeCommand("musictime.refreshPlaylist");
+            window.showInformationMessage("Sorting playlist, please wait.");
+        }
     }
 
     async refreshPlaylists() {
