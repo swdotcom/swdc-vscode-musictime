@@ -86,6 +86,7 @@ export class MusicManager {
     private _recommendationLabel: string = "Similar to Liked Songs";
     private _currentProvider: string = "playlists"; // or "recommendations"
     private _currentRecMeta: any = {};
+    private _ready: boolean = false;
 
     private constructor() {
         //
@@ -248,6 +249,14 @@ export class MusicManager {
 
     get spotifyPlaylists(): PlaylistItem[] {
         return this._spotifyPlaylists;
+    }
+
+    get ready(): boolean {
+        return this._ready;
+    }
+
+    set ready(val: boolean) {
+        this._ready = val;
     }
 
     //
@@ -578,6 +587,8 @@ export class MusicManager {
 
             await PlaylistManager.getInstance().checkForDups();
         }
+
+        this.ready = true;
     }
 
     sortPlaylists(playlists) {
@@ -660,6 +671,17 @@ export class MusicManager {
             PlayerType.MacItunesDesktop,
             "iTunes Connected",
             "You've connected iTunes"
+        );
+    }
+
+    getLoadingButton() {
+        return this.buildActionItem(
+            "loading",
+            "action",
+            null,
+            PlayerType.NotAssigned,
+            "Loading...",
+            "please wait"
         );
     }
 

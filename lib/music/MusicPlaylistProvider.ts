@@ -371,23 +371,29 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
     async getChildren(element?: PlaylistItem): Promise<PlaylistItem[]> {
         const musicMgr: MusicManager = MusicManager.getInstance();
 
-        if (element) {
-            // return the playlist tracks
-            let tracks: PlaylistItem[] = await musicMgr.getPlaylistItemTracksForPlaylistId(
-                element.id
-            );
-            return tracks;
-        } else {
-            // get the top level playlist parents
-            let playlistChildren: PlaylistItem[] = musicMgr.currentPlaylists;
-            if (!playlistChildren || playlistChildren.length === 0) {
-                // try again if we've just initialized the plugin
-                await musicMgr.refreshPlaylists();
-                playlistChildren = musicMgr.currentPlaylists;
+        if (musicMgr.ready) {
+            if (element) {
+                // return the playlist tracks
+                let tracks: PlaylistItem[] = await musicMgr.getPlaylistItemTracksForPlaylistId(
+                    element.id
+                );
+                return tracks;
             } else {
-                initializedPlaylist = true;
+                // get the top level playlist parents
+                let playlistChildren: PlaylistItem[] =
+                    musicMgr.currentPlaylists;
+                if (!playlistChildren || playlistChildren.length === 0) {
+                    // try again if we've just initialized the plugin
+                    await musicMgr.refreshPlaylists();
+                    playlistChildren = musicMgr.currentPlaylists;
+                } else {
+                    initializedPlaylist = true;
+                }
+                return musicMgr.currentPlaylists;
             }
-            return musicMgr.currentPlaylists;
+        } else {
+            const loadingItem: PlaylistItem = musicMgr.getLoadingButton();
+            return [loadingItem];
         }
     }
 }
