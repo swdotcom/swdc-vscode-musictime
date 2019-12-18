@@ -76,10 +76,11 @@ export function createCommands(): {
     const playCmd = commands.registerCommand(
         "musictime.play",
         async (p: PlaylistItem) => {
-            const notAssigned =
-                p && (!p.state || p.state === TrackStatus.NotAssigned)
-                    ? true
-                    : false;
+            // const notAssigned =
+            //     p && (!p.state || p.state === TrackStatus.NotAssigned)
+            //         ? true
+            //         : false;
+            const notAssigned = true;
             const isPlaylist = p && p["itemType"] === "playlist" ? true : false;
             const hasTracks =
                 p && p.tracks && p.tracks["total"] && p.tracks["total"] > 0

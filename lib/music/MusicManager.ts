@@ -883,9 +883,20 @@ export class MusicManager {
     }
 
     createPlaylistItemFromTrack(track: Track, position: number) {
+        const albumName =
+            track.album && track.album.name ? track.album.name : null;
+        const popularity = track.popularity ? track.popularity : null;
+        let tooltip = track.name;
+        if (albumName) {
+            tooltip += ` - ${albumName}`;
+        }
+        if (popularity) {
+            tooltip += ` (${popularity})`;
+        }
         let playlistItem: PlaylistItem = new PlaylistItem();
         playlistItem.type = "track";
         playlistItem.name = track.name;
+        playlistItem.tooltip = tooltip;
         playlistItem.id = track.id;
         playlistItem.uri = track.uri;
         playlistItem.popularity = track.popularity;
@@ -1543,7 +1554,7 @@ export class MusicManager {
                 items.push(labelButton);
                 for (let i = 0; i < tracks.length; i++) {
                     const track: Track = tracks[i];
-                    const item: PlaylistItem = MusicManager.getInstance().createPlaylistItemFromTrack(
+                    const item: PlaylistItem = this.createPlaylistItemFromTrack(
                         track,
                         0
                     );

@@ -894,7 +894,8 @@ export function getPlaylistIcon(treeItem: PlaylistItem) {
         }
     }
 
-    contextValue += getPopulartityLevel(treeItem.popularity);
+    // add the popularity tag
+    // contextValue += getPopulartityLevel(treeItem.popularity);
 
     let lightPath = null;
     let darkPath = null;
