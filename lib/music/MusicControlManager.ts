@@ -11,12 +11,11 @@ import {
     playTrackInContext,
     playTrack,
     saveToSpotifyLiked,
-    CodyResponse,
     addTracksToPlaylist,
     removeFromSpotifyLiked,
     setItunesLoved
 } from "cody-music";
-import { window, ViewColumn, Uri, commands, QuickPickOptions } from "vscode";
+import { window, ViewColumn, Uri, commands } from "vscode";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { showQuickPick } from "../MenuManager";
 import {
@@ -55,6 +54,7 @@ import { SocialShareManager } from "../social/SocialShareManager";
 import { tmpdir } from "os";
 import { connectSlack } from "../slack/SlackControlManager";
 import { MusicManager } from "./MusicManager";
+import { MusicPlaylistManager } from "./MusicPlaylistManager";
 
 const moment = require("moment-timezone");
 const clipboardy = require("clipboardy");
@@ -69,8 +69,20 @@ export class MusicControlManager {
     private musicMgr: MusicManager = MusicManager.getInstance();
     private musicStateMgr: MusicStateManager = MusicStateManager.getInstance();
 
-    constructor() {
+    private currentTrackToAdd: PlaylistItem = null;
+
+    private static instance: MusicControlManager;
+
+    private constructor() {
         //
+    }
+
+    static getInstance(): MusicControlManager {
+        if (!MusicControlManager.instance) {
+            MusicControlManager.instance = new MusicControlManager();
+        }
+
+        return MusicControlManager.instance;
     }
 
     async nextSong() {
@@ -353,11 +365,55 @@ export class MusicControlManager {
         showQuickPick(menuOptions);
     }
 
+    async showCreatePlaylistInputPrompt(placeHolder: string) {
+        return await window.showInputBox({
+            value: placeHolder,
+            placeHolder: "New Playlist",
+            validateInput: text => {
+                return !text
+                    ? "Please enter a playlist name to continue."
+                    : null;
+            }
+        });
+    }
+
+    async createNewPlaylist() {
+        const musicControlMgr: MusicControlManager = MusicControlManager.getInstance();
+        // !!! important, need to use the get instance as this
+        // method may be called within a callback and "this" will be undefined !!!
+        const hasPlaylistItemToAdd = musicControlMgr.currentTrackToAdd
+            ? true
+            : false;
+        const placeholder: string = hasPlaylistItemToAdd
+            ? `${musicControlMgr.currentTrackToAdd.artist} - ${musicControlMgr.currentTrackToAdd.name}`
+            : "New Playlist";
+        const playlistName = await musicControlMgr.showCreatePlaylistInputPrompt(
+            placeholder
+        );
+        if (!playlistName) {
+            return;
+        }
+
+        const playlistItems = hasPlaylistItemToAdd
+            ? [musicControlMgr.currentTrackToAdd]
+            : [];
+        MusicPlaylistManager.getInstance().createPlaylist(
+            playlistName,
+            playlistItems
+        );
+    }
+
     async addToPlaylistMenu(playlistItem: PlaylistItem) {
+        this.currentTrackToAdd = playlistItem;
         const musicMgr: MusicManager = MusicManager.getInstance();
         let menuOptions = {
-            items: [],
-            placeholder: "Select a playlist"
+            items: [
+                {
+                    label: "New Playlist",
+                    cb: this.createNewPlaylist
+                }
+            ],
+            placeholder: "Select or Create a playlist"
         };
         let playlists: PlaylistItem[] = musicMgr.currentPlaylists;
 
@@ -371,7 +427,8 @@ export class MusicControlManager {
 
         playlists.forEach((item: PlaylistItem) => {
             menuOptions.items.push({
-                label: item.name
+                label: item.name,
+                cb: null
             });
         });
 

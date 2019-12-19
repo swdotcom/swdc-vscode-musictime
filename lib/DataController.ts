@@ -220,6 +220,7 @@ export async function getMusicTimeUserStatus(serverIsOnline) {
 
                 // get the user from the payload
                 const user = resp.data.user;
+                let foundSpotifyAuth = false;
 
                 if (user.auths && user.auths.length > 0) {
                     for (let i = 0; i < user.auths.length; i++) {
@@ -227,6 +228,7 @@ export async function getMusicTimeUserStatus(serverIsOnline) {
 
                         // update the spotify access info if the auth matches
                         if (auth.type === "spotify" && auth.access_token) {
+                            foundSpotifyAuth = true;
                             // update spotify access info
                             await MusicManager.getInstance().updateSpotifyAccessInfo(
                                 auth
@@ -236,7 +238,7 @@ export async function getMusicTimeUserStatus(serverIsOnline) {
                     }
                 }
 
-                return { loggedOn: true, state };
+                return { loggedOn: foundSpotifyAuth, state };
             }
             // return the state that is returned
             return { loggedOn: false, state };

@@ -966,7 +966,7 @@ export class MusicManager {
         playlistItem.uri = track.uri;
         playlistItem.popularity = track.popularity;
         playlistItem.position = position;
-        playlistItem.artist = track.artist;
+        playlistItem.artist = artistName;
         playlistItem.playerType = track.playerType;
         playlistItem.itemType = "track";
 
@@ -1182,7 +1182,7 @@ export class MusicManager {
 
         let playlistId = null;
         if (!customPlaylist) {
-            let playlistResult: CodyResponse = await createPlaylist(
+            const playlistResult: CodyResponse = await createPlaylist(
                 PERSONAL_TOP_SONGS_NAME,
                 true
             );
@@ -1449,7 +1449,7 @@ export class MusicManager {
             await quitMacPlayer(PlayerName.ItunesDesktop);
         } else {
             // pause the spotify song as they're switching to itunes
-            const musicCtrlMgr = new MusicControlManager();
+            const musicCtrlMgr: MusicControlManager = MusicControlManager.getInstance();
             musicCtrlMgr.pauseSong(false);
         }
 

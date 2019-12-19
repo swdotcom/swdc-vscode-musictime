@@ -7,8 +7,7 @@ import {
     Event,
     Disposable,
     TreeView,
-    commands,
-    window
+    commands
 } from "vscode";
 import {
     PlaylistItem,
@@ -17,9 +16,7 @@ import {
     TrackStatus,
     playItunesTrackNumberInPlaylist,
     launchAndPlaySpotifyTrack,
-    playSpotifyMacDesktopTrack,
-    launchPlayer,
-    isSpotifyRunning
+    playSpotifyMacDesktopTrack
 } from "cody-music";
 import { MusicControlManager } from "./MusicControlManager";
 import {
@@ -28,7 +25,7 @@ import {
 } from "../Constants";
 import { MusicManager } from "./MusicManager";
 import { MusicCommandManager } from "./MusicCommandManager";
-import { logIt, isMac, getPlaylistIcon } from "../Util";
+import { logIt, getPlaylistIcon } from "../Util";
 
 /**
  * Create the playlist tree item (root or leaf)
@@ -42,15 +39,15 @@ const createPlaylistTreeItem = (
     return new PlaylistTreeItem(p, cstate);
 };
 
+const musicCtrlMgr: MusicControlManager = MusicControlManager.getInstance();
+const musicMgr: MusicManager = MusicManager.getInstance();
+
 let initializedPlaylist = false;
 
 export const playSelectedItem = async (
     playlistItem: PlaylistItem,
     isExpand: boolean
 ) => {
-    const musicCtrlMgr = new MusicControlManager();
-    const musicMgr: MusicManager = MusicManager.getInstance();
-
     const launchConfirmInfo: any = await musicMgr.launchConfirm();
     if (!launchConfirmInfo.proceed) {
         return;
@@ -236,7 +233,6 @@ export const launchAndPlaySpotifyWebPlaylistTrack = async (
 
     if (isTrack) {
         // a track was selected, check if we should play or pause it
-        const musicCtrlMgr = new MusicControlManager();
 
         if (notPlaying) {
             await launchAndPlaySpotifyTrack(

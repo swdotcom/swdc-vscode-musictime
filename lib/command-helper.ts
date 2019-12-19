@@ -30,7 +30,7 @@ export function createCommands(): {
 } {
     let cmds = [];
 
-    const controller = new MusicControlManager();
+    const controller: MusicControlManager = MusicControlManager.getInstance();
     const musicMgr: MusicManager = MusicManager.getInstance();
 
     // playlist tree view

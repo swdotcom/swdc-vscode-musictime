@@ -186,8 +186,10 @@ export class SocialShareManager {
     }
 
     copyLink() {
-        const controller: MusicControlManager = new MusicControlManager();
-        controller.copySpotifyLink(musicId, playlistSelected);
+        MusicControlManager.getInstance().copySpotifyLink(
+            musicId,
+            playlistSelected
+        );
     }
 
     async showSlackMessageInputPrompt() {
@@ -213,8 +215,8 @@ export class SocialShareManager {
         if (!selectedChannel) {
             return;
         }
-        // need to use the get instance as this method may be called within a callback
-        // and "this" will be undefined
+        // !!! important, need to use the get instance as this
+        // method may be called within a callback and "this" will be undefined !!!
         const message = await SocialShareManager.getInstance().showSlackMessageInputPrompt();
         if (!message) {
             return;
