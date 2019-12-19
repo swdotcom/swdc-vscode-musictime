@@ -57,7 +57,7 @@ export const playSelectedItem = async (
 
     let playerName = musicMgr.getPlayerNameForPlayback();
     // this is another way to check if the player is running or not
-    if (!isExpand && playerName !== PlayerName.ItunesDesktop && isMac()) {
+    if (!isExpand && playerName !== PlayerName.ItunesDesktop) {
         // const devices = await getSpotifyDevices();
         const isRunning = await isSpotifyRunning();
 
@@ -65,10 +65,17 @@ export const playSelectedItem = async (
         if (!isRunning && musicMgr.isSpotifyPremium()) {
             // ask to launch
             const selectedButton = await window.showInformationMessage(
-                `Spotify is currently not running, would you like to launch the desktop instead of the the web player?`,
-                ...[NOT_NOW_LABEL, YES_LABEL]
+                `Music Time requires a running Spotify player. Choose a player to launch.`,
+                ...["Web Player", "Desktop Player"]
             );
-            if (selectedButton && selectedButton === YES_LABEL) {
+            if (!selectedButton) {
+                // the user selected the close button
+                window.showInformationMessage(
+                    "You will need to open a Spotify player to control tracks from the editor."
+                );
+                return;
+            }
+            if (selectedButton && selectedButton === "Desktop Player") {
                 // launch the desktop
                 playerName = PlayerName.SpotifyDesktop;
                 await launchPlayer(PlayerName.SpotifyDesktop, {
