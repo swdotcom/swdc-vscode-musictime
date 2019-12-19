@@ -16,7 +16,7 @@ import {
     removeFromSpotifyLiked,
     setItunesLoved
 } from "cody-music";
-import { window, ViewColumn, Uri, commands } from "vscode";
+import { window, ViewColumn, Uri, commands, QuickPickOptions } from "vscode";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { showQuickPick } from "../MenuManager";
 import {
@@ -120,9 +120,15 @@ export class MusicControlManager {
         await this.musicStateMgr.gatherMusicInfo();
     }
 
-    async setLiked(liked: boolean) {
+    async setLiked(
+        liked: boolean,
+        overrideTrack: Track = null,
+        updateStatus = true
+    ) {
         const serverIsOnline = await serverIsAvailable();
-        let track: Track = this.musicMgr.runningTrack;
+        const track: Track = !overrideTrack
+            ? this.musicMgr.runningTrack
+            : overrideTrack;
 
         if (!serverIsOnline || !track || !track.id) {
             window.showInformationMessage(
@@ -163,7 +169,9 @@ export class MusicControlManager {
             }
 
             // get the server track. this will sync the controls
-            await this.musicMgr.getServerTrack(track);
+            if (updateStatus) {
+                await this.musicMgr.getServerTrack(track);
+            }
         }
     }
 
@@ -345,10 +353,11 @@ export class MusicControlManager {
         showQuickPick(menuOptions);
     }
 
-    async addToPlaylistMenu(track: PlaylistItem) {
+    async addToPlaylistMenu(playlistItem: PlaylistItem) {
         const musicMgr: MusicManager = MusicManager.getInstance();
         let menuOptions = {
-            items: []
+            items: [],
+            placeholder: "Select a playlist"
         };
         let playlists: PlaylistItem[] = musicMgr.currentPlaylists;
 
@@ -376,36 +385,38 @@ export class MusicControlManager {
                 const matchingPlaylist = matchingPlaylists[0];
                 if (matchingPlaylist) {
                     const playlistName = matchingPlaylist.name;
-                    let codyResponse: CodyResponse = null;
+                    let errMsg = null;
+
                     if (matchingPlaylist.name !== "Liked Songs") {
                         // uri:"spotify:playlist:2JHCaLTVvYjyUrCck0Uvrp" or id
-                        codyResponse = await addTracksToPlaylist(
+                        const codyResponse = await addTracksToPlaylist(
                             matchingPlaylist.id,
-                            [track.uri]
+                            [playlistItem.uri]
                         );
+                        errMsg = getCodyErrorMessage(codyResponse);
                     } else {
-                        // like it
-                        codyResponse = await saveToSpotifyLiked([track.id]);
+                        let updateStatus = true;
+                        let track: Track = musicMgr.runningTrack;
+                        if (track.id !== playlistItem.id) {
+                            track = new Track();
+                            track.id = playlistItem.id;
+                            track.playerType = playlistItem.playerType;
+                            track.state = playlistItem.state;
+                            updateStatus = false;
+                        }
+                        await this.setLiked(true, track, updateStatus);
                     }
-                    if (codyResponse && codyResponse.status < 300) {
+                    if (!errMsg) {
                         window.showInformationMessage(
-                            `Added ${track.name} to ${playlistName}`
+                            `Added ${playlistItem.name} to ${playlistName}`
                         );
                         commands.executeCommand("musictime.refreshPlaylist");
                     } else {
-                        const errMsg = getCodyErrorMessage(codyResponse);
                         if (errMsg) {
-                            if (codyResponse.status == 403) {
-                                window.showErrorMessage(
-                                    `Unable to add ${track.name} to${playlistName}. Please make sure you are the owner of the playlist, and there are less than 10.000 tracks in the playlist.`,
-                                    ...[OK_LABEL]
-                                );
-                            } else {
-                                window.showErrorMessage(
-                                    `There was an unexpected error adding the track to the playlist. ${errMsg}`,
-                                    ...[OK_LABEL]
-                                );
-                            }
+                            window.showErrorMessage(
+                                `Unable to add ${playlistItem.name} to${playlistName}. Please make sure you are the owner of the playlist, and there are less than 10,000 tracks in the playlist.`,
+                                ...[OK_LABEL]
+                            );
                         }
                     }
                 }

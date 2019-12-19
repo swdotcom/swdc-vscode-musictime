@@ -98,25 +98,6 @@ export class MusicCommandManager {
     }
 
     public static async syncControls(track: Track, showLoading = false) {
-        // const musicMgr: MusicManager = MusicManager.getInstance();
-
-        // update the playlists provider if it's the one that's playing
-        // if (musicMgr.currentProvider === PLAYLISTS_PROVIDER) {
-        //     const selectedPlaylist: PlaylistItem = musicMgr.selectedPlaylist;
-        //     if (selectedPlaylist) {
-        //         await musicMgr.clearPlaylistTracksForId(selectedPlaylist.id);
-        //         // this will get the updated state of the track
-        //         await musicMgr.getPlaylistItemTracksForPlaylistId(
-        //             selectedPlaylist.id
-        //         );
-        //         await musicMgr.refreshPlaylistState();
-
-        //         if (this._treeProvider) {
-        //             this._treeProvider.refreshParent(selectedPlaylist);
-        //         }
-        //     }
-        // }
-
         if (this._hideSongTimeout) {
             clearTimeout(this._hideSongTimeout);
         }
