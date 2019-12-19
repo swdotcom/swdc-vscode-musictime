@@ -24,8 +24,6 @@ import {
 import { MusicControlManager } from "./MusicControlManager";
 import {
     SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
-    NOT_NOW_LABEL,
-    YES_LABEL,
     PLAYLISTS_PROVIDER
 } from "../Constants";
 import { MusicManager } from "./MusicManager";
@@ -53,40 +51,12 @@ export const playSelectedItem = async (
     const musicCtrlMgr = new MusicControlManager();
     const musicMgr: MusicManager = MusicManager.getInstance();
 
-    musicMgr.currentProvider = PLAYLISTS_PROVIDER;
-
-    let playerName = musicMgr.getPlayerNameForPlayback();
-    let isLaunching = false;
-    // this is another way to check if the player is running or not
-    if (!isExpand && playerName !== PlayerName.ItunesDesktop) {
-        // const devices = await getSpotifyDevices();
-        const isRunning = await isSpotifyRunning();
-
-        // ask to show the desktop if they're a premium user
-        if (!isRunning && musicMgr.isSpotifyPremium()) {
-            // ask to launch
-            const selectedButton = await window.showInformationMessage(
-                `Music Time requires a running Spotify player. Choose a player to launch.`,
-                ...["Web Player", "Desktop Player"]
-            );
-            if (!selectedButton) {
-                // the user selected the close button
-                window.showInformationMessage(
-                    "You will need to open a Spotify player to control tracks from the editor."
-                );
-                return;
-            }
-
-            isLaunching = true;
-            if (selectedButton === "Desktop Player") {
-                // launch the desktop
-                playerName = PlayerName.SpotifyDesktop;
-            }
-            await launchPlayer(PlayerName.SpotifyDesktop, {
-                quietly: false
-            });
-        }
+    const launchConfirmInfo: any = await musicMgr.launchConfirm();
+    if (!launchConfirmInfo.proceed) {
+        return;
     }
+
+    musicMgr.currentProvider = PLAYLISTS_PROVIDER;
 
     // is this a track or playlist item?
     if (playlistItem.type === "track") {
@@ -120,10 +90,10 @@ export const playSelectedItem = async (
             } else {
                 musicCtrlMgr.pauseSong();
             }
-        } else if (playerName === PlayerName.SpotifyDesktop) {
+        } else if (launchConfirmInfo.playerName === PlayerName.SpotifyDesktop) {
             // ex: ["spotify:track:0R8P9KfGJCDULmlEoBagcO", "spotify:playlist:6ZG5lRT77aJ3btmArcykra"]
             // make sure the track has spotify:track and the playlist has spotify:playlist
-            if (isLaunching) {
+            if (launchConfirmInfo.isLaunching) {
                 setTimeout(() => {
                     playSpotifyDesktopPlaylistTrack();
                 }, 2000);
@@ -131,7 +101,7 @@ export const playSelectedItem = async (
                 playSpotifyDesktopPlaylistTrack();
             }
         } else {
-            if (isLaunching) {
+            if (launchConfirmInfo.isLaunching) {
                 setTimeout(() => {
                     launchAndPlaySpotifyWebPlaylistTrack(true /*isTrack*/);
                 }, 2000);
@@ -168,7 +138,7 @@ export const playSelectedItem = async (
 
             if (playlistItem.playerType === PlayerType.MacItunesDesktop) {
                 const pos: number = 1;
-                if (isLaunching) {
+                if (launchConfirmInfo.isLaunching) {
                     setTimeout(() => {
                         playItunesTrackNumberInPlaylist(
                             musicMgr.selectedPlaylist.name,
@@ -182,8 +152,11 @@ export const playSelectedItem = async (
                     );
                 }
             } else {
-                if (isLaunching) {
-                    if (playerName === PlayerName.SpotifyDesktop) {
+                if (launchConfirmInfo.isLaunching) {
+                    if (
+                        launchConfirmInfo.playerName ===
+                        PlayerName.SpotifyDesktop
+                    ) {
                         setTimeout(() => {
                             playSpotifyDesktopPlaylistTrack();
                         }, 2000);
@@ -195,7 +168,10 @@ export const playSelectedItem = async (
                         }, 2000);
                     }
                 } else {
-                    if (playerName === PlayerName.SpotifyDesktop) {
+                    if (
+                        launchConfirmInfo.playerName ===
+                        PlayerName.SpotifyDesktop
+                    ) {
                         playSpotifyDesktopPlaylistTrack();
                     } else {
                         launchAndPlaySpotifyWebPlaylistTrack(false /*isTrack*/);

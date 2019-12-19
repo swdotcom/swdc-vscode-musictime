@@ -184,8 +184,7 @@ export class MusicControlManager {
         try {
             clipboardy.writeSync(link);
             window.showInformationMessage(
-                `Spotify ${messageContext} link copied to clipboard.`,
-                ...[OK_LABEL]
+                `Spotify ${messageContext} link copied to clipboard.`
             );
         } catch (err) {
             logIt(`Unable to copy to clipboard, error: ${err.message}`);
@@ -390,17 +389,23 @@ export class MusicControlManager {
                     }
                     if (codyResponse && codyResponse.status < 300) {
                         window.showInformationMessage(
-                            `Added ${track.name} to your '${playlistName}' playlist.`,
-                            ...[OK_LABEL]
+                            `Added ${track.name} to ${playlistName}`
                         );
                         commands.executeCommand("musictime.refreshPlaylist");
                     } else {
                         const errMsg = getCodyErrorMessage(codyResponse);
                         if (errMsg) {
-                            window.showErrorMessage(
-                                `There was an unexpected error adding the track to the playlist. ${errMsg}`,
-                                ...[OK_LABEL]
-                            );
+                            if (codyResponse.status == 403) {
+                                window.showErrorMessage(
+                                    `Unable to add ${track.name} to${playlistName}. Please make sure you are the owner of the playlist, and there are less than 10.000 tracks in the playlist.`,
+                                    ...[OK_LABEL]
+                                );
+                            } else {
+                                window.showErrorMessage(
+                                    `There was an unexpected error adding the track to the playlist. ${errMsg}`,
+                                    ...[OK_LABEL]
+                                );
+                            }
                         }
                     }
                 }

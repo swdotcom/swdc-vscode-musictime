@@ -42,29 +42,18 @@ const createPlaylistTreeItem = (
 };
 
 const playRecommendationTrack = async (track: PlaylistItem) => {
-    const isRunning = await isSpotifyRunning();
-
     musicMgr.currentProvider = RECOMMENDATIONS_PROVIDER;
 
-    // ask to show the desktop if they're a premium user
-    let launchDesktop = false;
-    if (!isRunning && musicMgr.isSpotifyPremium()) {
-        // ask to launch
-        const selectedButton = await window.showInformationMessage(
-            `Spotify is currently not running, would you like to launch the desktop instead of the the web player?`,
-            ...[NOT_NOW_LABEL, YES_LABEL]
-        );
-        if (selectedButton && selectedButton === YES_LABEL) {
-            launchDesktop = true;
-            await launchPlayer(PlayerName.SpotifyDesktop, { quietly: false });
-        }
+    const launchConfirmInfo: any = await musicMgr.launchConfirm();
+    if (!launchConfirmInfo.proceed) {
+        return;
     }
 
     MusicCommandManager.syncControls(musicMgr.runningTrack, true /*loading*/);
 
-    if (!isRunning && !launchDesktop) {
+    if (!launchConfirmInfo.isRunning && !launchConfirmInfo.launchDesktop) {
         launchAndPlaySpotifyTrack(track.id);
-    } else if (launchDesktop) {
+    } else if (launchConfirmInfo.launchDesktop) {
         playSpotifyDesktopPlaylistByTrack(track);
     } else {
         // this will just tell spotify which track to play

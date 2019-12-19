@@ -22,7 +22,8 @@ import {
     getSpotifyDevices,
     PlayerDevice,
     getSpotifyPlaylist,
-    getRecommendationsForTracks
+    getRecommendationsForTracks,
+    isSpotifyRunning
 } from "cody-music";
 import {
     PERSONAL_TOP_SONGS_NAME,
@@ -1243,8 +1244,7 @@ export class MusicManager {
                     );
 
                     window.showInformationMessage(
-                        `Successfully refreshed ${PERSONAL_TOP_SONGS_NAME}.`,
-                        ...[OK_LABEL]
+                        `Successfully refreshed ${PERSONAL_TOP_SONGS_NAME}.`
                     );
                 }
             } else {
@@ -1273,8 +1273,7 @@ export class MusicManager {
 
             if (addTracksResult.state === CodyResponseType.Success) {
                 window.showInformationMessage(
-                    `Successfully created ${name} and added tracks.`,
-                    ...[OK_LABEL]
+                    `Successfully created ${name} and added tracks.`
                 );
             } else {
                 window.showErrorMessage(
@@ -1659,5 +1658,40 @@ export class MusicManager {
             }
         }
         return items;
+    }
+
+    async launchConfirm() {
+        let playerName = this.getPlayerNameForPlayback();
+        let isLaunching = false;
+        let proceed = true;
+
+        const isRunning = await isSpotifyRunning();
+
+        // ask to show the desktop if they're a premium user
+        if (!isRunning && this.isSpotifyPremium()) {
+            // ask to launch
+            const selectedButton = await window.showInformationMessage(
+                `Music Time requires a running Spotify player. Choose a player to launch.`,
+                ...["Web Player", "Desktop Player"]
+            );
+            if (!selectedButton) {
+                // the user selected the close button
+                window.showInformationMessage(
+                    "You will need to open a Spotify player to control tracks from the editor."
+                );
+                proceed = false;
+            } else {
+                isLaunching = true;
+                if (selectedButton === "Desktop Player") {
+                    // launch the desktop
+                    playerName = PlayerName.SpotifyDesktop;
+                }
+                await launchPlayer(PlayerName.SpotifyDesktop, {
+                    quietly: false
+                });
+            }
+        }
+
+        return { isRunning, playerName, isLaunching, proceed };
     }
 }
