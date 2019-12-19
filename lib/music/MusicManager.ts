@@ -23,7 +23,8 @@ import {
     PlayerDevice,
     getSpotifyPlaylist,
     getRecommendationsForTracks,
-    isSpotifyRunning
+    isSpotifyRunning,
+    followPlaylist
 } from "cody-music";
 import {
     PERSONAL_TOP_SONGS_NAME,
@@ -579,8 +580,12 @@ export class MusicManager {
                 }
 
                 // normal playlists
-                playlists.forEach(item => {
-                    items.push(item);
+                playlists.forEach((item: PlaylistItem) => {
+                    // add all playlists except for the software top 40.
+                    // this one will get displayed in the top section
+                    if (item.id !== SOFTWARE_TOP_40_PLAYLIST_ID) {
+                        items.push(item);
+                    }
                 });
             }
 
@@ -1698,5 +1703,20 @@ export class MusicManager {
         }
 
         return { isRunning, playerName, isLaunching, proceed };
+    }
+
+    async followSpotifyPlaylist(playlist: PlaylistItem) {
+        const codyResp: CodyResponse = await followPlaylist(playlist.id);
+        if (codyResp.state === CodyResponseType.Success) {
+            window.showInformationMessage(
+                `Successfully following the '${playlist.name}' playlist.`
+            );
+            commands.executeCommand("musictime.refreshPlaylist");
+        } else {
+            window.showInformationMessage(
+                `Unable to follow ${playlist.name}. ${codyResp.message}`,
+                ...[OK_LABEL]
+            );
+        }
     }
 }

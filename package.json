@@ -133,6 +133,14 @@
                 }
             },
             {
+                "command": "musictime.follow",
+                "title": "Follow",
+                "icon": {
+                    "light": "resources/light/group_add.svg",
+                    "dark": "resources/dark/group_add.svg"
+                }
+            },
+            {
                 "command": "musictime.progress",
                 "title": "Loading",
                 "tooltip": "Please wait"
@@ -279,6 +287,11 @@
                     "command": "musictime.addToPlaylist",
                     "when": "viewItem =~ /spotify-recommendation.*/",
                     "group": "inline@2"
+                },
+                {
+                    "command": "musictime.follow",
+                    "when": "viewItem =~ /.*-softwaretop40/",
+                    "group": "inline@2"
                 }
             ],
             "view/title": [
@@ -366,7 +379,7 @@
         "aws-sdk": "^2.470.0",
         "axios": "^0.19.0",
         "clipboardy": "^2.1.0",
-        "cody-music": "2.6.91",
+        "cody-music": "2.6.92",
         "moment-timezone": "^0.5.25",
         "open": "^6.4.0",
         "vsls": "0.3.1291"

@@ -5,7 +5,8 @@ import {
     MUSIC_TIME_EXT_ID,
     launch_url,
     MUSIC_TIME_PLUGIN_ID,
-    MUSIC_TIME_TYPE
+    MUSIC_TIME_TYPE,
+    SOFTWARE_TOP_40_PLAYLIST_ID
 } from "./Constants";
 import { getToggleFileEventLoggingState } from "./DataController";
 import {
@@ -881,7 +882,7 @@ export function getPlaylistIcon(treeItem: PlaylistItem) {
 
     // track/playlist/action hover contextValue matching...
     // musictime.sharePlaylist =~ /spotify-playlist-item.*/
-    // musictime.shareTrack =~ /track-item.*/ or =~ /spotify-recommendation.*/
+    // musictime.shareTrack =~ /track-item.*/ || /spotify-recommendation.*/
     // musictime.addToPlaylist =~ /spotify-recommendation.*/
     // musictime.highPopularity =~ /.*-highpopularity/
 
@@ -902,6 +903,10 @@ export function getPlaylistIcon(treeItem: PlaylistItem) {
                 contextValue = `${treeItem.type}-item-${stateVal}`;
             }
         }
+    }
+
+    if (treeItem.id === SOFTWARE_TOP_40_PLAYLIST_ID) {
+        contextValue += "-softwaretop40";
     }
 
     // add the popularity tag

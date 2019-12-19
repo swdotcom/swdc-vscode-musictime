@@ -118,6 +118,14 @@ export function createCommands(): {
     });
     cmds.push(menuCmd);
 
+    const followCmd = commands.registerCommand(
+        "musictime.follow",
+        (p: PlaylistItem) => {
+            musicMgr.followSpotifyPlaylist(p);
+        }
+    );
+    cmds.push(followCmd);
+
     const launchTrackPlayerCmd = commands.registerCommand(
         "musictime.currentSong",
         () => {
