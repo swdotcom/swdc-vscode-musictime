@@ -49,6 +49,16 @@ export function getEditorSessionToken() {
     return editorSessiontoken;
 }
 
+/**
+ * This will return a random whole number inclusively between the min and max
+ * @param min
+ * @param max
+ */
+export function getRandomArbitrary(min, max) {
+    max = max + 0.1;
+    return parseInt(Math.random() * (max - min) + min, 10);
+}
+
 export function getPluginId() {
     return MUSIC_TIME_PLUGIN_ID;
 }

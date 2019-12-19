@@ -605,6 +605,20 @@ export class MusicManager {
         }
     }
 
+    sortTracks(tracks) {
+        if (tracks && tracks.length > 0) {
+            tracks.sort((a: Track, b: Track) => {
+                const nameA = a.name.toLowerCase(),
+                    nameB = b.name.toLowerCase();
+                if (nameA < nameB)
+                    //sort string ascending
+                    return -1;
+                if (nameA > nameB) return 1;
+                return 0; //default return value (no sorting)
+            });
+        }
+    }
+
     getSpotifyLikedPlaylistFolder() {
         const item: PlaylistItem = new PlaylistItem();
         item.type = "playlist";
@@ -917,17 +931,32 @@ export class MusicManager {
         return playlistItems;
     }
 
+    getArtist(track: Track) {
+        if (!track) {
+            return null;
+        }
+        if (track.artist) {
+            return track.artist;
+        }
+        if (track.artists && track.artists.length > 0) {
+            const trackArtist = track.artists[0];
+            return trackArtist.name;
+        }
+        return null;
+    }
+
     createPlaylistItemFromTrack(track: Track, position: number) {
-        const albumName =
-            track.album && track.album.name ? track.album.name : null;
         const popularity = track.popularity ? track.popularity : null;
+        const artistName = this.getArtist(track);
+
         let tooltip = track.name;
-        if (albumName) {
-            tooltip += ` - ${albumName}`;
+        if (artistName) {
+            tooltip += ` - ${artistName}`;
         }
         if (popularity) {
-            tooltip += ` (${popularity})`;
+            tooltip += ` (Popularity: ${popularity})`;
         }
+
         let playlistItem: PlaylistItem = new PlaylistItem();
         playlistItem.type = "track";
         playlistItem.name = track.name;
@@ -1521,7 +1550,8 @@ export class MusicManager {
                 this.currentRecMeta.label,
                 this.currentRecMeta.likedSongSeedLimit,
                 this.currentRecMeta.seed_genres,
-                this.currentRecMeta.features
+                this.currentRecMeta.features,
+                this.currentRecMeta.offset + 1
             );
         } else {
             // default to the similar liked songs recommendations
@@ -1533,7 +1563,8 @@ export class MusicManager {
         label: string,
         likedSongSeedLimit: number = 5,
         seed_genres: string[] = [],
-        features: any = {}
+        features: any = {},
+        offset: number = 0
     ) {
         if (this.requiresSpotifyAccess()) {
             return;
@@ -1542,24 +1573,32 @@ export class MusicManager {
             label,
             likedSongSeedLimit,
             seed_genres,
-            features
+            features,
+            offset
         };
         const likedSongs: Track[] = this.spotifyLikedSongs;
-        let trackIds = likedSongs.map((track: Track) => {
-            return track.id;
-        });
-        likedSongSeedLimit =
-            likedSongSeedLimit > 5 || likedSongSeedLimit < 0
-                ? 5
-                : likedSongSeedLimit;
-        if (trackIds.length > 0) {
-            trackIds.length = likedSongSeedLimit;
+        let trackIds = [];
+        if (likedSongs && likedSongs.length > 0) {
+            for (let i = 0; i < likedSongSeedLimit; i++) {
+                if (likedSongs.length > offset) {
+                    trackIds.push(likedSongs[offset].id);
+                } else {
+                    // start the offset back to the begining
+                    offset = 0;
+                    trackIds.push(likedSongs[offset].id);
+                }
+                offset++;
+            }
         }
         const tracks: Track[] = await this.getRecommendedTracks(
             trackIds,
             seed_genres,
             features
         );
+        if (tracks && tracks.length > 0) {
+            // sort them alpabeticaly
+            this.sortTracks(tracks);
+        }
         // set the manager's recommendation tracks
         this.recommendationTracks = tracks;
         this.recommendationLabel = label;
