@@ -696,7 +696,7 @@ export async function getGitEmail() {
     return null;
 }
 
-export async function wrapExecPromise(cmd, projectDir) {
+export async function wrapExecPromise(cmd, projectDir = null) {
     let result = null;
     try {
         let opts =
