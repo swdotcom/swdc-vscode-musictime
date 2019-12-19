@@ -10,7 +10,6 @@ import {
     commands,
     window
 } from "vscode";
-import * as path from "path";
 import {
     PlaylistItem,
     PlayerName,
@@ -19,7 +18,6 @@ import {
     playItunesTrackNumberInPlaylist,
     launchAndPlaySpotifyTrack,
     playSpotifyMacDesktopTrack,
-    getSpotifyDevices,
     launchPlayer,
     isSpotifyRunning
 } from "cody-music";
