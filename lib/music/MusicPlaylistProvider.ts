@@ -56,6 +56,7 @@ export const playSelectedItem = async (
     musicMgr.currentProvider = PLAYLISTS_PROVIDER;
 
     let playerName = musicMgr.getPlayerNameForPlayback();
+    let isLaunching = false;
     // this is another way to check if the player is running or not
     if (!isExpand && playerName !== PlayerName.ItunesDesktop) {
         // const devices = await getSpotifyDevices();
@@ -75,13 +76,15 @@ export const playSelectedItem = async (
                 );
                 return;
             }
-            if (selectedButton && selectedButton === "Desktop Player") {
+
+            isLaunching = true;
+            if (selectedButton === "Desktop Player") {
                 // launch the desktop
                 playerName = PlayerName.SpotifyDesktop;
-                await launchPlayer(PlayerName.SpotifyDesktop, {
-                    quietly: false
-                });
             }
+            await launchPlayer(PlayerName.SpotifyDesktop, {
+                quietly: false
+            });
         }
     }
 
@@ -120,9 +123,21 @@ export const playSelectedItem = async (
         } else if (playerName === PlayerName.SpotifyDesktop) {
             // ex: ["spotify:track:0R8P9KfGJCDULmlEoBagcO", "spotify:playlist:6ZG5lRT77aJ3btmArcykra"]
             // make sure the track has spotify:track and the playlist has spotify:playlist
-            playSpotifyDesktopPlaylistTrack();
+            if (isLaunching) {
+                setTimeout(() => {
+                    playSpotifyDesktopPlaylistTrack();
+                }, 2000);
+            } else {
+                playSpotifyDesktopPlaylistTrack();
+            }
         } else {
-            launchAndPlaySpotifyWebPlaylistTrack(true /*isTrack*/);
+            if (isLaunching) {
+                setTimeout(() => {
+                    launchAndPlaySpotifyWebPlaylistTrack(true /*isTrack*/);
+                }, 2000);
+            } else {
+                launchAndPlaySpotifyWebPlaylistTrack(true /*isTrack*/);
+            }
         }
     } else {
         // !important! set the selected playlist
@@ -153,15 +168,38 @@ export const playSelectedItem = async (
 
             if (playlistItem.playerType === PlayerType.MacItunesDesktop) {
                 const pos: number = 1;
-                await playItunesTrackNumberInPlaylist(
-                    musicMgr.selectedPlaylist.name,
-                    pos
-                );
-            } else {
-                if (playerName === PlayerName.SpotifyDesktop) {
-                    playSpotifyDesktopPlaylistTrack();
+                if (isLaunching) {
+                    setTimeout(() => {
+                        playItunesTrackNumberInPlaylist(
+                            musicMgr.selectedPlaylist.name,
+                            pos
+                        );
+                    }, 2000);
                 } else {
-                    launchAndPlaySpotifyWebPlaylistTrack(false /*isTrack*/);
+                    playItunesTrackNumberInPlaylist(
+                        musicMgr.selectedPlaylist.name,
+                        pos
+                    );
+                }
+            } else {
+                if (isLaunching) {
+                    if (playerName === PlayerName.SpotifyDesktop) {
+                        setTimeout(() => {
+                            playSpotifyDesktopPlaylistTrack();
+                        }, 2000);
+                    } else {
+                        setTimeout(() => {
+                            launchAndPlaySpotifyWebPlaylistTrack(
+                                false /*isTrack*/
+                            );
+                        }, 2000);
+                    }
+                } else {
+                    if (playerName === PlayerName.SpotifyDesktop) {
+                        playSpotifyDesktopPlaylistTrack();
+                    } else {
+                        launchAndPlaySpotifyWebPlaylistTrack(false /*isTrack*/);
+                    }
                 }
             }
         }
