@@ -15,7 +15,7 @@ import {
     MusicPlaylistProvider,
     connectPlaylistTreeView
 } from "./music/MusicPlaylistProvider";
-import { PlaylistItem, PlayerName, TrackStatus } from "cody-music";
+import { PlaylistItem, PlayerName, TrackStatus, Track } from "cody-music";
 import { MusicCommandManager } from "./music/MusicCommandManager";
 import { SocialShareManager } from "./social/SocialShareManager";
 import { connectSlack } from "./slack/SlackControlManager";
@@ -73,38 +73,9 @@ export function createCommands(): {
     });
     cmds.push(progressCmd);
 
-    const playCmd = commands.registerCommand(
-        "musictime.play",
-        async (p: PlaylistItem) => {
-            // const notAssigned =
-            //     p && (!p.state || p.state === TrackStatus.NotAssigned)
-            //         ? true
-            //         : false;
-            const notAssigned = true;
-            const isPlaylist = p && p["itemType"] === "playlist" ? true : false;
-            const hasTracks =
-                p && p.tracks && p.tracks["total"] && p.tracks["total"] > 0
-                    ? true
-                    : false;
-
-            // if it's a playlist without any tracks break out
-            if (isPlaylist && !hasTracks) {
-                return;
-            }
-            if (notAssigned) {
-                // track status is not yet assigned, play it
-                if (p.type === "track") {
-                    await treePlaylistProvider.selectTrack(p, true);
-                } else if (p.type === "recommendation") {
-                    await recTreePlaylistProvider.selectTrack(p, true);
-                } else {
-                    await treePlaylistProvider.selectPlaylist(p);
-                }
-            } else {
-                controller.playSong();
-            }
-        }
-    );
+    const playCmd = commands.registerCommand("musictime.play", async () => {
+        controller.playSong();
+    });
     cmds.push(playCmd);
 
     const sharePlaylistLinkCmd = commands.registerCommand(
