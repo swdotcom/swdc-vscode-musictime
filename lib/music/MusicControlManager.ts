@@ -543,11 +543,8 @@ export async function disconnectOauth(type: string, confirmDisconnect = true) {
                     `Successfully disconnected your ${type} connection.`
                 );
 
-                // refresh the playlist
-                setTimeout(() => {
-                    commands.executeCommand("musictime.refreshPlaylist");
-                    commands.executeCommand("musictime.refreshRecommendations");
-                }, 500);
+                commands.executeCommand("musictime.refreshPlaylist");
+                commands.executeCommand("musictime.refreshRecommendations");
             }
         } else {
             window.showInformationMessage(

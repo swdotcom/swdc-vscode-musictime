@@ -308,7 +308,7 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
         // update the login status
         // await getUserStatus(serverIsOnline, true /*ignoreCache*/);
         window.showInformationMessage(
-            `Successfully connected to Spotify. Loading playlists, please wait.`
+            `Successfully connected to Spotify. Loading playlists...`
         );
 
         const likedSongs: Track[] = await getSpotifyLikedSongs();

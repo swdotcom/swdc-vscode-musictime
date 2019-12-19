@@ -161,9 +161,7 @@ export function createCommands(): {
     const reconcilePlaylistCommand = commands.registerCommand(
         "musictime.reconcilePlaylist",
         async () => {
-            if (!musicMgr.requiresSpotifyAccess()) {
-                commands.executeCommand("musictime.refreshPlaylist");
-            }
+            commands.executeCommand("musictime.refreshPlaylist");
         }
     );
     cmds.push(reconcilePlaylistCommand);
@@ -331,9 +329,7 @@ export function createCommands(): {
     const refreshRecommendationsCommand = commands.registerCommand(
         "musictime.refreshRecommendations",
         async () => {
-            if (!musicMgr.requiresSpotifyAccess()) {
-                musicMgr.refreshRecommendations();
-            }
+            musicMgr.refreshRecommendations();
         }
     );
     cmds.push(refreshRecommendationsCommand);
@@ -341,9 +337,7 @@ export function createCommands(): {
     const refreshRecPlaylistCommand = commands.registerCommand(
         "musictime.refreshRecommendationsTree",
         async () => {
-            if (!musicMgr.requiresSpotifyAccess()) {
-                recTreePlaylistProvider.refresh();
-            }
+            recTreePlaylistProvider.refresh();
         }
     );
     cmds.push(refreshRecPlaylistCommand);

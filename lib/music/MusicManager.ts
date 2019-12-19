@@ -1544,7 +1544,12 @@ export class MusicManager {
     }
 
     async refreshRecommendations() {
-        if (this.currentRecMeta.label) {
+        if (this.requiresSpotifyAccess()) {
+            // update the recommended tracks to empty
+            this.recommendationTracks = [];
+            commands.executeCommand("musictime.refreshRecommendationsTree");
+        } else if (this.currentRecMeta.label) {
+            // use the current recommendation metadata and bump the offset
             this.updateRecommendations(
                 this.currentRecMeta.label,
                 this.currentRecMeta.likedSongSeedLimit,
