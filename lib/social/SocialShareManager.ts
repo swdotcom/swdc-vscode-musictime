@@ -224,12 +224,24 @@ export class SocialShareManager {
         const result = await web.chat
             .postMessage({
                 text: `${message} ${spotifyLinkUrl}`,
-                channel: selectedChannel
+                channel: selectedChannel,
+                as_user: true
             })
             .catch(err => {
-                if (err.message) {
-                    console.log("error posting slack message: ", err.message);
-                }
+                // try without sending "as_user"
+                web.chat
+                    .postMessage({
+                        text: `${message} ${spotifyLinkUrl}`,
+                        channel: selectedChannel
+                    })
+                    .catch(err => {
+                        if (err.message) {
+                            console.log(
+                                "error posting slack message: ",
+                                err.message
+                            );
+                        }
+                    });
             });
     }
 }
