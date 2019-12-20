@@ -1704,7 +1704,7 @@ export class MusicManager {
                     // launch the desktop
                     playerName = PlayerName.SpotifyDesktop;
                 }
-                await launchPlayer(PlayerName.SpotifyDesktop, {
+                await launchPlayer(playerName, {
                     quietly: false
                 });
             }

@@ -53,6 +53,8 @@ export const playSelectedItem = async (
         return;
     }
 
+    MusicCommandManager.syncControls(musicMgr.runningTrack, true /*loading*/);
+
     musicMgr.currentProvider = PLAYLISTS_PROVIDER;
 
     // is this a track or playlist item?
@@ -71,11 +73,6 @@ export const playSelectedItem = async (
         }
 
         const notPlaying = playlistItem.state !== TrackStatus.Playing;
-
-        MusicCommandManager.syncControls(
-            musicMgr.runningTrack,
-            true /*loading*/
-        );
 
         if (playlistItem.playerType === PlayerType.MacItunesDesktop) {
             if (notPlaying) {
@@ -127,11 +124,6 @@ export const playSelectedItem = async (
 
             // !important! set the selected track now since it's not null
             musicMgr.selectedTrackItem = selectedTrack;
-
-            MusicCommandManager.syncControls(
-                musicMgr.runningTrack,
-                true /*loading*/
-            );
 
             if (playlistItem.playerType === PlayerType.MacItunesDesktop) {
                 const pos: number = 1;
@@ -226,7 +218,7 @@ export const launchAndPlaySpotifyWebPlaylistTrack = async (
         ? `Playing ${selectedTrack.name}`
         : `Pausing ${selectedTrack.name}`;
 
-    MusicCommandManager.initiateProgress(progressLabel);
+    // MusicCommandManager.initiateProgress(progressLabel);
 
     const isLikedSongsPlaylist =
         selectedPlaylist.name === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME;
@@ -281,27 +273,33 @@ export const connectPlaylistTreeView = (view: TreeView<PlaylistItem>) => {
 
             const isExpand = playlistItem.type === "playlist" ? true : false;
 
+            let selectedPlaylist = null;
+            if (isExpand) {
+                // its a folder expand, return out
+                return;
+            } else {
+                // set the selected playlist
+                const currentPlaylistId = playlistItem["playlist_id"];
+                selectedPlaylist = await musicMgr.getPlaylistById(
+                    currentPlaylistId
+                );
+                musicMgr.selectedPlaylist = selectedPlaylist;
+            }
+
             // play it
             playSelectedItem(playlistItem, isExpand);
 
-            if (playlistItem.type === "track") {
-                // deselect it
-                try {
-                    const currentPlaylistId = playlistItem["playlist_id"];
-                    const itemPlaylist = await musicMgr.getPlaylistById(
-                        currentPlaylistId
-                    );
-                    if (itemPlaylist) {
-                        musicMgr.selectedPlaylist = itemPlaylist;
-                        // don't "select" it though. that will invoke the pause/play action
-                        view.reveal(itemPlaylist, {
-                            focus: false,
-                            select: true
-                        });
-                    }
-                } catch (err) {
-                    logIt(`Unable to deselect track: ${err.message}`);
+            // deselect it
+            try {
+                if (selectedPlaylist) {
+                    // don't "select" it though. that will invoke the pause/play action
+                    view.reveal(selectedPlaylist, {
+                        focus: false,
+                        select: true
+                    });
                 }
+            } catch (err) {
+                logIt(`Unable to deselect track: ${err.message}`);
             }
         }),
         view.onDidChangeVisibility(e => {
