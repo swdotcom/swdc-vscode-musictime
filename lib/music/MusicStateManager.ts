@@ -57,7 +57,7 @@ export class MusicStateManager {
      * Get the selected playlis or find it from the list of playlists
      * @param track
      */
-    private updateTrackPlaylistId(track) {
+    private updateTrackPlaylistId(track: Track) {
         const selectedPlaylist = this.musicMgr.selectedPlaylist;
         if (selectedPlaylist) {
             track["playlistId"] = selectedPlaylist.id;
@@ -224,7 +224,8 @@ export class MusicStateManager {
 
         this.gatheringSong = true;
         try {
-            const playingTrack = (await getRunningTrack()) || new Track();
+            const playingTrack: Track =
+                (await getRunningTrack()) || new Track();
 
             const changeStatus = this.getChangeStatus(playingTrack);
 
@@ -439,12 +440,10 @@ export class MusicStateManager {
         }
 
         // set a convenience "spotifyTrackId" attribute based on the URI
-        if (
-            songSession.type === "spotify" &&
-            !songSession.spotifyTrackId &&
-            songSession.uri
-        ) {
+        if (songSession.type === "spotify" && songSession.uri) {
             songSession["spotifyTrackId"] = songSession.uri;
+            // make sure the trackId is the URI if it's a spotify track
+            songSession["trackId"] = songSession.uri;
         }
 
         songSession = {

@@ -314,13 +314,25 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
         );
 
         const likedSongs: Track[] = await getSpotifyLikedSongs();
+        if (likedSongs) {
+            likedSongs.forEach((track: Track) => {
+                track["playlistId"] = "Liked Songs";
+                track.loved = true;
+                // set a convenience "spotifyTrackId" attribute based on the URI
+                if (track.uri) {
+                    track["spotifyTrackId"] = track.uri;
+                    // make sure the trackId is the URI if it's a spotify track
+                    track.id = track.uri;
+                }
+            });
+        }
         musicMgr.spotifyLikedSongs = likedSongs;
 
         // send the "Liked Songs" to software app so we can be in sync
         seedLikedSongsToSoftware(likedSongs);
 
         // send the top spotify songs from the users playlists to help seed song sessions
-        seedTopSpotifySongs(likedSongs);
+        seedSongSessions(likedSongs);
 
         setTimeout(() => {
             musicMgr.clearSpotify();
@@ -340,7 +352,7 @@ async function seedLikedSongsToSoftware(likedSongs) {
     }
 }
 
-async function seedTopSpotifySongs(likedSongs) {
+async function seedSongSessions(likedSongs) {
     /**
      * album:Object {album_type: "ALBUM", artists: Array(1), available_markets: Array(79), …}
     artists:Array(1) [Object]
@@ -382,7 +394,7 @@ async function seedTopSpotifySongs(likedSongs) {
             };
         });
 
-        let api = `/music/seedTopSpotifyTracks`;
+        let api = `/music/session/seed`;
         return softwarePut(api, { tracks: tracksToSave }, getItem("jwt"))
             .then(resp => {
                 if (!isResponseOk(resp)) {
