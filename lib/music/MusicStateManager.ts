@@ -362,6 +362,7 @@ export class MusicStateManager {
         let genreP: Promise<string> = null;
         let fullTrackP: Promise<Track> = null;
 
+        // fetch the full track or genre
         if (songSession.type === "spotify") {
             // just fetch the entire track
             fullTrackP = getSpotifyTrackById(
@@ -414,6 +415,8 @@ export class MusicStateManager {
             repoFileCount: 0,
             repoContributorCount: 0
         };
+
+        // build the file aggregate data
         const songData = this.buildAggregateData(
             payloads,
             initialValue,
@@ -433,6 +436,15 @@ export class MusicStateManager {
             if (!genre) {
                 songSession["genre"] = fullTrack.genre;
             }
+        }
+
+        // set a convenience "spotifyTrackId" attribute based on the URI
+        if (
+            songSession.type === "spotify" &&
+            !songSession.spotifyTrackId &&
+            songSession.uri
+        ) {
+            songSession["spotifyTrackId"] = songSession.uri;
         }
 
         songSession = {
