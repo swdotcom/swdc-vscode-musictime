@@ -531,6 +531,7 @@ export class MusicManager {
                     SOFTWARE_TOP_40_PLAYLIST_ID
                 );
                 if (softwareTop40 && softwareTop40.id) {
+                    softwareTop40.loved = false;
                     softwareTop40.itemType = "playlist";
                     softwareTop40.tag = "paw";
                     // add it to music time playlist
@@ -560,7 +561,11 @@ export class MusicManager {
                         this.spotifyLikedSongs &&
                         this.spotifyLikedSongs.length
                     ) {
-                        items.push(this.getSpotifyLikedPlaylistFolder());
+                        const likedSongsPlaylist = this.getSpotifyLikedPlaylistFolder();
+                        this._playlistMap[
+                            likedSongsPlaylist.id
+                        ] = likedSongsPlaylist;
+                        items.push(likedSongsPlaylist);
 
                         // refresh the recommendation tracks
                         if (this.recommendationTracks.length === 0) {
@@ -585,6 +590,9 @@ export class MusicManager {
                     // this one will get displayed in the top section
                     if (item.id !== SOFTWARE_TOP_40_PLAYLIST_ID) {
                         items.push(item);
+                    } else if (softwareTop40) {
+                        // set the top 40 playlist to loved
+                        softwareTop40.loved = true;
                     }
                 });
             }

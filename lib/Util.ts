@@ -905,7 +905,7 @@ export function getPlaylistIcon(treeItem: PlaylistItem) {
         }
     }
 
-    if (treeItem.id === SOFTWARE_TOP_40_PLAYLIST_ID) {
+    if (treeItem.id === SOFTWARE_TOP_40_PLAYLIST_ID && !treeItem.loved) {
         contextValue += "-softwaretop40";
     }
 

@@ -287,13 +287,10 @@ export const connectPlaylistTreeView = (view: TreeView<PlaylistItem>) => {
             if (playlistItem.type === "track") {
                 // deselect it
                 try {
-                    let itemPlaylist: PlaylistItem = musicMgr.selectedPlaylist;
-                    if (!itemPlaylist) {
-                        const currentPlaylistId = playlistItem["playlist_id"];
-                        itemPlaylist = await musicMgr.getPlaylistById(
-                            currentPlaylistId
-                        );
-                    }
+                    const currentPlaylistId = playlistItem["playlist_id"];
+                    const itemPlaylist = await musicMgr.getPlaylistById(
+                        currentPlaylistId
+                    );
                     if (itemPlaylist) {
                         // don't "select" it though. that will invoke the pause/play action
                         view.reveal(itemPlaylist, {
