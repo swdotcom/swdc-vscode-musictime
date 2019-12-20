@@ -24,7 +24,8 @@ import {
     getSpotifyPlaylist,
     getRecommendationsForTracks,
     isSpotifyRunning,
-    followPlaylist
+    followPlaylist,
+    removeTracksFromPlaylist
 } from "cody-music";
 import {
     PERSONAL_TOP_SONGS_NAME,
@@ -38,7 +39,9 @@ import {
     SPOTIFY_CLIENT_ID,
     SPOTIFY_CLIENT_SECRET,
     SHOW_ITUNES_LAUNCH_BUTTON,
-    OK_LABEL
+    OK_LABEL,
+    NOT_NOW_LABEL,
+    YES_LABEL
 } from "../Constants";
 import { commands, window } from "vscode";
 import {
@@ -244,7 +247,22 @@ export class MusicManager {
 
     get currentPlaylists(): PlaylistItem[] {
         if (this._currentPlayerName === PlayerName.ItunesDesktop) {
+            // go through each playlist and find out it's state
+            if (this._itunesPlaylists && this._itunesPlaylists.length) {
+                this._itunesPlaylists.forEach((item: PlaylistItem) => {
+                    if (item.type === "playlist") {
+                        this._playlistMap[item.id] = item;
+                    }
+                });
+            }
             return this._itunesPlaylists;
+        }
+        if (this._spotifyPlaylists && this._spotifyPlaylists.length) {
+            this._spotifyPlaylists.forEach((item: PlaylistItem) => {
+                if (item.type === "playlist") {
+                    this._playlistMap[item.id] = item;
+                }
+            });
         }
         return this._spotifyPlaylists;
     }
@@ -1725,6 +1743,34 @@ export class MusicManager {
                 `Unable to follow ${playlist.name}. ${codyResp.message}`,
                 ...[OK_LABEL]
             );
+        }
+    }
+
+    async removeTrackFromPlaylist(trackItem: PlaylistItem) {
+        // get the playlist it's in
+        const currentPlaylistId = trackItem["playlist_id"];
+        const selectedPlaylist = await this.getPlaylistById(currentPlaylistId);
+        if (selectedPlaylist) {
+            // if it's the liked songs, then send it to the setLiked(false) api
+            if (selectedPlaylist.id === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME) {
+                const buttonSelection = await window.showInformationMessage(
+                    `Are you sure you would like to remove ${trackItem.name} from your '${SPOTIFY_LIKED_SONGS_PLAYLIST_NAME}' playlist`,
+                    ...[NOT_NOW_LABEL, YES_LABEL]
+                );
+
+                if (buttonSelection === YES_LABEL) {
+                    let track: Track = new Track();
+                    track.id = trackItem.id;
+                    track.playerType = PlayerType.WebSpotify;
+                    track.state = TrackStatus.NotAssigned;
+                    await MusicControlManager.getInstance().setLiked(
+                        false,
+                        track,
+                        false /*updateStatus*/
+                    );
+                    commands.executeCommand("musictime.refreshPlaylist");
+                }
+            }
         }
     }
 }

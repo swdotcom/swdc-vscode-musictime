@@ -15,7 +15,7 @@ import {
     MusicPlaylistProvider,
     connectPlaylistTreeView
 } from "./music/MusicPlaylistProvider";
-import { PlaylistItem, PlayerName } from "cody-music";
+import { PlaylistItem, PlayerName, removeFromSpotifyLiked } from "cody-music";
 import { MusicCommandManager } from "./music/MusicCommandManager";
 import { SocialShareManager } from "./social/SocialShareManager";
 import { connectSlack } from "./slack/SlackControlManager";
@@ -77,6 +77,14 @@ export function createCommands(): {
         controller.playSong();
     });
     cmds.push(playCmd);
+
+    const removeTrackCmd = commands.registerCommand(
+        "musictime.removeTrack",
+        async (p: PlaylistItem) => {
+            musicMgr.removeTrackFromPlaylist(p);
+        }
+    );
+    cmds.push(removeTrackCmd);
 
     const sharePlaylistLinkCmd = commands.registerCommand(
         "musictime.sharePlaylist",

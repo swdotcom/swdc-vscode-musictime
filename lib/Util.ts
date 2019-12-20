@@ -6,7 +6,8 @@ import {
     launch_url,
     MUSIC_TIME_PLUGIN_ID,
     MUSIC_TIME_TYPE,
-    SOFTWARE_TOP_40_PLAYLIST_ID
+    SOFTWARE_TOP_40_PLAYLIST_ID,
+    SPOTIFY_LIKED_SONGS_PLAYLIST_NAME
 } from "./Constants";
 import { getToggleFileEventLoggingState } from "./DataController";
 import {
@@ -907,6 +908,8 @@ export function getPlaylistIcon(treeItem: PlaylistItem) {
 
     if (treeItem.id === SOFTWARE_TOP_40_PLAYLIST_ID && !treeItem.loved) {
         contextValue += "-softwaretop40";
+    } else if (treeItem["playlist_id"] == SPOTIFY_LIKED_SONGS_PLAYLIST_NAME) {
+        contextValue += "-isliked";
     }
 
     // add the popularity tag

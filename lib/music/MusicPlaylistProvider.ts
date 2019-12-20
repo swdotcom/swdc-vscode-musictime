@@ -291,13 +291,13 @@ export const connectPlaylistTreeView = (view: TreeView<PlaylistItem>) => {
 
             // deselect it
             try {
-                if (selectedPlaylist) {
-                    // don't "select" it though. that will invoke the pause/play action
-                    view.reveal(selectedPlaylist, {
-                        focus: false,
-                        select: true
-                    });
-                }
+                // if (selectedPlaylist) {
+                // re-select the track without focus
+                view.reveal(playlistItem, {
+                    focus: false,
+                    select: false
+                });
+                // }
             } catch (err) {
                 logIt(`Unable to deselect track: ${err.message}`);
             }

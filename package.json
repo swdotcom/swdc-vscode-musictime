@@ -141,6 +141,14 @@
                 }
             },
             {
+                "command": "musictime.removeTrack",
+                "title": "Remove Track From Playlist",
+                "icon": {
+                    "light": "resources/light/dash-light-bg.svg",
+                    "dark": "resources/dark/dash-dark-bg.svg"
+                }
+            },
+            {
                 "command": "musictime.progress",
                 "title": "Loading",
                 "tooltip": "Please wait"
@@ -284,6 +292,11 @@
                     "group": "inline@1"
                 },
                 {
+                    "command": "musictime.removeTrack",
+                    "when": "viewItem =~ /track-item.*-isliked/",
+                    "group": "inline@2"
+                },
+                {
                     "command": "musictime.addToPlaylist",
                     "when": "viewItem =~ /spotify-recommendation.*/",
                     "group": "inline@2"
@@ -379,7 +392,7 @@
         "aws-sdk": "^2.470.0",
         "axios": "^0.19.0",
         "clipboardy": "^2.1.0",
-        "cody-music": "2.6.94",
+        "cody-music": "2.6.96",
         "moment-timezone": "^0.5.25",
         "open": "^6.4.0",
         "vsls": "0.3.1291"
