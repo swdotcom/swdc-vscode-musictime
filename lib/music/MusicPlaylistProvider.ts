@@ -283,6 +283,28 @@ export const connectPlaylistTreeView = (view: TreeView<PlaylistItem>) => {
 
             // play it
             playSelectedItem(playlistItem, isExpand);
+
+            if (playlistItem.type === "track") {
+                // deselect it
+                try {
+                    let itemPlaylist: PlaylistItem = musicMgr.selectedPlaylist;
+                    if (!itemPlaylist) {
+                        const currentPlaylistId = playlistItem["playlist_id"];
+                        itemPlaylist = await musicMgr.getPlaylistById(
+                            currentPlaylistId
+                        );
+                    }
+                    if (itemPlaylist) {
+                        // don't "select" it though. that will invoke the pause/play action
+                        view.reveal(itemPlaylist, {
+                            focus: false,
+                            select: true
+                        });
+                    }
+                } catch (err) {
+                    logIt(`Unable to deselect track: ${err.message}`);
+                }
+            }
         }),
         view.onDidChangeVisibility(e => {
             if (e.visible) {

@@ -48,7 +48,12 @@ export class MusicCommandManager {
         const musictimeMenuTooltip = this.getMusicMenuTooltip();
         // start with 100 0and go down in sequence
         this.createButton("🎧", musictimeMenuTooltip, "musictime.menu", 1000);
-        this.createButton("...", "updating", "musictime.progress", 999);
+        this.createButton(
+            "$(settings) Loading",
+            "updating",
+            "musictime.progress",
+            999
+        );
         this.createButton(
             "Connect Spotify",
             "Connect Spotify to add your top productivity tracks.",
