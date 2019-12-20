@@ -18,7 +18,8 @@ import {
     PlayerName,
     PlaylistItem,
     launchAndPlaySpotifyTrack,
-    getGenre
+    getGenre,
+    getSpotifyTrackById
 } from "cody-music";
 import { MusicManager } from "./MusicManager";
 import { KpmController } from "../KpmController";
@@ -358,8 +359,19 @@ export class MusicStateManager {
 
     public async gatherCodingDataAndSendSongSession(songSession) {
         let genre = songSession.genre;
-        let genreP = null;
-        if (!genre) {
+        let genreP: Promise<string> = null;
+        let fullTrackP: Promise<Track> = null;
+
+        if (songSession.type === "spotify") {
+            // just fetch the entire track
+            fullTrackP = getSpotifyTrackById(
+                songSession.id,
+                true /*includeFullArtist*/,
+                true /*includeAudioFeatures*/,
+                true /*includeGenre*/
+            );
+        } else if (!genre) {
+            // fetch the genre
             const artistName = this.musicMgr.getArtist(songSession);
             const songName = songSession.name;
             const artistId =
@@ -368,6 +380,7 @@ export class MusicStateManager {
                     : "";
             genreP = getGenre(artistName, songName, artistId);
         }
+
         const payloads = await KpmController.getInstance().processOfflineKeystrokes(
             true /*sendCurrentKeystrokes*/
         );
@@ -407,10 +420,19 @@ export class MusicStateManager {
             songSession.start
         );
 
-        // use the genre promise
-        if (!genre && genreP) {
+        // await for either promise, whichever one is available
+        if (genreP) {
             genre = await genreP;
             songSession["genre"] = genre;
+        } else if (fullTrackP) {
+            // update the tracks with the result
+            const fullTrack = await fullTrackP;
+            songSession["album"] = fullTrack.album;
+            songSession["features"] = fullTrack.features;
+            songSession["artists"] = fullTrack.artists;
+            if (!genre) {
+                songSession["genre"] = fullTrack.genre;
+            }
         }
 
         songSession = {
