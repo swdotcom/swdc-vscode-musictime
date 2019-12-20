@@ -17,7 +17,8 @@ import {
     PlayerType,
     PlayerName,
     PlaylistItem,
-    launchAndPlaySpotifyTrack
+    launchAndPlaySpotifyTrack,
+    getGenre
 } from "cody-music";
 import { MusicManager } from "./MusicManager";
 import { KpmController } from "../KpmController";
@@ -356,6 +357,17 @@ export class MusicStateManager {
     }
 
     public async gatherCodingDataAndSendSongSession(songSession) {
+        let genre = songSession.genre;
+        let genreP = null;
+        if (!genre) {
+            const artistName = this.musicMgr.getArtist(songSession);
+            const songName = songSession.name;
+            const artistId =
+                songSession.artists && songSession.artists.length
+                    ? songSession.artists[0].id
+                    : "";
+            genreP = getGenre(artistName, songName, artistId);
+        }
         const payloads = await KpmController.getInstance().processOfflineKeystrokes(
             true /*sendCurrentKeystrokes*/
         );
@@ -394,6 +406,12 @@ export class MusicStateManager {
             initialValue,
             songSession.start
         );
+
+        // use the genre promise
+        if (!genre && genreP) {
+            genre = await genreP;
+            songSession["genre"] = genre;
+        }
 
         songSession = {
             ...songSession,

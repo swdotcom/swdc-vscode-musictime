@@ -937,7 +937,7 @@ export class MusicManager {
         return playlistItems;
     }
 
-    getArtist(track: Track) {
+    getArtist(track: any) {
         if (!track) {
             return null;
         }
@@ -1539,7 +1539,7 @@ export class MusicManager {
         // check if the current player is spotify and we don't have web access.
         // if no web access, then use the desktop player
         if (
-            this._currentPlayerName === PlayerName.SpotifyWeb &&
+            this._currentPlayerName !== PlayerName.ItunesDesktop &&
             isMac() &&
             !this.hasSpotifyPlaybackAccess()
         ) {
