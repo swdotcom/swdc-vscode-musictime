@@ -219,6 +219,10 @@ export class MusicManager {
         return this._currentPlayerName;
     }
 
+    clearCurrentRecMeta() {
+        this.currentRecMeta = {};
+    }
+
     set currentPlayerName(playerName: PlayerName) {
         // override any calls setting this to spotify desktop back to spotify-web
         if (playerName === PlayerName.SpotifyDesktop) {
@@ -585,15 +589,12 @@ export class MusicManager {
                         ] = likedSongsPlaylist;
                         items.push(likedSongsPlaylist);
 
-                        // refresh the recommendation tracks
-                        if (this.recommendationTracks.length === 0) {
-                            setTimeout(() => {
-                                this.updateRecommendations(
-                                    "Similar to Liked Songs",
-                                    5
-                                );
-                            }, 1000);
-                        }
+                        // refresh the recommendations
+                        setTimeout(() => {
+                            commands.executeCommand(
+                                "musictime.refreshRecommendations"
+                            );
+                        }, 2000);
                     }
                 }
 
@@ -1579,7 +1580,7 @@ export class MusicManager {
             // update the recommended tracks to empty
             this.recommendationTracks = [];
             commands.executeCommand("musictime.refreshRecommendationsTree");
-        } else if (this.currentRecMeta.label) {
+        } else if (this.currentRecMeta && this.currentRecMeta.label) {
             // use the current recommendation metadata and bump the offset
             this.updateRecommendations(
                 this.currentRecMeta.label,

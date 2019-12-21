@@ -130,19 +130,6 @@ export class MusicRecommendationProvider
         return false;
     }
 
-    selectTrack(p: PlaylistItem, select: boolean = true) {
-        // reveal the track state if it's playing or paused
-        try {
-            // don't "select" it though. that will invoke the pause/play action
-            this.view.reveal(p, {
-                focus: true,
-                select
-            });
-        } catch (err) {
-            logIt(`Unable to select track: ${err.message}`);
-        }
-    }
-
     getTreeItem(p: PlaylistItem): PlaylistTreeItem {
         const treeItem: PlaylistTreeItem = createPlaylistTreeItem(
             p,

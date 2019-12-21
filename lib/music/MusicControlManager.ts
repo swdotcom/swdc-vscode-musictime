@@ -467,6 +467,8 @@ export class MusicControlManager {
                         window.showInformationMessage(
                             `Added ${playlistItem.name} to ${playlistName}`
                         );
+                        // refresh the playlist and clear the current recommendation metadata
+                        musicMgr.clearCurrentRecMeta();
                         commands.executeCommand("musictime.refreshPlaylist");
                     } else {
                         if (errMsg) {

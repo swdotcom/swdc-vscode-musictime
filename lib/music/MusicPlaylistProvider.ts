@@ -72,18 +72,12 @@ export const playSelectedItem = async (
             musicMgr.selectedPlaylist = playlist;
         }
 
-        const notPlaying = playlistItem.state !== TrackStatus.Playing;
-
         if (playlistItem.playerType === PlayerType.MacItunesDesktop) {
-            if (notPlaying) {
-                const pos: number = playlistItem.position || 1;
-                await playItunesTrackNumberInPlaylist(
-                    musicMgr.selectedPlaylist.name,
-                    pos
-                );
-            } else {
-                musicCtrlMgr.pauseSong();
-            }
+            const pos: number = playlistItem.position || 1;
+            await playItunesTrackNumberInPlaylist(
+                musicMgr.selectedPlaylist.name,
+                pos
+            );
         } else if (launchConfirmInfo.playerName === PlayerName.SpotifyDesktop) {
             // ex: ["spotify:track:0R8P9KfGJCDULmlEoBagcO", "spotify:playlist:6ZG5lRT77aJ3btmArcykra"]
             // make sure the track has spotify:track and the playlist has spotify:playlist
@@ -213,27 +207,12 @@ export const launchAndPlaySpotifyWebPlaylistTrack = async (
     // get the selected track
     const selectedTrack = musicMgr.selectedTrackItem;
 
-    const notPlaying = selectedTrack.state !== TrackStatus.Playing;
-    const progressLabel = notPlaying
-        ? `Playing ${selectedTrack.name}`
-        : `Pausing ${selectedTrack.name}`;
-
-    // MusicCommandManager.initiateProgress(progressLabel);
-
     const isLikedSongsPlaylist =
         selectedPlaylist.name === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME;
 
     if (isTrack) {
-        // a track was selected, check if we should play or pause it
-
-        if (notPlaying) {
-            await launchAndPlaySpotifyTrack(
-                selectedTrack.id,
-                selectedPlaylist.id
-            );
-        } else {
-            musicCtrlMgr.pauseSong();
-        }
+        // a track was selected
+        await launchAndPlaySpotifyTrack(selectedTrack.id, selectedPlaylist.id);
     } else {
         if (isLikedSongsPlaylist) {
             // play the 1st track in the non-playlist liked songs folder
@@ -343,16 +322,6 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
         this._onDidChangeTreeData.fire(parent);
     }
 
-    isTrackInPlaylistRunning(p: PlaylistItem) {
-        const selectedTrack: PlaylistItem = MusicManager.getInstance()
-            .selectedTrackItem;
-        if (selectedTrack && selectedTrack["playlist_id"] === p.id) {
-            this.selectTrack(selectedTrack, false /* select */);
-            return true;
-        }
-        return false;
-    }
-
     selectTrack(p: PlaylistItem, select: boolean = true) {
         // reveal the track state if it's playing or paused
         try {
@@ -366,31 +335,19 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
         }
     }
 
-    async selectPlaylist(p: PlaylistItem) {
-        try {
-            // don't "select" it though. that will invoke the pause/play action
-            await this.view.reveal(p, {
-                focus: true,
-                select: false,
-                expand: true
-            });
-            playSelectedItem(p, false);
-        } catch (err) {
-            logIt(`Unable to select playlist: ${err.message}`);
-        }
-    }
-
     getTreeItem(p: PlaylistItem): PlaylistTreeItem {
         let treeItem: PlaylistTreeItem = null;
         if (p.type === "playlist") {
             // it's a track parent (playlist)
             if (p && p.tracks && p.tracks["total"] && p.tracks["total"] > 0) {
-                const folderState: TreeItemCollapsibleState = this.isTrackInPlaylistRunning(
-                    p
-                )
-                    ? TreeItemCollapsibleState.Expanded
-                    : TreeItemCollapsibleState.Collapsed;
-                return createPlaylistTreeItem(p, folderState);
+                // in the future we can use TreeItemCollapsibleState.Expanded
+                // if we have a clean way of check that a track is playing when the
+                // playlist folders are loaded, but currently the tracks load after you
+                // open the playlist so we don't know if it's playing or not
+                return createPlaylistTreeItem(
+                    p,
+                    TreeItemCollapsibleState.Collapsed
+                );
             }
             treeItem = createPlaylistTreeItem(p, TreeItemCollapsibleState.None);
         } else {
