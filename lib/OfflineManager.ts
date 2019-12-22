@@ -9,6 +9,7 @@ import {
     getItem
 } from "./Util";
 import { DEFAULT_SESSION_THRESHOLD_SECONDS } from "./Constants";
+import { serverIsAvailable } from "./DataController";
 const fs = require("fs");
 
 /**
@@ -140,4 +141,44 @@ export function getSessionSummaryFileAsJson() {
         }
     }
     return data ? data : {};
+}
+
+/**
+ * Fetch the data rows of a given file
+ * @param file
+ */
+export async function getDataRows(file) {
+    const isonline = await serverIsAvailable();
+    if (!isonline) {
+        return [];
+    }
+    try {
+        if (fs.existsSync(file)) {
+            const content = fs.readFileSync(file).toString();
+            // we're online so just delete the file
+            deleteFile(file);
+            if (content) {
+                const payloads = content
+                    .split(/\r?\n/)
+                    .map(item => {
+                        let obj = null;
+                        if (item) {
+                            try {
+                                obj = JSON.parse(item);
+                            } catch (e) {
+                                //
+                            }
+                        }
+                        if (obj) {
+                            return obj;
+                        }
+                    })
+                    .filter(item => item);
+                return payloads;
+            }
+        }
+    } catch (e) {
+        logIt(`Unable to read data file ${file}: ${e.message}`);
+    }
+    return [];
 }

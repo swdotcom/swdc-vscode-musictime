@@ -632,7 +632,7 @@ export async function fetchMusicTimeMetricsMarkdownDashboard() {
         .date();
     if (!fs.existsSync(file) || lastDayOfMonth !== dayOfMonth) {
         lastDayOfMonth = dayOfMonth;
-        await fetchDashboardData(file, "music-time", true);
+        await fetchDashboardData(file, true);
     }
 }
 
@@ -644,17 +644,13 @@ export async function fetchMusicTimeMetricsDashboard() {
         .date();
     if (fs.existsSync(file) || lastDayOfMonth !== dayOfMonth) {
         lastDayOfMonth = dayOfMonth;
-        await fetchDashboardData(file, "music-time", false);
+        await fetchDashboardData(file, false);
     }
 }
 
-async function fetchDashboardData(
-    fileName: string,
-    plugin: string,
-    isHtml: boolean
-) {
+async function fetchDashboardData(fileName: string, isHtml: boolean) {
     const musicSummary = await softwareGet(
-        `/dashboard?plugin=${plugin}&linux=${isLinux()}&html=${isHtml}`,
+        `/dashboard/music?linux=${isLinux()}&html=${isHtml}`,
         getItem("jwt")
     );
 

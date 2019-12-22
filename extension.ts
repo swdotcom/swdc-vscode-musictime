@@ -95,6 +95,7 @@ export async function intializePlugin(ctx: ExtensionContext) {
     // This will initialize the user and spotify
     // this needs to happen first to enable spotify playlist and control logic
     await musicMgr.initializeSpotify();
+
     // check if the user has a slack integration already connected
     await musicMgr.initializeSlack();
 
@@ -108,18 +109,19 @@ export async function intializePlugin(ctx: ExtensionContext) {
     const half_hour_ms = hourly_interval_ms / 2;
     offline_data_interval = setInterval(() => {
         if (!codeTimeExtInstalled()) {
+            // send the offline code time data
             KpmController.getInstance().processOfflineKeystrokes();
         }
+
+        // send the offline song sessions
+        setTimeout(() => {
+            MusicStateManager.getInstance().processOfflineSongSessions();
+        }, 1000 * 10);
     }, half_hour_ms);
 
     // check in 10 seconds to see if there are offline song sessions to send
     setTimeout(() => {
         MusicStateManager.getInstance().processOfflineSongSessions();
-
-        // then start the timer to process offline song sessions
-        offline_data_interval = setInterval(() => {
-            MusicStateManager.getInstance().processOfflineSongSessions();
-        }, half_hour_ms);
     }, 1000 * 10);
 
     initializeLiveshare();

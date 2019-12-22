@@ -4,8 +4,6 @@ import { UNTITLED, UNTITLED_WORKSPACE } from "./Constants";
 import { DEFAULT_DURATION } from "./Constants";
 import {
     getRootPathForFile,
-    updateCodeTimeMetricsFileFocus,
-    isCodeTimeMetricsFile,
     isEmptyObj,
     getProjectFolder,
     getDashboardFile,
@@ -24,6 +22,7 @@ import {
     getFileContributorCount
 } from "./KpmRepoManager";
 import { sendBatchPayload, serverIsAvailable } from "./DataController";
+import { getDataRows } from "./OfflineManager";
 const fs = require("fs");
 
 const NO_PROJ_NAME = "Unnamed";
@@ -74,12 +73,14 @@ export class KpmController {
                 if (hasData) {
                     // post the payload offline until the batch interval sends it out
 
+                    // get the payload
+                    const payload = keystrokeCount.getLatestPayload();
+
                     // post it to the file right away so the song session can obtain it
                     if (!codeTimeExtInstalled()) {
-                        await keystrokeCount.postData();
-                    } else {
-                        latestPayloads.push(keystrokeCount.getLatestPayload());
+                        await keystrokeCount.postData(payload);
                     }
+                    await keystrokeCount.postMusicData(payload);
                 }
             }
         }
@@ -105,10 +106,6 @@ export class KpmController {
 
         if (!this.isTrueEventFile(event, staticInfo.filename)) {
             return;
-        }
-
-        if (isCodeTimeMetricsFile(staticInfo.filename)) {
-            updateCodeTimeMetricsFileFocus(false);
         }
 
         let rootPath = getRootPathForFile(staticInfo.filename);
@@ -138,12 +135,6 @@ export class KpmController {
 
         if (!this.isTrueEventFile(event, staticInfo.filename)) {
             return;
-        }
-
-        if (isCodeTimeMetricsFile(staticInfo.filename)) {
-            updateCodeTimeMetricsFileFocus(true);
-        } else {
-            updateCodeTimeMetricsFileFocus(false);
         }
 
         let rootPath = getRootPathForFile(staticInfo.filename);
@@ -541,74 +532,25 @@ export class KpmController {
     }
 
     /**
-     * This will send the keystrokes batch data along with returning all of the gathered keystrokes.
-     * If track ends, it will also request to send the current keystrokes. The 30 minute timer will
-     * not request to send the current keystrokes as those will be used if a track is currently playing.
-     * @param sendCurrentKeystrokes
+     * Processes code time payloads if code time is not installed
      */
-    public async processOfflineKeystrokes(sendCurrentKeystrokes = false) {
-        const isonline = await serverIsAvailable();
-        if (!isonline) {
-            return;
-        }
-        let payloads = [];
-        let latestPayloads = [];
-        if (!codeTimeExtInstalled() && sendCurrentKeystrokes) {
-            latestPayloads = await this.sendKeystrokeDataIntervalHandler();
-        }
-        try {
-            const file = getSoftwareDataStoreFile();
-            if (fs.existsSync(file)) {
-                const content = fs.readFileSync(file).toString();
-                // we're online so just delete the datastore file
-                deleteFile(file);
-                if (content) {
-                    payloads = content
-                        .split(/\r?\n/)
-                        .map(item => {
-                            let obj = null;
-                            if (item) {
-                                try {
-                                    obj = JSON.parse(item);
-                                } catch (e) {
-                                    //
-                                }
-                            }
-                            if (obj) {
-                                return obj;
-                            }
-                        })
-                        .filter(item => item);
-
-                    // build the aggregated payload
-                    // send 50 at a time
-                    let batch = [];
-                    for (let i = 0; i < payloads.length; i++) {
-                        if (batch.length >= batch_limit) {
-                            await sendBatchPayload(batch);
-                            batch = [];
-                        }
-                        batch.push(payloads[i]);
-                    }
-                    if (batch.length > 0) {
-                        await sendBatchPayload(batch);
-                    }
+    public async processOfflineKeystrokes() {
+        const payloads = await getDataRows(getSoftwareDataStoreFile());
+        if (payloads && payloads.length > 0) {
+            // build the aggregated payload
+            // send 50 at a time
+            let batch = [];
+            for (let i = 0; i < payloads.length; i++) {
+                if (batch.length >= batch_limit) {
+                    await sendBatchPayload(batch);
+                    batch = [];
                 }
-            } else {
-                console.log("No keystroke data to send with the song session");
+                batch.push(payloads[i]);
             }
-        } catch (e) {
-            logIt(`Unable to aggregate music session data: ${e.message}`);
+            if (batch.length > 0) {
+                await sendBatchPayload(batch);
+            }
         }
-
-        if (latestPayloads.length > 0) {
-            // code time is installed since we have latest payloads
-            latestPayloads.forEach(payload => {
-                payloads.push(payload);
-            });
-        }
-
-        return payloads;
     }
 
     public dispose() {

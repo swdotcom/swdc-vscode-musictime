@@ -5,11 +5,11 @@ import {
     getVersion,
     getPluginId,
     isValidJson,
-    getMusicSessionFile,
-    deleteFile,
-    logIt
+    getMusicDataFile,
+    logIt,
+    getSongSessionDataFile
 } from "../Util";
-import { sendMusicData, serverIsAvailable } from "../DataController";
+import { sendMusicData } from "../DataController";
 import {
     Track,
     getRunningTrack,
@@ -25,7 +25,7 @@ import { MusicManager } from "./MusicManager";
 import { KpmController } from "../KpmController";
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
 import { MusicCommandManager } from "./MusicCommandManager";
-const fs = require("fs");
+import { getDataRows } from "../OfflineManager";
 
 export class MusicStateManager {
     static readonly WINDOWS_SPOTIFY_TRACK_FIND: string =
@@ -383,16 +383,27 @@ export class MusicStateManager {
             genreP = getGenre(artistName, songName, artistId);
         }
 
-        const payloads = await KpmController.getInstance().processOfflineKeystrokes(
-            true /*sendCurrentKeystrokes*/
-        );
+        // Make sure the current keystrokes payload completes. This will save
+        // the code time data for music and code time (only if code time is not installed)
+        await KpmController.getInstance().sendKeystrokeDataIntervalHandler();
+
+        // get the reows from the music data file
+        const payloads = await getDataRows(getMusicDataFile());
+
+        // add any file payloads we found
         const filePayloads = [];
         if (payloads && payloads.length) {
             payloads.forEach(payload => {
                 Object.keys(payload.source).forEach(sourceKey => {
                     let data = {};
                     data[sourceKey] = payload.source[sourceKey];
-                    filePayloads.push(data);
+                    // only add the file payload if the song session's end is after the song session start
+                    if (
+                        data[sourceKey] &&
+                        data[sourceKey].end > songSession.start
+                    ) {
+                        filePayloads.push(data);
+                    }
                 });
             });
         }
@@ -417,7 +428,8 @@ export class MusicStateManager {
             repoContributorCount: 0
         };
 
-        // build the file aggregate data
+        // build the file aggregate data, but only keep the coding data
+        // that match up to the song session range
         const songData = this.buildAggregateData(
             payloads,
             initialValue,
@@ -451,6 +463,7 @@ export class MusicStateManager {
             ...songData
         };
 
+        // send the music data, if we're online
         sendMusicData(songSession);
     }
 
@@ -495,9 +508,10 @@ export class MusicStateManager {
                 const element = payloads[i];
 
                 // if the file's end time is before the song session start, ignore it
-                // if (element.end < start) {
-                //     continue;
-                // }
+                if (element.end < start) {
+                    // the file's end is before the start, go to the next one
+                    continue;
+                }
 
                 // set repoContributorCount and repoFileCount
                 // if not already set
@@ -573,44 +587,13 @@ export class MusicStateManager {
      * not request to send the current keystrokes as those will be used if a track is currently playing.
      * @param sendCurrentKeystrokes
      */
-    public async processOfflineSongSessions(sendCurrentKeystrokes = false) {
-        const isonline = await serverIsAvailable();
-        if (!isonline) {
-            return;
-        }
-
-        try {
-            const file = getMusicSessionFile();
-            if (fs.existsSync(file)) {
-                const content = fs.readFileSync(file).toString();
-                // we're online so just delete the datastore file
-                deleteFile(file);
-                if (content) {
-                    const payloads = content
-                        .split(/\r?\n/)
-                        .map(item => {
-                            let obj = null;
-                            if (item) {
-                                try {
-                                    obj = JSON.parse(item);
-                                } catch (e) {
-                                    //
-                                }
-                            }
-                            if (obj) {
-                                return obj;
-                            }
-                        })
-                        .filter(item => item);
-
-                    // send the offline song sessions
-                    for (let i = 0; i < payloads.length; i++) {
-                        await sendMusicData(payloads[i]);
-                    }
-                }
+    public async processOfflineSongSessions() {
+        const payloads = await getDataRows(getSongSessionDataFile());
+        if (payloads && payloads.length > 0) {
+            // send the offline song sessions
+            for (let i = 0; i < payloads.length; i++) {
+                await sendMusicData(payloads[i]);
             }
-        } catch (e) {
-            logIt(`Unable to send offline music session data: ${e.message}`);
         }
     }
 }

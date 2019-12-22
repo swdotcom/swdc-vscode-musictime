@@ -35,7 +35,6 @@ const NUMBER_IN_EMAIL_REGEX = new RegExp("^\\d+\\+");
 // start off as focused as the editor may have
 // had that file in the tabs. any close or tab
 // switch will set this to false if the file isn't CodeTime
-let codeTimeMetricsIsFocused = true;
 let cachedSessionKeys = {};
 let editorSessiontoken = null;
 let lastMsg = null;
@@ -76,10 +75,6 @@ export function getPluginType() {
 export function getVersion() {
     const extension = extensions.getExtension(MUSIC_TIME_EXT_ID);
     return extension.packageJSON.version;
-}
-
-export function updateCodeTimeMetricsFileFocus(isFocused) {
-    codeTimeMetricsIsFocused = isFocused;
 }
 
 export function isCodeTimeMetricsFile(fileName) {
@@ -411,12 +406,22 @@ export function getMusicTimeMarkdownFile() {
     return file;
 }
 
-export function getMusicSessionFile() {
+export function getMusicDataFile() {
     let file = getSoftwareDir();
     if (isWindows()) {
         file += "\\musicData.json";
     } else {
         file += "/musicData.json";
+    }
+    return file;
+}
+
+export function getSongSessionDataFile() {
+    let file = getSoftwareDir();
+    if (isWindows()) {
+        file += "\\songSessionData.json";
+    } else {
+        file += "/songSessionData.json";
     }
     return file;
 }
@@ -597,11 +602,11 @@ export function getNowTimes() {
 
 export function storePayload(payload) {
     // store the payload into the data.json file
-    const codetimeFile = getSoftwareDataStoreFile();
+    const file = getSoftwareDataStoreFile();
 
     // also store the payload into the data.json file
     try {
-        fs.appendFileSync(codetimeFile, JSON.stringify(payload) + os.EOL);
+        fs.appendFileSync(file, JSON.stringify(payload) + os.EOL);
     } catch (err) {
         logIt(
             `Error appending to the code time data store file: ${err.message}`
@@ -609,13 +614,27 @@ export function storePayload(payload) {
     }
 }
 
-export function storeMusicSessionPayload(payload) {
-    // store the payload into the data.json file
-    const musicFile = getMusicSessionFile();
+export function storeKpmDataForMusic(payload) {
+    // store the payload into the musicData.json file
+    const file = getMusicDataFile();
 
-    // also store the payload into the musicData.json file
+    // also store the payload into the data.json file
     try {
-        fs.appendFileSync(musicFile, JSON.stringify(payload) + os.EOL);
+        fs.appendFileSync(file, JSON.stringify(payload) + os.EOL);
+    } catch (err) {
+        logIt(
+            `Error appending to the code time data store file: ${err.message}`
+        );
+    }
+}
+
+export function storeMusicSessionPayload(songSession) {
+    // store the payload into the data.json file
+    const file = getSongSessionDataFile();
+
+    // also store the payload into the songSessionData.json file
+    try {
+        fs.appendFileSync(file, JSON.stringify(songSession) + os.EOL);
     } catch (err) {
         logIt(
             `Error appending to the music session data store file: ${err.message}`
