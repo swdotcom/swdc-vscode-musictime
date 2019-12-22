@@ -99,11 +99,6 @@ export async function intializePlugin(ctx: ExtensionContext) {
     // check if the user has a slack integration already connected
     await musicMgr.initializeSlack();
 
-    // 5 second interval to check music info
-    gather_music_interval = setInterval(() => {
-        MusicStateManager.getInstance().gatherMusicInfo();
-    }, 1000 * 5);
-
     // every half hour, send offline data
     const hourly_interval_ms = 1000 * 60 * 60;
     const half_hour_ms = hourly_interval_ms / 2;
@@ -116,13 +111,21 @@ export async function intializePlugin(ctx: ExtensionContext) {
         // send the offline song sessions
         setTimeout(() => {
             MusicStateManager.getInstance().processOfflineSongSessions();
-        }, 1000 * 10);
+        }, 1000 * 60);
     }, half_hour_ms);
 
-    // check in 10 seconds to see if there are offline song sessions to send
-    setTimeout(() => {
-        MusicStateManager.getInstance().processOfflineSongSessions();
-    }, 1000 * 10);
+    // send any offline data in a few seconds, then fire off the
+    // track listening timer
+    setTimeout(async () => {
+        // see if there are offline song sessions to send
+        await MusicStateManager.getInstance().processOfflineSongSessions();
+        // call gather music then the interval will be every 5 seconds
+        MusicStateManager.getInstance().gatherMusicInfo();
+        // 5 second interval to check music info
+        gather_music_interval = setInterval(() => {
+            MusicStateManager.getInstance().gatherMusicInfo();
+        }, 1000 * 5);
+    }, 1000 * 5);
 
     initializeLiveshare();
 

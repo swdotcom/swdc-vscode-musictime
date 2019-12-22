@@ -139,38 +139,6 @@ export async function getAppJwt(serverIsOnline) {
     return null;
 }
 
-/**
- * create an anonymous user based on github email or mac addr
- */
-export async function createAnonymousUser(serverIsOnline) {
-    let appJwt = await getAppJwt(serverIsOnline);
-    if (appJwt && serverIsOnline) {
-        const jwt = getItem("jwt");
-        // check one more time before creating the anon user
-        if (!jwt) {
-            const creation_annotation = "NO_SESSION_FILE";
-            const username = await getOsUsername();
-            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            const hostname = await getHostname();
-            let resp = await softwarePost(
-                "/data/onboard",
-                {
-                    timezone,
-                    username,
-                    creation_annotation,
-                    hostname
-                },
-                appJwt
-            );
-            if (isResponseOk(resp) && resp.data && resp.data.jwt) {
-                setItem("jwt", resp.data.jwt);
-                return resp.data.jwt;
-            }
-        }
-    }
-    return null;
-}
-
 export async function getSlackOauth(serverIsOnline) {
     let jwt = getItem("jwt");
     if (serverIsOnline && jwt) {

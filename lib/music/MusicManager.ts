@@ -24,8 +24,7 @@ import {
     getSpotifyPlaylist,
     getRecommendationsForTracks,
     isSpotifyRunning,
-    followPlaylist,
-    removeTracksFromPlaylist
+    followPlaylist
 } from "cody-music";
 import {
     PERSONAL_TOP_SONGS_NAME,
@@ -1144,7 +1143,7 @@ export class MusicManager {
         let playlists = [];
         if (serverIsOnline) {
             const response = await softwareGet(
-                "/music/generatedPlaylist",
+                "/music/playlist/generated",
                 getItem("jwt")
             );
 
@@ -1233,7 +1232,7 @@ export class MusicManager {
 
             await this.updateSavedPlaylists(
                 playlistId,
-                1,
+                PERSONAL_TOP_SONGS_PLID,
                 PERSONAL_TOP_SONGS_NAME
             ).catch(err => {
                 logIt("Error updating music time with generated playlist ID");
@@ -1329,7 +1328,7 @@ export class MusicManager {
         };
         let jwt = getItem("jwt");
         let createResult = await softwarePost(
-            "/music/generatedPlaylist",
+            "/music/playlist/generated",
             payload,
             jwt
         );
@@ -1426,7 +1425,7 @@ export class MusicManager {
             this.savedPlaylists.map(async savedPlaylist => {
                 // delete
                 await softwareDelete(
-                    `/music/generatedPlaylist/${savedPlaylist.id}`,
+                    `/music/playlist/generated/${savedPlaylist.id}`,
                     getItem("jwt")
                 );
             });
@@ -1451,7 +1450,7 @@ export class MusicManager {
             if (!foundItem) {
                 // remove it from the server
                 await softwareDelete(
-                    `/music/generatedPlaylist/${savedPlaylist.id}`,
+                    `/music/playlist/generated/${savedPlaylist.id}`,
                     getItem("jwt")
                 );
             } else if (foundItem.name !== savedPlaylist.name) {
@@ -1460,7 +1459,7 @@ export class MusicManager {
                     name: foundItem.name
                 };
                 await softwarePut(
-                    `/music/generatedPlaylist/${savedPlaylist.id}`,
+                    `/music/playlist/generated/${savedPlaylist.id}`,
                     payload,
                     getItem("jwt")
                 );
