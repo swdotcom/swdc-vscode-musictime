@@ -7,23 +7,16 @@ import {
     Event,
     Disposable,
     TreeView,
-    commands,
-    window
+    commands
 } from "vscode";
 import {
     PlaylistItem,
     launchAndPlaySpotifyTrack,
-    isSpotifyRunning,
-    PlayerName,
-    launchPlayer
+    PlayerName
 } from "cody-music";
-import { logIt, getPlaylistIcon } from "../Util";
+import { getPlaylistIcon } from "../Util";
 import { MusicManager } from "./MusicManager";
-import {
-    NOT_NOW_LABEL,
-    YES_LABEL,
-    RECOMMENDATIONS_PROVIDER
-} from "../Constants";
+import { RECOMMENDATIONS_PROVIDER } from "../Constants";
 import { playSpotifyDesktopPlaylistByTrack } from "./MusicPlaylistProvider";
 import { MusicCommandManager } from "./MusicCommandManager";
 
@@ -42,8 +35,7 @@ const createPlaylistTreeItem = (
 };
 
 const playRecommendationTrack = async (track: PlaylistItem) => {
-    musicMgr.currentProvider = RECOMMENDATIONS_PROVIDER;
-
+    // ask to launch web or desktop if neither are running
     const launchConfirmInfo: any = await musicMgr.launchConfirm();
     if (!launchConfirmInfo.proceed) {
         return;
@@ -51,13 +43,24 @@ const playRecommendationTrack = async (track: PlaylistItem) => {
 
     MusicCommandManager.syncControls(musicMgr.runningTrack, true /*loading*/);
 
-    if (!launchConfirmInfo.isRunning && !launchConfirmInfo.launchDesktop) {
-        launchAndPlaySpotifyTrack(track.id);
-    } else if (launchConfirmInfo.launchDesktop) {
-        playSpotifyDesktopPlaylistByTrack(track);
+    musicMgr.currentProvider = RECOMMENDATIONS_PROVIDER;
+
+    if (launchConfirmInfo.isLaunching) {
+        if (launchConfirmInfo.playerName === PlayerName.SpotifyDesktop) {
+            setTimeout(() => {
+                playSpotifyDesktopPlaylistByTrack(track);
+            }, 2000);
+        } else {
+            setTimeout(() => {
+                launchAndPlaySpotifyTrack(track.id);
+            }, 2000);
+        }
     } else {
-        // this will just tell spotify which track to play
-        launchAndPlaySpotifyTrack(track.id);
+        if (launchConfirmInfo.playerName === PlayerName.SpotifyDesktop) {
+            playSpotifyDesktopPlaylistByTrack(track);
+        } else {
+            launchAndPlaySpotifyTrack(track.id);
+        }
     }
 };
 

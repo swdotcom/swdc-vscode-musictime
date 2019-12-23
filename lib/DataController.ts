@@ -1,5 +1,4 @@
 import { workspace, window, commands } from "vscode";
-
 import {
     softwareGet,
     softwarePut,
@@ -10,7 +9,6 @@ import {
     getItem,
     setItem,
     nowInSecs,
-    getOsUsername,
     getSessionFileCreateTime,
     getOs,
     getVersion,

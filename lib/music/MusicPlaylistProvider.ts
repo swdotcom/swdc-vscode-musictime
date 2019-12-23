@@ -13,12 +13,10 @@ import {
     PlaylistItem,
     PlayerName,
     PlayerType,
-    TrackStatus,
     playItunesTrackNumberInPlaylist,
     launchAndPlaySpotifyTrack,
     playSpotifyMacDesktopTrack
 } from "cody-music";
-import { MusicControlManager } from "./MusicControlManager";
 import {
     SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
     PLAYLISTS_PROVIDER
@@ -39,7 +37,6 @@ const createPlaylistTreeItem = (
     return new PlaylistTreeItem(p, cstate);
 };
 
-const musicCtrlMgr: MusicControlManager = MusicControlManager.getInstance();
 const musicMgr: MusicManager = MusicManager.getInstance();
 
 let initializedPlaylist = false;
@@ -48,6 +45,7 @@ export const playSelectedItem = async (
     playlistItem: PlaylistItem,
     isExpand: boolean
 ) => {
+    // ask to launch web or desktop if neither are running
     const launchConfirmInfo: any = await musicMgr.launchConfirm();
     if (!launchConfirmInfo.proceed) {
         return;

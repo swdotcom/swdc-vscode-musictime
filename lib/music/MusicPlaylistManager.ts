@@ -1,4 +1,4 @@
-import { window } from "vscode";
+import { window, commands } from "vscode";
 import {
     CodyResponse,
     CodyResponseType,
@@ -71,6 +71,9 @@ export class MusicPlaylistManager {
                 window.showInformationMessage(
                     `Successfully created ${name} and added tracks.`
                 );
+                setTimeout(() => {
+                    commands.executeCommand("musictime.refreshPlaylist");
+                }, 1000);
             } else {
                 window.showErrorMessage(
                     `There was an unexpected error adding tracks to the playlist. ${addTracksResult.message}`,
