@@ -49,7 +49,14 @@ import {
     getAppJwt,
     getMusicTimeUserStatus
 } from "../DataController";
-import { getItem, setItem, isMac, logIt, getCodyErrorMessage } from "../Util";
+import {
+    getItem,
+    setItem,
+    isMac,
+    logIt,
+    getCodyErrorMessage,
+    isWindows
+} from "../Util";
 import {
     isResponseOk,
     softwareGet,
@@ -1700,11 +1707,28 @@ export class MusicManager {
         let playerName = this.getPlayerNameForPlayback();
         let isLaunching = false;
         let proceed = true;
+        const devices = await getSpotifyDevices();
+        /**
+         * i.e. [{
+            id:"204add3334abeef5a2e5619bd9659df92e354640",
+            is_active:true,
+            is_private_session:false,
+            is_restricted:false,
+            name:"DESKTOP-K6D7DLC",
+            type:"Computer",
+            volume_percent:100}]
+         */
 
         const isRunning = await isSpotifyRunning();
+        const hasDevices = devices && devices.length > 0;
 
         // ask to show the desktop if they're a premium user
-        if (!isRunning && this.isSpotifyPremium()) {
+        if (
+            !isWindows() &&
+            !isRunning &&
+            !hasDevices &&
+            this.isSpotifyPremium()
+        ) {
             // ask to launch
             const selectedButton = await window.showInformationMessage(
                 `Music Time requires a running Spotify player. Choose a player to launch.`,
@@ -1726,15 +1750,22 @@ export class MusicManager {
                     quietly: false
                 });
             }
-        } else if (!isRunning) {
-            playerName = PlayerName.SpotifyDesktop;
-            // it's non-premium user, launch spotify
+        } else if (!isRunning && !hasDevices) {
+            isLaunching = true;
+            // it's a windows or non-premium user, launch spotify
             await launchPlayer(playerName, {
                 quietly: false
             });
         }
 
-        return { isRunning, playerName, isLaunching, proceed };
+        const info = {
+            isRunning,
+            playerName,
+            isLaunching,
+            proceed
+        };
+
+        return info;
     }
 
     async followSpotifyPlaylist(playlist: PlaylistItem) {

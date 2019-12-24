@@ -146,7 +146,7 @@ export const playSelectedItem = async (
                             launchAndPlaySpotifyWebPlaylistTrack(
                                 false /*isTrack*/
                             );
-                        }, 2000);
+                        }, 3000);
                     }
                 } else {
                     if (
