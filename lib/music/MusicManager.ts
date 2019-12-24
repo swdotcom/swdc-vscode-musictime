@@ -1726,6 +1726,12 @@ export class MusicManager {
                     quietly: false
                 });
             }
+        } else if (!isRunning) {
+            playerName = PlayerName.SpotifyDesktop;
+            // it's non-premium user, launch spotify
+            await launchPlayer(playerName, {
+                quietly: false
+            });
         }
 
         return { isRunning, playerName, isLaunching, proceed };

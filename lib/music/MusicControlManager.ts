@@ -463,7 +463,7 @@ export class MusicControlManager {
                     } else {
                         if (errMsg) {
                             window.showErrorMessage(
-                                `Unable to add ${playlistItem.name} to${playlistName}. Please make sure you are the owner of the playlist, and there are less than 10,000 tracks in the playlist.`,
+                                `Unable to add '${playlistItem.name}' to '${playlistName}'. Please make sure you are the owner of the playlist, and there are less than 10,000 tracks in the playlist.`,
                                 ...[OK_LABEL]
                             );
                         }
