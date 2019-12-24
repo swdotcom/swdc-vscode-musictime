@@ -248,33 +248,29 @@ export const connectPlaylistTreeView = (view: TreeView<PlaylistItem>) => {
                 return;
             }
 
-            const isExpand = playlistItem.type === "playlist" ? true : false;
-
-            let selectedPlaylist = null;
-            if (isExpand) {
-                // its a folder expand, return out
+            if (playlistItem.type !== "track") {
+                // play it if it's a track, otherwise return out since there
+                // are no functions associated with it
                 return;
-            } else {
-                // set the selected playlist
-                const currentPlaylistId = playlistItem["playlist_id"];
-                selectedPlaylist = await musicMgr.getPlaylistById(
-                    currentPlaylistId
-                );
-                musicMgr.selectedPlaylist = selectedPlaylist;
             }
 
+            // set the selected playlist
+            const currentPlaylistId = playlistItem["playlist_id"];
+            const selectedPlaylist = await musicMgr.getPlaylistById(
+                currentPlaylistId
+            );
+            musicMgr.selectedPlaylist = selectedPlaylist;
+
             // play it
-            playSelectedItem(playlistItem, isExpand);
+            playSelectedItem(playlistItem, false /*isExpand*/);
 
             // deselect it
             try {
-                // if (selectedPlaylist) {
                 // re-select the track without focus
                 view.reveal(playlistItem, {
                     focus: false,
                     select: false
                 });
-                // }
             } catch (err) {
                 logIt(`Unable to deselect track: ${err.message}`);
             }
