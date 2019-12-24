@@ -15,7 +15,7 @@ import {
     MusicPlaylistProvider,
     connectPlaylistTreeView
 } from "./music/MusicPlaylistProvider";
-import { PlaylistItem, PlayerName, removeFromSpotifyLiked } from "cody-music";
+import { PlaylistItem, PlayerName } from "cody-music";
 import { MusicCommandManager } from "./music/MusicCommandManager";
 import { SocialShareManager } from "./social/SocialShareManager";
 import { connectSlack } from "./slack/SlackControlManager";

@@ -132,15 +132,11 @@ export class MusicControlManager {
         await this.musicStateMgr.gatherMusicInfo();
     }
 
-    async setLiked(
-        liked: boolean,
-        overrideTrack: Track = null,
-        updateStatus = true
-    ) {
+    async setLiked(liked: boolean, overrideTrack: Track = null) {
         const serverIsOnline = await serverIsAvailable();
-        const track: Track = !overrideTrack
-            ? this.musicMgr.runningTrack
-            : overrideTrack;
+        const runningTrack: Track = this.musicMgr.runningTrack;
+
+        const track: Track = !overrideTrack ? runningTrack : overrideTrack;
 
         if (!serverIsOnline || !track || !track.id) {
             window.showInformationMessage(
@@ -149,41 +145,37 @@ export class MusicControlManager {
             return;
         }
 
-        // const isLikedSongTrack = track.id === "Liked Songs" ? true : false;
-
-        if (track && track.id) {
-            if (track.playerType === PlayerType.MacItunesDesktop) {
-                // await so that the stateCheckHandler fetches
-                // the latest version of the itunes track
-                await setItunesLoved(liked).catch(err => {
-                    logIt(`Error updating itunes loved state: ${err.message}`);
-                });
+        if (track.playerType === PlayerType.MacItunesDesktop) {
+            // await so that the stateCheckHandler fetches
+            // the latest version of the itunes track
+            await setItunesLoved(liked).catch(err => {
+                logIt(`Error updating itunes loved state: ${err.message}`);
+            });
+        } else {
+            // save the spotify track to the users liked songs playlist
+            if (liked) {
+                await saveToSpotifyLiked([track.id]);
             } else {
-                // save the spotify track to the users liked songs playlist
-                if (liked) {
-                    await saveToSpotifyLiked([track.id]);
-                } else {
-                    await removeFromSpotifyLiked([track.id]);
-                }
+                await removeFromSpotifyLiked([track.id]);
             }
+        }
 
-            // show loading until the liked/unliked is complete
-            MusicCommandManager.syncControls(track, true /*loading*/);
+        // show loading until the liked/unliked is complete
+        MusicCommandManager.syncControls(track, true /*loading*/);
 
-            let type = "spotify";
-            if (track.playerType === PlayerType.MacItunesDesktop) {
-                type = "itunes";
-            }
-            const api = `/music/liked/track/${track.id}?type=${type}`;
-            const resp = await softwarePut(api, { liked }, getItem("jwt"));
-            if (!isResponseOk(resp)) {
-                logIt(`Error updating track like state: ${resp.message}`);
-            }
+        let type = "spotify";
+        if (track.playerType === PlayerType.MacItunesDesktop) {
+            type = "itunes";
+        }
+        const api = `/music/liked/track/${track.id}?type=${type}`;
+        const resp = await softwarePut(api, { liked }, getItem("jwt"));
+        if (!isResponseOk(resp)) {
+            logIt(`Error updating track like state: ${resp.message}`);
+        }
 
-            // get the server track. this will sync the controls
-            if (updateStatus) {
-                await this.musicMgr.getServerTrack(track);
-            }
+        // get the server track. this will sync the controls
+        if (runningTrack.id === track.id) {
+            await this.musicMgr.getServerTrack(track);
         }
     }
 
@@ -452,16 +444,14 @@ export class MusicControlManager {
                         );
                         errMsg = getCodyErrorMessage(codyResponse);
                     } else {
-                        let updateStatus = true;
                         let track: Track = musicMgr.runningTrack;
                         if (track.id !== playlistItem.id) {
                             track = new Track();
                             track.id = playlistItem.id;
                             track.playerType = playlistItem.playerType;
                             track.state = playlistItem.state;
-                            updateStatus = false;
                         }
-                        await this.setLiked(true, track, updateStatus);
+                        await this.setLiked(true, track);
                     }
                     if (!errMsg) {
                         window.showInformationMessage(

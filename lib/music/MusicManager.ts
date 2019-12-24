@@ -1765,8 +1765,7 @@ export class MusicManager {
                     track.state = TrackStatus.NotAssigned;
                     await MusicControlManager.getInstance().setLiked(
                         false,
-                        track,
-                        false /*updateStatus*/
+                        track
                     );
                     commands.executeCommand("musictime.refreshPlaylist");
                 }
