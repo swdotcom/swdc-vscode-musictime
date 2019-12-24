@@ -144,8 +144,8 @@
                 "command": "musictime.removeTrack",
                 "title": "Remove Track From Playlist",
                 "icon": {
-                    "light": "resources/light/dash-light-bg.svg",
-                    "dark": "resources/dark/dash-dark-bg.svg"
+                    "light": "resources/light/round-delete-button.svg",
+                    "dark": "resources/dark/round-delete-button.svg"
                 }
             },
             {
@@ -213,8 +213,8 @@
                 "command": "musictime.addToPlaylist",
                 "title": "Add Or Create A Playlist",
                 "icon": {
-                    "light": "resources/light/plus-light-bg.svg",
-                    "dark": "resources/dark/plus-dark-bg.svg"
+                    "light": "resources/light/rounded-plus-button.svg",
+                    "dark": "resources/dark/rounded-plus-button.svg"
                 }
             },
             {
