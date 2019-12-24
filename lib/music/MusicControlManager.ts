@@ -362,7 +362,7 @@ export class MusicControlManager {
             value: placeHolder,
             placeHolder: "New Playlist",
             validateInput: text => {
-                return !text
+                return !text || text.trim().length === 0
                     ? "Please enter a playlist name to continue."
                     : null;
             }
@@ -379,9 +379,17 @@ export class MusicControlManager {
         const placeholder: string = hasPlaylistItemToAdd
             ? `${musicControlMgr.currentTrackToAdd.artist} - ${musicControlMgr.currentTrackToAdd.name}`
             : "New Playlist";
-        const playlistName = await musicControlMgr.showCreatePlaylistInputPrompt(
+        let playlistName = await musicControlMgr.showCreatePlaylistInputPrompt(
             placeholder
         );
+
+        if (playlistName && playlistName.trim().length === 0) {
+            window.showInformationMessage(
+                "Please enter a playlist name to continue."
+            );
+            return;
+        }
+
         if (!playlistName) {
             return;
         }
