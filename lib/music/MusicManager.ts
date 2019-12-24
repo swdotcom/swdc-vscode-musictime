@@ -1704,31 +1704,32 @@ export class MusicManager {
     }
 
     async launchConfirm() {
+        let isRunning = await isSpotifyRunning();
         let playerName = this.getPlayerNameForPlayback();
         let isLaunching = false;
         let proceed = true;
-        const devices = await getSpotifyDevices();
-        /**
-         * i.e. [{
-            id:"204add3334abeef5a2e5619bd9659df92e354640",
-            is_active:true,
-            is_private_session:false,
-            is_restricted:false,
-            name:"DESKTOP-K6D7DLC",
-            type:"Computer",
-            volume_percent:100}]
-         */
+        if (!isRunning) {
+            // double check with the devices first
+            const devices = await getSpotifyDevices();
+            /**
+             * i.e. [{
+                id:"204add3334abeef5a2e5619bd9659df92e354640",
+                is_active:true,
+                is_private_session:false,
+                is_restricted:false,
+                name:"DESKTOP-K6D7DLC",
+                type:"Computer",
+                volume_percent:100}]
+            */
 
-        const isRunning = await isSpotifyRunning();
-        const hasDevices = devices && devices.length > 0;
+            const hasDevices = devices && devices.length > 0;
+            if (hasDevices) {
+                isRunning = true;
+            }
+        }
 
         // ask to show the desktop if they're a premium user
-        if (
-            !isWindows() &&
-            !isRunning &&
-            !hasDevices &&
-            this.isSpotifyPremium()
-        ) {
+        if (!isWindows() && !isRunning && this.isSpotifyPremium()) {
             // ask to launch
             const selectedButton = await window.showInformationMessage(
                 `Music Time requires a running Spotify player. Choose a player to launch.`,
@@ -1750,7 +1751,7 @@ export class MusicManager {
                     quietly: false
                 });
             }
-        } else if (!isRunning && !hasDevices) {
+        } else if (!isRunning) {
             isLaunching = true;
             // it's a windows or non-premium user, launch spotify
             await launchPlayer(playerName, {
