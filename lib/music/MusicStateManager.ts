@@ -34,7 +34,13 @@ export class MusicStateManager {
     private static instance: MusicStateManager;
 
     private existingTrack: any = {};
-    private endInRangeTrackId: string = "";
+    private trackProgressInfo: any = {
+        endInRange: false,
+        duration_ms: 0,
+        progress_ms: 0,
+        id: null,
+        lastUpdateUtc: 0
+    };
     private gatheringSong: boolean = false;
 
     private musicMgr: MusicManager;
@@ -75,9 +81,23 @@ export class MusicStateManager {
         return { utc, local };
     }
 
-    private isEndInRange(progress_ms, duration_ms) {
-        const buffer = duration_ms * 0.06;
-        return progress_ms >= duration_ms - buffer;
+    private resetTrackProgressInfo() {
+        this.trackProgressInfo = {
+            endInRange: false,
+            duration_ms: 0,
+            progress_ms: 0,
+            id: null,
+            lastUpdateUtc: 0
+        };
+    }
+
+    private isEndInRange(playingTrack: Track): boolean {
+        if (!playingTrack || !playingTrack.id) {
+            return false;
+        }
+
+        const buffer = playingTrack.duration_ms * 0.1;
+        return playingTrack.progress_ms >= playingTrack.duration_ms - buffer;
     }
 
     private getChangeStatus(playingTrack: Track): any {
@@ -138,33 +158,52 @@ export class MusicStateManager {
         const isActiveTrack = playing || paused;
 
         // update the endInRange state
-        let endInRange = false;
+        let endInRange = this.isEndInRange(playingTrack);
+
+        const utcLocalTimes = this.getUtcAndLocal();
+
+        let lastUpdateUtc = this.trackProgressInfo.lastUpdateUtc;
+
+        // update the lastUpdateUtc if the progress is moving
         if (
             playingTrackId &&
-            playingTrack.progress_ms &&
-            this.isEndInRange(
-                playingTrack.progress_ms,
-                playingTrack.duration_ms
-            )
+            this.trackProgressInfo.id === playingTrackId &&
+            this.trackProgressInfo.progress_ms !== playingTrack.progress_ms
         ) {
-            endInRange = true;
+            lastUpdateUtc = utcLocalTimes.utc;
         }
 
         // update the ended state
+        // If the previous track was the same trackId and it's end progress was in range
         let ended = false;
-        if (endInRange) {
-            this.endInRangeTrackId = playingTrackId;
-        } else if (
-            this.endInRangeTrackId === playingTrackId &&
-            playingTrack.progress_ms === 0
-        ) {
-            // clear this and set ended to true
-            this.endInRangeTrackId = "";
+        if (!playingTrackId) {
             ended = true;
         } else {
-            // clear this
-            this.endInRangeTrackId = "";
+            // check if the progress has gone back to the beginning and it was previously
+            // at the end of the track, meaning it's on repeat
+            if (
+                this.trackProgressInfo.id === playingTrackId &&
+                this.trackProgressInfo.progress_ms > playingTrack.progress_ms &&
+                this.trackProgressInfo.endInRange
+            ) {
+                ended = true;
+            } else if (
+                playingTrackId &&
+                lastUpdateUtc > 0 &&
+                utcLocalTimes.utc - lastUpdateUtc > 60
+            ) {
+                // the track has been stopped for over a minute, end it
+                ended = true;
+            }
         }
+
+        this.trackProgressInfo = {
+            endInRange,
+            lastUpdateUtc,
+            duration_ms: playingTrack.duration_ms || 0,
+            progress_ms: playingTrack.progress_ms || 0,
+            id: playingTrack.id || null
+        };
 
         return {
             isNewTrack,
@@ -236,11 +275,15 @@ export class MusicStateManager {
 
             const utcLocalTimes = this.getUtcAndLocal();
 
-            // has the existing track ended or have we started a new track?
-            if (
+            // send the existing song if it has ended, or a new song has started
+            const sendSongSession =
                 (changeStatus.ended || changeStatus.endPrevTrack) &&
                 this.existingTrack.id
-            ) {
+                    ? true
+                    : false;
+
+            // has the existing track ended or have we started a new track?
+            if (sendSongSession) {
                 // just set it to playing
                 this.existingTrack.state = TrackStatus.Playing;
                 this.existingTrack["end"] = utcLocalTimes.utc;
@@ -276,6 +319,9 @@ export class MusicStateManager {
 
                 // clear the track.
                 this.existingTrack = {};
+
+                // reset the track progress info
+                this.resetTrackProgressInfo();
             }
 
             // do we have a new song or was it paused?
