@@ -19,7 +19,9 @@ import {
     PlaylistItem,
     launchAndPlaySpotifyTrack,
     getGenre,
-    getSpotifyTrackById
+    getSpotifyTrackById,
+    isSpotifyRunning,
+    getSpotifyDevices
 } from "cody-music";
 import { MusicManager } from "./MusicManager";
 import { KpmController } from "../KpmController";
@@ -380,6 +382,12 @@ export class MusicStateManager {
     }
 
     private async playNextLikedSpotifyCheck(changeStatus) {
+        let isRunning = await isSpotifyRunning();
+        const devices = await getSpotifyDevices();
+        if (!isRunning || !devices || devices.length === 0) {
+            // they've closed the player
+            return;
+        }
         // If the current playlist is the Liked Songs,
         // check if we should start the next track
         const playlistId = this.musicMgr.selectedPlaylist

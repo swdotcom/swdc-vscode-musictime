@@ -1561,7 +1561,10 @@ export class MusicManager {
         return this.spotifyUser && this.spotifyUser.product ? true : false;
     }
 
-    isSpotifyPremium() {
+    async isSpotifyPremium() {
+        if (!this.spotifyUser) {
+            this.spotifyUser = await getUserProfile();
+        }
         return this.hasSpotifyUser() && this.spotifyUser.product === "premium"
             ? true
             : false;
@@ -1727,9 +1730,11 @@ export class MusicManager {
                 isRunning = true;
             }
         }
+        const isWin = isWindows();
+        await this.isSpotifyPremium();
 
         // ask to show the desktop if they're a premium user
-        if (!isWindows() && !isRunning && this.isSpotifyPremium()) {
+        if (!isWin && !isRunning) {
             // ask to launch
             const selectedButton = await window.showInformationMessage(
                 `Music Time requires a running Spotify player. Choose a player to launch.`,
