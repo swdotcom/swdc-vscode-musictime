@@ -249,6 +249,8 @@ export class MusicControlManager {
         // check if they need to connect to spotify
         const needsSpotifyAccess = musicMgr.requiresSpotifyAccess();
 
+        const isPrem = await musicMgr.isSpotifyPremium();
+
         // check to see if they have the slack access token
         const slackAccessToken = getItem("slack_access_token");
 
@@ -334,6 +336,16 @@ export class MusicControlManager {
                     url: null,
                     command: "musictime.disconnectSpotify"
                 });
+
+                if (!isPrem) {
+                    menuOptions.items.push({
+                        label: "Connect Premium",
+                        detail:
+                            "Non premium connected. Connect to your premium Spotify account to use the web based play, pause, next, and previous controls",
+                        url: null,
+                        command: "musictime.connectSpotify"
+                    });
+                }
 
                 if (!slackAccessToken) {
                     menuOptions.items.push({
@@ -554,7 +566,7 @@ export async function connectSpotify() {
     if (!needsSpotifyAccess) {
         // disconnectSpotify
         const selection = await window.showInformationMessage(
-            `Would you like to connect as a new Spotify user?`,
+            `Connect with a different Spotify account?`,
             ...[NOT_NOW_LABEL, YES_LABEL]
         );
         if (!selection || selection === NOT_NOW_LABEL) {

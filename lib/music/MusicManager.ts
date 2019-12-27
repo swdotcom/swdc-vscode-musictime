@@ -1562,7 +1562,7 @@ export class MusicManager {
     }
 
     async isSpotifyPremium() {
-        if (!this.spotifyUser) {
+        if (!this.spotifyUser && !this.requiresSpotifyAccess()) {
             this.spotifyUser = await getUserProfile();
         }
         return this.hasSpotifyUser() && this.spotifyUser.product === "premium"
@@ -1731,10 +1731,12 @@ export class MusicManager {
             }
         }
         const isWin = isWindows();
-        await this.isSpotifyPremium();
+        const isPrem = await this.isSpotifyPremium();
 
         // ask to show the desktop if they're a premium user
-        if (!isWin && !isRunning) {
+        let launchResult = null;
+        let launchingDesktop = false;
+        if (!isWin && !isRunning && isPrem) {
             // ask to launch
             const selectedButton = await window.showInformationMessage(
                 `Music Time requires a running Spotify player. Choose a player to launch.`,
@@ -1749,19 +1751,31 @@ export class MusicManager {
             } else {
                 isLaunching = true;
                 if (selectedButton === "Desktop Player") {
+                    launchingDesktop = true;
                     // launch the desktop
                     playerName = PlayerName.SpotifyDesktop;
                 }
-                await launchPlayer(playerName, {
+                launchResult = await launchPlayer(playerName, {
                     quietly: false
                 });
             }
         } else if (!isRunning) {
             isLaunching = true;
+            launchingDesktop = true;
             // it's a windows or non-premium user, launch spotify
-            await launchPlayer(playerName, {
+            launchResult = await launchPlayer(playerName, {
                 quietly: false
             });
+        }
+
+        // check to see if we've failed to launch the desktop player
+        if (launchingDesktop && launchResult && launchResult.error) {
+            window.showInformationMessage(
+                "Unable to launch the Spotify desktop player. Please confirm that it is installed."
+            );
+            // launch the web player
+            await launchPlayer(PlayerName.SpotifyWeb);
+            isLaunching = false;
         }
 
         const info = {

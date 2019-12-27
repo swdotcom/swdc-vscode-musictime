@@ -62,7 +62,7 @@ export class MusicCommandManager {
         );
         this.createButton(
             "Connect Premium",
-            "Connect to your premium Spotify account to use the play, pause, next, and previous controls.",
+            "Connect to your premium Spotify account to use web based  play, pause, next, and previous controls.",
             "musictime.connectSpotify",
             999
         );
@@ -194,9 +194,7 @@ export class MusicCommandManager {
         }
         const {
             needsSpotifyAccess,
-            hasSpotifyUser,
-            showPremiumRequired,
-            type
+            showPremiumRequired
         } = this.getSpotifyState();
         // hide all except for the launch player button and possibly connect spotify button
         this._buttons = this._buttons.map(button => {
