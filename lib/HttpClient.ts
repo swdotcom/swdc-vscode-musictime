@@ -2,7 +2,7 @@ import axios from "axios";
 
 import { api_endpoint } from "./Constants";
 
-import { showErrorStatus, logIt } from "./Util";
+import { logIt } from "./Util";
 
 // build the axios api base url
 const beApi = axios.create({
@@ -156,36 +156,4 @@ function getResponseStatus(resp) {
         status = resp.response.status;
     }
     return status;
-}
-
-/**
- * get the request's response data
- */
-function getResponseData(resp) {
-    let data = null;
-    if (resp && resp.data) {
-        data = resp.data;
-    } else if (resp && resp.response && resp.response.data) {
-        data = resp.response.data;
-    }
-    return data;
-}
-
-/**
- * check if the response has the deactivated code
- */
-function isUnauthenticatedAndDeactivated(resp) {
-    let status = getResponseStatus(resp);
-    let data = getResponseData(resp);
-    if (status && status >= 400 && data) {
-        // check if we have the data object
-        let code = data.code || "";
-        if (code === "DEACTIVATED") {
-            showErrorStatus(
-                "To see your coding data in Code Time, please reactivate your account."
-            );
-            return true;
-        }
-    }
-    return false;
 }

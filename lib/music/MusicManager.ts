@@ -1427,18 +1427,6 @@ export class MusicManager {
         this.updateCodyConfig();
     }
 
-    deleteSavedPlaylists() {
-        if (this.savedPlaylists && this.savedPlaylists.length > 0) {
-            this.savedPlaylists.map(async savedPlaylist => {
-                // delete
-                await softwareDelete(
-                    `/music/playlist/generated/${savedPlaylist.id}`,
-                    getItem("jwt")
-                );
-            });
-        }
-    }
-
     // reconcile. meaning the user may have deleted the lists our 2 buttons created;
     // global and custom.  We'll remove them from our db if we're unable to find a matching
     // playlist_id we have saved.
@@ -1475,9 +1463,12 @@ export class MusicManager {
     }
 
     async launchTrackPlayer(playerName: PlayerName = null) {
+        // options.album_id or options.track_id
+        const track_id = this.runningTrack ? this.runningTrack.id : null;
+
         // if the player name is null, this means all we want to do is launch the currently set player
         if (!playerName) {
-            launchPlayer(this.currentPlayerName, { quietly: false });
+            launchPlayer(this.currentPlayerName, { quietly: false, track_id });
             return;
         }
 

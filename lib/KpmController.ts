@@ -11,8 +11,6 @@ import {
     logEvent,
     getFileAgeInDays,
     getFileType,
-    logIt,
-    deleteFile,
     codeTimeExtInstalled,
     getSoftwareDataStoreFile
 } from "./Util";
@@ -21,9 +19,8 @@ import {
     getRepoFileCount,
     getFileContributorCount
 } from "./KpmRepoManager";
-import { sendBatchPayload, serverIsAvailable } from "./DataController";
+import { sendBatchPayload } from "./DataController";
 import { getDataRows } from "./OfflineManager";
-const fs = require("fs");
 
 const NO_PROJ_NAME = "Unnamed";
 
