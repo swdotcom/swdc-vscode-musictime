@@ -585,11 +585,11 @@ export async function connectSpotify() {
 }
 
 export async function disconnectSpotify(confirmDisconnect = true) {
-    disconnectOauth("Spotify", confirmDisconnect);
+    await disconnectOauth("Spotify", confirmDisconnect);
 }
 
 export async function disconnectSlack(confirmDisconnect = true) {
-    disconnectOauth("Slack", confirmDisconnect);
+    await disconnectOauth("Slack", confirmDisconnect);
 }
 
 export async function disconnectOauth(type: string, confirmDisconnect = true) {
@@ -610,22 +610,20 @@ export async function disconnectOauth(type: string, confirmDisconnect = true) {
                 getItem("jwt")
             );
 
-            if (isResponseOk(result)) {
-                const musicMgr = MusicManager.getInstance();
-                // oauth is not null, initialize spotify
-                if (type_lc === "slack") {
-                    await musicMgr.updateSlackAccessInfo(null);
-                } else if (type_lc === "spotify") {
-                    await musicMgr.clearSpotifyAccessInfo();
-                }
-
-                window.showInformationMessage(
-                    `Successfully disconnected your ${type} connection.`
-                );
-
-                commands.executeCommand("musictime.refreshPlaylist");
-                commands.executeCommand("musictime.refreshRecommendations");
+            const musicMgr = MusicManager.getInstance();
+            // oauth is not null, initialize spotify
+            if (type_lc === "slack") {
+                await musicMgr.updateSlackAccessInfo(null);
+            } else if (type_lc === "spotify") {
+                await musicMgr.clearSpotifyAccessInfo();
             }
+
+            window.showInformationMessage(
+                `Successfully disconnected your ${type} connection.`
+            );
+
+            commands.executeCommand("musictime.refreshPlaylist");
+            commands.executeCommand("musictime.refreshRecommendations");
         } else {
             window.showInformationMessage(
                 `Our service is temporarily unavailable.\n\nPlease try again later.\n`

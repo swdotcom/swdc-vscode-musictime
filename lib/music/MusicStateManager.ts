@@ -131,6 +131,7 @@ export class MusicStateManager {
 
         let playerName = this.musicMgr.currentPlayerName;
         let playerNameChanged = false;
+        let continuousPlay = true;
         // only update the currentPlayerName if the current track running
         // is "playing" AND the playerType doesn't match the current player type
 
@@ -188,7 +189,10 @@ export class MusicStateManager {
                 this.trackProgressInfo.progress_ms > playingTrack.progress_ms &&
                 this.trackProgressInfo.endInRange
             ) {
+                // it's on repeat
                 ended = true;
+                // dont start the next song as the user has it on repeat
+                continuousPlay = false;
             } else if (
                 playingTrackId &&
                 lastUpdateUtc > 0 &&
@@ -196,6 +200,8 @@ export class MusicStateManager {
             ) {
                 // the track has been stopped for over a minute, end it
                 ended = true;
+                // don't play the next song though. the user has explicitly stopped it
+                continuousPlay = false;
             }
         }
 
@@ -218,7 +224,8 @@ export class MusicStateManager {
             isValidTrack,
             playerNameChanged,
             endInRange,
-            ended
+            ended,
+            continuousPlay
         };
     }
 
@@ -385,7 +392,7 @@ export class MusicStateManager {
         let isRunning = await isSpotifyRunning();
         const devices = await getSpotifyDevices();
         if (!isRunning || !devices || devices.length === 0) {
-            // they've closed the player
+            // they've closed the player, don't try to play again
             return;
         }
         // If the current playlist is the Liked Songs,
@@ -396,7 +403,8 @@ export class MusicStateManager {
 
         if (
             playlistId === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME &&
-            changeStatus.ended
+            changeStatus.ended &&
+            changeStatus.continuousPlay
         ) {
             // play the next song
             const nextTrack: Track = this.musicMgr.getNextSpotifyLikedSong();

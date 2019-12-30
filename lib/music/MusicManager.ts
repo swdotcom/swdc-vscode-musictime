@@ -55,7 +55,8 @@ import {
     isMac,
     logIt,
     getCodyErrorMessage,
-    isWindows
+    isWindows,
+    codeTimeExtInstalled
 } from "../Util";
 import {
     isResponseOk,

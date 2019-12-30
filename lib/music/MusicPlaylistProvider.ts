@@ -23,7 +23,7 @@ import {
 } from "../Constants";
 import { MusicManager } from "./MusicManager";
 import { MusicCommandManager } from "./MusicCommandManager";
-import { logIt, getPlaylistIcon } from "../Util";
+import { logIt, getPlaylistIcon, isWindows } from "../Util";
 
 /**
  * Create the playlist tree item (root or leaf)
@@ -55,6 +55,8 @@ export const playSelectedItem = async (
 
     musicMgr.currentProvider = PLAYLISTS_PROVIDER;
 
+    const launchTimeout = isWindows() ? 5000 : 4000;
+
     // is this a track or playlist item?
     if (playlistItem.type === "track") {
         let currentPlaylistId = playlistItem["playlist_id"];
@@ -82,7 +84,7 @@ export const playSelectedItem = async (
             if (launchConfirmInfo.isLaunching) {
                 setTimeout(() => {
                     playSpotifyDesktopPlaylistTrack();
-                }, 2000);
+                }, launchTimeout);
             } else {
                 playSpotifyDesktopPlaylistTrack();
             }
@@ -90,7 +92,7 @@ export const playSelectedItem = async (
             if (launchConfirmInfo.isLaunching) {
                 setTimeout(() => {
                     launchAndPlaySpotifyWebPlaylistTrack(true /*isTrack*/);
-                }, 2000);
+                }, launchTimeout);
             } else {
                 launchAndPlaySpotifyWebPlaylistTrack(true /*isTrack*/);
             }
@@ -125,7 +127,7 @@ export const playSelectedItem = async (
                             musicMgr.selectedPlaylist.name,
                             pos
                         );
-                    }, 2000);
+                    }, launchTimeout);
                 } else {
                     playItunesTrackNumberInPlaylist(
                         musicMgr.selectedPlaylist.name,
@@ -140,13 +142,13 @@ export const playSelectedItem = async (
                     ) {
                         setTimeout(() => {
                             playSpotifyDesktopPlaylistTrack();
-                        }, 2000);
+                        }, launchTimeout);
                     } else {
                         setTimeout(() => {
                             launchAndPlaySpotifyWebPlaylistTrack(
                                 false /*isTrack*/
                             );
-                        }, 3000);
+                        }, launchTimeout);
                     }
                 } else {
                     if (
