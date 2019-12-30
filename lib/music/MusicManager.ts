@@ -1751,6 +1751,9 @@ export class MusicManager {
                 });
             }
         } else if (!isRunning) {
+            if (isPrem) {
+                playerName = PlayerName.SpotifyDesktop;
+            }
             isLaunching = true;
             launchingDesktop = true;
             // it's a windows or non-premium user, launch spotify
