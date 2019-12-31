@@ -1765,10 +1765,12 @@ export class MusicManager {
 
         // check to see if we've failed to launch the desktop player
         if (launchingDesktop && launchResult && launchResult.error) {
-            window.showInformationMessage(
-                "Unable to launch the Spotify desktop player. Please confirm that it is installed."
-            );
+            logIt(`Error launching desktop: ${launchResult.error}`);
+            // window.showInformationMessage(
+            //     "Unable to launch the Spotify desktop player. Please confirm that it is installed."
+            // );
             // launch the web player
+            playerName = PlayerName.SpotifyWeb;
             await launchPlayer(PlayerName.SpotifyWeb);
             isLaunching = false;
         }
