@@ -222,7 +222,7 @@ export class SocialShareManager {
             return;
         }
         const slackAccessToken = getItem("slack_access_token");
-        const msg = `${message}\n${{ spotifyLinkUrl }}`;
+        const msg = `${message}\n${spotifyLinkUrl}`;
         const web = new WebClient(slackAccessToken);
         await web.chat
             .postMessage({
