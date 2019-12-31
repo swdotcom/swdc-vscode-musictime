@@ -1772,7 +1772,7 @@ export class MusicManager {
             // launch the web player
             playerName = PlayerName.SpotifyWeb;
             await launchPlayer(PlayerName.SpotifyWeb);
-            isLaunching = false;
+            isLaunching = true;
         }
 
         const info = {

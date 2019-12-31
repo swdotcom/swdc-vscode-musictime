@@ -143,10 +143,10 @@ clipboardy@^2.1.0:
     arch "^2.1.1"
     execa "^1.0.0"
 
-cody-music@2.6.97:
-  version "2.6.97"
-  resolved "https://registry.yarnpkg.com/cody-music/-/cody-music-2.6.97.tgz#0159c09f02189fea0bf15e18c51cd3f181f69c59"
-  integrity sha512-RlRSFeJ+L9D+4PFUUC9jZYFWDb5hoOlxxhl4NUG2yWI4o7MKp8geaG3jrg0twY0NT96Lsc6vmutTrE1nqZOong==
+cody-music@2.6.98:
+  version "2.6.98"
+  resolved "https://registry.yarnpkg.com/cody-music/-/cody-music-2.6.98.tgz#46c1bd279f2fc6d72280c3674810160ec411e366"
+  integrity sha512-bt7pDSjXuityfW6xKnJlRSPAXhmlHn3VW+7ufVF2+Vzd3ZUgEP7JuKg82Qe8OFHK4iHCXE7vxOfndhS99jWN1A==
   dependencies:
     axios "^0.19.0"
     natural "^0.6.3"
