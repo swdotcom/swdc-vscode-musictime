@@ -98,6 +98,7 @@ export class MusicManager {
     private _currentProvider: string = "playlists"; // or "recommendations"
     private _currentRecMeta: any = {};
     private _ready: boolean = false;
+    private _currentDevices: PlayerDevice[] = [];
 
     private constructor() {
         //
@@ -216,6 +217,14 @@ export class MusicManager {
 
     set currentRecMeta(meta: any) {
         this._currentRecMeta = meta;
+    }
+
+    get currentDevices() {
+        return this._currentDevices;
+    }
+
+    set currentDevices(devices: PlayerDevice[]) {
+        this._currentDevices = devices;
     }
 
     /**
@@ -543,6 +552,10 @@ export class MusicManager {
             const activeDeviceInfo = await this.getActiveSpotifyDevicesTitleAndTooltip(
                 devices
             );
+
+            // set the current devices
+            this.currentDevices = devices;
+
             if (activeDeviceInfo) {
                 // only create the active device button if we have one
                 const devicesFoundButton = this.createSpotifyDevicesButton(
@@ -878,37 +891,61 @@ export class MusicManager {
         return null;
     }
 
-    async getActiveSpotifyDevicesTitleAndTooltip(devices: PlayerDevice[]) {
-        let inactiva_devices_names = [];
-        let computerDeviceName = "";
-        let otherActiveDeviceName = "";
+    async getActiveDecvice(devices: PlayerDevice[]): Promise<PlayerDevice> {
+        let computerDevice: PlayerDevice = null;
+        let otherActiveDevice: PlayerDevice = null;
         if (devices && devices.length > 0) {
             for (let i = 0; i < devices.length; i++) {
                 const device: PlayerDevice = devices[i];
                 if (device.is_active) {
                     if (device.type.toLowerCase() === "computer") {
-                        computerDeviceName = device.name;
+                        computerDevice = device;
                     } else {
-                        otherActiveDeviceName = device.name;
+                        otherActiveDevice = device;
                     }
-                } else {
-                    inactiva_devices_names.push(device.name);
                 }
             }
         }
 
-        if (computerDeviceName || otherActiveDeviceName) {
-            const activeDeviceName =
-                computerDeviceName || otherActiveDeviceName;
+        if (computerDevice) {
+            return computerDevice;
+        }
+        return otherActiveDevice;
+    }
+
+    async getInactiveDevices(devices: PlayerDevice[]): Promise<PlayerDevice[]> {
+        let inactive_devices: PlayerDevice[] = [];
+        if (devices && devices.length > 0) {
+            for (let i = 0; i < devices.length; i++) {
+                const device: PlayerDevice = devices[i];
+                if (!device.is_active) {
+                    inactive_devices.push(device);
+                }
+            }
+        }
+
+        return inactive_devices;
+    }
+
+    async getActiveSpotifyDevicesTitleAndTooltip(devices: PlayerDevice[]) {
+        const inactiva_devices: PlayerDevice[] = await this.getInactiveDevices(
+            devices
+        );
+        const activeDevice: PlayerDevice = await this.getActiveDecvice(devices);
+
+        if (activeDevice) {
             // done, found an active device
             return {
-                title: `Listening on ${activeDeviceName}`,
+                title: `Listening on ${activeDevice.name}`,
                 tooltip: "Listening on a Spotify device",
                 loggedIn: true
             };
-        } else if (inactiva_devices_names.length > 0) {
+        } else if (inactiva_devices && inactiva_devices.length > 0) {
+            const names = inactiva_devices.map(device => {
+                return device.name;
+            });
             return {
-                title: `Connected on ${inactiva_devices_names.join(", ")}`,
+                title: `Connected on ${names.join(", ")}`,
                 tooltip: "Multiple Spotify devices connected",
                 loggedIn: true
             };

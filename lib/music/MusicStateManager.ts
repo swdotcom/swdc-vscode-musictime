@@ -19,9 +19,7 @@ import {
     PlaylistItem,
     launchAndPlaySpotifyTrack,
     getGenre,
-    getSpotifyTrackById,
-    isSpotifyRunning,
-    getSpotifyDevices
+    getSpotifyTrackById
 } from "cody-music";
 import { MusicManager } from "./MusicManager";
 import { KpmController } from "../KpmController";
@@ -117,6 +115,7 @@ export class MusicStateManager {
         const stopped = playingTrackState === "stopped";
         const paused = playingTrackState === TrackStatus.Paused;
         const isNewTrack = existingTrackId !== playingTrackId;
+        const hasPlayingTrackId = playingTrackId !== null;
         const trackStateChanged = existingTrackState !== playingTrackState;
         const playing = playingTrackState === TrackStatus.Playing;
 
@@ -181,6 +180,7 @@ export class MusicStateManager {
         let ended = false;
         if (!playingTrackId) {
             ended = true;
+            continuousPlay = false;
         } else {
             // check if the progress has gone back to the beginning and it was previously
             // at the end of the track, meaning it's on repeat
@@ -225,7 +225,8 @@ export class MusicStateManager {
             playerNameChanged,
             endInRange,
             ended,
-            continuousPlay
+            continuousPlay,
+            hasPlayingTrackId
         };
     }
 
@@ -389,23 +390,30 @@ export class MusicStateManager {
     }
 
     private async playNextLikedSpotifyCheck(changeStatus) {
-        let isRunning = await isSpotifyRunning();
-        const devices = await getSpotifyDevices();
-        if (!isRunning || !devices || devices.length === 0) {
-            // they've closed the player, don't try to play again
-            return;
-        }
         // If the current playlist is the Liked Songs,
         // check if we should start the next track
         const playlistId = this.musicMgr.selectedPlaylist
             ? this.musicMgr.selectedPlaylist.id
             : "";
+        if (!playlistId || playlistId !== SPOTIFY_LIKED_SONGS_PLAYLIST_NAME) {
+            // no need to go further, it's not the liked songs playlist
+            return;
+        }
 
-        if (
-            playlistId === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME &&
-            changeStatus.ended &&
-            changeStatus.continuousPlay
-        ) {
+        // check if we're loading, if so, bail out
+        if (MusicCommandManager.isLoading()) {
+            return;
+        }
+
+        const computerDeviceRunning: boolean = await this.musicMgr.isComputerDeviceRunning(
+            this.musicMgr.currentDevices
+        );
+        if (!computerDeviceRunning) {
+            // they've closed the player, don't try to play again
+            return;
+        }
+
+        if (changeStatus.ended && changeStatus.continuousPlay) {
             // play the next song
             const nextTrack: Track = this.musicMgr.getNextSpotifyLikedSong();
             if (nextTrack) {

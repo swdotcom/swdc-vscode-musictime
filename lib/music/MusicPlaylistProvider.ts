@@ -54,11 +54,12 @@ export const playSelectedItem = async (
         return;
     }
 
+    // let the congtrols know we're loading
     MusicCommandManager.syncControls(musicMgr.runningTrack, true /*loading*/);
 
     musicMgr.currentProvider = PLAYLISTS_PROVIDER;
 
-    const launchTimeout = isWindows() ? 5000 : 4000;
+    const launchTimeout = 4000;
 
     // is this a track or playlist item?
     if (playlistItem.type === "track") {
@@ -165,6 +166,13 @@ export const playSelectedItem = async (
                 }
             }
         }
+    }
+
+    if (launchConfirmInfo.isLaunching) {
+        setTimeout(() => {
+            // refresh the list to reflect the running device
+            commands.executeCommand("musictime.refreshPlaylist");
+        }, launchTimeout);
     }
 };
 
