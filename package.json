@@ -142,7 +142,7 @@
             },
             {
                 "command": "musictime.removeTrack",
-                "title": "Remove Track From Playlist",
+                "title": "Remove Track",
                 "icon": {
                     "light": "resources/light/round-delete-button.svg",
                     "dark": "resources/dark/round-delete-button.svg"
