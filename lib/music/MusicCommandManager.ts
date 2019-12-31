@@ -31,9 +31,14 @@ export class MusicCommandManager {
     private static _buttons: Button[] = [];
     private static _hideSongTimeout = null;
     private static _treeProvider: MusicPlaylistProvider;
+    private static _isLoading: boolean = false;
 
     private constructor() {
         // private to prevent non-singleton usage
+    }
+
+    public static isLoading(): boolean {
+        return this._isLoading;
     }
 
     public static setTreeProvider(provider: MusicPlaylistProvider) {
@@ -119,6 +124,7 @@ export class MusicCommandManager {
         if (showLoading) {
             this.showLoadingTrack();
         } else if (!needsSpotifyAccess && (pauseIt || playIt)) {
+            this._isLoading = false;
             if (pauseIt) {
                 this.showPauseControls(track);
             } else {
@@ -163,6 +169,8 @@ export class MusicCommandManager {
         if (!this._buttons || this._buttons.length === 0) {
             return;
         }
+
+        this._isLoading = true;
 
         // hide all except for the launch player button and possibly connect spotify button
         this._buttons = this._buttons.map(button => {

@@ -15,7 +15,9 @@ import {
     PlayerType,
     playItunesTrackNumberInPlaylist,
     launchAndPlaySpotifyTrack,
-    playSpotifyMacDesktopTrack
+    playSpotifyMacDesktopTrack,
+    getSpotifyDevices,
+    PlayerDevice
 } from "cody-music";
 import {
     SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
@@ -46,7 +48,8 @@ export const playSelectedItem = async (
     isExpand: boolean
 ) => {
     // ask to launch web or desktop if neither are running
-    const launchConfirmInfo: any = await musicMgr.launchConfirm();
+    const devices: PlayerDevice[] = await getSpotifyDevices();
+    const launchConfirmInfo: any = await musicMgr.launchConfirm(devices);
     if (!launchConfirmInfo.proceed) {
         return;
     }

@@ -374,7 +374,7 @@ export class MusicStateManager {
                 changeStatus.isNewTrack ||
                 changeStatus.trackStateChanged ||
                 changeStatus.playerNameChanged;
-            if (needsRefresh) {
+            if (needsRefresh || MusicCommandManager.isLoading()) {
                 MusicCommandManager.syncControls(
                     this.musicMgr.runningTrack,
                     false

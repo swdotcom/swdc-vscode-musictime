@@ -23,8 +23,8 @@ import {
     PlayerDevice,
     getSpotifyPlaylist,
     getRecommendationsForTracks,
-    isSpotifyRunning,
-    followPlaylist
+    followPlaylist,
+    playSpotifyDevice
 } from "cody-music";
 import {
     PERSONAL_TOP_SONGS_NAME,
@@ -55,8 +55,7 @@ import {
     isMac,
     logIt,
     getCodyErrorMessage,
-    isWindows,
-    codeTimeExtInstalled
+    isWindows
 } from "../Util";
 import {
     isResponseOk,
@@ -527,9 +526,25 @@ export class MusicManager {
 
             this._itunesPlaylists = items;
         } else {
+            // get the devices
+            const devices: PlayerDevice[] = await getSpotifyDevices();
+
+            // check to see if they have this device available, if not, show a button
+            // to switch to this device
+            const switchToThisDeviceButton = await this.getSwitchToThisDeviceButton(
+                devices
+            );
+            if (switchToThisDeviceButton) {
+                // add it
+                items.push(switchToThisDeviceButton);
+            }
+
             // show the devices listening folder if they've already connected oauth
-            const activeDeviceInfo = await this.getActiveSpotifyDevicesTitleAndTooltip();
+            const activeDeviceInfo = await this.getActiveSpotifyDevicesTitleAndTooltip(
+                devices
+            );
             if (activeDeviceInfo) {
+                // only create the active device button if we have one
                 const devicesFoundButton = this.createSpotifyDevicesButton(
                     activeDeviceInfo.title,
                     activeDeviceInfo.tooltip,
@@ -843,26 +858,55 @@ export class MusicManager {
         return playlistState;
     }
 
-    async getActiveSpotifyDevicesTitleAndTooltip() {
-        const devices = await getSpotifyDevices();
+    async getSwitchToThisDeviceButton(devices: PlayerDevice[]) {
+        const isComputerDeviceRunning = await this.isComputerDeviceRunning(
+            devices
+        );
+
+        if (!isComputerDeviceRunning && devices && devices.length > 0) {
+            // return a button to switch to this computer if we have devices
+            // and none of them are of type "Computer"
+            const button = this.buildActionItem(
+                "title",
+                "action",
+                "musictime.launchSpotify",
+                PlayerType.MacSpotifyDesktop,
+                "Switch To This Device"
+            );
+            return button;
+        }
+        return null;
+    }
+
+    async getActiveSpotifyDevicesTitleAndTooltip(devices: PlayerDevice[]) {
         let inactiva_devices_names = [];
+        let computerDeviceName = "";
+        let otherActiveDeviceName = "";
         if (devices && devices.length > 0) {
             for (let i = 0; i < devices.length; i++) {
                 const device: PlayerDevice = devices[i];
                 if (device.is_active) {
-                    // done, found an active device
-                    return {
-                        title: `Listening on ${device.name}`,
-                        tooltip: "Listening on a Spotify device",
-                        loggedIn: true
-                    };
+                    if (device.type.toLowerCase() === "computer") {
+                        computerDeviceName = device.name;
+                    } else {
+                        otherActiveDeviceName = device.name;
+                    }
                 } else {
                     inactiva_devices_names.push(device.name);
                 }
             }
         }
 
-        if (inactiva_devices_names.length > 0) {
+        if (computerDeviceName || otherActiveDeviceName) {
+            const activeDeviceName =
+                computerDeviceName || otherActiveDeviceName;
+            // done, found an active device
+            return {
+                title: `Listening on ${activeDeviceName}`,
+                tooltip: "Listening on a Spotify device",
+                loggedIn: true
+            };
+        } else if (inactiva_devices_names.length > 0) {
             return {
                 title: `Connected on ${inactiva_devices_names.join(", ")}`,
                 tooltip: "Multiple Spotify devices connected",
@@ -1489,18 +1533,23 @@ export class MusicManager {
         if (playerName !== PlayerName.ItunesDesktop) {
             if (isMac()) {
                 // just launch the desktop
-                launchPlayer(PlayerName.SpotifyDesktop);
+                await launchPlayer(PlayerName.SpotifyDesktop);
             } else {
                 // this will show a prompt as to why we're launching the web player
-                this.launchSpotifyPlayer();
+                await this.launchSpotifyPlayer();
             }
         } else {
-            launchPlayer(playerName);
+            await launchPlayer(playerName);
         }
 
-        setTimeout(() => {
+        setTimeout(async () => {
+            if (playerName !== PlayerName.ItunesDesktop) {
+                // transfer to the computer device
+                await this.transferToComputerDevice();
+            }
+
             commands.executeCommand("musictime.refreshPlaylist");
-        }, 500);
+        }, 4000);
     }
 
     launchSpotifyPlayer() {
@@ -1698,30 +1747,11 @@ export class MusicManager {
         return items;
     }
 
-    async launchConfirm() {
-        let isRunning = await isSpotifyRunning();
+    async launchConfirm(devices: PlayerDevice[]) {
+        const isRunning = await this.isComputerDeviceRunning(devices);
         let playerName = this.getPlayerNameForPlayback();
         let isLaunching = false;
         let proceed = true;
-        if (!isRunning) {
-            // double check with the devices first
-            const devices = await getSpotifyDevices();
-            /**
-             * i.e. [{
-                id:"204add3334abeef5a2e5619bd9659df92e354640",
-                is_active:true,
-                is_private_session:false,
-                is_restricted:false,
-                name:"DESKTOP-K6D7DLC",
-                type:"Computer",
-                volume_percent:100}]
-            */
-
-            const hasDevices = devices && devices.length > 0;
-            if (hasDevices) {
-                isRunning = true;
-            }
-        }
         const isWin = isWindows();
         const isPrem = await this.isSpotifyPremium();
 
@@ -1825,5 +1855,52 @@ export class MusicManager {
                 }
             }
         }
+    }
+
+    async transferToComputerDevice() {
+        const devices: PlayerDevice[] = await getSpotifyDevices();
+        const computerDevices =
+            devices && devices.length > 0
+                ? devices.filter(d => d.type.toLowerCase() === "computer")
+                : [];
+        if (computerDevices && computerDevices.length > 0) {
+            await playSpotifyDevice(computerDevices[0].id);
+        }
+    }
+
+    async isComputerDeviceRunning(devices: PlayerDevice[]) {
+        // let isRunning = await isSpotifyRunning();
+
+        const computerDevices =
+            devices && devices.length > 0
+                ? devices.filter(d => d.type.toLowerCase() === "computer")
+                : [];
+        /**
+            i.e.
+            [{id:"1664aa46e86f1d3b37826bab098d45fe6eff8477"
+            is_active:true,
+            is_private_session:false,
+            is_restricted:false,
+            name:"Xavier Luiz’s iPhone",
+            type:"Smartphone",
+            volume_percent:100},
+            {id:"4ca1a306c33fe36fc94c024db64a72702224dd9e",
+            is_active:true,
+            is_private_session:false,
+            is_restricted:false,
+            name:"Web Player (Chrome)",
+            type:"Computer",
+            volume_percent:100},
+            {id:"5e3111564c58047aae060fe9bc13e8b90fc1c613",
+            is_active:true,
+            is_private_session:false,
+            is_restricted:false,
+            name:"Xavier’s MacBook Pro",
+            type:"Computer",
+            volume_percent:100}]
+        */
+        const isRunning =
+            computerDevices && computerDevices.length > 0 ? true : false;
+        return isRunning;
     }
 }

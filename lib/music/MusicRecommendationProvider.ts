@@ -12,7 +12,9 @@ import {
 import {
     PlaylistItem,
     launchAndPlaySpotifyTrack,
-    PlayerName
+    PlayerName,
+    PlayerDevice,
+    getSpotifyDevices
 } from "cody-music";
 import { getPlaylistIcon } from "../Util";
 import { MusicManager } from "./MusicManager";
@@ -36,7 +38,8 @@ const createPlaylistTreeItem = (
 
 const playRecommendationTrack = async (track: PlaylistItem) => {
     // ask to launch web or desktop if neither are running
-    const launchConfirmInfo: any = await musicMgr.launchConfirm();
+    const devices: PlayerDevice[] = await getSpotifyDevices();
+    const launchConfirmInfo: any = await musicMgr.launchConfirm(devices);
     if (!launchConfirmInfo.proceed) {
         return;
     }

@@ -375,14 +375,15 @@ async function seedSongSessions(likedSongs) {
 }
 
 export async function sendHeartbeat(reason, serverIsOnline) {
-    let jwt = getItem("jwt");
+    const jwt = getItem("jwt");
+    const hostname = await getHostname();
     if (serverIsOnline && jwt) {
         let heartbeat = {
             pluginId: getPluginId(),
             os: getOs(),
             start: nowInSecs(),
             version: getVersion(),
-            hostname: await getHostname(),
+            hostname,
             session_ctime: getSessionFileCreateTime(),
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             trigger_annotation: reason,
