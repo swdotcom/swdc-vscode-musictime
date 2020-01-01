@@ -16,8 +16,6 @@ import {
     Track,
     getRunningTrack,
     TrackStatus,
-    PlayerType,
-    PlayerName,
     PlaylistItem,
     launchAndPlaySpotifyTrack,
     getGenre,
@@ -35,7 +33,7 @@ export class MusicStateManager {
 
     private static instance: MusicStateManager;
 
-    private existingTrack: any = null;
+    private existingTrack: any = {};
     private trackProgressInfo: any = {
         endInRange: false,
         duration_ms: 0,
@@ -90,7 +88,9 @@ export class MusicStateManager {
             duration_ms: 0,
             progress_ms: 0,
             id: null,
-            lastUpdateUtc: 0
+            lastUpdateUtc: 0,
+            state: null,
+            playlistId: null
         };
     }
 
@@ -99,7 +99,7 @@ export class MusicStateManager {
             return false;
         }
 
-        const buffer = playingTrack.duration_ms * 0.1;
+        const buffer = playingTrack.duration_ms * 0.08;
         return playingTrack.progress_ms >= playingTrack.duration_ms - buffer;
     }
 
@@ -140,7 +140,7 @@ export class MusicStateManager {
         const playlistId = this.musicMgr.selectedPlaylist
             ? this.musicMgr.selectedPlaylist.id
             : null;
-        const playNextLikedSong =
+        const isLikedSong =
             playlistId === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME ? true : false;
 
         const updateMusicStatus =
@@ -169,8 +169,9 @@ export class MusicStateManager {
             lastUpdateUtc = utcLocalTimes.utc;
         }
 
+        // use the previous endInRange info
         const initiateNextLikedSong =
-            sendSongSession && playNextLikedSong && trackIsDone && !isLongPaused
+            this.trackProgressInfo.endInRange && sendSongSession && isLikedSong
                 ? true
                 : false;
 
@@ -204,7 +205,10 @@ export class MusicStateManager {
         this.gatheringSong = true;
         try {
             const utcLocalTimes = this.getUtcAndLocal();
-            const playingTrack: Track = await getRunningTrack();
+            let playingTrack: Track = await getRunningTrack();
+            if (!playingTrack) {
+                playingTrack = new Track();
+            }
 
             const isValidRunningOrPausedTrack = this.isValidPlayingOrPausedTrack(
                 playingTrack
@@ -233,10 +237,7 @@ export class MusicStateManager {
             }
 
             // has the existing track ended or have we started a new track?
-            if (
-                changeStatus.sendSongSession &&
-                !changeStatus.initiateNextLikedSong
-            ) {
+            if (changeStatus.sendSongSession) {
                 // just set it to playing
                 this.existingTrack.state = TrackStatus.Playing;
                 this.existingTrack["end"] = utcLocalTimes.utc;
@@ -273,8 +274,16 @@ export class MusicStateManager {
                 // clear the track.
                 this.existingTrack = null;
 
+                if (playingTrack) {
+                    this.existingTrack = {};
+                }
+
                 // reset the track progress info
                 this.resetTrackProgressInfo();
+            }
+
+            if (this.existingTrack.id !== playingTrack.id) {
+                this.existingTrack = { ...playingTrack };
             }
 
             // If the current playlist is the Liked Songs,
@@ -284,18 +293,14 @@ export class MusicStateManager {
                 await this.playNextLikedSpotifyCheck(changeStatus);
             }
 
-            if (!this.existingTrack && playingTrack) {
-                this.existingTrack = { ...playingTrack };
-            }
-
             // set the start for the playing track
             if (
                 isValidRunningOrPausedTrack &&
                 this.existingTrack &&
                 !this.existingTrack["start"]
             ) {
-                this.existingTrack["start"] = utcLocalTimes.utc - 4;
-                this.existingTrack["local_start"] = utcLocalTimes.local - 4;
+                this.existingTrack["start"] = utcLocalTimes.utc;
+                this.existingTrack["local_start"] = utcLocalTimes.local;
                 this.existingTrack["end"] = 0;
             }
 
