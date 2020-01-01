@@ -39,7 +39,8 @@ export class MusicStateManager {
         duration_ms: 0,
         progress_ms: 0,
         id: null,
-        lastUpdateUtc: 0
+        lastUpdateUtc: 0,
+        playlistId: null
     };
     private gatheringSong: boolean = false;
 
@@ -175,6 +176,10 @@ export class MusicStateManager {
             lastUpdateUtc = utcLocalTimes.utc;
         }
 
+        const playlistId = this.musicMgr.selectedPlaylist
+            ? this.musicMgr.selectedPlaylist.id
+            : null;
+
         // update the ended state
         // If the previous track was the same trackId and it's end progress was in range
         let ended = false;
@@ -210,7 +215,8 @@ export class MusicStateManager {
             lastUpdateUtc,
             duration_ms: playingTrack.duration_ms || 0,
             progress_ms: playingTrack.progress_ms || 0,
-            id: playingTrack.id || null
+            id: playingTrack.id || null,
+            playlistId
         };
 
         return {
