@@ -124,14 +124,9 @@ export class MusicStateManager {
             ? this.existingTrack.id || null
             : null;
         const playingTrackId = playingTrack ? playingTrack.id || null : null;
-        const existingTrackState = this.existingTrack
-            ? this.existingTrack.state || null
-            : null;
-        const playingTrackState = playingTrack
-            ? playingTrack.state || null
-            : null;
         const isValidExistingTrack = existingTrackId ? true : false;
 
+        // get the flag to determine if it's a new track or not
         const isNewTrack =
             playingTrackId && existingTrackId !== playingTrackId ? true : false;
 
@@ -149,10 +144,12 @@ export class MusicStateManager {
                 : this.trackProgressInfo.lastUpdateUtc;
 
         const onRepeatStartingOver = this.isOnRepeatStartingOver(playingTrack);
+
+        // get the flag to determine if the track is done or not
         const trackIsDone = this.trackIsDone(playingTrack);
         const isLongPaused = this.trackIsLongPaused(playingTrack);
 
-        // is on repeat OR explicitly paused for over a minute and it wasn't about to end OR a new track has started
+        // get the flag to determine if we should send the song session
         const sendSongSession =
             isValidExistingTrack &&
             (isNewTrack || onRepeatStartingOver || trackIsDone || isLongPaused)
@@ -164,7 +161,7 @@ export class MusicStateManager {
             lastUpdateUtc = utcLocalTimes.utc;
         }
 
-        // use the previous endInRange info
+        // get the flag to determine if we should play the next liked song automatically
         const initiateNextLikedSong =
             this.trackProgressInfo.endInRange && sendSongSession && isLikedSong
                 ? true
@@ -183,8 +180,7 @@ export class MusicStateManager {
         return {
             isNewTrack,
             sendSongSession,
-            initiateNextLikedSong,
-            trackIsDone
+            initiateNextLikedSong
         };
     }
 
@@ -218,7 +214,7 @@ export class MusicStateManager {
             }
 
             // get the change status info:
-            // {isNewTrack, sendSongSession, initiateNextLikedSong, updateMusicStatus, trackIsDone}
+            // {isNewTrack, sendSongSession, initiateNextLikedSong}
             const changeStatus = this.getChangeStatus(
                 playingTrack,
                 utcLocalTimes,
@@ -268,7 +264,7 @@ export class MusicStateManager {
 
             // If the current playlist is the Liked Songs,
             // check if we should start the next track
-            // {isNewTrack, sendSongSession, initiateNextLikedSong, updateMusicStatus, trackIsDone}
+            // {isNewTrack, sendSongSession, initiateNextLikedSong}
             if (changeStatus.initiateNextLikedSong) {
                 await this.playNextLikedSpotifyCheck(changeStatus);
             }
