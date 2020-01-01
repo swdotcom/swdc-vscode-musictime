@@ -843,8 +843,16 @@ function getDashboardDataDisplay(widthLen, data) {
     return `${content}${data}`;
 }
 
+export function createUriFromTrackId(track_id: string) {
+    if (track_id && !track_id.includes("spotify:track:")) {
+        track_id = `spotify:track:${track_id}`;
+    }
+
+    return track_id;
+}
+
 export function createSpotifyIdFromUri(id: string) {
-    if (id.indexOf("spotify:") === 0) {
+    if (id && id.indexOf("spotify:") === 0) {
         return id.substring(id.lastIndexOf(":") + 1);
     }
     return id;

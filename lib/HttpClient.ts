@@ -9,21 +9,6 @@ const beApi = axios.create({
     baseURL: `${api_endpoint}`
 });
 
-const spotifyApi = axios.create({});
-
-export async function spotifyApiPut(api, payload, accessToken) {
-    if (api.indexOf("https://api.spotify.com") === -1) {
-        api = "https://api.spotify.com" + api;
-    }
-    spotifyApi.defaults.headers.common[
-        "Authorization"
-    ] = `Bearer ${accessToken}`;
-    return await spotifyApi.put(api, payload).catch(err => {
-        logIt(`error posting data for ${api}, message: ${err.message}`);
-        return err;
-    });
-}
-
 /**
  * Response returns a paylod with the following...
  * data: <payload>, status: 200, statusText: "OK", config: Object
@@ -61,7 +46,15 @@ export async function softwarePut(api, payload, jwt) {
             return resp;
         })
         .catch(err => {
-            logIt(`error posting data for ${api}, message: ${err.message}`);
+            let errMsg = err.message;
+            if (
+                err.response &&
+                err.response.data &&
+                err.response.data.message
+            ) {
+                errMsg = err.response.data.message;
+            }
+            logIt(`error posting data for ${api}, message: ${errMsg}`);
             return err;
         });
 }
@@ -78,7 +71,15 @@ export async function softwarePost(api, payload, jwt) {
             return resp;
         })
         .catch(err => {
-            logIt(`error posting data for ${api}, message: ${err.message}`);
+            let errMsg = err.message;
+            if (
+                err.response &&
+                err.response.data &&
+                err.response.data.message
+            ) {
+                errMsg = err.response.data.message;
+            }
+            logIt(`error posting data for ${api}, message: ${errMsg}`);
             return err;
         });
 }

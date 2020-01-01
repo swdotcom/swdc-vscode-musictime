@@ -99,7 +99,14 @@ export async function sendMusicData(trackData) {
     }
 
     if (serverIsOnline) {
-        logIt(`sending ${JSON.stringify(trackData)}`);
+        // logIt(`sending ${JSON.stringify(trackData)}`);
+        logIt(
+            `Sending Track: ${trackData.name}:${
+                trackData.artist
+            }, Keystrokes: ${trackData.keystrokes}, Start: ${moment
+                .unix(trackData.start)
+                .format()}, End: ${moment.unix(trackData.end).format()}`
+        );
 
         // add the "local_start", "start", and "end"
         // POST the kpm to the PluginManager
