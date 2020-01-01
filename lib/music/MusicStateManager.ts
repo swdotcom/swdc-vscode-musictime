@@ -99,7 +99,7 @@ export class MusicStateManager {
             return false;
         }
 
-        const buffer = playingTrack.duration_ms * 0.08;
+        const buffer = playingTrack.duration_ms * 0.07;
         return playingTrack.progress_ms >= playingTrack.duration_ms - buffer;
     }
 
@@ -143,11 +143,6 @@ export class MusicStateManager {
         const isLikedSong =
             playlistId === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME ? true : false;
 
-        const updateMusicStatus =
-            isNewTrack || existingTrackState !== playingTrackState
-                ? true
-                : false;
-
         let lastUpdateUtc =
             isValidTrack && playingTrack.state === TrackStatus.Playing
                 ? utcLocalTimes.utc
@@ -189,7 +184,6 @@ export class MusicStateManager {
             isNewTrack,
             sendSongSession,
             initiateNextLikedSong,
-            updateMusicStatus,
             trackIsDone
         };
     }
@@ -243,26 +237,6 @@ export class MusicStateManager {
                 this.existingTrack["end"] = utcLocalTimes.utc;
                 this.existingTrack["local_end"] = utcLocalTimes.local;
 
-                // if this track doesn't have album json data null it out
-                if (this.existingTrack.album) {
-                    // check if it's a valid json
-                    if (!isValidJson(this.existingTrack.album)) {
-                        // null these out. the backend will populate these
-                        this.existingTrack.album = null;
-                        this.existingTrack.artists = null;
-                        this.existingTrack.features = null;
-                    }
-                }
-
-                // make sure duration_ms is set. it may not be defined
-                // if it's coming from one of the players
-                if (
-                    !this.existingTrack.duration_ms &&
-                    this.existingTrack.duration
-                ) {
-                    this.existingTrack.duration_ms = this.existingTrack.duration;
-                }
-
                 // copy the existing track to "songSession"
                 const songSession = {
                     ...this.existingTrack
@@ -283,7 +257,13 @@ export class MusicStateManager {
             }
 
             if (this.existingTrack.id !== playingTrack.id) {
+                // update the entire object if the id's don't match
                 this.existingTrack = { ...playingTrack };
+            }
+
+            if (this.existingTrack.state !== playingTrack.state) {
+                // update the state if the state doesn't match
+                this.existingTrack.state = playingTrack.state;
             }
 
             // If the current playlist is the Liked Songs,
@@ -308,12 +288,7 @@ export class MusicStateManager {
             this.musicMgr.runningTrack = this.existingTrack;
 
             // update the music time status bar
-            if (changeStatus.updateMusicStatus) {
-                MusicCommandManager.syncControls(
-                    this.musicMgr.runningTrack,
-                    false
-                );
-            }
+            MusicCommandManager.syncControls(this.musicMgr.runningTrack, false);
         } catch (e) {
             const errMsg = e.message || e;
             logIt(`Unexpected track state processing error: ${errMsg}`);
@@ -360,6 +335,37 @@ export class MusicStateManager {
     }
 
     public async gatherCodingDataAndSendSongSession(songSession) {
+        // if this track doesn't have album json data null it out
+        if (songSession.album) {
+            // check if it's a valid json
+            if (!isValidJson(songSession.album)) {
+                // null these out. the backend will populate these
+                songSession.album = null;
+                songSession.artists = null;
+                songSession.features = null;
+            }
+        }
+
+        // make sure duration_ms is set. it may not be defined
+        // if it's coming from one of the players
+        if (!songSession.duration_ms && songSession.duration) {
+            songSession.duration_ms = songSession.duration;
+        }
+
+        // Make sure the current keystrokes payload completes. This will save
+        // the code time data for music and code time (only if code time is not installed)
+        await KpmController.getInstance().sendKeystrokeDataIntervalHandler();
+
+        // get the reows from the music data file
+        const payloads = await getDataRows(getMusicDataFile());
+
+        const isValidSession = songSession.end - songSession.start > 5;
+
+        if (!isValidSession) {
+            // the song did not play long enough to constitute as a valid session
+            return;
+        }
+
         let genre = songSession.genre;
         let genreP: Promise<string> = null;
         let fullTrackP: Promise<Track> = null;
@@ -383,13 +389,6 @@ export class MusicStateManager {
                     : "";
             genreP = getGenre(artistName, songName, artistId);
         }
-
-        // Make sure the current keystrokes payload completes. This will save
-        // the code time data for music and code time (only if code time is not installed)
-        await KpmController.getInstance().sendKeystrokeDataIntervalHandler();
-
-        // get the reows from the music data file
-        const payloads = await getDataRows(getMusicDataFile());
 
         // add any file payloads we found
         const filePayloads = [];
@@ -675,19 +674,15 @@ export class MusicStateManager {
         const playingTrackId = playingTrack ? playingTrack.id : null;
         const hasProgress =
             playingTrackId && playingTrack.progress_ms > 0 ? true : false;
-        const isPausedOrNotPlaying =
-            !playingTrackId || playingTrack.state !== TrackStatus.Playing
-                ? true
-                : false;
 
         // check to see if it's paused more than a minute
         const utcLocalTimes: any = this.getUtcAndLocal();
         const pauseThreshold = 60 * 5;
+        const diff = utcLocalTimes.utc - this.trackProgressInfo.lastUpdateUtc;
         if (
-            isPausedOrNotPlaying &&
             hasProgress &&
-            utcLocalTimes.utc - this.trackProgressInfo.lastUpdateUtc >
-                pauseThreshold
+            this.trackProgressInfo.lastUpdateUtc > 0 &&
+            diff > pauseThreshold
         ) {
             return true;
         }
