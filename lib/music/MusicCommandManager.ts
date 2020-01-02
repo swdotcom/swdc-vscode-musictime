@@ -116,8 +116,6 @@ export class MusicCommandManager {
             ? track.state
             : TrackStatus.NotAssigned;
 
-        console.log("track status: ", JSON.stringify(trackStatus));
-
         const { needsSpotifyAccess } = this.getSpotifyState();
 
         const pauseIt = trackStatus === TrackStatus.Playing;

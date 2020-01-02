@@ -33,7 +33,7 @@ export class MusicStateManager {
 
     private static instance: MusicStateManager;
 
-    private existingTrack: any = {};
+    private existingTrack: Track = new Track();
     private trackProgressInfo: any = {
         endInRange: false,
         duration_ms: 0,
@@ -115,20 +115,14 @@ export class MusicStateManager {
      *   updateMusicStatus = change in play state (pause/play/different track/no track)
      * }
      */
-    private getChangeStatus(
-        playingTrack: Track,
-        utcLocalTimes: any,
-        isValidTrack: boolean
-    ): any {
-        const existingTrackId = this.existingTrack
-            ? this.existingTrack.id || null
-            : null;
-        const playingTrackId = playingTrack ? playingTrack.id || null : null;
+    private getChangeStatus(playingTrack: Track, utcLocalTimes: any): any {
+        const existingTrackId = this.existingTrack.id || null;
+        const playingTrackId = playingTrack.id || null;
         const isValidExistingTrack = existingTrackId ? true : false;
+        const isValidTrack = playingTrackId ? true : false;
 
         // get the flag to determine if it's a new track or not
-        const isNewTrack =
-            playingTrackId && existingTrackId !== playingTrackId ? true : false;
+        const isNewTrack = existingTrackId !== playingTrackId ? true : false;
 
         const endInRange = this.isEndInRange(playingTrack);
 
@@ -163,7 +157,10 @@ export class MusicStateManager {
 
         // get the flag to determine if we should play the next liked song automatically
         const initiateNextLikedSong =
-            this.trackProgressInfo.endInRange && sendSongSession && isLikedSong
+            this.trackProgressInfo.endInRange &&
+            sendSongSession &&
+            isLikedSong &&
+            !onRepeatStartingOver
                 ? true
                 : false;
 
@@ -217,8 +214,7 @@ export class MusicStateManager {
             // {isNewTrack, sendSongSession, initiateNextLikedSong}
             const changeStatus = this.getChangeStatus(
                 playingTrack,
-                utcLocalTimes,
-                isValidTrack
+                utcLocalTimes
             );
 
             if (changeStatus.isNewTrack) {
@@ -245,7 +241,7 @@ export class MusicStateManager {
                 this.existingTrack = null;
 
                 if (playingTrack) {
-                    this.existingTrack = {};
+                    this.existingTrack = new Track();
                 }
 
                 // reset the track progress info
@@ -270,11 +266,7 @@ export class MusicStateManager {
             }
 
             // set the start for the playing track
-            if (
-                isValidRunningOrPausedTrack &&
-                this.existingTrack &&
-                !this.existingTrack["start"]
-            ) {
+            if (isValidRunningOrPausedTrack && !this.existingTrack["start"]) {
                 this.existingTrack["start"] = utcLocalTimes.utc;
                 this.existingTrack["local_start"] = utcLocalTimes.local;
                 this.existingTrack["end"] = 0;
@@ -614,14 +606,12 @@ export class MusicStateManager {
 
     private isOnRepeatStartingOver(playingTrack) {
         if (
-            !playingTrack ||
             playingTrack.progress_ms === null ||
             playingTrack.progress_ms === undefined
         ) {
             return false;
         }
         if (
-            playingTrack &&
             playingTrack.id &&
             this.trackProgressInfo.id === playingTrack.id &&
             playingTrack.progress_ms > 0 &&
@@ -635,7 +625,6 @@ export class MusicStateManager {
 
     private trackIsDone(playingTrack) {
         if (
-            !playingTrack ||
             playingTrack.progress_ms === null ||
             playingTrack.progress_ms === undefined
         ) {
@@ -660,7 +649,6 @@ export class MusicStateManager {
 
     private trackIsLongPaused(playingTrack) {
         if (
-            !playingTrack ||
             playingTrack.progress_ms === null ||
             playingTrack.progress_ms === undefined
         ) {

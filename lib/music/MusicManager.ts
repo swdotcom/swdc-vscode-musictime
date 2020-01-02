@@ -872,11 +872,12 @@ export class MusicManager {
     }
 
     async getSwitchToThisDeviceButton(devices: PlayerDevice[]) {
+        const activeDevice = await this.getActiveDecvice(devices);
         const isComputerDeviceRunning = await this.isComputerDeviceRunning(
             devices
         );
 
-        if (!isComputerDeviceRunning && devices && devices.length > 0) {
+        if (activeDevice && activeDevice.type.toLowerCase() !== "computer") {
             // return a button to switch to this computer if we have devices
             // and none of them are of type "Computer"
             const button = this.buildActionItem(
@@ -1910,7 +1911,9 @@ export class MusicManager {
 
         const computerDevices =
             devices && devices.length > 0
-                ? devices.filter(d => d.type.toLowerCase() === "computer")
+                ? devices.filter(
+                      (d: PlayerDevice) => d.type.toLowerCase() === "computer"
+                  )
                 : [];
         /**
             i.e.
