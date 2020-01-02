@@ -289,7 +289,15 @@ export class MusicStateManager {
             this.musicMgr.runningTrack = this.existingTrack;
 
             // update the music time status bar
-            MusicCommandManager.syncControls(this.musicMgr.runningTrack, false);
+            if (changeStatus.isNewTrack) {
+                // this will also sync the controls
+                this.musicMgr.getServerTrack(this.musicMgr.runningTrack);
+            } else {
+                MusicCommandManager.syncControls(
+                    this.musicMgr.runningTrack,
+                    false
+                );
+            }
         } catch (e) {
             const errMsg = e.message || e;
             logIt(`Unexpected track state processing error: ${errMsg}`);

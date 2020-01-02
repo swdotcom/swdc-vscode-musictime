@@ -1617,8 +1617,14 @@ export class MusicManager {
         }
 
         if (!server_track) {
+            // if it's in the liked songs, set it to loved
+            const playlistId = this.selectedPlaylist
+                ? this.selectedPlaylist.id
+                : null;
+            const isLikedSong =
+                playlistId === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME ? true : false;
             server_track = {
-                loved: false,
+                loved: isLikedSong,
                 trackId: track.id,
                 type
             };
@@ -1700,20 +1706,10 @@ export class MusicManager {
             features,
             offset
         };
-        const likedSongs: Track[] = this.spotifyLikedSongs;
-        let trackIds = [];
-        if (likedSongs && likedSongs.length > 0) {
-            for (let i = 0; i < likedSongSeedLimit; i++) {
-                if (likedSongs.length > offset) {
-                    trackIds.push(likedSongs[offset].id);
-                } else {
-                    // start the offset back to the begining
-                    offset = 0;
-                    trackIds.push(likedSongs[offset].id);
-                }
-                offset++;
-            }
-        }
+        const trackIds = await this.getTrackIdsForRecommendations(
+            likedSongSeedLimit,
+            offset
+        );
         const tracks: Track[] = await this.getRecommendedTracks(
             trackIds,
             seed_genres,
@@ -1942,5 +1938,55 @@ export class MusicManager {
         const isRunning =
             computerDevices && computerDevices.length > 0 ? true : false;
         return isRunning;
+    }
+
+    async getTrackIdsForRecommendations(
+        likedSongSeedLimit: number = 5,
+        offset: number = 0
+    ) {
+        let trackIds = [];
+
+        let likedSongs: Track[] = null; //this.spotifyLikedSongs;
+        if (!likedSongs || likedSongs.length === 0) {
+            let playlists: PlaylistItem[] = this.currentPlaylists;
+            // filter out the ones that are true playlists
+            playlists = playlists.filter(
+                playlist =>
+                    playlist.itemType === "playlist" &&
+                    playlist.type === "playlist" &&
+                    playlist.id !== "Liked Songs"
+            );
+            if (playlists && playlists.length > 0) {
+                // use the 1st one we find
+                const codyResp: CodyResponse = await getPlaylistTracks(
+                    PlayerName.SpotifyWeb,
+                    playlists[0].id
+                );
+                const playlistItemTracks: PlaylistItem[] = this.getPlaylistItemTracksFromCodyResponse(
+                    codyResp
+                );
+                if (playlistItemTracks && playlistItemTracks.length > 0) {
+                    likedSongs = playlistItemTracks.map(item => {
+                        const track: Track = new Track();
+                        track.id = item.id;
+                        return track;
+                    });
+                }
+            }
+        }
+
+        if (likedSongs && likedSongs.length > 0) {
+            for (let i = 0; i < likedSongSeedLimit; i++) {
+                if (likedSongs.length > offset) {
+                    trackIds.push(likedSongs[offset].id);
+                } else {
+                    // start the offset back to the begining
+                    offset = 0;
+                    trackIds.push(likedSongs[offset].id);
+                }
+                offset++;
+            }
+        }
+        return trackIds;
     }
 }

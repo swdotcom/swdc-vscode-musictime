@@ -59,7 +59,10 @@ export const playSelectedItem = async (
 
     musicMgr.currentProvider = PLAYLISTS_PROVIDER;
 
-    const launchTimeout = 4000;
+    const launchTimeout =
+        launchConfirmInfo.playerName === PlayerName.SpotifyDesktop
+            ? 4000
+            : 5000;
 
     // is this a track or playlist item?
     if (playlistItem.type === "track") {
