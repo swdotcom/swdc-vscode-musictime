@@ -73,13 +73,17 @@ export class MusicStateManager {
 
     private getUtcAndLocal() {
         const utc = nowInSecs();
-        let d = new Date();
-        // offset is the minutes from GMT. it's positive if it's before, and negative after
-        const offset = d.getTimezoneOffset();
-        const offset_sec = offset * 60;
+        const offset_sec = this.timeOffsetSeconds();
         const local = utc - offset_sec;
 
         return { utc, local };
+    }
+
+    private timeOffsetSeconds() {
+        const d = new Date();
+        // offset is the minutes from GMT. it's positive if it's before, and negative after
+        const offset = d.getTimezoneOffset();
+        return offset * 60;
     }
 
     private resetTrackProgressInfo() {
@@ -151,6 +155,13 @@ export class MusicStateManager {
                 : false;
 
         if (isLongPaused) {
+            if (sendSongSession) {
+                // update the end time to what the lastUpdateUtc + 5 seconds was
+                const offset_sec = this.timeOffsetSeconds();
+                this.existingTrack["end"] = lastUpdateUtc + 5;
+                const local = lastUpdateUtc - offset_sec;
+                this.existingTrack["local_end"] = local + 5;
+            }
             // update the lastUpdateTimeUtc
             lastUpdateUtc = utcLocalTimes.utc;
         }
@@ -226,8 +237,10 @@ export class MusicStateManager {
             if (changeStatus.sendSongSession) {
                 // just set it to playing
                 this.existingTrack.state = TrackStatus.Playing;
-                this.existingTrack["end"] = utcLocalTimes.utc;
-                this.existingTrack["local_end"] = utcLocalTimes.local;
+                if (this.existingTrack["end"] === 0) {
+                    this.existingTrack["end"] = utcLocalTimes.utc;
+                    this.existingTrack["local_end"] = utcLocalTimes.local;
+                }
 
                 // copy the existing track to "songSession"
                 const songSession = {
