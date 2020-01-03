@@ -11,16 +11,16 @@ import {
 } from "vscode";
 import {
     PlaylistItem,
-    launchAndPlaySpotifyTrack,
     PlayerName,
     PlayerDevice,
-    getSpotifyDevices
+    getSpotifyDevices,
+    playSpotifyTrack
 } from "cody-music";
 import { getPlaylistIcon } from "../Util";
 import { MusicManager } from "./MusicManager";
 import { RECOMMENDATIONS_PROVIDER } from "../Constants";
-import { playSpotifyDesktopPlaylistByTrack } from "./MusicPlaylistProvider";
 import { MusicCommandManager } from "./MusicCommandManager";
+import { playSpotifyByTrack } from "./MusicPlaylistProvider";
 
 const musicMgr: MusicManager = MusicManager.getInstance();
 
@@ -44,26 +44,21 @@ const playRecommendationTrack = async (track: PlaylistItem) => {
         return;
     }
 
+    const launchTimeout =
+        launchConfirmInfo.playerName === PlayerName.SpotifyDesktop
+            ? 4000
+            : 5000;
+
     MusicCommandManager.syncControls(musicMgr.runningTrack, true /*loading*/);
 
     musicMgr.currentProvider = RECOMMENDATIONS_PROVIDER;
 
     if (launchConfirmInfo.isLaunching) {
-        if (launchConfirmInfo.playerName === PlayerName.SpotifyDesktop) {
-            setTimeout(() => {
-                playSpotifyDesktopPlaylistByTrack(track);
-            }, 2000);
-        } else {
-            setTimeout(() => {
-                launchAndPlaySpotifyTrack(track.id);
-            }, 2000);
-        }
+        setTimeout(async () => {
+            await playSpotifyByTrack(track, devices);
+        }, launchTimeout);
     } else {
-        if (launchConfirmInfo.playerName === PlayerName.SpotifyDesktop) {
-            playSpotifyDesktopPlaylistByTrack(track);
-        } else {
-            launchAndPlaySpotifyTrack(track.id);
-        }
+        await playSpotifyByTrack(track, devices);
     }
 };
 

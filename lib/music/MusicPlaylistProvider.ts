@@ -14,10 +14,11 @@ import {
     PlayerName,
     PlayerType,
     playItunesTrackNumberInPlaylist,
-    launchAndPlaySpotifyTrack,
     playSpotifyMacDesktopTrack,
     getSpotifyDevices,
-    PlayerDevice
+    PlayerDevice,
+    playSpotifyPlaylist,
+    playSpotifyTrack
 } from "cody-music";
 import {
     SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
@@ -90,18 +91,18 @@ export const playSelectedItem = async (
             // make sure the track has spotify:track and the playlist has spotify:playlist
             if (launchConfirmInfo.isLaunching) {
                 setTimeout(() => {
-                    playSpotifyDesktopPlaylistTrack();
+                    playSpotifyDesktopPlaylistTrack(devices);
                 }, launchTimeout);
             } else {
-                playSpotifyDesktopPlaylistTrack();
+                playSpotifyDesktopPlaylistTrack(devices);
             }
         } else {
             if (launchConfirmInfo.isLaunching) {
                 setTimeout(() => {
-                    launchAndPlaySpotifyWebPlaylistTrack(true /*isTrack*/);
+                    playSpotifyWebPlaylistTrack(true /*isTrack*/, devices);
                 }, launchTimeout);
             } else {
-                launchAndPlaySpotifyWebPlaylistTrack(true /*isTrack*/);
+                playSpotifyWebPlaylistTrack(true /*isTrack*/, devices);
             }
         }
     } else {
@@ -148,12 +149,13 @@ export const playSelectedItem = async (
                         PlayerName.SpotifyDesktop
                     ) {
                         setTimeout(() => {
-                            playSpotifyDesktopPlaylistTrack();
+                            playSpotifyDesktopPlaylistTrack(devices);
                         }, launchTimeout);
                     } else {
                         setTimeout(() => {
-                            launchAndPlaySpotifyWebPlaylistTrack(
-                                false /*isTrack*/
+                            playSpotifyWebPlaylistTrack(
+                                false /*isTrack*/,
+                                devices
                             );
                         }, launchTimeout);
                     }
@@ -162,9 +164,9 @@ export const playSelectedItem = async (
                         launchConfirmInfo.playerName ===
                         PlayerName.SpotifyDesktop
                     ) {
-                        playSpotifyDesktopPlaylistTrack();
+                        playSpotifyDesktopPlaylistTrack(devices);
                     } else {
-                        launchAndPlaySpotifyWebPlaylistTrack(false /*isTrack*/);
+                        playSpotifyWebPlaylistTrack(false /*isTrack*/, devices);
                     }
                 }
             }
@@ -183,7 +185,9 @@ export const playSelectedItem = async (
  * Helper function to play a track or playlist if we've determined to play
  * against the mac spotify desktop app.
  */
-export const playSpotifyDesktopPlaylistTrack = async () => {
+export const playSpotifyDesktopPlaylistTrack = async (
+    devices: PlayerDevice[]
+) => {
     const musicMgr = MusicManager.getInstance();
     // get the selected playlist
     const selectedPlaylist = musicMgr.selectedPlaylist;
@@ -194,7 +198,7 @@ export const playSpotifyDesktopPlaylistTrack = async () => {
 
     if (isLikedSongsPlaylist) {
         // just play the 1st track
-        playSpotifyDesktopPlaylistByTrack(selectedTrack);
+        playSpotifyByTrack(selectedTrack, devices);
     } else {
         // ex: ["spotify:track:0R8P9KfGJCDULmlEoBagcO", "spotify:playlist:6ZG5lRT77aJ3btmArcykra"]
         // make sure the track has spotify:track and the playlist has spotify:playlist
@@ -202,17 +206,38 @@ export const playSpotifyDesktopPlaylistTrack = async () => {
     }
 };
 
-export const playSpotifyDesktopPlaylistByTrack = (track: PlaylistItem) => {
+export const playSpotifyByTrack = async (
+    track: PlaylistItem,
+    devices: PlayerDevice[] = []
+) => {
+    const deviceToPlayOn: PlayerDevice = await musicMgr.getComputerOrActiveDevice(
+        devices
+    );
+    const deviceId = deviceToPlayOn ? deviceToPlayOn.id : "";
     // just play the 1st track
-    playSpotifyMacDesktopTrack(track.id);
+    playSpotifyTrack(track.id, deviceId);
+};
+
+export const playSpotifyByTrackAndPlaylist = async (
+    playlistId: string,
+    trackId: string,
+    devices: PlayerDevice[] = []
+) => {
+    const deviceToPlayOn: PlayerDevice = await musicMgr.getComputerOrActiveDevice(
+        devices
+    );
+    const deviceId = deviceToPlayOn ? deviceToPlayOn.id : "";
+    // just play the 1st track
+    playSpotifyPlaylist(playlistId, trackId, deviceId);
 };
 
 /**
  * Launch and play a spotify track via the web player.
  * @param isTrack boolean
  */
-export const launchAndPlaySpotifyWebPlaylistTrack = async (
-    isTrack: boolean
+export const playSpotifyWebPlaylistTrack = async (
+    isTrack: boolean,
+    devices: PlayerDevice[]
 ) => {
     const musicMgr = MusicManager.getInstance();
 
@@ -223,21 +248,19 @@ export const launchAndPlaySpotifyWebPlaylistTrack = async (
 
     const isLikedSongsPlaylist =
         selectedPlaylist.name === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME;
+    const playlistId = isLikedSongsPlaylist ? "" : selectedPlaylist.id;
 
-    if (isTrack) {
-        // a track was selected
-        await launchAndPlaySpotifyTrack(selectedTrack.id, selectedPlaylist.id);
+    if (isLikedSongsPlaylist) {
+        await playSpotifyByTrack(selectedTrack, devices);
+    } else if (isTrack) {
+        await playSpotifyByTrackAndPlaylist(
+            playlistId,
+            selectedTrack.id,
+            devices
+        );
     } else {
-        if (isLikedSongsPlaylist) {
-            // play the 1st track in the non-playlist liked songs folder
-            await launchAndPlaySpotifyTrack(
-                selectedTrack.id,
-                selectedPlaylist.id
-            );
-        } else {
-            // use the normal play playlist by offset 0 call
-            await launchAndPlaySpotifyTrack("", selectedPlaylist.id);
-        }
+        // play the playlist
+        await playSpotifyByTrackAndPlaylist(playlistId, "", devices);
     }
 };
 

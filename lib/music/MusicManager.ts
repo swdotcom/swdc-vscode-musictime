@@ -872,10 +872,7 @@ export class MusicManager {
     }
 
     async getSwitchToThisDeviceButton(devices: PlayerDevice[]) {
-        const activeDevice = await this.getActiveDecvice(devices);
-        const isComputerDeviceRunning = await this.isComputerDeviceRunning(
-            devices
-        );
+        const activeDevice = await this.getActiveDevice(devices);
 
         if (activeDevice && activeDevice.type.toLowerCase() !== "computer") {
             // return a button to switch to this computer if we have devices
@@ -892,7 +889,28 @@ export class MusicManager {
         return null;
     }
 
-    async getActiveDecvice(devices: PlayerDevice[]): Promise<PlayerDevice> {
+    async getComputerOrActiveDevice(
+        devices: PlayerDevice[] = []
+    ): Promise<PlayerDevice> {
+        if (!devices || devices.length === 0) {
+            devices = await getSpotifyDevices();
+        }
+        let anyActiveDevice: PlayerDevice = null;
+        if (devices && devices.length > 0) {
+            for (let i = 0; i < devices.length; i++) {
+                const device: PlayerDevice = devices[i];
+
+                if (device.type.toLowerCase() === "computer") {
+                    return device;
+                } else if (!anyActiveDevice && device.is_active) {
+                    anyActiveDevice = device;
+                }
+            }
+        }
+        return anyActiveDevice;
+    }
+
+    async getActiveDevice(devices: PlayerDevice[]): Promise<PlayerDevice> {
         let computerDevice: PlayerDevice = null;
         let otherActiveDevice: PlayerDevice = null;
         if (devices && devices.length > 0) {
@@ -932,7 +950,7 @@ export class MusicManager {
         const inactiva_devices: PlayerDevice[] = await this.getInactiveDevices(
             devices
         );
-        const activeDevice: PlayerDevice = await this.getActiveDecvice(devices);
+        const activeDevice: PlayerDevice = await this.getActiveDevice(devices);
 
         if (activeDevice) {
             // done, found an active device
@@ -1827,9 +1845,17 @@ export class MusicManager {
             });
         }
 
-        // check to see if we've failed to launch the desktop player
         if (launchingDesktop && launchResult && launchResult.error) {
             logIt(`Error launching desktop: ${launchResult.error}`);
+        }
+
+        // check to see if we've failed to launch the desktop player
+        if (
+            launchingDesktop &&
+            launchResult &&
+            launchResult.error &&
+            playerName !== PlayerName.SpotifyWeb
+        ) {
             // window.showInformationMessage(
             //     "Unable to launch the Spotify desktop player. Please confirm that it is installed."
             // );
