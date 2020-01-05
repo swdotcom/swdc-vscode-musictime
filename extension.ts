@@ -10,7 +10,8 @@ import {
     getVersion,
     logIt,
     getPluginName,
-    codeTimeExtInstalled
+    codeTimeExtInstalled,
+    displayReadmeIfNotExists
 } from "./lib/Util";
 import { manageLiveshareSession } from "./lib/LiveshareManager";
 import * as vsls from "vsls/vscode";
@@ -126,6 +127,9 @@ export async function intializePlugin(ctx: ExtensionContext) {
             MusicStateManager.getInstance().gatherMusicInfo();
         }, 1000 * 5);
     }, 1000 * 5);
+
+    // show the readme if it doesn't exist
+    displayReadmeIfNotExists();
 
     initializeLiveshare();
 

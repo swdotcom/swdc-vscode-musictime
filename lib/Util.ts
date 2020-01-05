@@ -1,5 +1,12 @@
 import { getStatusBarItem } from "../extension";
-import { workspace, extensions, window } from "vscode";
+import {
+    workspace,
+    extensions,
+    window,
+    ViewColumn,
+    Uri,
+    commands
+} from "vscode";
 import {
     CODE_TIME_EXT_ID,
     MUSIC_TIME_EXT_ID,
@@ -22,6 +29,7 @@ const open = require("open");
 const { exec } = require("child_process");
 const fs = require("fs");
 const os = require("os");
+import { tmpdir } from "os";
 const crypto = require("crypto");
 import * as path from "path";
 
@@ -474,6 +482,40 @@ export function getSoftwareDataStoreFile() {
     return file;
 }
 
+export function getLocalREADMEFile() {
+    let file = __dirname;
+    if (isWindows()) {
+        file += "\\README.md";
+    } else {
+        file += "/README.md";
+    }
+    return file;
+}
+
+export function getImagesDir() {
+    let dir = __dirname;
+    if (isWindows()) {
+        dir += "\\images";
+    } else {
+        dir += "/images";
+    }
+    return dir;
+}
+
+export function displayReadmeIfNotExists() {
+    const displayedReadme = getItem("displayedMtReadme");
+    if (!displayedReadme) {
+        const readmeUri = Uri.file(getLocalREADMEFile());
+
+        commands.executeCommand(
+            "markdown.showPreview",
+            readmeUri,
+            ViewColumn.One
+        );
+        setItem("displayedMtReadme", true);
+    }
+}
+
 export function getExtensionDisplayName() {
     if (extensionDisplayName) {
         return extensionDisplayName;
@@ -498,7 +540,7 @@ export function getExtensionDisplayName() {
         }
     }
     if (!extensionDisplayName) {
-        extensionDisplayName = "Code Time";
+        extensionDisplayName = "Music Time";
     }
     return extensionDisplayName;
 }
@@ -527,7 +569,7 @@ export function getExtensionName() {
         }
     }
     if (!extensionName) {
-        extensionName = "swdc-vscode";
+        extensionName = "music-time";
     }
     return extensionName;
 }
@@ -656,6 +698,20 @@ export function deleteFile(file) {
     if (fs.existsSync(file)) {
         fs.unlinkSync(file);
     }
+}
+
+/**
+ * Format pathString if it is on Windows. Convert `c:\` like string to `C:\`
+ * @param pathString
+ */
+export function formatPathIfNecessary(pathString: string) {
+    if (process.platform === "win32") {
+        pathString = pathString.replace(
+            /^([a-zA-Z])\:\\/,
+            (_, $1) => `${$1.toUpperCase()}:\\`
+        );
+    }
+    return pathString;
 }
 
 function execPromise(command, opts) {
@@ -887,18 +943,6 @@ export function getFileType(fileName: string) {
 
 const resourcePath: string = path.join(__filename, "..", "..", "resources");
 
-const getPopulartityLevel = (level: number) => {
-    if (!level) {
-        return "";
-    }
-    if (level < 25) {
-        return "-lowpopularity";
-    } else if (level < 65) {
-        return "-medpopularity";
-    }
-    return "-highpopularity";
-};
-
 export function getPlaylistIcon(treeItem: PlaylistItem) {
     const stateVal =
         treeItem.state !== TrackStatus.Playing ? "notplaying" : "playing";
@@ -938,9 +982,6 @@ export function getPlaylistIcon(treeItem: PlaylistItem) {
     } else if (treeItem["playlist_id"] == SPOTIFY_LIKED_SONGS_PLAYLIST_NAME) {
         contextValue += "-isliked";
     }
-
-    // add the popularity tag
-    // contextValue += getPopulartityLevel(treeItem.popularity);
 
     let lightPath = null;
     let darkPath = null;

@@ -1,4 +1,4 @@
-import { workspace, Disposable, window } from "vscode";
+import { workspace, Disposable, window, commands } from "vscode";
 import { KpmDataManager } from "./KpmDataManager";
 import { UNTITLED, UNTITLED_WORKSPACE } from "./Constants";
 import { DEFAULT_DURATION } from "./Constants";
@@ -29,6 +29,11 @@ let _staticInfoMap = {};
 
 // batch offline payloads in 50. backend has a 100k body limit
 const batch_limit = 50;
+
+const close_other_editor_command_id =
+    "workbench.action.closeEditorsInOtherGroups";
+const markdown_preview_command_id = "markdown.showPreviewToSide";
+const markdown_show_preview_command_id = "markdown.showPreview";
 
 export class KpmController {
     private static instance: KpmController;
@@ -120,6 +125,13 @@ export class KpmController {
         logEvent(`File closed: ${staticInfo.filename}`);
     }
 
+    private openMarkdownPreviewSideBySide() {
+        commands.executeCommand(markdown_show_preview_command_id).then(
+            () => {},
+            e => console.error(e)
+        );
+    }
+
     /**
      * File Open Handler
      * @param event
@@ -128,11 +140,21 @@ export class KpmController {
         if (!event) {
             return;
         }
+
         const staticInfo = await this.getStaticEventInfo(event);
 
         if (!this.isTrueEventFile(event, staticInfo.filename)) {
             return;
         }
+
+        // filename:"/Users/xavierluiz/.software/MusicTime_README.md"
+        // languageId:"markdown"
+        // if (
+        //     staticInfo.languageId === "markdown" &&
+        //     staticInfo.filename.includes("MusicTime_README.md")
+        // ) {
+        //     this.openMarkdownPreviewSideBySide();
+        // }
 
         let rootPath = getRootPathForFile(staticInfo.filename);
 

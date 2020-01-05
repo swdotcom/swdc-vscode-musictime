@@ -18,13 +18,24 @@ async function initialize() {
     );
 
     await runCommand(
-        `${copyCmd} lib${pathSep}extensioninfo.json out${pathSep}lib${pathSep}.`,
-        "Copy the extensioninfo.json to the out/lib directory"
+        `mkdir -p out${pathSep}lib${pathSep}images`,
+        "Creating the out/lib/images directory if it doesn't exist",
+        true
+    );
+
+    await runCommand(
+        `${copyCmd} lib${pathSep}extensioninfo.json README.md out${pathSep}lib${pathSep}.`,
+        "Copy the extensioninfo.json and README.md to the out/lib directory"
     );
 
     await runCommand(
         `${copyCmd} resources${pathSep}* out${pathSep}resources${pathSep}.`,
         "Copy the resources to the out dir"
+    );
+
+    await runCommand(
+        `${copyCmd} images${pathSep}* out${pathSep}lib${pathSep}images${pathSep}.`,
+        "Copy the images to the out dir"
     );
 }
 
