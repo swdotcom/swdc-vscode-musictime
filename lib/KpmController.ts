@@ -30,11 +30,6 @@ let _staticInfoMap = {};
 // batch offline payloads in 50. backend has a 100k body limit
 const batch_limit = 50;
 
-const close_other_editor_command_id =
-    "workbench.action.closeEditorsInOtherGroups";
-const markdown_preview_command_id = "markdown.showPreviewToSide";
-const markdown_show_preview_command_id = "markdown.showPreview";
-
 export class KpmController {
     private static instance: KpmController;
 
@@ -125,13 +120,6 @@ export class KpmController {
         logEvent(`File closed: ${staticInfo.filename}`);
     }
 
-    private openMarkdownPreviewSideBySide() {
-        commands.executeCommand(markdown_show_preview_command_id).then(
-            () => {},
-            e => console.error(e)
-        );
-    }
-
     /**
      * File Open Handler
      * @param event
@@ -146,15 +134,6 @@ export class KpmController {
         if (!this.isTrueEventFile(event, staticInfo.filename)) {
             return;
         }
-
-        // filename:"/Users/xavierluiz/.software/MusicTime_README.md"
-        // languageId:"markdown"
-        // if (
-        //     staticInfo.languageId === "markdown" &&
-        //     staticInfo.filename.includes("MusicTime_README.md")
-        // ) {
-        //     this.openMarkdownPreviewSideBySide();
-        // }
 
         let rootPath = getRootPathForFile(staticInfo.filename);
 
