@@ -81,12 +81,14 @@ export const playSelectedItem = async (
         }
 
         if (playlistItem.playerType === PlayerType.MacItunesDesktop) {
+            // ITUNES
             const pos: number = playlistItem.position || 1;
             await playItunesTrackNumberInPlaylist(
                 musicMgr.selectedPlaylist.name,
                 pos
             );
         } else if (launchConfirmInfo.playerName === PlayerName.SpotifyDesktop) {
+            // explicitly selected SPOTIFY DESKTOP
             // ex: ["spotify:track:0R8P9KfGJCDULmlEoBagcO", "spotify:playlist:6ZG5lRT77aJ3btmArcykra"]
             // make sure the track has spotify:track and the playlist has spotify:playlist
             if (launchConfirmInfo.isLaunching) {
@@ -97,6 +99,7 @@ export const playSelectedItem = async (
                 playSpotifyDesktopPlaylistTrack(devices);
             }
         } else {
+            // SPOTIFY WEB
             if (launchConfirmInfo.isLaunching) {
                 setTimeout(() => {
                     playSpotifyWebPlaylistTrack(true /*isTrack*/, devices);
@@ -191,18 +194,36 @@ export const playSpotifyDesktopPlaylistTrack = async (
     const musicMgr = MusicManager.getInstance();
     // get the selected playlist
     const selectedPlaylist = musicMgr.selectedPlaylist;
+    const isPrem = await musicMgr.isSpotifyPremium();
+    const isWin = isWindows();
     // get the selected track
     const selectedTrack = musicMgr.selectedTrackItem;
     const isLikedSongsPlaylist =
         selectedPlaylist.name === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME;
 
     if (isLikedSongsPlaylist) {
-        // just play the 1st track
-        playSpotifyByTrack(selectedTrack, devices);
+        if ((!isWin || isPrem) && devices && devices.length > 0) {
+            // just play the 1st track
+            playSpotifyByTrack(selectedTrack, devices);
+        } else if (!isWin) {
+            // try with the desktop app
+            playSpotifyMacDesktopTrack(selectedTrack.id);
+        } else {
+            // just try to play it since it's windows and we don't have a device
+            playSpotifyTrack(selectedTrack.id, "");
+        }
     } else {
-        // ex: ["spotify:track:0R8P9KfGJCDULmlEoBagcO", "spotify:playlist:6ZG5lRT77aJ3btmArcykra"]
-        // make sure the track has spotify:track and the playlist has spotify:playlist
-        playSpotifyMacDesktopTrack(selectedTrack.id, selectedPlaylist.id);
+        if (!isWin) {
+            // ex: ["spotify:track:0R8P9KfGJCDULmlEoBagcO", "spotify:playlist:6ZG5lRT77aJ3btmArcykra"]
+            // make sure the track has spotify:track and the playlist has spotify:playlist
+            playSpotifyMacDesktopTrack(selectedTrack.id, selectedPlaylist.id);
+        } else {
+            playSpotifyByTrackAndPlaylist(
+                selectedPlaylist.id,
+                selectedTrack.id,
+                devices
+            );
+        }
     }
 };
 
@@ -210,12 +231,22 @@ export const playSpotifyByTrack = async (
     track: PlaylistItem,
     devices: PlayerDevice[] = []
 ) => {
-    const deviceToPlayOn: PlayerDevice = await musicMgr.getComputerOrActiveDevice(
-        devices
-    );
-    const deviceId = deviceToPlayOn ? deviceToPlayOn.id : "";
-    // just play the 1st track
-    playSpotifyTrack(track.id, deviceId);
+    const isPrem = await musicMgr.isSpotifyPremium();
+    const isWin = isWindows();
+    if ((isPrem || isWin) && devices && devices.length > 0) {
+        const deviceToPlayOn: PlayerDevice = await musicMgr.getComputerOrActiveDevice(
+            devices
+        );
+        const deviceId = deviceToPlayOn ? deviceToPlayOn.id : "";
+        // just play the 1st track
+        playSpotifyTrack(track.id, deviceId);
+    } else if (!isWin) {
+        // try with the desktop app
+        playSpotifyMacDesktopTrack(track.id);
+    } else {
+        // just try to play it without the device
+        playSpotifyTrack(track.id, "");
+    }
 };
 
 export const playSpotifyByTrackAndPlaylist = async (

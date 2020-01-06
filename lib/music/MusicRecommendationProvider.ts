@@ -13,8 +13,7 @@ import {
     PlaylistItem,
     PlayerName,
     PlayerDevice,
-    getSpotifyDevices,
-    playSpotifyTrack
+    getSpotifyDevices
 } from "cody-music";
 import { getPlaylistIcon } from "../Util";
 import { MusicManager } from "./MusicManager";
