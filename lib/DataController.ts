@@ -301,11 +301,8 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
         }
         musicMgr.spotifyLikedSongs = likedSongs;
 
-        // send the "Liked Songs" to software app so we can be in sync
-        seedLikedSongsToSoftware(likedSongs);
-
         // send the top spotify songs from the users playlists to help seed song sessions
-        seedSongSessions(likedSongs);
+        seedLikedSongSessions(likedSongs);
 
         setTimeout(() => {
             musicMgr.clearSpotify();
@@ -314,18 +311,7 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
     }
 }
 
-async function seedLikedSongsToSoftware(likedSongs) {
-    // send the "Liked Songs" to software app so we can be in sync
-    if (likedSongs && likedSongs.length > 0) {
-        let uris = likedSongs.map(track => {
-            return track.uri;
-        });
-        const api = `/music/liked/tracks?type=spotify`;
-        await softwarePut(api, { liked: true, uris }, getItem("jwt"));
-    }
-}
-
-async function seedSongSessions(likedSongs) {
+async function seedLikedSongSessions(likedSongs) {
     /**
      * album:Object {album_type: "ALBUM", artists: Array(1), available_markets: Array(79), …}
     artists:Array(1) [Object]
@@ -359,26 +345,43 @@ async function seedSongSessions(likedSongs) {
         repoContributorCount: 0
     };
     if (likedSongs && likedSongs.length > 0) {
-        // add the empty file metrics
-        const tracksToSave = likedSongs.map(track => {
-            return {
+        let batch = [];
+        // send 20 at a time
+        for (let i = 0; i < likedSongs.length; i++) {
+            const track = likedSongs[i];
+            track["liked"] = true;
+            if (!track.playlistId) {
+                track["playlistId"] = "Liked Songs";
+            }
+            // add the empty file metrics
+            const songSession = {
                 ...track,
                 ...fileMetrics
             };
-        });
+            batch.push(songSession);
+            if (i > 0 && i % 20 === 0) {
+                await sendBatchedLikedSongSessions(batch);
+                batch = [];
+            }
+        }
 
-        let api = `/music/session/seed`;
-        return softwarePut(api, { tracks: tracksToSave }, getItem("jwt"))
-            .then(resp => {
-                if (!isResponseOk(resp)) {
-                    return { status: "fail" };
-                }
-                return { status: "ok" };
-            })
-            .catch(e => {
-                return { status: "fail" };
-            });
+        // send the remaining
+        await sendBatchedLikedSongSessions(batch);
     }
+}
+
+function sendBatchedLikedSongSessions(tracksToSave) {
+    const api = `/music/session/seed`;
+    softwarePut(api, { tracks: tracksToSave }, getItem("jwt"))
+        .then(resp => {
+            if (!isResponseOk(resp)) {
+                return { status: "fail" };
+            }
+            return { status: "ok" };
+        })
+        .catch(e => {
+            return { status: "fail" };
+        });
 }
 
 export async function sendHeartbeat(reason, serverIsOnline) {
