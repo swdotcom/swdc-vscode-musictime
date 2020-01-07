@@ -178,10 +178,6 @@
                 "title": "Click to view track"
             },
             {
-                "command": "musictime.spotifyPremiumRequired",
-                "title": "Connect to your premium Spotify account to use the play, pause, next, and previous controls"
-            },
-            {
                 "command": "musictime.connectSpotify",
                 "title": "Connect your Spotify account",
                 "tooltip": "Connect your Spotify account to view your playlists"

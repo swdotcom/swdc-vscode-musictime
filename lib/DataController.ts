@@ -366,7 +366,9 @@ async function seedLikedSongSessions(likedSongs) {
         }
 
         // send the remaining
-        await sendBatchedLikedSongSessions(batch);
+        if (batch.length > 0) {
+            await sendBatchedLikedSongSessions(batch);
+        }
     }
 }
 

@@ -16,8 +16,6 @@ import {
     Track,
     getRunningTrack,
     TrackStatus,
-    PlaylistItem,
-    launchAndPlaySpotifyTrack,
     getGenre,
     getSpotifyTrackById
 } from "cody-music";
@@ -331,16 +329,7 @@ export class MusicStateManager {
         }
 
         // play the next song
-        const nextTrack: Track = this.musicMgr.getNextSpotifyLikedSong();
-        if (nextTrack) {
-            let playlistItem: PlaylistItem = this.musicMgr.createPlaylistItemFromTrack(
-                nextTrack,
-                0
-            );
-            this.musicMgr.selectedTrackItem = playlistItem;
-            // launch and play the next track
-            await launchAndPlaySpotifyTrack(playlistItem.id, "");
-        }
+        await this.musicMgr.playNextLikedSong();
     }
 
     public async gatherCodingDataAndSendSongSession(songSession) {

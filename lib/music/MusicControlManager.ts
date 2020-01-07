@@ -86,15 +86,31 @@ export class MusicControlManager {
     }
 
     async nextSong() {
-        const playerName = this.musicMgr.getPlayerNameForPlayback();
-        await next(playerName);
+        if (
+            this.musicMgr.selectedPlaylist &&
+            this.musicMgr.selectedPlaylist.id ==
+                SPOTIFY_LIKED_SONGS_PLAYLIST_NAME
+        ) {
+            await this.musicMgr.playNextLikedSong();
+        } else {
+            const playerName = this.musicMgr.getPlayerNameForPlayback();
+            await next(playerName);
+        }
         // fetch the new track info
         await this.musicStateMgr.gatherMusicInfo();
     }
 
     async previousSong() {
-        const playerName = this.musicMgr.getPlayerNameForPlayback();
-        await previous(playerName);
+        if (
+            this.musicMgr.selectedPlaylist &&
+            this.musicMgr.selectedPlaylist.id ==
+                SPOTIFY_LIKED_SONGS_PLAYLIST_NAME
+        ) {
+            await this.musicMgr.playPreviousLikedSong();
+        } else {
+            const playerName = this.musicMgr.getPlayerNameForPlayback();
+            await previous(playerName);
+        }
         // fetch the new track info
         await this.musicStateMgr.gatherMusicInfo();
     }

@@ -24,7 +24,8 @@ import {
     getSpotifyPlaylist,
     getRecommendationsForTracks,
     followPlaylist,
-    playSpotifyDevice
+    playSpotifyDevice,
+    playSpotifyTrack
 } from "cody-music";
 import {
     PERSONAL_TOP_SONGS_NAME,
@@ -727,7 +728,7 @@ export class MusicManager {
         return this.buildActionItem(
             "spotifypremium",
             "action",
-            "musictime.spotifyPremiumRequired",
+            "musictime.connectSpotify",
             PlayerType.NotAssigned,
             "Spotify Premium Required",
             "Connect to your premium Spotify account to use the play, pause, next, and previous controls"
@@ -1220,6 +1221,43 @@ export class MusicManager {
         }
     }
 
+    async playNextLikedSong() {
+        const deviceToPlayOn: PlayerDevice = await this.getComputerOrActiveDevice(
+            this.currentDevices
+        );
+        // play the next song
+        const nextTrack: Track = this.getNextSpotifyLikedSong();
+        if (nextTrack) {
+            let playlistItem: PlaylistItem = this.createPlaylistItemFromTrack(
+                nextTrack,
+                0
+            );
+            this.selectedTrackItem = playlistItem;
+            const deviceId = deviceToPlayOn ? deviceToPlayOn.id : "";
+            // play the next track
+            playSpotifyTrack(playlistItem.id, deviceId);
+        }
+    }
+
+    async playPreviousLikedSong() {
+        const deviceToPlayOn: PlayerDevice = await this.getComputerOrActiveDevice(
+            this.currentDevices
+        );
+        // play the next song
+        const prevTrack: Track = this.getPreviousSpotifyLikedSong();
+        if (prevTrack) {
+            let playlistItem: PlaylistItem = this.createPlaylistItemFromTrack(
+                prevTrack,
+                0
+            );
+            this.selectedTrackItem = playlistItem;
+            // play the prev track
+            const deviceId = deviceToPlayOn ? deviceToPlayOn.id : "";
+            // launch and play the next track
+            playSpotifyTrack(playlistItem.id, deviceId);
+        }
+    }
+
     /**
      * Return the next Spotify Track from the Liked Songs list.
      * It will return null if the Liked Songs list doesn't exist or the current track ID is not assigned.
@@ -1243,6 +1281,28 @@ export class MusicManager {
             }
         } else if (!currentTrackId && hasLikedSongs) {
             return this._spotifyLikedSongs[0];
+        }
+        return null;
+    }
+
+    getPreviousSpotifyLikedSong(): Track {
+        const currentTrackId = this.selectedTrackItem.id;
+        const hasLikedSongs =
+            this._spotifyLikedSongs && this._spotifyLikedSongs.length > 0;
+        if (currentTrackId && hasLikedSongs) {
+            const currTrackIndex = this._spotifyLikedSongs.findIndex(
+                i => i.id === currentTrackId
+            );
+            if (currTrackIndex !== -1) {
+                // if the curr track index is the last element, return zero, else return the next one
+                if (currTrackIndex - 1 >= 0) {
+                    return this._spotifyLikedSongs[currTrackIndex - 1];
+                } else {
+                    return this._spotifyLikedSongs[
+                        this._spotifyLikedSongs.length - 1
+                    ];
+                }
+            }
         }
         return null;
     }
