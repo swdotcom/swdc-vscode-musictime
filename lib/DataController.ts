@@ -110,17 +110,7 @@ export async function sendMusicData(trackData) {
 
         // add the "local_start", "start", and "end"
         // POST the kpm to the PluginManager
-        let api = `/music/session`;
-        return softwarePost(api, trackData, getItem("jwt"))
-            .then(resp => {
-                if (!isResponseOk(resp)) {
-                    return { status: "fail" };
-                }
-                return { status: "ok" };
-            })
-            .catch(e => {
-                return { status: "fail" };
-            });
+        sendSessionPayload(trackData);
     } else {
         // store it
         storeMusicSessionPayload(trackData);
@@ -311,19 +301,7 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
     }
 }
 
-async function seedLikedSongSessions(likedSongs) {
-    /**
-     * album:Object {album_type: "ALBUM", artists: Array(1), available_markets: Array(79), …}
-    artists:Array(1) [Object]
-    available_markets:Array(79) ["AD", "AE", "AR", …]
-    disc_number:1
-    duration_ms:251488
-    explicit:false
-    external_ids:Object {isrc: "GBF088590110"}
-    external_urls:Object {spotify: "https://open.spotify.com/track/4RvWPyQ5RL0ao9LPZeS…"}
-    href:"https://api.spotify.com/v1/tracks/4RvWPyQ5RL0ao9LPZeSouE"
-
-     */
+export function getBootstrapFileMetrics() {
     const fileMetrics = {
         add: 0,
         paste: 0,
@@ -344,6 +322,23 @@ async function seedLikedSongSessions(likedSongs) {
         repoFileCount: 0,
         repoContributorCount: 0
     };
+    return fileMetrics;
+}
+
+async function seedLikedSongSessions(likedSongs) {
+    /**
+     * album:Object {album_type: "ALBUM", artists: Array(1), available_markets: Array(79), …}
+    artists:Array(1) [Object]
+    available_markets:Array(79) ["AD", "AE", "AR", …]
+    disc_number:1
+    duration_ms:251488
+    explicit:false
+    external_ids:Object {isrc: "GBF088590110"}
+    external_urls:Object {spotify: "https://open.spotify.com/track/4RvWPyQ5RL0ao9LPZeS…"}
+    href:"https://api.spotify.com/v1/tracks/4RvWPyQ5RL0ao9LPZeSouE"
+
+     */
+    const fileMetrics = getBootstrapFileMetrics();
     if (likedSongs && likedSongs.length > 0) {
         let batch = [];
         // send 20 at a time
@@ -375,6 +370,20 @@ async function seedLikedSongSessions(likedSongs) {
 function sendBatchedLikedSongSessions(tracksToSave) {
     const api = `/music/session/seed`;
     softwarePut(api, { tracks: tracksToSave }, getItem("jwt"))
+        .then(resp => {
+            if (!isResponseOk(resp)) {
+                return { status: "fail" };
+            }
+            return { status: "ok" };
+        })
+        .catch(e => {
+            return { status: "fail" };
+        });
+}
+
+export async function sendSessionPayload(songSession) {
+    let api = `/music/session`;
+    return softwarePost(api, songSession, getItem("jwt"))
         .then(resp => {
             if (!isResponseOk(resp)) {
                 return { status: "fail" };

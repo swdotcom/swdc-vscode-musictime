@@ -3,6 +3,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import { ExtensionContext } from "vscode";
+import { onboardPlugin } from "./lib/OnboardManager";
 import { sendHeartbeat, serverIsAvailable } from "./lib/DataController";
 import {
     nowInSecs,
@@ -75,7 +76,7 @@ export function deactivate(ctx: ExtensionContext) {
 
 export async function activate(ctx: ExtensionContext) {
     // has a session file, continue with initialization of the plugin
-    intializePlugin(ctx);
+    onboardPlugin(ctx, intializePlugin);
 }
 
 export async function intializePlugin(ctx: ExtensionContext) {
