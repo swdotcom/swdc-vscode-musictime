@@ -270,6 +270,9 @@ export class MusicCommandManager {
             const isPrevButton = btnCmd === "musictime.previous";
             const isNextButton = btnCmd === "musictime.next";
 
+            const playerIsInRepeatMode =
+                repeatState && repeatState === "track" ? true : false;
+
             if (isMusicTimeMenuButton || isPrevButton || isNextButton) {
                 if (isMusicTimeMenuButton) {
                     button.tooltip = this.getMusicMenuTooltip();
@@ -289,14 +292,14 @@ export class MusicCommandManager {
                     button.statusBarItem.hide();
                 }
             } else if (isRepeatOnButton) {
-                if (!repeatState && repeatState === "track") {
+                if (playerIsInRepeatMode) {
                     // it's either not available or it's a track, hide the repeat On button
                     button.statusBarItem.hide();
                 } else {
                     button.statusBarItem.show();
                 }
             } else if (isRepeatOffButton) {
-                if (repeatState && repeatState === "track") {
+                if (playerIsInRepeatMode) {
                     // it has to be available and a track to show the repeat off button
                     button.statusBarItem.show();
                 } else {
@@ -349,6 +352,9 @@ export class MusicCommandManager {
             const isPrevButton = btnCmd === "musictime.previous";
             const isNextButton = btnCmd === "musictime.next";
 
+            const playerIsInRepeatMode =
+                repeatState && repeatState === "track" ? true : false;
+
             if (isMusicTimeMenuButton || isPrevButton || isNextButton) {
                 if (isMusicTimeMenuButton) {
                     button.tooltip = this.getMusicMenuTooltip();
@@ -368,14 +374,14 @@ export class MusicCommandManager {
                     button.statusBarItem.hide();
                 }
             } else if (isRepeatOnButton) {
-                if (!repeatState && repeatState === "track") {
+                if (playerIsInRepeatMode) {
                     // it's either not available or it's a track, hide the repeat On button
                     button.statusBarItem.hide();
                 } else {
                     button.statusBarItem.show();
                 }
             } else if (isRepeatOffButton) {
-                if (repeatState && repeatState === "track") {
+                if (playerIsInRepeatMode) {
                     // it has to be available and a track to show the repeat off button
                     button.statusBarItem.show();
                 } else {
