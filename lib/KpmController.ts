@@ -1,4 +1,4 @@
-import { workspace, Disposable, window, commands } from "vscode";
+import { workspace, Disposable } from "vscode";
 import { KpmDataManager } from "./KpmDataManager";
 import { UNTITLED, UNTITLED_WORKSPACE } from "./Constants";
 import { DEFAULT_DURATION } from "./Constants";
