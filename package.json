@@ -170,6 +170,14 @@
                 "title": "Unlike Song"
             },
             {
+                "command": "musictime.repeatOn",
+                "title": "Repeat Track"
+            },
+            {
+                "command": "musictime.repeatOff",
+                "title": "Don't Repeat"
+            },
+            {
                 "command": "musictime.menu",
                 "title": "Click to see more from Music Time"
             },
@@ -388,7 +396,7 @@
         "aws-sdk": "^2.470.0",
         "axios": "^0.19.0",
         "clipboardy": "^2.1.0",
-        "cody-music": "2.7.2",
+        "cody-music": "2.7.3",
         "moment-timezone": "^0.5.25",
         "open": "^6.4.0",
         "vsls": "0.3.1291"

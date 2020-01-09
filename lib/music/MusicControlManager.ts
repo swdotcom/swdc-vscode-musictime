@@ -13,7 +13,9 @@ import {
     saveToSpotifyLiked,
     addTracksToPlaylist,
     removeFromSpotifyLiked,
-    setItunesLoved
+    setItunesLoved,
+    repeatOn,
+    repeatOff
 } from "cody-music";
 import { window, ViewColumn, Uri, commands } from "vscode";
 import { MusicCommandManager } from "./MusicCommandManager";
@@ -146,6 +148,15 @@ export class MusicControlManager {
         MusicCommandManager.syncControls(this.musicMgr.runningTrack, true);
         // fetch the new track info
         await this.musicStateMgr.gatherMusicInfo();
+    }
+
+    async setRepeatOnOff(setToOn: boolean) {
+        if (setToOn) {
+            await repeatOn(PlayerName.SpotifyWeb);
+        } else {
+            await repeatOff(PlayerName.SpotifyWeb);
+        }
+        MusicCommandManager.syncControls(this.musicMgr.runningTrack, true);
     }
 
     async setLiked(liked: boolean, overrideTrack: Track = null) {

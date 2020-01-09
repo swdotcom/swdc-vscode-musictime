@@ -121,6 +121,16 @@ export function createCommands(): {
     });
     cmds.push(unlikeCmd);
 
+    const repeatOnCmd = commands.registerCommand("musictime.repeatOn", () => {
+        controller.setRepeatOnOff(true);
+    });
+    cmds.push(repeatOnCmd);
+
+    const repeatOffCmd = commands.registerCommand("musictime.repeatOff", () => {
+        controller.setRepeatOnOff(false);
+    });
+    cmds.push(repeatOffCmd);
+
     const menuCmd = commands.registerCommand("musictime.menu", () => {
         controller.showMenu();
     });

@@ -25,7 +25,9 @@ import {
     getRecommendationsForTracks,
     followPlaylist,
     playSpotifyDevice,
-    playSpotifyTrack
+    playSpotifyTrack,
+    PlayerContext,
+    getSpotifyPlayerContext
 } from "cody-music";
 import {
     PERSONAL_TOP_SONGS_NAME,
