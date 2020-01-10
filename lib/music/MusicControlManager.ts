@@ -15,7 +15,11 @@ import {
     removeFromSpotifyLiked,
     setItunesLoved,
     repeatOn,
-    repeatOff
+    repeatOff,
+    PlayerDevice,
+    playSpotifyMacDesktopTrack,
+    playSpotifyTrack,
+    playSpotifyPlaylist
 } from "cody-music";
 import { window, ViewColumn, Uri, commands } from "vscode";
 import { MusicCommandManager } from "./MusicCommandManager";
@@ -36,7 +40,8 @@ import {
     getSoftwareDir,
     setItem,
     isMac,
-    getCodyErrorMessage
+    getCodyErrorMessage,
+    isWindows
 } from "../Util";
 import { softwareGet, softwarePut, isResponseOk } from "../HttpClient";
 import {
@@ -157,6 +162,143 @@ export class MusicControlManager {
             await repeatOff(PlayerName.SpotifyWeb);
         }
         MusicCommandManager.syncControls(this.musicMgr.runningTrack, true);
+    }
+
+    /**
+     * Launch and play a spotify track via the web player.
+     * @param isTrack boolean
+     */
+    async playSpotifyWebPlaylistTrack(
+        isTrack: boolean,
+        devices: PlayerDevice[]
+    ) {
+        const musicMgr = MusicManager.getInstance();
+
+        const trackRepeating = await musicMgr.isTrackRepeating();
+
+        // get the selected playlist
+        const selectedPlaylist = musicMgr.selectedPlaylist;
+        // get the selected track
+        const selectedTrack = musicMgr.selectedTrackItem;
+
+        const isLikedSongsPlaylist =
+            selectedPlaylist.name === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME;
+        const playlistId = isLikedSongsPlaylist ? "" : selectedPlaylist.id;
+
+        if (isLikedSongsPlaylist) {
+            await this.playSpotifyByTrack(selectedTrack, devices);
+        } else if (isTrack) {
+            await this.playSpotifyByTrackAndPlaylist(
+                playlistId,
+                selectedTrack.id,
+                devices
+            );
+        } else {
+            // play the playlist
+            await this.playSpotifyByTrackAndPlaylist(playlistId, "", devices);
+        }
+
+        setTimeout(() => {
+            if (trackRepeating) {
+                // make sure it set to repeat
+                commands.executeCommand("musictime.repeatOn");
+            } else {
+                // set it to not repeat
+                commands.executeCommand("musictime.repeatOff");
+            }
+        }, 2000);
+    }
+
+    /**
+     * Helper function to play a track or playlist if we've determined to play
+     * against the mac spotify desktop app.
+     */
+    async playSpotifyDesktopPlaylistTrack(devices: PlayerDevice[]) {
+        const musicMgr = MusicManager.getInstance();
+
+        const trackRepeating = await musicMgr.isTrackRepeating();
+
+        // get the selected playlist
+        const selectedPlaylist = musicMgr.selectedPlaylist;
+        const isPrem = await musicMgr.isSpotifyPremium();
+        const isWin = isWindows();
+        // get the selected track
+        const selectedTrack = musicMgr.selectedTrackItem;
+        const isLikedSongsPlaylist =
+            selectedPlaylist.name === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME;
+
+        if (isLikedSongsPlaylist) {
+            if ((!isWin || isPrem) && devices && devices.length > 0) {
+                // just play the 1st track
+                this.playSpotifyByTrack(selectedTrack, devices);
+            } else if (!isWin) {
+                // try with the desktop app
+                playSpotifyMacDesktopTrack(selectedTrack.id);
+            } else {
+                // just try to play it since it's windows and we don't have a device
+                playSpotifyTrack(selectedTrack.id, "");
+            }
+        } else {
+            if (!isWin) {
+                // ex: ["spotify:track:0R8P9KfGJCDULmlEoBagcO", "spotify:playlist:6ZG5lRT77aJ3btmArcykra"]
+                // make sure the track has spotify:track and the playlist has spotify:playlist
+                playSpotifyMacDesktopTrack(
+                    selectedTrack.id,
+                    selectedPlaylist.id
+                );
+            } else {
+                this.playSpotifyByTrackAndPlaylist(
+                    selectedPlaylist.id,
+                    selectedTrack.id,
+                    devices
+                );
+            }
+        }
+
+        setTimeout(() => {
+            if (trackRepeating) {
+                // make sure it set to repeat
+                commands.executeCommand("musictime.repeatOn");
+            } else {
+                // set it to not repeat
+                commands.executeCommand("musictime.repeatOff");
+            }
+        }, 2000);
+    }
+
+    async playSpotifyByTrackAndPlaylist(
+        playlistId: string,
+        trackId: string,
+        devices: PlayerDevice[] = []
+    ) {
+        const deviceToPlayOn: PlayerDevice = await this.musicMgr.getComputerOrActiveDevice(
+            devices
+        );
+        const deviceId = deviceToPlayOn ? deviceToPlayOn.id : "";
+        // just play the 1st track
+        playSpotifyPlaylist(playlistId, trackId, deviceId);
+    }
+
+    async playSpotifyByTrack(
+        track: PlaylistItem,
+        devices: PlayerDevice[] = []
+    ) {
+        const isPrem = await this.musicMgr.isSpotifyPremium();
+        const isWin = isWindows();
+        if ((isPrem || isWin) && devices && devices.length > 0) {
+            const deviceToPlayOn: PlayerDevice = await this.musicMgr.getComputerOrActiveDevice(
+                devices
+            );
+            const deviceId = deviceToPlayOn ? deviceToPlayOn.id : "";
+            // just play the 1st track
+            playSpotifyTrack(track.id, deviceId);
+        } else if (!isWin) {
+            // try with the desktop app
+            playSpotifyMacDesktopTrack(track.id);
+        } else {
+            // just try to play it without the device
+            playSpotifyTrack(track.id, "");
+        }
     }
 
     async setLiked(liked: boolean, overrideTrack: Track = null) {

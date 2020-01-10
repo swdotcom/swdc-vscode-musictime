@@ -19,9 +19,10 @@ import { getPlaylistIcon } from "../Util";
 import { MusicManager } from "./MusicManager";
 import { RECOMMENDATIONS_PROVIDER } from "../Constants";
 import { MusicCommandManager } from "./MusicCommandManager";
-import { playSpotifyByTrack } from "./MusicPlaylistProvider";
+import { MusicControlManager } from "./MusicControlManager";
 
 const musicMgr: MusicManager = MusicManager.getInstance();
+const musicControlMgr: MusicControlManager = MusicControlManager.getInstance();
 
 /**
  * Create the playlist tree item (root or leaf)
@@ -54,10 +55,10 @@ const playRecommendationTrack = async (track: PlaylistItem) => {
 
     if (launchConfirmInfo.isLaunching) {
         setTimeout(async () => {
-            await playSpotifyByTrack(track, devices);
+            await musicControlMgr.playSpotifyByTrack(track, devices);
         }, launchTimeout);
     } else {
-        await playSpotifyByTrack(track, devices);
+        await musicControlMgr.playSpotifyByTrack(track, devices);
     }
 };
 

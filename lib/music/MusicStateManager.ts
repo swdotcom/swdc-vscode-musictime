@@ -616,7 +616,7 @@ export class MusicStateManager {
 
     /**
      * Checks whether the playing track is on repeat. Meaning the current
-     * progress of the current track is zero and the id of the current
+     * progress of the current track is zero or a bit more and the id of the current
      * track matches the track that was in the progress info previously.
      * @param playingTrack
      */
@@ -627,10 +627,12 @@ export class MusicStateManager {
         ) {
             return false;
         }
+
         if (
             playingTrack.id &&
             this.trackProgressInfo.id === playingTrack.id &&
-            playingTrack.progress_ms > 0 &&
+            playingTrack.progress_ms >= 0 &&
+            playingTrack.status === TrackStatus.Playing &&
             this.trackProgressInfo.progress_ms > playingTrack.progress_ms &&
             this.trackProgressInfo.endInRange
         ) {

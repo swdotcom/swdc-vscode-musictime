@@ -2077,4 +2077,13 @@ export class MusicManager {
         }
         return trackIds;
     }
+
+    async isTrackRepeating(): Promise<boolean> {
+        // get the current repeat state
+        const spotifyContext: PlayerContext = await getSpotifyPlayerContext();
+        // "off", "track", "context", ""
+        const repeatState = spotifyContext ? spotifyContext.repeat_state : "";
+
+        return repeatState && repeatState === "track" ? true : false;
+    }
 }
