@@ -614,6 +614,12 @@ export class MusicStateManager {
         return false;
     }
 
+    /**
+     * Checks whether the playing track is on repeat. Meaning the current
+     * progress of the current track is zero and the id of the current
+     * track matches the track that was in the progress info previously.
+     * @param playingTrack
+     */
     private isOnRepeatStartingOver(playingTrack) {
         if (
             playingTrack.progress_ms === null ||
