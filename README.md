@@ -5,27 +5,27 @@
 
 A VS Code extension to discover the most productive music to listen to as you code
 
-<p align="center" style="margin: 0 10%">
-  <img src="./images/playlist-tree.png" alt="Playlist tree" />
+<p align="center" style="margin: 0 0">
+  <img src="./images/vscode-music-time-diagram.png" alt="Music Time diagram" />
 </p>
 
 ## Features
 
-**Integrated player controls**: Control your music right from the status bar of your editor.
+-   **Integrated player controls**: Control your music right from the status bar of your editor.
 
-**Embedded playlists**: Browse and play your Spotify and iTunes playlists and songs from your editor.
+-   **Embedded playlists**: Browse and play your Spotify and iTunes playlists and songs from your editor.
 
-**AI playlists**: Get a personalized AI playlist generated using deep learning to help you focus.
+-   **AI playlists**: Get a personalized AI playlist generated using deep learning to help you focus.
 
-**Metrics profile**: Learn how the underlying metrics of music (including tempo, loudness, speechiness, energy, and valence) impact how you code.
+-   **Metrics profile**: Learn how the underlying metrics of music (including tempo, loudness, speechiness, energy, and valence) impact how you code.
 
-**Personal top 40**: See your most productive songs, artists, and genres every week in your weekly top 40.
+-   **Personal top 40**: See your most productive songs, artists, and genres every week in your weekly top 40.
 
-**Weekly music dashboard**: See your top songs, artists, and genres each week by productivity score and plays while coding.
+-   **Weekly music dashboard**: See your top songs, artists, and genres each week by productivity score and plays while coding.
 
-**Global top 40**: Discover new music from developers around the world in our Software Top 40 playlist.
+-   **Global top 40**: Discover new music from developers around the world in our Software Top 40 playlist.
 
-**Slack integration**: Connect Slack to share songs and playlists in channels in your workspace.
+-   **Slack integration**: Connect Slack to share songs and playlists in channels in your workspace.
 
 Music Time currently supports Spotify. We will support iTunes and other players in a future release. You can also check out the [cody-music](https://www.npmjs.com/package/cody-music) NPM for more information about how this extension works.
 
@@ -36,7 +36,7 @@ Music Time currently supports Spotify. We will support iTunes and other players 
 Click the **Connect Spotify** button in the status bar or in the playlist tree, which will prompt you to log in to your Spotify account.
 
 <p align="center" style="margin: 0 10%">
-  <img src="./images/connect-spotify-status-bar.png" alt="Connect Spotify in the status bar" />
+  <img src="./images/connect-spotify-status-bar.png" width="350" alt="Connect Spotify in the status bar" />
 </p>
 
 ### **2. Control your music and playlists right from your editor**
@@ -50,7 +50,7 @@ Click on any song in your list of playlists. Music Time will prompt you to open 
 Click the **Generate AI Playlist** button to get a personalized AI playlist generated using deep learning. Your playlist improves as you listen to more music.
 
 <p align="center" style="margin: 0 10%">
-  <img src="./images/my-ai-top-40.png" alt="My AI Top 40" />
+  <img src="./images/my-ai-top-40.png" width="350" alt="My AI Top 40" />
 </p>
 
 ### **4. Try a song recommendation**
@@ -58,7 +58,7 @@ Click the **Generate AI Playlist** button to get a personalized AI playlist gene
 Find songs similar to your listening history. Try high tempo, high energy, and high valence songs for upbeat work or Classical or Piano for slower, more complex coding. Add a song to a playlist using the "+" button.
 
 <p align="center" style="margin: 0 10%">
-  <img src="./images/recommendations.png" alt="recommendations" />
+  <img src="./images/recommendations.png" width="450" alt="recommendations" />
 </p>
 
 ### **5. Like a song**
@@ -66,7 +66,7 @@ Find songs similar to your listening history. Try high tempo, high energy, and h
 Like a song from the status bar by pressing the "♡" button, which helps us improve your song recommendations and adds that song to your Liked Songs playlist on Spotify.
 
 <p align="center" style="margin: 0 10%">
-  <img src="./images/like-song-status-bar.png" alt="Like a song in the status bar" />
+  <img src="./images/like-song-status-bar.png" width="320" alt="Like a song in the status bar" />
 </p>
 
 ### **6. Check out the Software Top 40**
@@ -84,7 +84,7 @@ Here are the different ways you can discover your most productive music.
 Click on the “See Web Analytics” button to see your most productive songs, artists, and genres by productivity score. You can also visit app.software.com/login and use your Spotify email address to log in.
 
 <p align="center" style="margin: 0 10%">
-  <img src="./images/web-analytics-button.png" alt="See web analytics button" />
+  <img src="./images/web-analytics-button.png" width="350" alt="See web analytics button" />
 </p>
 
 ### **2. Open your Music Time dashboard**
@@ -105,7 +105,7 @@ Discover how the underlying [metrics of music](app.software.com/music/metrics) (
 
 ### **4. Visualize your Code Time metrics**
 
-Music Time captures the same data as our [Code Time plugin](https://github.com/swdotcom/swdc-vscode), such as your keystrokes, time by file and project, and lines of code. This data is used to calculate your productivity scores. You can also [visit your feed](app.software.com) to see simple visualizations of your Code Time data, such as a rolling heatmap of your top programming times by hour of the day.
+Music Time is built on our [Code Time plugin](https://github.com/swdotcom/swdc-vscode). You will be able to see data—such as your keystrokes, time by file and project, and lines of code—which is used calculate to your productivity scores. [Visit your feed](app.software.com) to see simple visualizations of your Code Time data, such as a rolling heatmap of your top programming times by hour of the day.
 
 <p align="center" style="margin: 0 10%">
   <img src="./images/heatmap.png" alt="90-day rolling average heatmap" />
@@ -116,7 +116,7 @@ Music Time captures the same data as our [Code Time plugin](https://github.com/s
 Share your top songs on Facebook, Twitter, WhatsApp, and Tumblr by clicking on the share icon next to a song in the playlist tree. You can also Connect Slack to share songs with your team.
 
 <p align="center" style="margin: 0 10%">
-  <img src="./images/share-button.png" alt="Share button" />
+  <img src="./images/share-button.png" width="320" alt="Share button" />
 </p>
 
 Connecting Slack requires team member permissions or above. You will not be able to connect Slack as a single or multi-channel guest.
