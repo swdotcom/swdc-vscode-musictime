@@ -638,7 +638,8 @@ export function getNowTimes() {
     // subtract the offset_sec (it'll be positive before utc and negative after utc)
     return {
         now_in_sec,
-        local_now_in_sec: now_in_sec - offset_sec
+        local_now_in_sec: now_in_sec - offset_sec,
+        offset_sec
     };
 }
 

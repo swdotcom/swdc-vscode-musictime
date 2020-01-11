@@ -11,6 +11,7 @@ import {
     nowInSecs,
     getSessionFileCreateTime,
     getOs,
+    getNowTimes,
     getVersion,
     getHostname,
     getEditorSessionToken,
@@ -278,15 +279,25 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
 
         const likedSongs: Track[] = await getSpotifyLikedSongs();
         if (likedSongs) {
+            let nowTime = getNowTimes();
+            let startingTime = moment().unix();
             likedSongs.forEach((track: Track) => {
                 track["playlistId"] = "Liked Songs";
                 track.loved = true;
+                track["start"] = startingTime;
+                startingTime -= 60;
+                track["end"] = startingTime;
+                track["duration"] = 60;
+
+                track["local_start"] = track["start"] - nowTime.offset_sec;
+                track["local_end"] = track["end"] - nowTime.offset_sec;
                 // set a convenience "spotifyTrackId" attribute based on the URI
                 if (track.uri) {
                     track["spotifyTrackId"] = track.uri;
                     // make sure the trackId is the URI if it's a spotify track
                     track.id = track.uri;
                 }
+                startingTime -= 1;
             });
         }
         musicMgr.spotifyLikedSongs = likedSongs;
@@ -368,6 +379,7 @@ async function seedLikedSongSessions(likedSongs) {
 }
 
 function sendBatchedLikedSongSessions(tracksToSave) {
+    console.log("sending the following tracks to save: ", tracksToSave);
     const api = `/music/session/seed`;
     softwarePut(api, { tracks: tracksToSave }, getItem("jwt"))
         .then(resp => {
