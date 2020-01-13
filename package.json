@@ -286,11 +286,6 @@
         "menus": {
             "view/item/context": [
                 {
-                    "command": "musictime.sharePlaylist",
-                    "when": "viewItem =~ /spotify-playlist-item.*/",
-                    "group": "inline@1"
-                },
-                {
                     "command": "musictime.shareTrack",
                     "when": "viewItem =~ /track-item.*/ || viewItem =~ /spotify-recommendation.*/",
                     "group": "inline@1"
