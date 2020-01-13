@@ -29,7 +29,6 @@ const open = require("open");
 const { exec } = require("child_process");
 const fs = require("fs");
 const os = require("os");
-import { tmpdir } from "os";
 const crypto = require("crypto");
 import * as path from "path";
 

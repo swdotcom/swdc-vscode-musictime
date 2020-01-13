@@ -102,7 +102,7 @@ export class SocialShareManager {
         // facebook needs the hash
         menuOptions.items.push({
             label: "Facebook",
-            detail: `Share your ${context.toLowerCase()}, ${label}, on Facebook.`,
+            detail: `Share '${label}' on Facebook.`,
             url: this.getShareUrl("facebook", {
                 url: spotifyLinkUrl,
                 hashtag: `#MusicTime`
@@ -113,7 +113,7 @@ export class SocialShareManager {
         if (slackAccessToken) {
             menuOptions.items.push({
                 label: "Slack",
-                detail: `Share your ${context.toLowerCase()}, ${label}, on Slack`,
+                detail: `Share '${label}' on Slack`,
                 cb: this.shareSlack
             });
         }
@@ -128,7 +128,7 @@ export class SocialShareManager {
 
         menuOptions.items.push({
             label: "Tumblr",
-            detail: `Share your ${context.toLowerCase()}, ${label}, on Tumblr.`,
+            detail: `Share '${label}' on Tumblr.`,
             url: this.getShareUrl("tumblr", {
                 url: spotifyLinkUrl,
                 title,
@@ -140,7 +140,7 @@ export class SocialShareManager {
         // twitter doesn't need the hash chars, "via" (optional: twitter username without @)
         menuOptions.items.push({
             label: "Twitter",
-            detail: `Tweet ${context.toLowerCase()}, ${label}, on Twitter.`,
+            detail: `Tweet '${label}' on Twitter.`,
             url: this.getShareUrl("twitter", {
                 url: spotifyLinkUrl,
                 title,
@@ -150,7 +150,7 @@ export class SocialShareManager {
 
         menuOptions.items.push({
             label: "WhatsApp",
-            detail: `Send your ${context.toLowerCase()}, ${label}, through WhatsApp.`,
+            detail: `Send '${label}' through WhatsApp.`,
             url: this.getShareUrl("whatsapp", {
                 url: spotifyLinkUrl,
                 title

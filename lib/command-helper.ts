@@ -86,14 +86,6 @@ export function createCommands(): {
     );
     cmds.push(removeTrackCmd);
 
-    const sharePlaylistLinkCmd = commands.registerCommand(
-        "musictime.sharePlaylist",
-        (node: PlaylistItem) => {
-            SocialShareManager.getInstance().showMenu(node.id, node.name, true);
-        }
-    );
-    cmds.push(sharePlaylistLinkCmd);
-
     const shareTrackLinkCmd = commands.registerCommand(
         "musictime.shareTrack",
         (node: PlaylistItem) => {

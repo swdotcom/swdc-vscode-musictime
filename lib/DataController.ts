@@ -379,7 +379,6 @@ async function seedLikedSongSessions(likedSongs) {
 }
 
 function sendBatchedLikedSongSessions(tracksToSave) {
-    console.log("sending the following tracks to save: ", tracksToSave);
     const api = `/music/session/seed`;
     softwarePut(api, { tracks: tracksToSave }, getItem("jwt"))
         .then(resp => {
