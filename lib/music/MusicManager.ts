@@ -1531,18 +1531,21 @@ export class MusicManager {
     }
 
     async updateSpotifyAccessInfo(spotifyOauth) {
-        if (spotifyOauth) {
+        if (spotifyOauth && spotifyOauth.access_token) {
             // update the CodyMusic credentials
             setItem("spotify_access_token", spotifyOauth.access_token);
             setItem("spotify_refresh_token", spotifyOauth.refresh_token);
-
             // update cody config
             this.updateCodyConfig();
-
             // get the user
             this.spotifyUser = await getUserProfile();
         } else {
-            this.clearSpotifyAccessInfo();
+            setItem("spotify_access_token", null);
+            setItem("spotify_refresh_token", null);
+            // update cody config
+            this.updateCodyConfig();
+            // update the spotify user to null
+            this.spotifyUser = null;
         }
     }
 
@@ -1579,15 +1582,6 @@ export class MusicManager {
         this.initialized = true;
 
         commands.executeCommand("musictime.refreshPlaylist");
-    }
-
-    async clearSpotifyAccessInfo() {
-        setItem("spotify_access_token", null);
-        setItem("spotify_refresh_token", null);
-        this.spotifyUser = null;
-
-        // update cody config
-        this.updateCodyConfig();
     }
 
     // reconcile. meaning the user may have deleted the lists our 2 buttons created;

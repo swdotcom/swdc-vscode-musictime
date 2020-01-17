@@ -784,7 +784,7 @@ export async function disconnectOauth(type: string, confirmDisconnect = true) {
             if (type_lc === "slack") {
                 await musicMgr.updateSlackAccessInfo(null);
             } else if (type_lc === "spotify") {
-                await musicMgr.clearSpotifyAccessInfo();
+                await musicMgr.updateSpotifyAccessInfo(null);
             }
 
             window.showInformationMessage(
