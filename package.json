@@ -149,6 +149,14 @@
                 }
             },
             {
+                "command": "musictime.volumeIcon",
+                "title": "Playing",
+                "icon": {
+                    "light": "resources/light/volume.svg",
+                    "dark": "resources/dark/volume.svg"
+                }
+            },
+            {
                 "command": "musictime.progress",
                 "title": "Loading",
                 "tooltip": "Please wait"

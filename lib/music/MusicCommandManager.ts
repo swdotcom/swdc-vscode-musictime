@@ -1,4 +1,4 @@
-import { window, StatusBarAlignment, StatusBarItem } from "vscode";
+import { window, StatusBarAlignment, StatusBarItem, commands } from "vscode";
 import { getSongDisplayName, isMac, getItem } from "../Util";
 import {
     TrackStatus,
@@ -142,6 +142,9 @@ export class MusicCommandManager {
         if (showLoading) {
             this.showLoadingTrack();
         } else if (!needsSpotifyAccess && foundDevice && (pauseIt || playIt)) {
+            if (this._isLoading) {
+                commands.executeCommand("musictime.refreshPlaylistState");
+            }
             this._isLoading = false;
             if (pauseIt) {
                 this.showPauseControls(track);

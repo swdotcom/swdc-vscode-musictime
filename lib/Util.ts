@@ -948,6 +948,12 @@ export function getPlaylistIcon(treeItem: PlaylistItem) {
         treeItem.state !== TrackStatus.Playing ? "notplaying" : "playing";
     let contextValue = "";
 
+    if (treeItem.itemType === "playlist" && treeItem.name === "Liked Songs") {
+        console.log(
+            `${treeItem.itemType} - ${treeItem.name} - ${treeItem.state}`
+        );
+    }
+
     // itemType will be either: track | playlist
     // type will be either: connected | action | recommendation | label | track | playlist | itunes | spotify
     // tag will be either: action | paw | spotify | spotify-liked-songs | active
@@ -986,7 +992,13 @@ export function getPlaylistIcon(treeItem: PlaylistItem) {
     let lightPath = null;
     let darkPath = null;
 
-    if (treeItem.tag.includes("spotify") || treeItem.type.includes("spotify")) {
+    if (stateVal === "playing") {
+        lightPath = path.join(resourcePath, "light", "volume.svg");
+        darkPath = path.join(resourcePath, "dark", "volume.svg");
+    } else if (
+        treeItem.tag.includes("spotify") ||
+        treeItem.type.includes("spotify")
+    ) {
         const spotifySvg =
             treeItem.tag === "disabled"
                 ? "spotify-disconnected.svg"

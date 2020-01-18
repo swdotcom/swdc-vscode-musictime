@@ -378,30 +378,12 @@ export class MusicManager {
         if (type === "spotify" && this._spotifyPlaylists.length > 0) {
             // build the spotify playlist
             this._spotifyPlaylists.forEach(async playlist => {
-                let playlistItemTracks: PlaylistItem[] = this._playlistTrackMap[
-                    playlist.id
-                ];
-
-                if (playlistItemTracks && playlistItemTracks.length > 0) {
-                    let playlistState = await this.getPlaylistState(
-                        playlist.id
-                    );
-                    playlist.state = playlistState;
-                }
+                playlist.state = this.getPlaylistTrackState(playlist.id);
             });
         } else if (type === "itunes" && this._itunesPlaylists.length > 0) {
             // build the itunes playlist
             this._itunesPlaylists.forEach(async playlist => {
-                let playlistItemTracks: PlaylistItem[] = this._playlistTrackMap[
-                    playlist.id
-                ];
-
-                if (playlistItemTracks && playlistItemTracks.length > 0) {
-                    let playlistState = await this.getPlaylistState(
-                        playlist.id
-                    );
-                    playlist.state = playlistState;
-                }
+                playlist.state = this.getPlaylistTrackState(playlist.id);
             });
         }
     }
@@ -425,6 +407,23 @@ export class MusicManager {
         if (!foundPlaylist) {
             await this.refreshPlaylistForPlayer(serverIsOnline);
         }
+    }
+
+    private getPlaylistTrackState(playlistId) {
+        let playlistItemTracks: PlaylistItem[] = this._playlistTrackMap[
+            playlistId
+        ];
+
+        if (playlistItemTracks && playlistItemTracks.length > 0) {
+            for (let i = 0; i < playlistItemTracks.length; i++) {
+                const track: PlaylistItem = playlistItemTracks[i];
+                // check to see if this track is the current track
+                if (this.runningTrack.id === track.id) {
+                    return this.runningTrack.state;
+                }
+            }
+        }
+        return TrackStatus.NotAssigned;
     }
 
     //
@@ -486,10 +485,7 @@ export class MusicManager {
                 ];
 
                 if (playlistItemTracks && playlistItemTracks.length > 0) {
-                    let playlistState = await this.getPlaylistState(
-                        playlist.id
-                    );
-                    playlist.state = playlistState;
+                    playlist.state = this.getPlaylistTrackState(playlist.id);
                 }
                 playlist.itemType = "playlist";
                 playlist.tag = type;
@@ -1023,6 +1019,11 @@ export class MusicManager {
 
         if (playlistItemTracks && playlistItemTracks.length > 0) {
             for (let i = 0; i < playlistItemTracks.length; i++) {
+                const track: PlaylistItem = playlistItemTracks[i];
+                // check to see if this track is the current track
+                if (this.runningTrack.id === track.id) {
+                    playlistItemTracks[i].state = this.runningTrack.state;
+                }
                 playlistItemTracks[i]["playlist_id"] = playlist_id;
             }
         }

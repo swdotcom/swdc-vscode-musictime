@@ -58,6 +58,15 @@ export function createCommands(): {
     recTreePlaylistProvider.bindView(recPlaylistTreeView);
     cmds.push(connectRecommendationPlaylistTreeView(recPlaylistTreeView));
 
+    const refreshPlaylistStateCmd = commands.registerCommand(
+        "musictime.refreshPlaylistState",
+        async () => {
+            await musicMgr.refreshPlaylistState();
+            treePlaylistProvider.refresh();
+        }
+    );
+    cmds.push(refreshPlaylistStateCmd);
+
     const nextCmd = commands.registerCommand("musictime.next", () => {
         controller.nextSong();
     });
