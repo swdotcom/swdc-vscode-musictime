@@ -501,9 +501,9 @@ export function getImagesDir() {
     return dir;
 }
 
-export function displayReadmeIfNotExists() {
+export function displayReadmeIfNotExists(override = false) {
     const displayedReadme = getItem("displayedMtReadme");
-    if (!displayedReadme) {
+    if (!displayedReadme || override) {
         const readmeUri = Uri.file(getLocalREADMEFile());
 
         commands.executeCommand(
@@ -992,7 +992,10 @@ export function getPlaylistIcon(treeItem: PlaylistItem) {
     let lightPath = null;
     let darkPath = null;
 
-    if (stateVal === "playing") {
+    if (treeItem["icon"]) {
+        lightPath = path.join(resourcePath, "light", treeItem["icon"]);
+        darkPath = path.join(resourcePath, "dark", treeItem["icon"]);
+    } else if (stateVal === "playing") {
         lightPath = path.join(resourcePath, "light", "volume.svg");
         darkPath = path.join(resourcePath, "dark", "volume.svg");
     } else if (

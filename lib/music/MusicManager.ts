@@ -520,6 +520,9 @@ export class MusicManager {
             items.push(this.getConnectToSpotifyButton());
         }
 
+        // add the readme button
+        items.push(this.getReadmeButton());
+
         if (playerName === PlayerName.ItunesDesktop) {
             // add the action items specific to itunes
             items.push(this.getSwitchToSpotifyButton());
@@ -797,6 +800,21 @@ export class MusicManager {
         );
     }
 
+    // readme button
+    getReadmeButton() {
+        return this.buildActionItem(
+            "title",
+            "action",
+            "musictime.displayReadme",
+            null,
+            "Learn More",
+            "View the Music Time Readme to learn more",
+            "",
+            null,
+            "document.svg"
+        );
+    }
+
     createSpotifyDevicesButton(title, tooltip, loggedIn) {
         const button = this.buildActionItem(
             "title",
@@ -829,7 +847,8 @@ export class MusicManager {
         name,
         tooltip = "",
         itemType: string = "",
-        callback: any = null
+        callback: any = null,
+        icon: string = ""
     ) {
         let item: PlaylistItem = new PlaylistItem();
         item.tracks = new PlaylistTrackInfo();
@@ -841,7 +860,7 @@ export class MusicManager {
         item.name = name;
         item.tooltip = tooltip;
         item.itemType = itemType;
-
+        item["icon"] = icon;
         return item;
     }
 

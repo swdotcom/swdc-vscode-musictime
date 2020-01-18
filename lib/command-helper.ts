@@ -8,7 +8,8 @@ import {
 import {
     launchWebUrl,
     codeTimeExtInstalled,
-    launchMusicAnalytics
+    launchMusicAnalytics,
+    displayReadmeIfNotExists
 } from "./Util";
 import { KpmController } from "./KpmController";
 import {
@@ -66,6 +67,14 @@ export function createCommands(): {
         }
     );
     cmds.push(refreshPlaylistStateCmd);
+
+    const launchReadmeCmd = commands.registerCommand(
+        "musictime.displayReadme",
+        () => {
+            displayReadmeIfNotExists(true /*override*/);
+        }
+    );
+    cmds.push(launchReadmeCmd);
 
     const nextCmd = commands.registerCommand("musictime.next", () => {
         controller.nextSong();
