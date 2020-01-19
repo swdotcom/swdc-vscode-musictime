@@ -1042,6 +1042,8 @@ export class MusicManager {
                 // check to see if this track is the current track
                 if (this.runningTrack.id === track.id) {
                     playlistItemTracks[i].state = this.runningTrack.state;
+                } else {
+                    playlistItemTracks[i].state = TrackStatus.NotAssigned;
                 }
                 playlistItemTracks[i]["playlist_id"] = playlist_id;
             }
