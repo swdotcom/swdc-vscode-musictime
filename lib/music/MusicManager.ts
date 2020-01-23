@@ -1451,13 +1451,14 @@ export class MusicManager {
 
             playlistId = playlistResult.data.id;
 
-            await this.updateSavedPlaylists(
+            const result = await this.updateSavedPlaylists(
                 playlistId,
                 PERSONAL_TOP_SONGS_PLID,
                 PERSONAL_TOP_SONGS_NAME
             ).catch(err => {
                 logIt("Error updating music time with generated playlist ID");
             });
+            console.log("result: ", result);
         } else {
             // get the spotify playlist id from the app's existing playlist info
             playlistId = customPlaylist.id;

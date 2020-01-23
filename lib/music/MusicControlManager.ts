@@ -36,6 +36,7 @@ import {
     logIt,
     launchWebUrl,
     createSpotifyIdFromUri,
+    createUriFromTrackId,
     getMusicTimeMarkdownFile,
     getSoftwareDir,
     setItem,
@@ -626,10 +627,13 @@ export class MusicControlManager {
                     let errMsg = null;
 
                     if (matchingPlaylist.name !== "Liked Songs") {
-                        // uri:"spotify:playlist:2JHCaLTVvYjyUrCck0Uvrp" or id
+                        // uri:"spotify:track:2JHCaLTVvYjyUrCck0Uvrp" or id
+                        const trackUri =
+                            playlistItem.uri ||
+                            createUriFromTrackId(playlistItem.id);
                         const codyResponse = await addTracksToPlaylist(
                             matchingPlaylist.id,
-                            [playlistItem.uri]
+                            [trackUri]
                         );
                         errMsg = getCodyErrorMessage(codyResponse);
                     } else {
@@ -678,14 +682,14 @@ export function buildSpotifyLink(id: string, isPlaylist: boolean) {
 export async function displayMusicTimeMetricsMarkdownDashboard() {
     if (fetchingMusicTimeMetrics) {
         window.showInformationMessage(
-            `Still building Music Time dashboard, please wait...`
+            `Still generating Music Time dashboard, please wait...`
         );
         return;
     }
     fetchingMusicTimeMetrics = true;
 
     window.showInformationMessage(
-        `Building Music Time dashboard, please wait...`
+        `Generating Music Time dashboard, please wait...`
     );
 
     const musicTimeFile = getMusicTimeMarkdownFile();
