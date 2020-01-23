@@ -143,13 +143,19 @@ clipboardy@^2.1.0:
     arch "^2.1.1"
     execa "^1.0.0"
 
-cody-music@2.7.3:
-  version "2.7.3"
-  resolved "https://registry.yarnpkg.com/cody-music/-/cody-music-2.7.3.tgz#09c26f81249ef73dd86a5499216501c0a799b44b"
-  integrity sha512-VxzLs0xKmQRso8UibGnPSPxlDbx0TuOUscOwB3ZN8IQiA+JadlY1QwBXL+y0UetsdDn+JGWjddWvsNlXMgQIiQ==
+clone@2.x:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/clone/-/clone-2.1.2.tgz#1b7f4b9f591f1e8f83670401600345a02887435f"
+  integrity sha1-G39Ln1kfHo+DZwQBYANFoCiHQ18=
+
+cody-music@2.7.4:
+  version "2.7.4"
+  resolved "https://registry.yarnpkg.com/cody-music/-/cody-music-2.7.4.tgz#8f2297b0e2f4438f6b544b6eb18d1b335cc77a94"
+  integrity sha512-qtDAOiG6jF5ZKIv2wBKPw9At6CREvEQz92pAZY/kGETea99rGt/V70vECnJeE2/efp6ip/UAISk5booSbEymGw==
   dependencies:
     axios "^0.19.0"
     natural "^0.6.3"
+    node-cache "^5.1.0"
 
 combined-stream@^1.0.6:
   version "1.0.8"
@@ -398,6 +404,13 @@ nice-try@^1.0.4:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/nice-try/-/nice-try-1.0.5.tgz#a3378a7696ce7d223e88fc9b764bd7ef1089e366"
   integrity sha512-1nh45deeb5olNY7eX82BkPO7SSxR5SSYJiPTrTdFUVYwAl8CKMA5N9PjTYkHiRjisVcxcQ1HXdLhx2qxxJzLNQ==
+
+node-cache@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/node-cache/-/node-cache-5.1.0.tgz#266786c28dcec0fd34385ee29c383e6d6f1aa5de"
+  integrity sha512-gFQwYdoOztBuPlwg6DKQEf50G+gkK69aqLnw4djkmlHCzeVrLJfwvg9xl4RCAGviTIMUVoqcyoZ/V/wPEu/VVg==
+  dependencies:
+    clone "2.x"
 
 npm-run-path@^2.0.0:
   version "2.0.2"

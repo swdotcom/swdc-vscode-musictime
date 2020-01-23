@@ -2031,6 +2031,10 @@ export class MusicManager {
         }
     }
 
+    /**
+     * Transfer to this device
+     * @param computerDevice
+     */
     async transferToComputerDevice(computerDevice: PlayerDevice = null) {
         const devices: PlayerDevice[] = await getSpotifyDevices();
         if (!computerDevice) {
@@ -2044,6 +2048,12 @@ export class MusicManager {
         }
     }
 
+    /**
+     * Check if there are devices found. If so and none are
+     * active and any one of those is "Computer", then this
+     * will attempt to transfer to this device
+     * @param devices
+     */
     async activateIfDeviceIsInactive(
         devices: PlayerDevice[] = []
     ): Promise<PlayerDevice[]> {
