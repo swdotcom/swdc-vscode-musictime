@@ -523,6 +523,11 @@ export class MusicManager {
         // add the readme button
         items.push(this.getReadmeButton());
 
+        if (!needsSpotifyAccess) {
+            items.push(this.getWebAnalyticsButton());
+            items.push(this.getGenerateDashboardButton());
+        }
+
         if (playerName === PlayerName.ItunesDesktop) {
             // add the action items specific to itunes
             items.push(this.getSwitchToSpotifyButton());
@@ -574,8 +579,6 @@ export class MusicManager {
 
             // add the rest only if they don't need spotify access
             if (!needsSpotifyAccess) {
-                items.push(this.getWebAnalyticsButton());
-
                 // line break between actions and software playlist section
                 items.push(this.getLineBreakButton());
 
@@ -780,6 +783,18 @@ export class MusicManager {
         );
     }
 
+    getRecommendationConnectToSpotifyButton() {
+        // Connect Spotify to see recommendations
+        return this.buildActionItem(
+            "connectspotify",
+            "spotify",
+            "musictime.connectSpotify",
+            PlayerType.WebSpotify,
+            "Connect Spotify to see recommendations",
+            "Connect Spotify to see your playlist and track recommendations"
+        );
+    }
+
     getSwitchToSpotifyButton() {
         return this.buildActionItem(
             "title",
@@ -812,6 +827,20 @@ export class MusicManager {
             "",
             null,
             "document.svg"
+        );
+    }
+
+    getGenerateDashboardButton() {
+        return this.buildActionItem(
+            "title",
+            "action",
+            "musictime.displayDashboard",
+            null,
+            "Generate dashboard",
+            "View your latest music metrics right here in your editor",
+            "",
+            null,
+            "dashboard.png"
         );
     }
 
@@ -1873,6 +1902,9 @@ export class MusicManager {
                     items.push(item);
                 }
             }
+        } else {
+            // create the connect button
+            items.push(this.getRecommendationConnectToSpotifyButton());
         }
         return items;
     }

@@ -453,7 +453,7 @@ export class MusicControlManager {
 
         if (!needsSpotifyAccess) {
             menuOptions.items.push({
-                label: "Music Time Dashboard",
+                label: "Generate dashboard",
                 detail:
                     "View your latest music metrics right here in your editor",
                 cb: displayMusicTimeMetricsMarkdownDashboard
@@ -467,14 +467,14 @@ export class MusicControlManager {
         });
 
         menuOptions.items.push({
-            label: "Submit Feedback",
+            label: "Submit feedback",
             detail: "Send us an email at cody@software.com",
             url: "mailto:cody@software.com"
         });
 
         if (!needsSpotifyAccess) {
             menuOptions.items.push({
-                label: "See Web Analytics",
+                label: "See web analytics",
                 detail: "See music analytics in the web app",
                 command: "musictime.launchAnalytics"
             });

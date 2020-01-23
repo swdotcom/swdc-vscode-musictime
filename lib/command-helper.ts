@@ -3,7 +3,8 @@ import {
     MusicControlManager,
     connectSpotify,
     disconnectSpotify,
-    disconnectSlack
+    disconnectSlack,
+    displayMusicTimeMetricsMarkdownDashboard
 } from "./music/MusicControlManager";
 import {
     launchWebUrl,
@@ -26,6 +27,9 @@ import {
     connectRecommendationPlaylistTreeView
 } from "./music/MusicRecommendationProvider";
 
+/**
+ * add the commands to vscode....
+ */
 export function createCommands(): {
     dispose: () => void;
 } {
@@ -75,6 +79,14 @@ export function createCommands(): {
         }
     );
     cmds.push(launchReadmeCmd);
+
+    const launchDashboardCmd = commands.registerCommand(
+        "musictime.displayDashboard",
+        () => {
+            displayMusicTimeMetricsMarkdownDashboard();
+        }
+    );
+    cmds.push(launchDashboardCmd);
 
     const nextCmd = commands.registerCommand("musictime.next", () => {
         controller.nextSong();
