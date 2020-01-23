@@ -1911,6 +1911,9 @@ export class MusicManager {
     }
 
     async launchConfirm(devices: PlayerDevice[]) {
+        // this will check if it needs to activate an inactive device
+        devices = await this.activateIfDeviceIsInactive(devices);
+
         const isRunning = await this.isComputerDeviceRunning(devices);
         let playerName = this.getPlayerNameForPlayback();
         let isLaunching = false;
@@ -2028,26 +2031,57 @@ export class MusicManager {
         }
     }
 
-    async transferToComputerDevice() {
+    async transferToComputerDevice(computerDevice: PlayerDevice = null) {
         const devices: PlayerDevice[] = await getSpotifyDevices();
-        const computerDevices =
-            devices && devices.length > 0
-                ? devices.filter(d => d.type.toLowerCase() === "computer")
-                : [];
-        if (computerDevices && computerDevices.length > 0) {
-            await playSpotifyDevice(computerDevices[0].id);
+        if (!computerDevice) {
+            computerDevice =
+                devices && devices.length > 0
+                    ? devices.find(d => d.type.toLowerCase() === "computer")
+                    : null;
         }
+        if (computerDevice) {
+            await playSpotifyDevice(computerDevice.id);
+        }
+    }
+
+    async activateIfDeviceIsInactive(
+        devices: PlayerDevice[] = []
+    ): Promise<PlayerDevice[]> {
+        if (!devices || devices.length === 0) {
+            devices = await getSpotifyDevices();
+        }
+
+        if (!devices || devices.length === 0) {
+            return [];
+        }
+
+        const activeDevice: PlayerDevice = devices.find(
+            (device: PlayerDevice) => device.is_active
+        );
+        if (activeDevice) {
+            return devices;
+        }
+
+        // no active devices, activate one
+        const computerDevice: PlayerDevice = devices.find(
+            (device: PlayerDevice) => device.type.toLowerCase() === "computer"
+        );
+        if (computerDevice) {
+            await this.transferToComputerDevice(computerDevice);
+            return await getSpotifyDevices();
+        }
+        return devices;
     }
 
     async isComputerDeviceRunning(devices: PlayerDevice[]) {
         // let isRunning = await isSpotifyRunning();
 
-        const computerDevices =
+        const computerDevice =
             devices && devices.length > 0
-                ? devices.filter(
+                ? devices.find(
                       (d: PlayerDevice) => d.type.toLowerCase() === "computer"
                   )
-                : [];
+                : null;
         /**
             i.e.
             [{id:"1664aa46e86f1d3b37826bab098d45fe6eff8477"
@@ -2072,8 +2106,7 @@ export class MusicManager {
             type:"Computer",
             volume_percent:100}]
         */
-        const isRunning =
-            computerDevices && computerDevices.length > 0 ? true : false;
+        const isRunning = computerDevice ? true : false;
         return isRunning;
     }
 
