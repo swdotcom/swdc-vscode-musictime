@@ -22,6 +22,7 @@ import { MusicManager } from "./MusicManager";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { logIt, getPlaylistIcon } from "../Util";
 import { MusicControlManager } from "./MusicControlManager";
+import { ProviderItemManager } from "./ProviderItemManager";
 
 /**
  * Create the playlist tree item (root or leaf)
@@ -58,8 +59,8 @@ export const playSelectedItem = async (
 
     const launchTimeout =
         launchConfirmInfo.playerName === PlayerName.SpotifyDesktop
-            ? 4000
-            : 5000;
+            ? 5000
+            : 6000;
 
     // is this a track or playlist item?
     if (playlistItem.type === "track") {
@@ -322,6 +323,7 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
 
     async getChildren(element?: PlaylistItem): Promise<PlaylistItem[]> {
         const musicMgr: MusicManager = MusicManager.getInstance();
+        const providerItemMgr: ProviderItemManager = ProviderItemManager.getInstance();
 
         if (musicMgr.ready) {
             if (element) {
@@ -329,6 +331,10 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
                 let tracks: PlaylistItem[] = await musicMgr.getPlaylistItemTracksForPlaylistId(
                     element.id
                 );
+                if (!tracks || tracks.length === 0) {
+                    // create an item that shows there are no tracks for this playlist
+                    tracks = [providerItemMgr.getNoTracksFoundButton()];
+                }
                 return tracks;
             } else {
                 // get the top level playlist parents
@@ -344,7 +350,7 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
                 return musicMgr.currentPlaylists;
             }
         } else {
-            const loadingItem: PlaylistItem = musicMgr.getLoadingButton();
+            const loadingItem: PlaylistItem = providerItemMgr.getLoadingButton();
             return [loadingItem];
         }
     }

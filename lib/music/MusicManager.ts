@@ -70,8 +70,10 @@ import {
 import { SpotifyUser } from "cody-music/dist/lib/profile";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { MusicControlManager } from "./MusicControlManager";
-import { PlaylistManager } from "./PlaylistManager";
+import { ProviderItemManager } from "./ProviderItemManager";
+import { sortPlaylists, checkForDups, sortTracks } from "./MusicUtil";
 
+const providerItemMgr: ProviderItemManager = ProviderItemManager.getInstance();
 export class MusicManager {
     private static instance: MusicManager;
 
@@ -97,6 +99,7 @@ export class MusicManager {
     private _initialized: boolean = false;
     private _sortAlphabetically: boolean = false;
     private _recommendationTracks: Track[] = [];
+    private _trackIdsForRecommendations: string[] = [];
     private _recommendationLabel: string = "Similar to Liked Songs";
     private _currentProvider: string = "playlists"; // or "recommendations"
     private _currentRecMeta: any = {};
@@ -196,6 +199,14 @@ export class MusicManager {
 
     set recommendationTracks(recTracks: Track[]) {
         this._recommendationTracks = recTracks;
+    }
+
+    get trackIdsForRecommendations() {
+        return this._trackIdsForRecommendations;
+    }
+
+    set trackIdsForRecommendations(trackIds: string[]) {
+        this._trackIdsForRecommendations = trackIds;
     }
 
     get recommendationLabel() {
@@ -472,7 +483,7 @@ export class MusicManager {
 
         // sort
         if (this.sortAlphabetically) {
-            this.sortPlaylists(playlists);
+            sortPlaylists(playlists);
         }
 
         // go through each playlist and find out it's state
@@ -498,42 +509,44 @@ export class MusicManager {
         // if itunes, show the itunes connected button
         if (playerName === PlayerName.ItunesDesktop) {
             // add the action items specific to itunes
-            items.push(this.getItunesConnectedButton());
+            items.push(providerItemMgr.getItunesConnectedButton());
         } else if (allowSpotifyPlaylistFetch && hasSpotifyUser) {
             // show the spotify connected button if we allow playlist fetch
-            items.push(this.getSpotifyConnectedButton());
+            items.push(providerItemMgr.getSpotifyConnectedButton());
         }
 
         // add the no music time connection button if we're not online
         if (!serverIsOnline && !needsSpotifyAccess && hasSpotifyUser) {
-            items.push(this.getNoMusicTimeConnectionButton());
+            items.push(providerItemMgr.getNoMusicTimeConnectionButton());
         }
 
         // show the spotify connect premium button if they're connected and a non-premium account
         if (isNonPremiumConnectedSpotify) {
             // show the spotify premium account required button
-            items.push(this.getSpotifyPremiumAccountRequiredButton());
+            items.push(
+                providerItemMgr.getSpotifyPremiumAccountRequiredButton()
+            );
         }
 
         // add the connect to spotify if they still need to connect
         if (needsSpotifyAccess) {
-            items.push(this.getConnectToSpotifyButton());
+            items.push(providerItemMgr.getConnectToSpotifyButton());
         }
 
         // add the readme button
-        items.push(this.getReadmeButton());
+        items.push(providerItemMgr.getReadmeButton());
 
         if (!needsSpotifyAccess) {
-            items.push(this.getWebAnalyticsButton());
-            items.push(this.getGenerateDashboardButton());
+            items.push(providerItemMgr.getWebAnalyticsButton());
+            items.push(providerItemMgr.getGenerateDashboardButton());
         }
 
         if (playerName === PlayerName.ItunesDesktop) {
             // add the action items specific to itunes
-            items.push(this.getSwitchToSpotifyButton());
+            items.push(providerItemMgr.getSwitchToSpotifyButton());
 
             if (playlists.length > 0) {
-                items.push(this.getLineBreakButton());
+                items.push(providerItemMgr.getLineBreakButton());
             }
 
             playlists.forEach(item => {
@@ -565,7 +578,7 @@ export class MusicManager {
 
             if (activeDeviceInfo) {
                 // only create the active device button if we have one
-                const devicesFoundButton = this.createSpotifyDevicesButton(
+                const devicesFoundButton = providerItemMgr.createSpotifyDevicesButton(
                     activeDeviceInfo.title,
                     activeDeviceInfo.tooltip,
                     activeDeviceInfo.loggedIn
@@ -574,13 +587,13 @@ export class MusicManager {
             }
 
             if (isMac() && SHOW_ITUNES_LAUNCH_BUTTON) {
-                items.push(this.getSwitchToItunesButton());
+                items.push(providerItemMgr.getSwitchToItunesButton());
             }
 
             // add the rest only if they don't need spotify access
             if (!needsSpotifyAccess) {
                 // line break between actions and software playlist section
-                items.push(this.getLineBreakButton());
+                items.push(providerItemMgr.getLineBreakButton());
 
                 // get the custom playlist button
                 const customPlaylistButton: PlaylistItem = this.getCustomPlaylistButton();
@@ -617,18 +630,47 @@ export class MusicManager {
 
                 // add Liked Songs folder within the software playlist section
                 if (!needsSpotifyAccess) {
+                    let hasTracksFromAPlaylist = false;
+                    const likedSongsPlaylist = providerItemMgr.getSpotifyLikedPlaylistFolder();
+                    this._playlistMap[
+                        likedSongsPlaylist.id
+                    ] = likedSongsPlaylist;
+                    items.push(likedSongsPlaylist);
                     // only add the "Liked Songs" playlist if there are tracks found in that playlist
                     this.spotifyLikedSongs = await getSpotifyLikedSongs();
+
                     if (
                         this.spotifyLikedSongs &&
                         this.spotifyLikedSongs.length
                     ) {
-                        const likedSongsPlaylist = this.getSpotifyLikedPlaylistFolder();
-                        this._playlistMap[
-                            likedSongsPlaylist.id
-                        ] = likedSongsPlaylist;
-                        items.push(likedSongsPlaylist);
+                        this.trackIdsForRecommendations = this.spotifyLikedSongs.map(
+                            (track: Track) => {
+                                return track.id;
+                            }
+                        );
+                        hasTracksFromAPlaylist = true;
+                    } else {
+                        // go through the found playlists and the first one that returns more than 3 wins
+                        if (playlists && playlists.length > 0) {
+                            for (let i = 0; i < playlists.length; i++) {
+                                const playlist = playlists[i];
+                                const playlistItems: PlaylistItem[] = await this.getPlaylistItemTracksForPlaylistId(
+                                    playlist.id
+                                );
+                                if (playlistItems && playlistItems.length > 3) {
+                                    hasTracksFromAPlaylist = true;
+                                    this.trackIdsForRecommendations = playlistItems.map(
+                                        (item: PlaylistItem) => {
+                                            return item.id;
+                                        }
+                                    );
+                                    break;
+                                }
+                            }
+                        }
+                    }
 
+                    if (hasTracksFromAPlaylist) {
                         // refresh the recommendations
                         setTimeout(() => {
                             commands.executeCommand(
@@ -640,7 +682,7 @@ export class MusicManager {
 
                 // line break between software playlist section and normal playlists
                 if (playlists.length > 0) {
-                    items.push(this.getLineBreakButton());
+                    items.push(providerItemMgr.getLineBreakButton());
                 }
 
                 // normal playlists
@@ -658,239 +700,10 @@ export class MusicManager {
 
             this._spotifyPlaylists = items;
 
-            await PlaylistManager.getInstance().checkForDups();
+            await checkForDups(this.spotifyPlaylists);
         }
 
         this.ready = true;
-    }
-
-    sortPlaylists(playlists) {
-        if (playlists && playlists.length > 0) {
-            playlists.sort((a: PlaylistItem, b: PlaylistItem) => {
-                const nameA = a.name.toLowerCase(),
-                    nameB = b.name.toLowerCase();
-                if (nameA < nameB)
-                    //sort string ascending
-                    return -1;
-                if (nameA > nameB) return 1;
-                return 0; //default return value (no sorting)
-            });
-        }
-    }
-
-    sortTracks(tracks) {
-        if (tracks && tracks.length > 0) {
-            tracks.sort((a: Track, b: Track) => {
-                const nameA = a.name.toLowerCase(),
-                    nameB = b.name.toLowerCase();
-                if (nameA < nameB)
-                    //sort string ascending
-                    return -1;
-                if (nameA > nameB) return 1;
-                return 0; //default return value (no sorting)
-            });
-        }
-    }
-
-    getSpotifyLikedPlaylistFolder() {
-        const item: PlaylistItem = new PlaylistItem();
-        item.type = "playlist";
-        item.id = SPOTIFY_LIKED_SONGS_PLAYLIST_NAME;
-        item.tracks = new PlaylistTrackInfo();
-        // set set a number so it shows up
-        item.tracks.total = 1;
-        item.playerType = PlayerType.WebSpotify;
-        item.tag = "spotify-liked-songs";
-        item.itemType = "playlist";
-        item.name = SPOTIFY_LIKED_SONGS_PLAYLIST_NAME;
-        return item;
-    }
-
-    getNoMusicTimeConnectionButton() {
-        return this.buildActionItem(
-            "offline",
-            "offline",
-            null,
-            PlayerType.NotAssigned,
-            "Music Time Offline",
-            "Unable to connect to Music Time"
-        );
-    }
-
-    getSpotifyConnectedButton() {
-        return this.buildActionItem(
-            "spotifyconnected",
-            "connected",
-            null,
-            PlayerType.WebSpotify,
-            "Spotify Connected",
-            "You've connected Spotify"
-        );
-    }
-
-    getSpotifyPremiumAccountRequiredButton() {
-        return this.buildActionItem(
-            "spotifypremium",
-            "action",
-            "musictime.connectSpotify",
-            PlayerType.NotAssigned,
-            "Spotify Premium Required",
-            "Connect to your premium Spotify account to use the play, pause, next, and previous controls"
-        );
-    }
-
-    getSpotifyConnectPremiumButton() {
-        return this.buildActionItem(
-            "spotifypremium",
-            "action",
-            "musictime.connectSpotify",
-            PlayerType.NotAssigned,
-            "Connect Premium",
-            "Connect to your premium Spotify account to use the play, pause, next, and previous controls"
-        );
-    }
-
-    getItunesConnectedButton() {
-        return this.buildActionItem(
-            "itunesconnected",
-            "connected",
-            null,
-            PlayerType.MacItunesDesktop,
-            "iTunes Connected",
-            "You've connected iTunes"
-        );
-    }
-
-    getLoadingButton() {
-        return this.buildActionItem(
-            "loading",
-            "action",
-            null,
-            PlayerType.NotAssigned,
-            "Loading...",
-            "please wait"
-        );
-    }
-
-    getConnectToSpotifyButton() {
-        return this.buildActionItem(
-            "connectspotify",
-            "spotify",
-            "musictime.connectSpotify",
-            PlayerType.WebSpotify,
-            "Connect Spotify",
-            "Connect Spotify to view your playlists"
-        );
-    }
-
-    getRecommendationConnectToSpotifyButton() {
-        // Connect Spotify to see recommendations
-        return this.buildActionItem(
-            "connectspotify",
-            "spotify",
-            "musictime.connectSpotify",
-            PlayerType.WebSpotify,
-            "Connect Spotify to see recommendations",
-            "Connect Spotify to see your playlist and track recommendations"
-        );
-    }
-
-    getSwitchToSpotifyButton() {
-        return this.buildActionItem(
-            "title",
-            "spotify",
-            "musictime.launchSpotify",
-            PlayerType.WebSpotify,
-            "Launch Spotify"
-        );
-    }
-
-    getSwitchToItunesButton() {
-        return this.buildActionItem(
-            "title",
-            "itunes",
-            "musictime.launchItunes",
-            PlayerType.MacItunesDesktop,
-            "Launch iTunes"
-        );
-    }
-
-    // readme button
-    getReadmeButton() {
-        return this.buildActionItem(
-            "title",
-            "action",
-            "musictime.displayReadme",
-            null,
-            "Learn More",
-            "View the Music Time Readme to learn more",
-            "",
-            null,
-            "document.svg"
-        );
-    }
-
-    getGenerateDashboardButton() {
-        return this.buildActionItem(
-            "title",
-            "action",
-            "musictime.displayDashboard",
-            null,
-            "Generate dashboard",
-            "View your latest music metrics right here in your editor",
-            "",
-            null,
-            "dashboard.png"
-        );
-    }
-
-    createSpotifyDevicesButton(title, tooltip, loggedIn) {
-        const button = this.buildActionItem(
-            "title",
-            "spotify",
-            null,
-            PlayerType.WebSpotify,
-            title,
-            tooltip
-        );
-        button.tag = loggedIn ? "active" : "disabled";
-        return button;
-    }
-
-    getLineBreakButton() {
-        return this.buildActionItem(
-            "title",
-            "divider",
-            null,
-            PlayerType.NotAssigned,
-            "",
-            ""
-        );
-    }
-
-    buildActionItem(
-        id,
-        type,
-        command,
-        playerType: PlayerType,
-        name,
-        tooltip = "",
-        itemType: string = "",
-        callback: any = null,
-        icon: string = ""
-    ) {
-        let item: PlaylistItem = new PlaylistItem();
-        item.tracks = new PlaylistTrackInfo();
-        item.type = type;
-        item.id = id;
-        item.command = command;
-        item["cb"] = callback;
-        item.playerType = playerType;
-        item.name = name;
-        item.tooltip = tooltip;
-        item.itemType = itemType;
-        item["icon"] = icon;
-        return item;
     }
 
     //
@@ -924,7 +737,7 @@ export class MusicManager {
         if (activeDevice && activeDevice.type.toLowerCase() !== "computer") {
             // return a button to switch to this computer if we have devices
             // and none of them are of type "Computer"
-            const button = this.buildActionItem(
+            const button = providerItemMgr.buildActionItem(
                 "title",
                 "action",
                 "musictime.launchSpotify",
@@ -1177,20 +990,6 @@ export class MusicManager {
     requiresSpotifyAccess() {
         let spotifyAccessToken = getItem("spotify_access_token");
         return spotifyAccessToken ? false : true;
-    }
-
-    getWebAnalyticsButton() {
-        // See web analytics
-        let listItem: PlaylistItem = new PlaylistItem();
-        listItem.tracks = new PlaylistTrackInfo();
-        listItem.type = "action";
-        listItem.tag = "paw";
-        listItem.id = "launchmusicanalytics";
-        listItem.command = "musictime.launchAnalytics";
-        listItem.playerType = PlayerType.WebSpotify;
-        listItem.name = "See Web Analytics";
-        listItem.tooltip = "See music analytics in the web app";
-        return listItem;
     }
 
     // get the custom playlist button by checkinf if the custom playlist
@@ -1843,7 +1642,7 @@ export class MusicManager {
         );
         if (tracks && tracks.length > 0) {
             // sort them alpabeticaly
-            this.sortTracks(tracks);
+            sortTracks(tracks);
         }
         // set the manager's recommendation tracks
         this.recommendationTracks = tracks;
@@ -1879,7 +1678,7 @@ export class MusicManager {
         let items: PlaylistItem[] = [];
 
         if (!this.requiresSpotifyAccess()) {
-            const labelButton = this.buildActionItem(
+            const labelButton = providerItemMgr.buildActionItem(
                 "label",
                 "label",
                 null,
@@ -1905,7 +1704,9 @@ export class MusicManager {
             }
         } else {
             // create the connect button
-            items.push(this.getRecommendationConnectToSpotifyButton());
+            items.push(
+                providerItemMgr.getRecommendationConnectToSpotifyButton()
+            );
         }
         return items;
     }
@@ -2126,43 +1927,17 @@ export class MusicManager {
     ) {
         let trackIds = [];
 
-        let likedSongs: Track[] = null; //this.spotifyLikedSongs;
-        if (!likedSongs || likedSongs.length === 0) {
-            let playlists: PlaylistItem[] = this.currentPlaylists;
-            // filter out the ones that are true playlists
-            playlists = playlists.filter(
-                playlist =>
-                    playlist.itemType === "playlist" &&
-                    playlist.type === "playlist" &&
-                    playlist.id !== "Liked Songs"
-            );
-            if (playlists && playlists.length > 0) {
-                // use the 1st one we find
-                const codyResp: CodyResponse = await getPlaylistTracks(
-                    PlayerName.SpotifyWeb,
-                    playlists[0].id
-                );
-                const playlistItemTracks: PlaylistItem[] = this.getPlaylistItemTracksFromCodyResponse(
-                    codyResp
-                );
-                if (playlistItemTracks && playlistItemTracks.length > 0) {
-                    likedSongs = playlistItemTracks.map(item => {
-                        const track: Track = new Track();
-                        track.id = item.id;
-                        return track;
-                    });
-                }
-            }
-        }
-
-        if (likedSongs && likedSongs.length > 0) {
+        if (
+            this.trackIdsForRecommendations &&
+            this.trackIdsForRecommendations.length > 0
+        ) {
             for (let i = 0; i < likedSongSeedLimit; i++) {
-                if (likedSongs.length > offset) {
-                    trackIds.push(likedSongs[offset].id);
+                if (this.trackIdsForRecommendations.length > offset) {
+                    trackIds.push(this.trackIdsForRecommendations[offset]);
                 } else {
                     // start the offset back to the begining
                     offset = 0;
-                    trackIds.push(likedSongs[offset].id);
+                    trackIds.push(this.trackIdsForRecommendations[offset]);
                 }
                 offset++;
             }

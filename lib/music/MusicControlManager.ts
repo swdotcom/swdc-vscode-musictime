@@ -63,6 +63,7 @@ import { tmpdir } from "os";
 import { connectSlack } from "../slack/SlackControlManager";
 import { MusicManager } from "./MusicManager";
 import { MusicPlaylistManager } from "./MusicPlaylistManager";
+import { sortPlaylists } from "./MusicUtil";
 
 const moment = require("moment-timezone");
 const clipboardy = require("clipboardy");
@@ -397,16 +398,6 @@ export class MusicControlManager {
         socialShare.shareIt("facebook", { u: url, hashtag: "OneOfMyFavs" });
     }
 
-    launchSpotifyPlayer() {
-        window.showInformationMessage(
-            `After you select and play your first song in Spotify, standard controls (play, pause, next, etc.) will appear in your status bar.`,
-            ...[OK_LABEL]
-        );
-        setTimeout(() => {
-            launchPlayer(PlayerName.SpotifyWeb);
-        }, 3200);
-    }
-
     async showMenu() {
         let serverIsOnline = await serverIsAvailable();
 
@@ -605,7 +596,7 @@ export class MusicControlManager {
                 n.itemType === "playlist" && n.name !== "Software Top 40"
         );
 
-        musicMgr.sortPlaylists(playlists);
+        sortPlaylists(playlists);
 
         playlists.forEach((item: PlaylistItem) => {
             menuOptions.items.push({
@@ -656,7 +647,7 @@ export class MusicControlManager {
                     } else {
                         if (errMsg) {
                             window.showErrorMessage(
-                                `Unable to add '${playlistItem.name}' to '${playlistName}'. Please make sure you are the owner of the playlist, and there are less than 10,000 tracks in the playlist.`,
+                                `Failed to add '${playlistItem.name}' to '${playlistName}'. ${errMsg}`,
                                 ...[OK_LABEL]
                             );
                         }
