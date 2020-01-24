@@ -389,12 +389,19 @@ export class MusicManager {
         if (type === "spotify" && this._spotifyPlaylists.length > 0) {
             // build the spotify playlist
             this._spotifyPlaylists.forEach(async playlist => {
-                playlist.state = this.getPlaylistTrackState(playlist.id);
+                if (playlist.type === "playlist") {
+                    const trackStatus: TrackStatus = this.getPlaylistTrackState(
+                        playlist.id
+                    );
+                    playlist.state = trackStatus;
+                }
             });
         } else if (type === "itunes" && this._itunesPlaylists.length > 0) {
             // build the itunes playlist
             this._itunesPlaylists.forEach(async playlist => {
-                playlist.state = this.getPlaylistTrackState(playlist.id);
+                if (playlist.type === "playlist") {
+                    playlist.state = this.getPlaylistTrackState(playlist.id);
+                }
             });
         }
     }
@@ -495,9 +502,7 @@ export class MusicManager {
                     playlist.id
                 ];
 
-                if (playlistItemTracks && playlistItemTracks.length > 0) {
-                    playlist.state = this.getPlaylistTrackState(playlist.id);
-                }
+                playlist.state = this.getPlaylistTrackState(playlist.id);
                 playlist.itemType = "playlist";
                 playlist.tag = type;
             }
@@ -650,14 +655,17 @@ export class MusicManager {
                         );
                         hasTracksFromAPlaylist = true;
                     } else {
-                        // go through the found playlists and the first one that returns more than 3 wins
+                        // go through the found playlists and the first one that returns 3 or more wins
                         if (playlists && playlists.length > 0) {
                             for (let i = 0; i < playlists.length; i++) {
                                 const playlist = playlists[i];
                                 const playlistItems: PlaylistItem[] = await this.getPlaylistItemTracksForPlaylistId(
                                     playlist.id
                                 );
-                                if (playlistItems && playlistItems.length > 3) {
+                                if (
+                                    playlistItems &&
+                                    playlistItems.length >= 3
+                                ) {
                                     hasTracksFromAPlaylist = true;
                                     this.trackIdsForRecommendations = playlistItems.map(
                                         (item: PlaylistItem) => {

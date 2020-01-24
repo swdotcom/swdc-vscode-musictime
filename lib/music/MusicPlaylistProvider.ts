@@ -59,8 +59,8 @@ export const playSelectedItem = async (
 
     const launchTimeout =
         launchConfirmInfo.playerName === PlayerName.SpotifyDesktop
-            ? 5000
-            : 6000;
+            ? 4000
+            : 5000;
 
     // is this a track or playlist item?
     if (playlistItem.type === "track") {
