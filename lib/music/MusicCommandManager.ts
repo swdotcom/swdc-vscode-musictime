@@ -123,6 +123,7 @@ export class MusicCommandManager {
     }
 
     public static async syncControls(track: Track, showLoading = false) {
+        const musicMgr: MusicManager = MusicManager.getInstance();
         if (this._hideSongTimeout) {
             clearTimeout(this._hideSongTimeout);
         }
@@ -142,7 +143,7 @@ export class MusicCommandManager {
         if (showLoading) {
             this.showLoadingTrack();
         } else if (!needsSpotifyAccess && foundDevice && (pauseIt || playIt)) {
-            if (this._isLoading) {
+            if (this._isLoading || !musicMgr.isActiveTrackIconDisplayed) {
                 commands.executeCommand("musictime.refreshPlaylistState");
             }
             this._isLoading = false;

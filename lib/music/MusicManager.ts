@@ -105,6 +105,7 @@ export class MusicManager {
     private _currentRecMeta: any = {};
     private _ready: boolean = false;
     private _currentDevices: PlayerDevice[] = [];
+    private _isActiveTrackIconDisplayed: boolean = false;
 
     private constructor() {
         //
@@ -239,6 +240,14 @@ export class MusicManager {
 
     set currentDevices(devices: PlayerDevice[]) {
         this._currentDevices = devices;
+    }
+
+    get isActiveTrackIconDisplayed() {
+        return this._isActiveTrackIconDisplayed;
+    }
+
+    set isActiveTrackIconDisplayed(displayed: boolean) {
+        this._isActiveTrackIconDisplayed = displayed;
     }
 
     /**
@@ -390,7 +399,7 @@ export class MusicManager {
             // build the spotify playlist
             this._spotifyPlaylists.forEach(async playlist => {
                 if (playlist.type === "playlist") {
-                    const trackStatus: TrackStatus = this.getPlaylistTrackState(
+                    const trackStatus: TrackStatus = await this.getPlaylistTrackState(
                         playlist.id
                     );
                     playlist.state = trackStatus;
@@ -400,7 +409,9 @@ export class MusicManager {
             // build the itunes playlist
             this._itunesPlaylists.forEach(async playlist => {
                 if (playlist.type === "playlist") {
-                    playlist.state = this.getPlaylistTrackState(playlist.id);
+                    playlist.state = await this.getPlaylistTrackState(
+                        playlist.id
+                    );
                 }
             });
         }
@@ -427,16 +438,30 @@ export class MusicManager {
         }
     }
 
-    private getPlaylistTrackState(playlistId) {
+    private async getPlaylistTrackState(playlistId) {
         let playlistItemTracks: PlaylistItem[] = this._playlistTrackMap[
             playlistId
         ];
+        if (
+            !this.isActiveTrackIconDisplayed &&
+            (!playlistItemTracks || playlistItemTracks.length === 0)
+        ) {
+            playlistItemTracks = await this.getPlaylistItemTracksForPlaylistId(
+                playlistId
+            );
+        }
 
         if (playlistItemTracks && playlistItemTracks.length > 0) {
             for (let i = 0; i < playlistItemTracks.length; i++) {
                 const track: PlaylistItem = playlistItemTracks[i];
                 // check to see if this track is the current track
                 if (this.runningTrack.id === track.id) {
+                    if (
+                        this.runningTrack.state === TrackStatus.Playing ||
+                        this.runningTrack.state === TrackStatus.Paused
+                    ) {
+                        this.isActiveTrackIconDisplayed = true;
+                    }
                     return this.runningTrack.state;
                 }
             }
@@ -498,11 +523,8 @@ export class MusicManager {
             for (let i = 0; i < playlists.length; i++) {
                 let playlist = playlists[i];
                 this._playlistMap[playlist.id] = playlist;
-                let playlistItemTracks: PlaylistItem[] = this._playlistTrackMap[
-                    playlist.id
-                ];
 
-                playlist.state = this.getPlaylistTrackState(playlist.id);
+                playlist.state = await this.getPlaylistTrackState(playlist.id);
                 playlist.itemType = "playlist";
                 playlist.tag = type;
             }
