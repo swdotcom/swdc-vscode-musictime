@@ -1555,6 +1555,15 @@ export class MusicManager {
         }, 3000);
     }
 
+    async isLikedSong() {
+        const playlistId = this.selectedPlaylist
+            ? this.selectedPlaylist.id
+            : null;
+        const isLikedSong =
+            playlistId === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME ? true : false;
+        return isLikedSong;
+    }
+
     async getServerTrack(track: Track) {
         // set it to null so neither heart is displayed
         let server_track = null;

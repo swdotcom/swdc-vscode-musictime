@@ -995,9 +995,6 @@ export function getPlaylistIcon(treeItem: PlaylistItem) {
     if (treeItem["icon"]) {
         lightPath = path.join(resourcePath, "light", treeItem["icon"]);
         darkPath = path.join(resourcePath, "dark", treeItem["icon"]);
-    } else if (treeItem.state === "playing" || treeItem.state === "paused") {
-        lightPath = path.join(resourcePath, "light", "volume.svg");
-        darkPath = path.join(resourcePath, "dark", "volume.svg");
     } else if (
         treeItem.tag.includes("spotify") ||
         treeItem.type.includes("spotify")

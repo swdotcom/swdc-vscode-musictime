@@ -1,4 +1,4 @@
-import { window, StatusBarAlignment, StatusBarItem, commands } from "vscode";
+import { window, StatusBarAlignment, StatusBarItem } from "vscode";
 import { getSongDisplayName, isMac, getItem } from "../Util";
 import {
     TrackStatus,
@@ -143,9 +143,6 @@ export class MusicCommandManager {
         if (showLoading) {
             this.showLoadingTrack();
         } else if (!needsSpotifyAccess && foundDevice && (pauseIt || playIt)) {
-            if (this._isLoading || !musicMgr.isActiveTrackIconDisplayed) {
-                commands.executeCommand("musictime.refreshPlaylistState");
-            }
             this._isLoading = false;
             if (pauseIt) {
                 this.showPauseControls(track);
@@ -263,7 +260,7 @@ export class MusicCommandManager {
         if (!this._buttons || this._buttons.length === 0) {
             return;
         }
-        const { serverTrack, repeatState } = await this.getSpotifyState();
+        const { isLikedSong, repeatState } = await this.getSpotifyState();
 
         const songInfo = trackInfo
             ? `${trackInfo.name} (${trackInfo.artist})`
@@ -291,13 +288,13 @@ export class MusicCommandManager {
                 // always show the headphones menu icon
                 button.statusBarItem.show();
             } else if (isLikedButton) {
-                if (!serverIsOnline || !serverTrack || serverTrack.loved) {
+                if (isLikedSong) {
                     button.statusBarItem.hide();
                 } else {
                     button.statusBarItem.show();
                 }
             } else if (isUnLikedButton) {
-                if (serverIsOnline && serverTrack && serverTrack.loved) {
+                if (isLikedSong) {
                     button.statusBarItem.show();
                 } else {
                     button.statusBarItem.hide();
@@ -345,7 +342,7 @@ export class MusicCommandManager {
         if (!this._buttons || this._buttons.length === 0) {
             return;
         }
-        const { serverTrack, repeatState } = await this.getSpotifyState();
+        const { isLikedSong, repeatState } = await this.getSpotifyState();
 
         const songInfo = trackInfo
             ? `${trackInfo.name} (${trackInfo.artist})`
@@ -373,13 +370,13 @@ export class MusicCommandManager {
                 // always show the headphones menu icon
                 button.statusBarItem.show();
             } else if (isLikedButton) {
-                if (!serverIsOnline || !serverTrack || serverTrack.loved) {
+                if (isLikedSong) {
                     button.statusBarItem.hide();
                 } else {
                     button.statusBarItem.show();
                 }
             } else if (isUnLikedButton) {
-                if (serverIsOnline && serverTrack && serverTrack.loved) {
+                if (isLikedSong) {
                     button.statusBarItem.show();
                 } else {
                     button.statusBarItem.hide();
@@ -459,7 +456,8 @@ export class MusicCommandManager {
         const needsSpotifyAccess = musicMgr.requiresSpotifyAccess();
         const hasSpotifyPlaybackAccess = musicMgr.hasSpotifyPlaybackAccess();
         const hasSpotifyUser = musicMgr.hasSpotifyUser();
-        const serverTrack = musicMgr.serverTrack;
+        // const serverTrack = musicMgr.serverTrack;
+        const isLikedSong = await musicMgr.isLikedSong();
 
         const spotifyContext: PlayerContext = await getSpotifyPlayerContext();
         // "off", "track", "context", ""
@@ -478,7 +476,7 @@ export class MusicCommandManager {
             hasSpotifyPlaybackAccess,
             hasSpotifyUser,
             showPremiumRequired,
-            serverTrack,
+            isLikedSong,
             repeatState,
             foundDevice,
             isPlaying,

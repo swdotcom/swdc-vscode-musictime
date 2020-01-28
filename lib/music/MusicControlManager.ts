@@ -344,10 +344,9 @@ export class MusicControlManager {
             logIt(`Error updating track like state: ${resp.message}`);
         }
 
-        // get the server track. this will sync the controls
-        if (runningTrack.id === track.id) {
-            await this.musicMgr.getServerTrack(track);
-        }
+        setTimeout(() => {
+            MusicCommandManager.syncControls(runningTrack, false);
+        }, 500);
     }
 
     async copySpotifyLink(id: string, isPlaylist: boolean) {
