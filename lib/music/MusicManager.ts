@@ -42,7 +42,6 @@ import {
     SPOTIFY_CLIENT_SECRET,
     SHOW_ITUNES_LAUNCH_BUTTON,
     OK_LABEL,
-    NOT_NOW_LABEL,
     YES_LABEL
 } from "../Constants";
 import { commands, window } from "vscode";
@@ -390,33 +389,6 @@ export class MusicManager {
         setConfig(codyConfig);
     }
 
-    async refreshPlaylistState() {
-        const type =
-            this.currentPlayerName === PlayerName.ItunesDesktop
-                ? "itunes"
-                : "spotify";
-        if (type === "spotify" && this._spotifyPlaylists.length > 0) {
-            // build the spotify playlist
-            this._spotifyPlaylists.forEach(async playlist => {
-                if (playlist.type === "playlist") {
-                    const trackStatus: TrackStatus = await this.getPlaylistTrackState(
-                        playlist.id
-                    );
-                    playlist.state = trackStatus;
-                }
-            });
-        } else if (type === "itunes" && this._itunesPlaylists.length > 0) {
-            // build the itunes playlist
-            this._itunesPlaylists.forEach(async playlist => {
-                if (playlist.type === "playlist") {
-                    playlist.state = await this.getPlaylistTrackState(
-                        playlist.id
-                    );
-                }
-            });
-        }
-    }
-
     private async showItunesPlaylists(serverIsOnline) {
         let foundPlaylist = this._itunesPlaylists.find(element => {
             return element.type === "playlist";
@@ -436,37 +408,6 @@ export class MusicManager {
         if (!foundPlaylist) {
             await this.refreshPlaylistForPlayer(serverIsOnline);
         }
-    }
-
-    private async getPlaylistTrackState(playlistId) {
-        let playlistItemTracks: PlaylistItem[] = this._playlistTrackMap[
-            playlistId
-        ];
-        if (
-            !this.isActiveTrackIconDisplayed &&
-            (!playlistItemTracks || playlistItemTracks.length === 0)
-        ) {
-            playlistItemTracks = await this.getPlaylistItemTracksForPlaylistId(
-                playlistId
-            );
-        }
-
-        if (playlistItemTracks && playlistItemTracks.length > 0) {
-            for (let i = 0; i < playlistItemTracks.length; i++) {
-                const track: PlaylistItem = playlistItemTracks[i];
-                // check to see if this track is the current track
-                if (this.runningTrack.id === track.id) {
-                    if (
-                        this.runningTrack.state === TrackStatus.Playing ||
-                        this.runningTrack.state === TrackStatus.Paused
-                    ) {
-                        this.isActiveTrackIconDisplayed = true;
-                    }
-                    return this.runningTrack.state;
-                }
-            }
-        }
-        return TrackStatus.NotAssigned;
     }
 
     //
@@ -523,8 +464,6 @@ export class MusicManager {
             for (let i = 0; i < playlists.length; i++) {
                 let playlist = playlists[i];
                 this._playlistMap[playlist.id] = playlist;
-
-                playlist.state = await this.getPlaylistTrackState(playlist.id);
                 playlist.itemType = "playlist";
                 playlist.tag = type;
             }
@@ -730,7 +669,7 @@ export class MusicManager {
 
             this._spotifyPlaylists = items;
 
-            await checkForDups(this.spotifyPlaylists);
+            // await checkForDups(this.spotifyPlaylists);
         }
 
         this.ready = true;
@@ -1853,7 +1792,7 @@ export class MusicManager {
             if (selectedPlaylist.id === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME) {
                 const buttonSelection = await window.showInformationMessage(
                     `Are you sure you would like to remove ${trackItem.name} from your '${SPOTIFY_LIKED_SONGS_PLAYLIST_NAME}' playlist`,
-                    ...[NOT_NOW_LABEL, YES_LABEL]
+                    ...[YES_LABEL]
                 );
 
                 if (buttonSelection === YES_LABEL) {
@@ -1991,5 +1930,63 @@ export class MusicManager {
         const repeatState = spotifyContext ? spotifyContext.repeat_state : "";
 
         return repeatState && repeatState === "track" ? true : false;
+    }
+
+    async refreshPlaylistState() {
+        const type =
+            this.currentPlayerName === PlayerName.ItunesDesktop
+                ? "itunes"
+                : "spotify";
+        if (type === "spotify" && this._spotifyPlaylists.length > 0) {
+            // build the spotify playlist
+            this._spotifyPlaylists.forEach(async playlist => {
+                if (playlist.type === "playlist") {
+                    const trackStatus: TrackStatus = await this.getPlaylistTrackState(
+                        playlist.id
+                    );
+                    playlist.state = trackStatus;
+                }
+            });
+        } else if (type === "itunes" && this._itunesPlaylists.length > 0) {
+            // build the itunes playlist
+            this._itunesPlaylists.forEach(async playlist => {
+                if (playlist.type === "playlist") {
+                    playlist.state = await this.getPlaylistTrackState(
+                        playlist.id
+                    );
+                }
+            });
+        }
+    }
+
+    async getPlaylistTrackState(playlistId): Promise<TrackStatus> {
+        let playlistItemTracks: PlaylistItem[] = this._playlistTrackMap[
+            playlistId
+        ];
+        if (
+            !this.isActiveTrackIconDisplayed &&
+            (!playlistItemTracks || playlistItemTracks.length === 0)
+        ) {
+            playlistItemTracks = await this.getPlaylistItemTracksForPlaylistId(
+                playlistId
+            );
+        }
+
+        if (playlistItemTracks && playlistItemTracks.length > 0) {
+            for (let i = 0; i < playlistItemTracks.length; i++) {
+                const track: PlaylistItem = playlistItemTracks[i];
+                // check to see if this track is the current track
+                if (this.runningTrack.id === track.id) {
+                    if (
+                        this.runningTrack.state === TrackStatus.Playing ||
+                        this.runningTrack.state === TrackStatus.Paused
+                    ) {
+                        this.isActiveTrackIconDisplayed = true;
+                    }
+                    return this.runningTrack.state;
+                }
+            }
+        }
+        return TrackStatus.NotAssigned;
     }
 }

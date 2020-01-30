@@ -232,24 +232,15 @@ export const connectPlaylistTreeView = (view: TreeView<PlaylistItem>) => {
 
             // play it
             playSelectedItem(playlistItem, false /*isExpand*/);
-
-            // deselect it
-            try {
-                // re-select the track without focus
-                view.reveal(playlistItem, {
-                    focus: false,
-                    select: false
-                });
-            } catch (err) {
-                logIt(`Unable to deselect track: ${err.message}`);
-            }
         }),
         view.onDidChangeVisibility(e => {
             if (e.visible) {
                 if (!initializedPlaylist) {
                     // fetch the playlist
-                    commands.executeCommand("musictime.refreshPlaylist");
-                    initializedPlaylist = true;
+                    setTimeout(() => {
+                        commands.executeCommand("musictime.refreshPlaylist");
+                        initializedPlaylist = true;
+                    }, 1200);
                 }
             }
         })
@@ -344,7 +335,8 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
                     // try again if we've just initialized the plugin
                     await musicMgr.refreshPlaylists();
                     playlistChildren = musicMgr.currentPlaylists;
-                } else {
+                }
+                if (playlistChildren && playlistChildren.length > 0) {
                     initializedPlaylist = true;
                 }
                 return musicMgr.currentPlaylists;

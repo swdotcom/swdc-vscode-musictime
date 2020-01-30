@@ -53,7 +53,6 @@ import {
     GENERATE_CUSTOM_PLAYLIST_TOOLTIP,
     SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
     PERSONAL_TOP_SONGS_PLID,
-    NOT_NOW_LABEL,
     YES_LABEL,
     OK_LABEL
 } from "../Constants";
@@ -730,9 +729,9 @@ export async function connectSpotify() {
         // disconnectSpotify
         const selection = await window.showInformationMessage(
             `Connect with a different Spotify account?`,
-            ...[NOT_NOW_LABEL, YES_LABEL]
+            ...[YES_LABEL]
         );
-        if (!selection || selection === NOT_NOW_LABEL) {
+        if (!selection || selection !== YES_LABEL) {
             return;
         }
         // disconnect the current connection
@@ -759,7 +758,7 @@ export async function disconnectOauth(type: string, confirmDisconnect = true) {
     const selection = confirmDisconnect
         ? await window.showInformationMessage(
               `Are you sure you would like to disconnect ${type}?`,
-              ...[NOT_NOW_LABEL, YES_LABEL]
+              ...[YES_LABEL]
           )
         : YES_LABEL;
 
