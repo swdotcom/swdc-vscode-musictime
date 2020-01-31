@@ -95,7 +95,6 @@ export class MusicManager {
     private _buildingCustomPlaylist: boolean = false;
     private _spotifyClientId: string = "";
     private _spotifyClientSecret: string = "";
-    private _initialized: boolean = false;
     private _sortAlphabetically: boolean = false;
     private _recommendationTracks: Track[] = [];
     private _trackIdsForRecommendations: string[] = [];
@@ -115,14 +114,6 @@ export class MusicManager {
         }
 
         return MusicManager.instance;
-    }
-
-    set initialized(initializedMgr: boolean) {
-        this._initialized = initializedMgr;
-    }
-
-    get initialized() {
-        return this._initialized;
     }
 
     get musictimePlaylists() {
@@ -1398,8 +1389,6 @@ export class MusicManager {
 
         // initialize the music player
         MusicCommandManager.initialize();
-
-        this.initialized = true;
 
         commands.executeCommand("musictime.refreshPlaylist");
     }

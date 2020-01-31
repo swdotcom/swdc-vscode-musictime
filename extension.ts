@@ -121,12 +121,11 @@ export async function intializePlugin(ctx: ExtensionContext) {
     setTimeout(async () => {
         // see if there are offline song sessions to send
         await MusicStateManager.getInstance().processOfflineSongSessions();
-        // call gather music then the interval will be every 5 seconds
+    }, 1000 * 5);
+
+    // 5 second interval to check music info
+    gather_music_interval = setInterval(() => {
         MusicStateManager.getInstance().gatherMusicInfo();
-        // 5 second interval to check music info
-        gather_music_interval = setInterval(() => {
-            MusicStateManager.getInstance().gatherMusicInfo();
-        }, 1000 * 5);
     }, 1000 * 5);
 
     // show the readme if it doesn't exist

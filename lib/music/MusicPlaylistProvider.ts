@@ -40,6 +40,7 @@ const musicMgr: MusicManager = MusicManager.getInstance();
 const musicControlMgr: MusicControlManager = MusicControlManager.getInstance();
 
 let initializedPlaylist = false;
+let refresh_playlist_interval = null;
 
 export const playSelectedItem = async (
     playlistItem: PlaylistItem,
@@ -237,10 +238,15 @@ export const connectPlaylistTreeView = (view: TreeView<PlaylistItem>) => {
             if (e.visible) {
                 if (!initializedPlaylist) {
                     // fetch the playlist
-                    setTimeout(() => {
-                        commands.executeCommand("musictime.refreshPlaylist");
-                        initializedPlaylist = true;
-                    }, 1200);
+                    refresh_playlist_interval = setInterval(() => {
+                        if (!initializedPlaylist) {
+                            clearInterval(refresh_playlist_interval);
+                        } else {
+                            commands.executeCommand(
+                                "musictime.refreshPlaylist"
+                            );
+                        }
+                    }, 2000);
                 }
             }
         })
@@ -331,11 +337,8 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
                 // get the top level playlist parents
                 let playlistChildren: PlaylistItem[] =
                     musicMgr.currentPlaylists;
-                if (!playlistChildren || playlistChildren.length === 0) {
-                    // try again if we've just initialized the plugin
-                    await musicMgr.refreshPlaylists();
-                    playlistChildren = musicMgr.currentPlaylists;
-                }
+
+                // set the flag that we've initialized the playlist
                 if (playlistChildren && playlistChildren.length > 0) {
                     initializedPlaylist = true;
                 }
