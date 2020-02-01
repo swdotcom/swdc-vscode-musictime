@@ -82,17 +82,13 @@ export async function activate(ctx: ExtensionContext) {
 export async function intializePlugin(ctx: ExtensionContext) {
     logIt(`Loaded ${getPluginName()} v${getVersion()}`);
 
-    let serverIsOnline = await serverIsAvailable();
-
     //
     // add the player commands before we show the playlist
     //
     ctx.subscriptions.push(createCommands());
 
-    let musicMgr: MusicManager = null;
-
     // init the music manager and cody config
-    musicMgr = MusicManager.getInstance();
+    const musicMgr: MusicManager = MusicManager.getInstance();
 
     // This will initialize the user and spotify
     // this needs to happen first to enable spotify playlist and control logic
@@ -121,7 +117,7 @@ export async function intializePlugin(ctx: ExtensionContext) {
     setTimeout(async () => {
         // see if there are offline song sessions to send
         await MusicStateManager.getInstance().processOfflineSongSessions();
-    }, 1000 * 5);
+    }, 1000 * 3);
 
     // 5 second interval to check music info
     gather_music_interval = setInterval(() => {
@@ -132,8 +128,6 @@ export async function intializePlugin(ctx: ExtensionContext) {
     displayReadmeIfNotExists();
 
     initializeLiveshare();
-
-    sendHeartbeat("INITIALIZED", serverIsOnline);
 }
 
 function updateLiveshareTime() {

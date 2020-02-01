@@ -313,7 +313,7 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
 
         setTimeout(() => {
             // reveal the tree
-            refreshPlaylistViewIfRequired(4, true);
+            refreshPlaylistViewIfRequired(true);
         }, 4000);
     }
 }

@@ -186,25 +186,27 @@ export const playSelectedItem = async (
 };
 
 export const refreshPlaylistViewIfRequired = (
-    retryCount = 2,
-    revealWhenComplete = false
+    revealWhenComplete = false,
+    retryCount = 1
 ) => {
-    if (
-        retryCount > 0 &&
-        (!musicMgr.spotifyPlaylists || musicMgr.spotifyPlaylists.length === 0)
-    ) {
+    if (!musicMgr.spotifyPlaylists || musicMgr.spotifyPlaylists.length === 0) {
         commands.executeCommand("musictime.refreshPlaylist");
-        setTimeout(() => {
-            if (
-                !musicMgr.spotifyPlaylists ||
-                musicMgr.spotifyPlaylists.length === 0
-            ) {
-                retryCount--;
-                refreshPlaylistViewIfRequired(retryCount);
-            } else if (revealWhenComplete) {
-                commands.executeCommand("musictime.revealTree");
-            }
-        }, 2500);
+        if (retryCount > 0) {
+            setTimeout(() => {
+                if (
+                    !musicMgr.spotifyPlaylists ||
+                    musicMgr.spotifyPlaylists.length === 0
+                ) {
+                    retryCount--;
+                    refreshPlaylistViewIfRequired(
+                        revealWhenComplete,
+                        retryCount
+                    );
+                } else if (revealWhenComplete) {
+                    commands.executeCommand("musictime.revealTree");
+                }
+            }, 4000);
+        }
     } else if (revealWhenComplete) {
         commands.executeCommand("musictime.revealTree");
     }
