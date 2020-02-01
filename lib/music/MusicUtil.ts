@@ -4,6 +4,7 @@ import { window, commands } from "vscode";
 import { MusicManager } from "./MusicManager";
 import { getItem } from "../Util";
 import { populateSpotifyPlaylists } from "../DataController";
+import { MusicDataManager } from "./MusicDataManager";
 
 // duplicate music time playlists names:
 // "My AI Top 40", "My Custom Top 40", "Custom Top 40", "AI-generated Custom Top 40", "Software Top 40"
@@ -107,14 +108,14 @@ export function sortTracks(tracks) {
 }
 
 export async function buildTracksForRecommendations(playlists) {
-    let musicMgr: MusicManager = MusicManager.getInstance();
-
+    const dataMgr: MusicDataManager = MusicDataManager.getInstance();
+    const musicMgr: MusicManager = MusicManager.getInstance();
     let trackIds = [];
     let foundTracksForRec = false;
 
     // build tracks for recommendations
-    if (musicMgr.spotifyLikedSongs && musicMgr.spotifyLikedSongs.length) {
-        trackIds = musicMgr.spotifyLikedSongs.map((track: Track) => {
+    if (dataMgr.spotifyLikedSongs && dataMgr.spotifyLikedSongs.length) {
+        trackIds = dataMgr.spotifyLikedSongs.map((track: Track) => {
             return track.id;
         });
         foundTracksForRec = true;
@@ -138,7 +139,7 @@ export async function buildTracksForRecommendations(playlists) {
         }
     }
 
-    musicMgr.trackIdsForRecommendations = trackIds;
+    dataMgr.trackIdsForRecommendations = trackIds;
 
     if (foundTracksForRec) {
         // refresh the recommendations
@@ -184,10 +185,10 @@ export function requiresSpotifyAccess() {
 export function getMusicTimePlaylistByTypeId(
     playlistTypeId: number
 ): PlaylistItem {
-    const musicMgr: MusicManager = MusicManager.getInstance();
-    if (musicMgr.generatedPlaylists.length > 0) {
-        for (let i = 0; i < musicMgr.generatedPlaylists.length; i++) {
-            const playlist = musicMgr.generatedPlaylists[i];
+    const dataMgr: MusicDataManager = MusicDataManager.getInstance();
+    if (dataMgr.generatedPlaylists.length > 0) {
+        for (let i = 0; i < dataMgr.generatedPlaylists.length; i++) {
+            const playlist = dataMgr.generatedPlaylists[i];
             const typeId = playlist.playlistTypeId;
             if (typeId === playlistTypeId) {
                 return playlist;

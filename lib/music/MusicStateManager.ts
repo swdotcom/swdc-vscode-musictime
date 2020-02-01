@@ -24,6 +24,7 @@ import { KpmController } from "../KpmController";
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { getDataRows } from "../OfflineManager";
+import { MusicDataManager } from "./MusicDataManager";
 
 export class MusicStateManager {
     static readonly WINDOWS_SPOTIFY_TRACK_FIND: string =
@@ -42,13 +43,8 @@ export class MusicStateManager {
     };
     private gatheringSong: boolean = false;
 
-    private musicMgr: MusicManager;
-
     private constructor() {
         // private to prevent non-singleton usage
-        if (!this.musicMgr) {
-            this.musicMgr = MusicManager.getInstance();
-        }
     }
 
     static getInstance() {
@@ -63,7 +59,8 @@ export class MusicStateManager {
      * @param track
      */
     private updateTrackPlaylistId(track: Track) {
-        const selectedPlaylist = this.musicMgr.selectedPlaylist;
+        const selectedPlaylist = MusicDataManager.getInstance()
+            .selectedPlaylist;
         if (selectedPlaylist) {
             track["playlistId"] = selectedPlaylist.id;
         }
@@ -118,6 +115,7 @@ export class MusicStateManager {
      * }
      */
     private getChangeStatus(playingTrack: Track, utcLocalTimes: any): any {
+        const dataMgr: MusicDataManager = MusicDataManager.getInstance();
         const existingTrackId = this.existingTrack.id || null;
         const playingTrackId = playingTrack.id || null;
         const isValidExistingTrack = existingTrackId ? true : false;
@@ -128,8 +126,8 @@ export class MusicStateManager {
 
         const endInRange = this.isEndInRange(playingTrack);
 
-        const playlistId = this.musicMgr.selectedPlaylist
-            ? this.musicMgr.selectedPlaylist.id
+        const playlistId = dataMgr.selectedPlaylist
+            ? dataMgr.selectedPlaylist.id
             : null;
         const isLikedSong =
             playlistId === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME ? true : false;
@@ -197,6 +195,8 @@ export class MusicStateManager {
         if (this.gatheringSong) {
             return;
         }
+
+        const dataMgr: MusicDataManager = MusicDataManager.getInstance();
 
         this.gatheringSong = true;
         try {
@@ -284,10 +284,10 @@ export class MusicStateManager {
             }
 
             // update the running track
-            this.musicMgr.runningTrack = this.existingTrack;
+            dataMgr.runningTrack = this.existingTrack;
 
             // update the music time status bar
-            MusicCommandManager.syncControls(this.musicMgr.runningTrack, false);
+            MusicCommandManager.syncControls(dataMgr.runningTrack, false);
         } catch (e) {
             const errMsg = e.message || e;
             logIt(`Unexpected track state processing error: ${errMsg}`);
@@ -297,10 +297,12 @@ export class MusicStateManager {
     }
 
     private async playNextLikedSpotifyCheck() {
+        const dataMgr: MusicDataManager = MusicDataManager.getInstance();
+        const musicMgr: MusicManager = MusicManager.getInstance();
         // If the current playlist is the Liked Songs,
         // check if we should start the next track
-        const playlistId = this.musicMgr.selectedPlaylist
-            ? this.musicMgr.selectedPlaylist.id
+        const playlistId = dataMgr.selectedPlaylist
+            ? dataMgr.selectedPlaylist.id
             : "";
         if (!playlistId || playlistId !== SPOTIFY_LIKED_SONGS_PLAYLIST_NAME) {
             // no need to go further, it's not the liked songs playlist
@@ -312,8 +314,8 @@ export class MusicStateManager {
             return;
         }
 
-        const computerDeviceRunning: boolean = await this.musicMgr.isComputerDeviceRunning(
-            this.musicMgr.currentDevices
+        const computerDeviceRunning: boolean = await musicMgr.isComputerDeviceRunning(
+            dataMgr.currentDevices
         );
         if (!computerDeviceRunning) {
             // they've closed the player, don't try to play again
@@ -321,7 +323,7 @@ export class MusicStateManager {
         }
 
         // play the next song
-        await this.musicMgr.playNextLikedSong();
+        await musicMgr.playNextLikedSong();
     }
 
     public async gatherCodingDataAndSendSongSession(songSession) {
@@ -371,7 +373,9 @@ export class MusicStateManager {
             );
         } else if (!genre) {
             // fetch the genre
-            const artistName = this.musicMgr.getArtist(songSession);
+            const artistName = MusicManager.getInstance().getArtist(
+                songSession
+            );
             const songName = songSession.name;
             const artistId =
                 songSession.artists && songSession.artists.length

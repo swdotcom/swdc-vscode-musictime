@@ -17,9 +17,9 @@ import {
 } from "cody-music";
 import { getPlaylistIcon } from "../Util";
 import { MusicManager } from "./MusicManager";
-import { RECOMMENDATIONS_PROVIDER } from "../Constants";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { MusicControlManager } from "./MusicControlManager";
+import { MusicDataManager } from "./MusicDataManager";
 
 const musicMgr: MusicManager = MusicManager.getInstance();
 const musicControlMgr: MusicControlManager = MusicControlManager.getInstance();
@@ -49,7 +49,10 @@ const playRecommendationTrack = async (track: PlaylistItem) => {
             ? 4000
             : 5000;
 
-    MusicCommandManager.syncControls(musicMgr.runningTrack, true /*loading*/);
+    MusicCommandManager.syncControls(
+        MusicDataManager.getInstance().runningTrack,
+        true /*loading*/
+    );
 
     if (launchConfirmInfo.isLaunching) {
         setTimeout(async () => {
@@ -139,7 +142,7 @@ export class MusicRecommendationProvider
 
     async getChildren(element?: PlaylistItem): Promise<PlaylistItem[]> {
         const recTrackPlaylistItems = musicMgr.convertTracksToPlaylistItems(
-            musicMgr.recommendationTracks
+            MusicDataManager.getInstance().recommendationTracks
         );
         return recTrackPlaylistItems;
     }

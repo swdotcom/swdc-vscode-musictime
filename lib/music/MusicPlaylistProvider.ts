@@ -23,6 +23,7 @@ import { MusicCommandManager } from "./MusicCommandManager";
 import { logIt, getPlaylistIcon } from "../Util";
 import { MusicControlManager } from "./MusicControlManager";
 import { ProviderItemManager } from "./ProviderItemManager";
+import { MusicDataManager } from "./MusicDataManager";
 
 /**
  * Create the playlist tree item (root or leaf)
@@ -37,6 +38,7 @@ const createPlaylistTreeItem = (
 };
 
 const musicMgr: MusicManager = MusicManager.getInstance();
+const dataMgr: MusicDataManager = MusicDataManager.getInstance();
 const musicControlMgr: MusicControlManager = MusicControlManager.getInstance();
 
 export const playSelectedItem = async (
@@ -51,7 +53,7 @@ export const playSelectedItem = async (
     }
 
     // let the congtrols know we're loading
-    MusicCommandManager.syncControls(musicMgr.runningTrack, true /*loading*/);
+    MusicCommandManager.syncControls(dataMgr.runningTrack, true /*loading*/);
 
     const launchTimeout =
         launchConfirmInfo.playerName === PlayerName.SpotifyDesktop
@@ -63,21 +65,21 @@ export const playSelectedItem = async (
         let currentPlaylistId = playlistItem["playlist_id"];
 
         // !important! set the selected track
-        musicMgr.selectedTrackItem = playlistItem;
+        dataMgr.selectedTrackItem = playlistItem;
 
-        if (!musicMgr.selectedPlaylist) {
+        if (!dataMgr.selectedPlaylist) {
             // make sure we have a selected playlist
             const playlist: PlaylistItem = await musicMgr.getPlaylistById(
                 currentPlaylistId
             );
-            musicMgr.selectedPlaylist = playlist;
+            dataMgr.selectedPlaylist = playlist;
         }
 
         if (playlistItem.playerType === PlayerType.MacItunesDesktop) {
             // ITUNES
             const pos: number = playlistItem.position || 1;
             await playItunesTrackNumberInPlaylist(
-                musicMgr.selectedPlaylist.name,
+                dataMgr.selectedPlaylist.name,
                 pos
             );
         } else if (launchConfirmInfo.playerName === PlayerName.SpotifyDesktop) {
@@ -109,11 +111,11 @@ export const playSelectedItem = async (
         }
     } else {
         // !important! set the selected playlist
-        musicMgr.selectedPlaylist = playlistItem;
+        dataMgr.selectedPlaylist = playlistItem;
 
         if (!isExpand) {
             // it's a play request, not just an expand. get the tracks
-            const tracks: PlaylistItem[] = await MusicManager.getInstance().getPlaylistItemTracksForPlaylistId(
+            const tracks: PlaylistItem[] = await musicMgr.getPlaylistItemTracksForPlaylistId(
                 playlistItem.id
             );
 
@@ -127,20 +129,20 @@ export const playSelectedItem = async (
             }
 
             // !important! set the selected track now since it's not null
-            musicMgr.selectedTrackItem = selectedTrack;
+            dataMgr.selectedTrackItem = selectedTrack;
 
             if (playlistItem.playerType === PlayerType.MacItunesDesktop) {
                 const pos: number = 1;
                 if (launchConfirmInfo.isLaunching) {
                     setTimeout(() => {
                         playItunesTrackNumberInPlaylist(
-                            musicMgr.selectedPlaylist.name,
+                            dataMgr.selectedPlaylist.name,
                             pos
                         );
                     }, launchTimeout);
                 } else {
                     playItunesTrackNumberInPlaylist(
-                        musicMgr.selectedPlaylist.name,
+                        dataMgr.selectedPlaylist.name,
                         pos
                     );
                 }
@@ -184,7 +186,7 @@ export const playSelectedItem = async (
 };
 
 export const refreshPlaylistViewIfRequired = async () => {
-    if (!musicMgr.spotifyPlaylists || musicMgr.spotifyPlaylists.length === 0) {
+    if (!dataMgr.spotifyPlaylists || dataMgr.spotifyPlaylists.length === 0) {
         await musicMgr.refreshPlaylists();
     }
     commands.executeCommand("musictime.revealTree");
@@ -224,7 +226,7 @@ export const connectPlaylistTreeView = (view: TreeView<PlaylistItem>) => {
             const selectedPlaylist = await musicMgr.getPlaylistById(
                 currentPlaylistId
             );
-            musicMgr.selectedPlaylist = selectedPlaylist;
+            dataMgr.selectedPlaylist = selectedPlaylist;
 
             // play it
             playSelectedItem(playlistItem, false /*isExpand*/);
@@ -281,8 +283,8 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
 
     async revealTree() {
         if (
-            !musicMgr.spotifyPlaylists ||
-            musicMgr.spotifyPlaylists.length === 0
+            !dataMgr.spotifyPlaylists ||
+            dataMgr.spotifyPlaylists.length === 0
         ) {
             await musicMgr.refreshPlaylists();
         }
@@ -328,7 +330,7 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
         const musicMgr: MusicManager = MusicManager.getInstance();
         const providerItemMgr: ProviderItemManager = ProviderItemManager.getInstance();
 
-        if (musicMgr.ready) {
+        if (dataMgr.ready) {
             if (element) {
                 // return the playlist tracks
                 let tracks: PlaylistItem[] = await musicMgr.getPlaylistItemTracksForPlaylistId(

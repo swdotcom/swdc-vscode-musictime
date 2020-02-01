@@ -19,6 +19,7 @@ import {
     getMusicTimePlaylistByTypeId
 } from "./MusicUtil";
 import { MusicManager } from "./MusicManager";
+import { MusicDataManager } from "./MusicDataManager";
 
 export class ProviderItemManager {
     private static instance: ProviderItemManager;
@@ -294,7 +295,7 @@ export class ProviderItemManager {
             : REFRESH_CUSTOM_PLAYLIST_TOOLTIP;
 
         if (
-            MusicManager.getInstance().currentPlayerName !==
+            MusicDataManager.getInstance().currentPlayerName !==
                 PlayerName.ItunesDesktop &&
             !requiresSpotifyAccess()
         ) {

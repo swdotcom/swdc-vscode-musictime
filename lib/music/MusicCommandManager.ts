@@ -11,6 +11,7 @@ import { MusicPlaylistProvider } from "./MusicPlaylistProvider";
 import { MusicManager } from "./MusicManager";
 import { serverIsAvailable } from "../DataController";
 import { requiresSpotifyAccess } from "./MusicUtil";
+import { MusicDataManager } from "./MusicDataManager";
 
 export interface Button {
     /**
@@ -116,7 +117,7 @@ export class MusicCommandManager {
         );
 
         const musicMgr: MusicManager = MusicManager.getInstance();
-        await this.syncControls(musicMgr.runningTrack);
+        await this.syncControls(MusicDataManager.getInstance().runningTrack);
     }
 
     public static initiateProgress(progressLabel: string) {
@@ -439,7 +440,6 @@ export class MusicCommandManager {
 
     private static getMusicMenuTooltip() {
         const name = getItem("name");
-        const musicMgr: MusicManager = MusicManager.getInstance();
         const needsSpotifyAccess = requiresSpotifyAccess();
         if (needsSpotifyAccess) {
             return "Connect Spotify";
@@ -466,7 +466,8 @@ export class MusicCommandManager {
         const foundDevice =
             spotifyContext && spotifyContext.device ? true : false;
         const type =
-            musicMgr.currentPlayerName === PlayerName.ItunesDesktop
+            MusicDataManager.getInstance().currentPlayerName ===
+            PlayerName.ItunesDesktop
                 ? "itunes"
                 : "spotify";
         const showPremiumRequired =

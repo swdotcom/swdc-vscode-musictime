@@ -28,6 +28,7 @@ import {
 } from "cody-music";
 import { MusicManager } from "./music/MusicManager";
 import { refreshPlaylistViewIfRequired } from "./music/MusicPlaylistProvider";
+import { MusicDataManager } from "./music/MusicDataManager";
 const moment = require("moment-timezone");
 
 let loggedInCacheState = null;
@@ -275,7 +276,7 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
             refetchSpotifyConnectStatusLazily(tryCountUntilFound);
         }
     } else {
-        const musicMgr = MusicManager.getInstance();
+        const dataMgr = MusicDataManager.getInstance();
 
         // update the login status
         // await getUserStatus(serverIsOnline, true /*ignoreCache*/);
@@ -288,10 +289,10 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
         // only add the "Liked Songs" playlist if there are tracks found in that playlist
         await populateLikedSongs();
 
-        if (musicMgr.spotifyLikedSongs) {
+        if (dataMgr.spotifyLikedSongs) {
             let nowTime = getNowTimes();
             let startingTime = moment().unix();
-            musicMgr.spotifyLikedSongs.forEach((track: Track) => {
+            dataMgr.spotifyLikedSongs.forEach((track: Track) => {
                 track["playlistId"] = "Liked Songs";
                 track.loved = true;
                 track["start"] = startingTime;
@@ -312,7 +313,7 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
         }
 
         // send the top spotify songs from the users playlists to help seed song sessions
-        seedLikedSongSessions(musicMgr.spotifyLikedSongs);
+        seedLikedSongSessions(dataMgr.spotifyLikedSongs);
 
         await spotifyPlaylistsP;
 
@@ -327,11 +328,11 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
 }
 
 export async function populateLikedSongs() {
-    MusicManager.getInstance().spotifyLikedSongs = await getSpotifyLikedSongs();
+    MusicDataManager.getInstance().spotifyLikedSongs = await getSpotifyLikedSongs();
 }
 
 export async function populateSpotifyPlaylists() {
-    MusicManager.getInstance().rawPlaylists = await getPlaylists(
+    MusicDataManager.getInstance().rawPlaylists = await getPlaylists(
         PlayerName.SpotifyWeb,
         {
             all: true
