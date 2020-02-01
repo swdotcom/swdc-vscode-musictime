@@ -952,12 +952,6 @@ export function getPlaylistIcon(treeItem: PlaylistItem) {
         treeItem.state !== TrackStatus.Playing ? "notplaying" : "playing";
     let contextValue = "";
 
-    if (treeItem.itemType === "playlist" && treeItem.name === "Liked Songs") {
-        console.log(
-            `${treeItem.itemType} - ${treeItem.name} - ${treeItem.state}`
-        );
-    }
-
     // itemType will be either: track | playlist
     // type will be either: connected | action | recommendation | label | track | playlist | itunes | spotify
     // tag will be either: action | paw | spotify | spotify-liked-songs | active

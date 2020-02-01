@@ -1,6 +1,7 @@
 import { PlaylistItem, deletePlaylist, Track } from "cody-music";
 import { NOT_NOW_LABEL, OK_LABEL } from "../Constants";
 import { window, commands } from "vscode";
+import { MusicManager } from "./MusicManager";
 
 // duplicate music time playlists names:
 // "My AI Top 40", "My Custom Top 40", "Custom Top 40", "AI-generated Custom Top 40", "Software Top 40"
@@ -97,5 +98,45 @@ export function sortTracks(tracks) {
             if (nameA > nameB) return 1;
             return 0; //default return value (no sorting)
         });
+    }
+}
+
+export async function buildTracksForRecommendations(playlists) {
+    let foundTracksForRec = false;
+    // build tracks for recommendations
+    if (this.spotifyLikedSongs && this.spotifyLikedSongs.length) {
+        this.trackIdsForRecommendations = this.spotifyLikedSongs.map(
+            (track: Track) => {
+                return track.id;
+            }
+        );
+        foundTracksForRec = true;
+    } else {
+        // go through the found playlists and the first one that returns 3 or more wins
+        if (playlists && playlists.length > 0) {
+            for (let i = 0; i < playlists.length; i++) {
+                const playlist = playlists[i];
+
+                const playlistItems: PlaylistItem[] = await MusicManager.getInstance().getPlaylistItemTracksForPlaylistId(
+                    playlist.id
+                );
+                if (playlistItems && playlistItems.length >= 3) {
+                    foundTracksForRec = true;
+                    this.trackIdsForRecommendations = playlistItems.map(
+                        (item: PlaylistItem) => {
+                            return item.id;
+                        }
+                    );
+                    break;
+                }
+            }
+        }
+    }
+
+    if (foundTracksForRec) {
+        // refresh the recommendations
+        setTimeout(() => {
+            commands.executeCommand("musictime.refreshRecommendations");
+        }, 2000);
     }
 }

@@ -273,7 +273,7 @@ export class MusicStateManager {
             // check if we should start the next track
             // {isNewTrack, sendSongSession, initiateNextLikedSong}
             if (changeStatus.initiateNextLikedSong) {
-                await this.playNextLikedSpotifyCheck(changeStatus);
+                await this.playNextLikedSpotifyCheck();
             }
 
             // set the start for the playing track
@@ -296,7 +296,7 @@ export class MusicStateManager {
         this.gatheringSong = false;
     }
 
-    private async playNextLikedSpotifyCheck(changeStatus) {
+    private async playNextLikedSpotifyCheck() {
         // If the current playlist is the Liked Songs,
         // check if we should start the next track
         const playlistId = this.musicMgr.selectedPlaylist

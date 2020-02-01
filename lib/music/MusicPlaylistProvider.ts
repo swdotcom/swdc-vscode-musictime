@@ -53,8 +53,6 @@ export const playSelectedItem = async (
     // let the congtrols know we're loading
     MusicCommandManager.syncControls(musicMgr.runningTrack, true /*loading*/);
 
-    musicMgr.currentProvider = PLAYLISTS_PROVIDER;
-
     const launchTimeout =
         launchConfirmInfo.playerName === PlayerName.SpotifyDesktop
             ? 4000

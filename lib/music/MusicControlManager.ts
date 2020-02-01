@@ -416,8 +416,6 @@ export class MusicControlManager {
         if (!needsSpotifyAccess) {
             // check if we already have a playlist
             const savedPlaylists: PlaylistItem[] = musicMgr.savedPlaylists;
-            const hasSavedPlaylists =
-                savedPlaylists && savedPlaylists.length > 0;
 
             // check if they've generated a playlist yet
             const customPlaylist = musicMgr.getMusicTimePlaylistByTypeId(
@@ -431,7 +429,7 @@ export class MusicControlManager {
                 ? GENERATE_CUSTOM_PLAYLIST_TOOLTIP
                 : REFRESH_CUSTOM_PLAYLIST_TOOLTIP;
 
-            if (!hasSavedPlaylists) {
+            if (!savedPlaylists || savedPlaylists.length === 0) {
                 // show the generate playlist menu item
                 menuOptions.items.push({
                     label: personalPlaylistLabel,

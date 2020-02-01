@@ -51,8 +51,6 @@ const playRecommendationTrack = async (track: PlaylistItem) => {
 
     MusicCommandManager.syncControls(musicMgr.runningTrack, true /*loading*/);
 
-    musicMgr.currentProvider = RECOMMENDATIONS_PROVIDER;
-
     if (launchConfirmInfo.isLaunching) {
         setTimeout(async () => {
             await musicControlMgr.playSpotifyByTrack(track, devices);

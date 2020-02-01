@@ -70,21 +70,18 @@ import { SpotifyUser } from "cody-music/dist/lib/profile";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { MusicControlManager } from "./MusicControlManager";
 import { ProviderItemManager } from "./ProviderItemManager";
-import { sortPlaylists, sortTracks } from "./MusicUtil";
+import {
+    sortPlaylists,
+    sortTracks,
+    buildTracksForRecommendations
+} from "./MusicUtil";
 
 const providerItemMgr: ProviderItemManager = ProviderItemManager.getInstance();
 export class MusicManager {
     private static instance: MusicManager;
 
-    private _itunesPlaylists: PlaylistItem[] = [];
-    private _spotifyPlaylists: PlaylistItem[] = [];
-    private _playlistMap: {} = {};
-    private _savedPlaylists: PlaylistItem[] = [];
-    private _musictimePlaylists: PlaylistItem[] = [];
     private _userTopSongs: any[] = [];
     private _playlistTrackMap: any = {};
-    private _runningTrack: Track = new Track();
-    private _spotifyLikedSongs: Track[] = [];
     // default to starting with spotify
     private _currentPlayerName: PlayerName = PlayerName.SpotifyWeb;
     private _selectedTrackItem: PlaylistItem = null;
@@ -96,11 +93,17 @@ export class MusicManager {
     private _spotifyClientId: string = "";
     private _spotifyClientSecret: string = "";
     private _sortAlphabetically: boolean = false;
-    private _recommendationTracks: Track[] = [];
-    private _trackIdsForRecommendations: string[] = [];
-    private _recommendationLabel: string = "Similar to Liked Songs";
-    private _currentProvider: string = "playlists"; // or "recommendations"
 
+    public playlistMap: {} = {};
+    public spotifyLikedSongs: Track[] = [];
+    public generatedPlaylists: PlaylistItem[] = [];
+    public runningTrack: Track = new Track();
+    public savedPlaylists: PlaylistItem[] = [];
+    public recommendationTracks: Track[] = [];
+    public trackIdsForRecommendations: string[] = [];
+    public itunesPlaylists: PlaylistItem[] = [];
+    public spotifyPlaylists: PlaylistItem[] = [];
+    public recommendationLabel: string = "Similar to Liked Songs";
     public currentRecMeta: any = {};
     public ready: boolean = false;
     public currentDevices: PlayerDevice[] = [];
@@ -115,26 +118,6 @@ export class MusicManager {
         }
 
         return MusicManager.instance;
-    }
-
-    get musictimePlaylists() {
-        return this._musictimePlaylists;
-    }
-
-    set runningTrack(track: Track) {
-        this._runningTrack = track;
-    }
-
-    get runningTrack(): Track {
-        return this._runningTrack;
-    }
-
-    get savedPlaylists(): PlaylistItem[] {
-        return this._savedPlaylists;
-    }
-
-    set savedPlaylists(playlists: PlaylistItem[]) {
-        this._savedPlaylists = playlists;
     }
 
     get userTopSongs(): PlaylistItem[] {
@@ -171,46 +154,6 @@ export class MusicManager {
 
     set sortAlphabetically(sortAlpha: boolean) {
         this._sortAlphabetically = sortAlpha;
-    }
-
-    get spotifyLikedSongs() {
-        return this._spotifyLikedSongs;
-    }
-
-    set spotifyLikedSongs(likedSongs: Track[]) {
-        this._spotifyLikedSongs = likedSongs;
-    }
-
-    get recommendationTracks() {
-        return this._recommendationTracks;
-    }
-
-    set recommendationTracks(recTracks: Track[]) {
-        this._recommendationTracks = recTracks;
-    }
-
-    get trackIdsForRecommendations() {
-        return this._trackIdsForRecommendations;
-    }
-
-    set trackIdsForRecommendations(trackIds: string[]) {
-        this._trackIdsForRecommendations = trackIds;
-    }
-
-    get recommendationLabel() {
-        return this._recommendationLabel;
-    }
-
-    set recommendationLabel(label: string) {
-        this._recommendationLabel = label;
-    }
-
-    get currentProvider() {
-        return this._currentProvider;
-    }
-
-    set currentProvider(provider: string) {
-        this._currentProvider = provider;
     }
 
     /**
@@ -253,37 +196,33 @@ export class MusicManager {
     get currentPlaylists(): PlaylistItem[] {
         if (this._currentPlayerName === PlayerName.ItunesDesktop) {
             // go through each playlist and find out it's state
-            if (this._itunesPlaylists && this._itunesPlaylists.length) {
-                this._itunesPlaylists.forEach((item: PlaylistItem) => {
+            if (this.itunesPlaylists && this.itunesPlaylists.length) {
+                this.itunesPlaylists.forEach((item: PlaylistItem) => {
                     if (item.type === "playlist") {
-                        this._playlistMap[item.id] = item;
+                        this.playlistMap[item.id] = item;
                     }
                 });
             }
-            return this._itunesPlaylists;
+            return this.itunesPlaylists;
         }
-        if (this._spotifyPlaylists && this._spotifyPlaylists.length) {
-            this._spotifyPlaylists.forEach((item: PlaylistItem) => {
+        if (this.spotifyPlaylists && this.spotifyPlaylists.length) {
+            this.spotifyPlaylists.forEach((item: PlaylistItem) => {
                 if (item.type === "playlist") {
-                    this._playlistMap[item.id] = item;
+                    this.playlistMap[item.id] = item;
                 }
             });
         }
-        return this._spotifyPlaylists;
-    }
-
-    get spotifyPlaylists(): PlaylistItem[] {
-        return this._spotifyPlaylists;
+        return this.spotifyPlaylists;
     }
 
     //
     // Clear all of the playlists and tracks
     //
     clearPlaylists() {
-        this._itunesPlaylists = [];
-        this._spotifyPlaylists = [];
-        this._playlistMap = {};
-        this._musictimePlaylists = [];
+        this.itunesPlaylists = [];
+        this.spotifyPlaylists = [];
+        this.playlistMap = {};
+        this.generatedPlaylists = [];
         this._playlistTrackMap = {};
     }
 
@@ -292,8 +231,8 @@ export class MusicManager {
     }
 
     clearSpotify() {
-        this._spotifyPlaylists = [];
-        this._playlistMap = {};
+        this.spotifyPlaylists = [];
+        this.playlistMap = {};
         this._playlistTrackMap = {};
     }
 
@@ -321,13 +260,13 @@ export class MusicManager {
         } else {
             await this.refreshPlaylistForPlayer(serverIsOnline);
         }
-        await MusicCommandManager.syncControls(this._runningTrack);
+        await MusicCommandManager.syncControls(this.runningTrack);
 
         this.buildingPlaylists = false;
     }
 
     getPlaylistById(playlist_id: string) {
-        return this._playlistMap[playlist_id];
+        return this.playlistMap[playlist_id];
     }
 
     /**
@@ -358,17 +297,33 @@ export class MusicManager {
         // states: [NOT_CONNECTED, MAC_PREMIUM, MAC_NON_PREMIUM, PC_PREMIUM, PC_NON_PREMIUM]
         const CONNECTED = !this.requiresSpotifyAccess() ? true : false;
         const IS_PREMIUM = this.isSpotifyPremium() ? true : false;
-        const HAS_SPOTIFY_USER = this.hasSpotifyUser() ? true : false;
+        let HAS_SPOTIFY_USER = this.hasSpotifyUser() ? true : false;
         const CONNECTED_WITH_USER =
             CONNECTED && HAS_SPOTIFY_USER ? true : false;
 
         const type =
             playerName === PlayerName.ItunesDesktop ? "itunes" : "spotify";
 
+        // ! very important !
+        // We need the spotify user if we're connected
+        if (CONNECTED && !HAS_SPOTIFY_USER) {
+            // get it
+            this.spotifyUser = await getUserProfile();
+            HAS_SPOTIFY_USER = this.hasSpotifyUser() ? true : false;
+            if (!HAS_SPOTIFY_USER) {
+                // try 1 more time
+                this.spotifyUser = await getUserProfile();
+                HAS_SPOTIFY_USER = this.hasSpotifyUser() ? true : false;
+            }
+        }
+
+        // ! most important part !
         // fetch the playlists
         let playlists: PlaylistItem[] = [];
         if (CONNECTED) {
-            playlists = await getPlaylists(playerName, { all: true });
+            if (HAS_SPOTIFY_USER) {
+                playlists = await getPlaylists(playerName, { all: true });
+            }
             await this.fetchSavedPlaylists(serverIsOnline);
         }
 
@@ -393,7 +348,7 @@ export class MusicManager {
         // update each playlist itemType and tag
         if (hasPlaylists) {
             playlists.forEach(playlist => {
-                this._playlistMap[playlist.id] = playlist;
+                this.playlistMap[playlist.id] = playlist;
                 playlist.itemType = "playlist";
                 playlist.tag = type;
             });
@@ -449,7 +404,7 @@ export class MusicManager {
                 items.push(item);
             });
 
-            this._itunesPlaylists = items;
+            this.itunesPlaylists = items;
         } else {
             // get the devices
             const devices: PlayerDevice[] = await getSpotifyDevices();
@@ -498,9 +453,14 @@ export class MusicManager {
                 }
 
                 // get the Software Top 40 Playlist
-                const softwareTop40: PlaylistItem = await getSpotifyPlaylist(
-                    SOFTWARE_TOP_40_PLAYLIST_ID
+                let softwareTop40: PlaylistItem = playlists.find(
+                    n => n.id === SOFTWARE_TOP_40_PLAYLIST_ID
                 );
+                if (!softwareTop40) {
+                    softwareTop40 = await getSpotifyPlaylist(
+                        SOFTWARE_TOP_40_PLAYLIST_ID
+                    );
+                }
                 if (softwareTop40 && softwareTop40.id) {
                     softwareTop40.loved = false;
                     softwareTop40.itemType = "playlist";
@@ -510,11 +470,8 @@ export class MusicManager {
                 }
 
                 // Add the AI generated playlist
-                if (
-                    this._musictimePlaylists &&
-                    this._musictimePlaylists.length
-                ) {
-                    let aiPlaylist = this._musictimePlaylists.find(element => {
+                if (this.generatedPlaylists && this.generatedPlaylists.length) {
+                    let aiPlaylist = this.generatedPlaylists.find(element => {
                         return (
                             element.playlistTypeId === PERSONAL_TOP_SONGS_PLID
                         );
@@ -524,58 +481,24 @@ export class MusicManager {
                     }
                 }
 
-                // add Liked Songs folder within the software playlist section
-
-                let hasTracksFromAPlaylist = false;
+                // LIKED SONGS folder
+                // get the folder
                 const likedSongsPlaylist = providerItemMgr.getSpotifyLikedPlaylistFolder();
-                this._playlistMap[likedSongsPlaylist.id] = likedSongsPlaylist;
+                this.playlistMap[likedSongsPlaylist.id] = likedSongsPlaylist;
                 items.push(likedSongsPlaylist);
+
                 // only add the "Liked Songs" playlist if there are tracks found in that playlist
                 this.spotifyLikedSongs = await getSpotifyLikedSongs();
 
-                if (this.spotifyLikedSongs && this.spotifyLikedSongs.length) {
-                    this.trackIdsForRecommendations = this.spotifyLikedSongs.map(
-                        (track: Track) => {
-                            return track.id;
-                        }
-                    );
-                    hasTracksFromAPlaylist = true;
-                } else {
-                    // go through the found playlists and the first one that returns 3 or more wins
-                    if (playlists && playlists.length > 0) {
-                        for (let i = 0; i < playlists.length; i++) {
-                            const playlist = playlists[i];
-                            const playlistItems: PlaylistItem[] = await this.getPlaylistItemTracksForPlaylistId(
-                                playlist.id
-                            );
-                            if (playlistItems && playlistItems.length >= 3) {
-                                hasTracksFromAPlaylist = true;
-                                this.trackIdsForRecommendations = playlistItems.map(
-                                    (item: PlaylistItem) => {
-                                        return item.id;
-                                    }
-                                );
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                if (hasTracksFromAPlaylist) {
-                    // refresh the recommendations
-                    setTimeout(() => {
-                        commands.executeCommand(
-                            "musictime.refreshRecommendations"
-                        );
-                    }, 2000);
-                }
+                // build tracks for recommendations (async)
+                buildTracksForRecommendations(playlists);
 
                 // line break between software playlist section and normal playlists
                 if (playlists.length > 0) {
                     items.push(providerItemMgr.getLineBreakButton());
                 }
 
-                // normal playlists
+                // build the set of playlists that are not the ai, top 40, and liked songs
                 playlists.forEach((item: PlaylistItem) => {
                     // add all playlists except for the software top 40.
                     // this one will get displayed in the top section
@@ -588,7 +511,7 @@ export class MusicManager {
                 });
             }
 
-            this._spotifyPlaylists = items;
+            this.spotifyPlaylists = items;
 
             // await checkForDups(this.spotifyPlaylists);
         }
@@ -609,8 +532,8 @@ export class MusicManager {
         if (playlistTrackItems && playlistTrackItems.length > 0) {
             for (let i = 0; i < playlistTrackItems.length; i++) {
                 const playlistItem: PlaylistItem = playlistTrackItems[i];
-                if (playlistItem.id === this._runningTrack.id) {
-                    return this._runningTrack.state;
+                if (playlistItem.id === this.runningTrack.id) {
+                    return this.runningTrack.state;
                 } else {
                     // update theis track status to not assigned to ensure it's also updated
                     playlistItem.state = TrackStatus.NotAssigned;
@@ -750,7 +673,7 @@ export class MusicManager {
                 // fetch from spotify web
                 if (playlist_id === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME) {
                     playlistItemTracks = this.getPlaylistItemTracksFromTracks(
-                        this._spotifyLikedSongs
+                        this.spotifyLikedSongs
                     );
                 } else {
                     // get the playlist tracks from the spotify api
@@ -868,8 +791,8 @@ export class MusicManager {
 
         delete playlistItem.tracks;
 
-        if (track.id === this._runningTrack.id) {
-            playlistItem.state = this._runningTrack.state;
+        if (track.id === this.runningTrack.id) {
+            playlistItem.state = this.runningTrack.state;
             this._selectedTrackItem = playlistItem;
         } else {
             playlistItem.state = TrackStatus.NotAssigned;
@@ -924,9 +847,9 @@ export class MusicManager {
      * app. 1 = user's coding favorites, 2 = global top 40
      */
     getMusicTimePlaylistByTypeId(playlistTypeId: number) {
-        if (this._musictimePlaylists.length > 0) {
-            for (let i = 0; i < this._musictimePlaylists.length; i++) {
-                const playlist = this._musictimePlaylists[i];
+        if (this.generatedPlaylists.length > 0) {
+            for (let i = 0; i < this.generatedPlaylists.length; i++) {
+                const playlist = this.generatedPlaylists[i];
                 const typeId = playlist.playlistTypeId;
                 if (typeId === playlistTypeId) {
                     return playlist;
@@ -943,7 +866,7 @@ export class MusicManager {
      * app. 1 = user's coding favorites, 2 = global top 40
      */
     retrieveMusicTimePlaylist(playlists: PlaylistItem[]) {
-        this._musictimePlaylists = [];
+        this.generatedPlaylists = [];
         if (this.savedPlaylists.length > 0 && playlists.length > 0) {
             for (let i = 0; i < this.savedPlaylists.length; i++) {
                 let savedPlaylist: PlaylistItem = this.savedPlaylists[i];
@@ -955,7 +878,7 @@ export class MusicManager {
                         playlist.playlistTypeId = savedPlaylistTypeId;
                         playlist.tag = "paw";
                         playlists.splice(x, 1);
-                        this._musictimePlaylists.push(playlist);
+                        this.generatedPlaylists.push(playlist);
                         break;
                     }
                 }
@@ -1008,21 +931,21 @@ export class MusicManager {
     getNextSpotifyLikedSong(): Track {
         const currentTrackId = this.selectedTrackItem.id;
         const hasLikedSongs =
-            this._spotifyLikedSongs && this._spotifyLikedSongs.length > 0;
+            this.spotifyLikedSongs && this.spotifyLikedSongs.length > 0;
         if (currentTrackId && hasLikedSongs) {
-            let currTrackIndex = this._spotifyLikedSongs.findIndex(
+            let currTrackIndex = this.spotifyLikedSongs.findIndex(
                 i => i.id === currentTrackId
             );
             if (currTrackIndex !== -1) {
                 // if the curr track index is the last element, return zero, else return the next one
-                if (currTrackIndex + 1 < this._spotifyLikedSongs.length) {
-                    return this._spotifyLikedSongs[currTrackIndex + 1];
+                if (currTrackIndex + 1 < this.spotifyLikedSongs.length) {
+                    return this.spotifyLikedSongs[currTrackIndex + 1];
                 } else {
-                    return this._spotifyLikedSongs[0];
+                    return this.spotifyLikedSongs[0];
                 }
             }
         } else if (!currentTrackId && hasLikedSongs) {
-            return this._spotifyLikedSongs[0];
+            return this.spotifyLikedSongs[0];
         }
         return null;
     }
@@ -1030,18 +953,18 @@ export class MusicManager {
     getPreviousSpotifyLikedSong(): Track {
         const currentTrackId = this.selectedTrackItem.id;
         const hasLikedSongs =
-            this._spotifyLikedSongs && this._spotifyLikedSongs.length > 0;
+            this.spotifyLikedSongs && this.spotifyLikedSongs.length > 0;
         if (currentTrackId && hasLikedSongs) {
-            const currTrackIndex = this._spotifyLikedSongs.findIndex(
+            const currTrackIndex = this.spotifyLikedSongs.findIndex(
                 i => i.id === currentTrackId
             );
             if (currTrackIndex !== -1) {
                 // if the curr track index is the last element, return zero, else return the next one
                 if (currTrackIndex - 1 >= 0) {
-                    return this._spotifyLikedSongs[currTrackIndex - 1];
+                    return this.spotifyLikedSongs[currTrackIndex - 1];
                 } else {
-                    return this._spotifyLikedSongs[
-                        this._spotifyLikedSongs.length - 1
+                    return this.spotifyLikedSongs[
+                        this.spotifyLikedSongs.length - 1
                     ];
                 }
             }
@@ -1147,7 +1070,6 @@ export class MusicManager {
             ).catch(err => {
                 logIt("Error updating music time with generated playlist ID");
             });
-            console.log("result: ", result);
         } else {
             // get the spotify playlist id from the app's existing playlist info
             playlistId = customPlaylist.id;
@@ -1854,9 +1776,9 @@ export class MusicManager {
             this.currentPlayerName === PlayerName.ItunesDesktop
                 ? "itunes"
                 : "spotify";
-        if (type === "spotify" && this._spotifyPlaylists.length > 0) {
+        if (type === "spotify" && this.spotifyPlaylists.length > 0) {
             // build the spotify playlist
-            this._spotifyPlaylists.forEach(async playlist => {
+            this.spotifyPlaylists.forEach(async playlist => {
                 if (playlist.type === "playlist") {
                     const trackStatus: TrackStatus = await this.getPlaylistTrackState(
                         playlist.id
@@ -1864,9 +1786,9 @@ export class MusicManager {
                     playlist.state = trackStatus;
                 }
             });
-        } else if (type === "itunes" && this._itunesPlaylists.length > 0) {
+        } else if (type === "itunes" && this.itunesPlaylists.length > 0) {
             // build the itunes playlist
-            this._itunesPlaylists.forEach(async playlist => {
+            this.itunesPlaylists.forEach(async playlist => {
                 if (playlist.type === "playlist") {
                     playlist.state = await this.getPlaylistTrackState(
                         playlist.id
