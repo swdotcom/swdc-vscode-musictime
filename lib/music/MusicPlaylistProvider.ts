@@ -186,7 +186,6 @@ export const playSelectedItem = async (
 export const refreshPlaylistViewIfRequired = async () => {
     if (!musicMgr.spotifyPlaylists || musicMgr.spotifyPlaylists.length === 0) {
         await musicMgr.refreshPlaylists();
-        this.refresh();
     }
     commands.executeCommand("musictime.revealTree");
 };
@@ -286,8 +285,9 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
             musicMgr.spotifyPlaylists.length === 0
         ) {
             await musicMgr.refreshPlaylists();
-            this.refresh();
         }
+
+        this.refresh();
 
         const item: PlaylistItem = ProviderItemManager.getInstance().getReadmeButton();
         try {

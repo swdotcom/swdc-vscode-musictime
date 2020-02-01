@@ -79,9 +79,7 @@ export function createCommands(): {
         "musictime.refreshPlaylistState",
         async () => {
             await musicMgr.refreshPlaylistState();
-            setTimeout(() => {
-                treePlaylistProvider.refresh();
-            }, 500);
+            treePlaylistProvider.refresh();
         }
     );
     cmds.push(refreshPlaylistStateCmd);
