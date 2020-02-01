@@ -1438,9 +1438,6 @@ export class MusicManager {
         features: any = {},
         offset: number = 0
     ) {
-        if (this.requiresSpotifyAccess()) {
-            return;
-        }
         this.currentRecMeta = {
             label,
             likedSongSeedLimit,
@@ -1465,6 +1462,7 @@ export class MusicManager {
         this.recommendationTracks = tracks;
         this.recommendationLabel = label;
 
+        // refresh the rec tree
         commands.executeCommand("musictime.refreshRecommendationsTree");
     }
 
@@ -1743,18 +1741,22 @@ export class MusicManager {
         offset: number = 0
     ) {
         let trackIds = [];
+        let trackRecs = this.trackIdsForRecommendations || [];
 
-        if (
-            this.trackIdsForRecommendations &&
-            this.trackIdsForRecommendations.length > 0
-        ) {
+        if (trackRecs.length === 0) {
+            // call the music util to populate the rec track ids
+            await buildTracksForRecommendations(this.spotifyPlaylists);
+            trackRecs = this.trackIdsForRecommendations || [];
+        }
+
+        if (trackRecs.length > 0) {
             for (let i = 0; i < likedSongSeedLimit; i++) {
-                if (this.trackIdsForRecommendations.length > offset) {
-                    trackIds.push(this.trackIdsForRecommendations[offset]);
+                if (trackRecs.length > offset) {
+                    trackIds.push(trackRecs[offset]);
                 } else {
                     // start the offset back to the begining
                     offset = 0;
-                    trackIds.push(this.trackIdsForRecommendations[offset]);
+                    trackIds.push(trackRecs[offset]);
                 }
                 offset++;
             }

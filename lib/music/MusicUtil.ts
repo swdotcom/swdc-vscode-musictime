@@ -102,14 +102,16 @@ export function sortTracks(tracks) {
 }
 
 export async function buildTracksForRecommendations(playlists) {
+    let musicMgr: MusicManager = MusicManager.getInstance();
+
+    let trackIds = [];
     let foundTracksForRec = false;
+
     // build tracks for recommendations
-    if (this.spotifyLikedSongs && this.spotifyLikedSongs.length) {
-        this.trackIdsForRecommendations = this.spotifyLikedSongs.map(
-            (track: Track) => {
-                return track.id;
-            }
-        );
+    if (musicMgr.spotifyLikedSongs && musicMgr.spotifyLikedSongs.length) {
+        trackIds = musicMgr.spotifyLikedSongs.map((track: Track) => {
+            return track.id;
+        });
         foundTracksForRec = true;
     } else {
         // go through the found playlists and the first one that returns 3 or more wins
@@ -117,26 +119,26 @@ export async function buildTracksForRecommendations(playlists) {
             for (let i = 0; i < playlists.length; i++) {
                 const playlist = playlists[i];
 
-                const playlistItems: PlaylistItem[] = await MusicManager.getInstance().getPlaylistItemTracksForPlaylistId(
+                const playlistItems: PlaylistItem[] = await musicMgr.getPlaylistItemTracksForPlaylistId(
                     playlist.id
                 );
                 if (playlistItems && playlistItems.length >= 3) {
                     foundTracksForRec = true;
-                    this.trackIdsForRecommendations = playlistItems.map(
-                        (item: PlaylistItem) => {
-                            return item.id;
-                        }
-                    );
+                    trackIds = playlistItems.map((item: PlaylistItem) => {
+                        return item.id;
+                    });
                     break;
                 }
             }
         }
     }
 
+    musicMgr.trackIdsForRecommendations = trackIds;
+
     if (foundTracksForRec) {
         // refresh the recommendations
         setTimeout(() => {
             commands.executeCommand("musictime.refreshRecommendations");
-        }, 2000);
+        }, 1000);
     }
 }

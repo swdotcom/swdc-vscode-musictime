@@ -183,31 +183,12 @@ export const playSelectedItem = async (
     }
 };
 
-export const refreshPlaylistViewIfRequired = (
-    revealWhenComplete = false,
-    retryCount = 1
-) => {
+export const refreshPlaylistViewIfRequired = async () => {
     if (!musicMgr.spotifyPlaylists || musicMgr.spotifyPlaylists.length === 0) {
-        commands.executeCommand("musictime.refreshPlaylist");
-        if (retryCount > 0) {
-            setTimeout(() => {
-                if (
-                    !musicMgr.spotifyPlaylists ||
-                    musicMgr.spotifyPlaylists.length === 0
-                ) {
-                    retryCount--;
-                    refreshPlaylistViewIfRequired(
-                        revealWhenComplete,
-                        retryCount
-                    );
-                } else if (revealWhenComplete) {
-                    commands.executeCommand("musictime.revealTree");
-                }
-            }, 4000);
-        }
-    } else if (revealWhenComplete) {
-        commands.executeCommand("musictime.revealTree");
+        await musicMgr.refreshPlaylists();
+        this.refresh();
     }
+    commands.executeCommand("musictime.revealTree");
 };
 
 /**
@@ -299,7 +280,15 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
         }
     }
 
-    revealTree() {
+    async revealTree() {
+        if (
+            !musicMgr.spotifyPlaylists ||
+            musicMgr.spotifyPlaylists.length === 0
+        ) {
+            await musicMgr.refreshPlaylists();
+            this.refresh();
+        }
+
         const item: PlaylistItem = ProviderItemManager.getInstance().getReadmeButton();
         try {
             // select the readme item
