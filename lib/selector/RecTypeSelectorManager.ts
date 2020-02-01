@@ -14,10 +14,12 @@ export async function showGenreSelections() {
         let label = genre.replace(/[_-]/g, " ");
         // capitalize the 1st character
         label = label.charAt(0).toUpperCase() + label.substring(1);
-
+        // args: "Soundtracks", 0, ["soundtracks"]
+        const args = [label, 0, [genre]];
         menuOptions.items.push({
             label,
-            value: genre
+            args,
+            command: "musictime.updateRecommendations"
         });
     });
 
@@ -40,7 +42,8 @@ export async function showCategorySelections() {
         menuOptions.items.push({
             label: cateogry.label,
             detail: cateogry.description,
-            value: cateogry.value
+            args: cateogry.args,
+            command: "musictime.updateRecommendations"
         });
     });
 
@@ -52,51 +55,64 @@ export async function showCategorySelections() {
 }
 
 function getCategorySelections() {
+    // args example
+    // args: ["Happy", 5, [], { min_valence: 0.6, target_valence: 1 }]
     const items = [
         // high valence
         {
             label: "Happy",
             description:
                 "positive, uplifting, mood-boosting; good for any type of coding",
-            value: { min_valence: 0.6, target_valence: 1 }
+            args: ["Happy", 5, [], { min_valence: 0.6, target_valence: 1 }]
         },
         // high energy
         {
             label: "Energetic",
             description:
                 "dynamic, loud, stimulating; grab a coffee and let's go",
-            value: { min_valence: 0.6, target_valence: 1 }
+            args: ["Energetic", 5, [], { min_energy: 0.6, target_energy: 1 }]
         },
         // high danceability
         {
             label: "Danceable",
             description:
                 "songs with a stable beat and rhythm; good for fast-paced work",
-            value: { min_valence: 0.6, target_valence: 1 }
+            args: [
+                "Danceable",
+                5,
+                [],
+                { min_danceability: 0.6, target_danceability: 1 }
+            ]
         },
         // Low speechiness
         {
             label: "No lyrics",
             description: "good for complex work requiring maximum focus",
-            value: { min_valence: 0.6, target_valence: 1 }
+            args: [
+                "No lyrics",
+                5,
+                [],
+                { max_speechiness: 0.4, target_speechiness: 0 }
+            ]
         },
         // Liked songs
         {
             label: "Familiar",
             description:
                 "similar to your Liked Songs, familiar songs helps you get into flow faster",
-            value: { min_valence: 0.6, target_valence: 1 }
+            args: ["Similar to Liked Songs", 5]
         },
+        // Low loudness
         {
             label: "Quiet music",
             description:
                 "songs that are soft and low energy, helping you stay focused",
-            value: { min_valence: 0.6, target_valence: 1 }
-        },
-        {
-            label: "White noise",
-            description: "tune out the office distractions",
-            value: { min_valence: 0.6, target_valence: 1 }
+            args: [
+                "Quiet music",
+                5,
+                [],
+                { max_loudness: 0.4, target_loudness: 0 }
+            ]
         }
     ];
 

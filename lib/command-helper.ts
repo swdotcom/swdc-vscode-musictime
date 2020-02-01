@@ -328,6 +328,24 @@ export function createCommands(): {
     );
     cmds.push(refreshRecPlaylistCommand);
 
+    const updateRecsCommand = commands.registerCommand(
+        "musictime.updateRecommendations",
+        args => {
+            // there's always at least 3 args
+            const label = args[0];
+            const likedSongSeedLimit = args[1];
+            const seed_genres = args[2];
+            const features = args.length > 3 ? args[3] : {};
+            musicMgr.updateRecommendations(
+                label,
+                likedSongSeedLimit,
+                seed_genres,
+                features
+            );
+        }
+    );
+    cmds.push(updateRecsCommand);
+
     if (!codeTimeExtInstalled()) {
         // initialize the kpm controller to start the listener
         KpmController.getInstance();
