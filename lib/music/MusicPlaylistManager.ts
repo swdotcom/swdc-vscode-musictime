@@ -6,8 +6,12 @@ import {
     createPlaylist,
     PlaylistItem
 } from "cody-music";
-import { OK_LABEL } from "../Constants";
+import { OK_LABEL, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
 import { getCodyErrorMessage } from "../Util";
+import {
+    populateLikedSongs,
+    populateSpotifyPlaylists
+} from "../DataController";
 
 export class MusicPlaylistManager {
     private static instance: MusicPlaylistManager;
@@ -71,7 +75,13 @@ export class MusicPlaylistManager {
                 window.showInformationMessage(
                     `Successfully created ${name} and added tracks.`
                 );
-                setTimeout(() => {
+                setTimeout(async () => {
+                    // repopulate the playlists
+                    if (playlist_id === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME) {
+                        await populateLikedSongs();
+                    } else {
+                        await populateSpotifyPlaylists();
+                    }
                     commands.executeCommand("musictime.refreshPlaylist");
                 }, 1000);
             } else {

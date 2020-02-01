@@ -27,7 +27,9 @@ import { showQuickPick } from "../MenuManager";
 import {
     serverIsAvailable,
     refetchSpotifyConnectStatusLazily,
-    getAppJwt
+    getAppJwt,
+    populateLikedSongs,
+    populateSpotifyPlaylists
 } from "../DataController";
 import {
     getItem,
@@ -62,7 +64,11 @@ import { tmpdir } from "os";
 import { connectSlack } from "../slack/SlackControlManager";
 import { MusicManager } from "./MusicManager";
 import { MusicPlaylistManager } from "./MusicPlaylistManager";
-import { sortPlaylists } from "./MusicUtil";
+import {
+    sortPlaylists,
+    requiresSpotifyAccess,
+    getMusicTimePlaylistByTypeId
+} from "./MusicUtil";
 
 const moment = require("moment-timezone");
 const clipboardy = require("clipboardy");
@@ -406,7 +412,7 @@ export class MusicControlManager {
         const musicMgr: MusicManager = MusicManager.getInstance();
 
         // check if they need to connect to spotify
-        const needsSpotifyAccess = musicMgr.requiresSpotifyAccess();
+        const needsSpotifyAccess = requiresSpotifyAccess();
 
         const isPrem = await musicMgr.isSpotifyPremium();
 
@@ -418,7 +424,7 @@ export class MusicControlManager {
             const savedPlaylists: PlaylistItem[] = musicMgr.savedPlaylists;
 
             // check if they've generated a playlist yet
-            const customPlaylist = musicMgr.getMusicTimePlaylistByTypeId(
+            const customPlaylist = getMusicTimePlaylistByTypeId(
                 PERSONAL_TOP_SONGS_PLID
             );
 
@@ -614,6 +620,7 @@ export class MusicControlManager {
                     let errMsg = null;
 
                     if (matchingPlaylist.name !== "Liked Songs") {
+                        // it's a non-liked songs playlist update
                         // uri:"spotify:track:2JHCaLTVvYjyUrCck0Uvrp" or id
                         const trackUri =
                             playlistItem.uri ||
@@ -623,7 +630,11 @@ export class MusicControlManager {
                             [trackUri]
                         );
                         errMsg = getCodyErrorMessage(codyResponse);
+
+                        // populate the spotify playlists
+                        await populateSpotifyPlaylists();
                     } else {
+                        // it's a liked songs playlist update
                         let track: Track = musicMgr.runningTrack;
                         if (track.id !== playlistItem.id) {
                             track = new Track();
@@ -632,6 +643,9 @@ export class MusicControlManager {
                             track.state = playlistItem.state;
                         }
                         await this.setLiked(true, track);
+
+                        // repopulate the liked songs
+                        await populateLikedSongs();
                     }
                     if (!errMsg) {
                         window.showInformationMessage(
@@ -722,7 +736,7 @@ export async function connectSpotify() {
 
     // check if they're already connected, if so then ask if they would
     // like to continue as we'll need to disconnect the current connection
-    const needsSpotifyAccess = MusicManager.getInstance().requiresSpotifyAccess();
+    const needsSpotifyAccess = requiresSpotifyAccess();
     if (!needsSpotifyAccess) {
         // disconnectSpotify
         const selection = await window.showInformationMessage(
@@ -781,6 +795,10 @@ export async function disconnectOauth(type: string, confirmDisconnect = true) {
             window.showInformationMessage(
                 `Successfully disconnected your ${type} connection.`
             );
+
+            // clear the spotify playlists
+            musicMgr.spotifyPlaylists = [];
+            musicMgr.spotifyLikedSongs = [];
 
             commands.executeCommand("musictime.refreshPlaylist");
             commands.executeCommand("musictime.refreshRecommendations");

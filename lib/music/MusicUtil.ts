@@ -1,7 +1,9 @@
-import { PlaylistItem, deletePlaylist, Track } from "cody-music";
+import { PlaylistItem, deletePlaylist, Track, PlayerDevice } from "cody-music";
 import { NOT_NOW_LABEL, OK_LABEL } from "../Constants";
 import { window, commands } from "vscode";
 import { MusicManager } from "./MusicManager";
+import { getItem } from "../Util";
+import { populateSpotifyPlaylists } from "../DataController";
 
 // duplicate music time playlists names:
 // "My AI Top 40", "My Custom Top 40", "Custom Top 40", "AI-generated Custom Top 40", "Software Top 40"
@@ -68,6 +70,9 @@ export async function deleteDuplicateSpotifyPlaylists(
             }
         }
     }
+
+    // repopulate the playlists
+    await populateSpotifyPlaylists();
 
     // refresh the playlist
     commands.executeCommand("musictime.refreshPlaylist");
@@ -141,4 +146,53 @@ export async function buildTracksForRecommendations(playlists) {
             commands.executeCommand("musictime.refreshRecommendations");
         }, 1000);
     }
+}
+
+export function getActiveDevice(devices: PlayerDevice[]): PlayerDevice {
+    let computerDevice: PlayerDevice = null;
+    let otherActiveDevice: PlayerDevice = null;
+    if (devices && devices.length > 0) {
+        for (let i = 0; i < devices.length; i++) {
+            const device: PlayerDevice = devices[i];
+            if (device.is_active) {
+                if (device.type.toLowerCase() === "computer") {
+                    computerDevice = device;
+                } else {
+                    otherActiveDevice = device;
+                }
+            }
+        }
+    }
+
+    if (computerDevice) {
+        return computerDevice;
+    }
+    return otherActiveDevice;
+}
+
+export function requiresSpotifyAccess() {
+    let spotifyAccessToken = getItem("spotify_access_token");
+    return spotifyAccessToken ? false : true;
+}
+
+/**
+ * Checks if the user's spotify playlists contains either
+ * the global top 40 or the user's coding favorites playlist.
+ * The playlistTypeId is used to match the set ID from music time
+ * app. 1 = user's coding favorites, 2 = global top 40
+ */
+export function getMusicTimePlaylistByTypeId(
+    playlistTypeId: number
+): PlaylistItem {
+    const musicMgr: MusicManager = MusicManager.getInstance();
+    if (musicMgr.generatedPlaylists.length > 0) {
+        for (let i = 0; i < musicMgr.generatedPlaylists.length; i++) {
+            const playlist = musicMgr.generatedPlaylists[i];
+            const typeId = playlist.playlistTypeId;
+            if (typeId === playlistTypeId) {
+                return playlist;
+            }
+        }
+    }
+    return null;
 }

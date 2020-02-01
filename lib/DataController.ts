@@ -20,7 +20,12 @@ import {
     getOffsetSecends,
     storeMusicSessionPayload
 } from "./Util";
-import { getSpotifyLikedSongs, Track } from "cody-music";
+import {
+    getSpotifyLikedSongs,
+    Track,
+    PlayerName,
+    getPlaylists
+} from "cody-music";
 import { MusicManager } from "./music/MusicManager";
 import { refreshPlaylistViewIfRequired } from "./music/MusicPlaylistProvider";
 const moment = require("moment-timezone");
@@ -278,11 +283,15 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
             `Successfully connected to Spotify. Loading playlists...`
         );
 
-        const likedSongs: Track[] = await getSpotifyLikedSongs();
-        if (likedSongs) {
+        const spotifyPlaylistsP = populateSpotifyPlaylists();
+
+        // only add the "Liked Songs" playlist if there are tracks found in that playlist
+        await populateLikedSongs();
+
+        if (musicMgr.spotifyLikedSongs) {
             let nowTime = getNowTimes();
             let startingTime = moment().unix();
-            likedSongs.forEach((track: Track) => {
+            musicMgr.spotifyLikedSongs.forEach((track: Track) => {
                 track["playlistId"] = "Liked Songs";
                 track.loved = true;
                 track["start"] = startingTime;
@@ -301,12 +310,11 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
                 startingTime -= 1;
             });
         }
-        musicMgr.spotifyLikedSongs = likedSongs;
 
         // send the top spotify songs from the users playlists to help seed song sessions
-        seedLikedSongSessions(likedSongs);
+        seedLikedSongSessions(musicMgr.spotifyLikedSongs);
 
-        musicMgr.clearSpotify();
+        await spotifyPlaylistsP;
 
         // initiate the playlist build
         commands.executeCommand("musictime.refreshPlaylist");
@@ -316,6 +324,19 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
             refreshPlaylistViewIfRequired();
         }, 4000);
     }
+}
+
+export async function populateLikedSongs() {
+    MusicManager.getInstance().spotifyLikedSongs = await getSpotifyLikedSongs();
+}
+
+export async function populateSpotifyPlaylists() {
+    MusicManager.getInstance().rawPlaylists = await getPlaylists(
+        PlayerName.SpotifyWeb,
+        {
+            all: true
+        }
+    );
 }
 
 export function getBootstrapFileMetrics() {

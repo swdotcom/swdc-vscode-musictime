@@ -1,5 +1,24 @@
-import { PlayerType, PlaylistItem, PlaylistTrackInfo } from "cody-music";
-import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
+import {
+    PlayerType,
+    PlaylistItem,
+    PlaylistTrackInfo,
+    PlayerDevice,
+    PlayerName
+} from "cody-music";
+import {
+    SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
+    PERSONAL_TOP_SONGS_PLID,
+    GENERATE_CUSTOM_PLAYLIST_TITLE,
+    REFRESH_CUSTOM_PLAYLIST_TITLE,
+    GENERATE_CUSTOM_PLAYLIST_TOOLTIP,
+    REFRESH_CUSTOM_PLAYLIST_TOOLTIP
+} from "../Constants";
+import {
+    getActiveDevice,
+    requiresSpotifyAccess,
+    getMusicTimePlaylistByTypeId
+} from "./MusicUtil";
+import { MusicManager } from "./MusicManager";
 
 export class ProviderItemManager {
     private static instance: ProviderItemManager;
@@ -238,5 +257,59 @@ export class ProviderItemManager {
             PlayerType.NotAssigned,
             "Your tracks will appear here"
         );
+    }
+
+    async getSwitchToThisDeviceButton(devices: PlayerDevice[]) {
+        const activeDevice = getActiveDevice(devices);
+
+        if (activeDevice && activeDevice.type.toLowerCase() !== "computer") {
+            // return a button to switch to this computer if we have devices
+            // and none of them are of type "Computer"
+            const button = this.buildActionItem(
+                "title",
+                "action",
+                "musictime.launchSpotify",
+                PlayerType.MacSpotifyDesktop,
+                "Switch To This Device"
+            );
+            return button;
+        }
+        return null;
+    }
+
+    // get the custom playlist button by checkinf if the custom playlist
+    // exists or not. if it doesn't exist then it will show the create label,
+    // otherwise, it will show the refresh label
+    getCustomPlaylistButton() {
+        // update the existing playlist that matches the personal playlist with a paw if found
+        const customPlaylist = getMusicTimePlaylistByTypeId(
+            PERSONAL_TOP_SONGS_PLID
+        );
+
+        const personalPlaylistLabel = !customPlaylist
+            ? GENERATE_CUSTOM_PLAYLIST_TITLE
+            : REFRESH_CUSTOM_PLAYLIST_TITLE;
+        const personalPlaylistTooltip = !customPlaylist
+            ? GENERATE_CUSTOM_PLAYLIST_TOOLTIP
+            : REFRESH_CUSTOM_PLAYLIST_TOOLTIP;
+
+        if (
+            MusicManager.getInstance().currentPlayerName !==
+                PlayerName.ItunesDesktop &&
+            !requiresSpotifyAccess()
+        ) {
+            // add the connect spotify link
+            let listItem: PlaylistItem = new PlaylistItem();
+            listItem.tracks = new PlaylistTrackInfo();
+            listItem.type = "action";
+            listItem.tag = "action";
+            listItem.id = "codingfavorites";
+            listItem.command = "musictime.generateWeeklyPlaylist";
+            listItem.playerType = PlayerType.WebSpotify;
+            listItem.name = personalPlaylistLabel;
+            listItem.tooltip = personalPlaylistTooltip;
+            return listItem;
+        }
+        return null;
     }
 }

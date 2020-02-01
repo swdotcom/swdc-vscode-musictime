@@ -10,6 +10,7 @@ import {
 import { MusicPlaylistProvider } from "./MusicPlaylistProvider";
 import { MusicManager } from "./MusicManager";
 import { serverIsAvailable } from "../DataController";
+import { requiresSpotifyAccess } from "./MusicUtil";
 
 export interface Button {
     /**
@@ -439,7 +440,7 @@ export class MusicCommandManager {
     private static getMusicMenuTooltip() {
         const name = getItem("name");
         const musicMgr: MusicManager = MusicManager.getInstance();
-        const needsSpotifyAccess = musicMgr.requiresSpotifyAccess();
+        const needsSpotifyAccess = requiresSpotifyAccess();
         if (needsSpotifyAccess) {
             return "Connect Spotify";
         }
@@ -453,10 +454,9 @@ export class MusicCommandManager {
 
     private static async getSpotifyState() {
         const musicMgr: MusicManager = MusicManager.getInstance();
-        const needsSpotifyAccess = musicMgr.requiresSpotifyAccess();
+        const needsSpotifyAccess = requiresSpotifyAccess();
         const hasSpotifyPlaybackAccess = musicMgr.hasSpotifyPlaybackAccess();
         const hasSpotifyUser = musicMgr.hasSpotifyUser();
-        // const serverTrack = musicMgr.serverTrack;
         const isLikedSong = await musicMgr.isLikedSong();
 
         const spotifyContext: PlayerContext = await getSpotifyPlayerContext();

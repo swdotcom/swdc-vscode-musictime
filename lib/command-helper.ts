@@ -75,15 +75,6 @@ export function createCommands(): {
     );
     cmds.push(revealTreeCmd);
 
-    const refreshPlaylistStateCmd = commands.registerCommand(
-        "musictime.refreshPlaylistState",
-        async () => {
-            await musicMgr.refreshPlaylistState();
-            treePlaylistProvider.refresh();
-        }
-    );
-    cmds.push(refreshPlaylistStateCmd);
-
     const launchReadmeCmd = commands.registerCommand(
         "musictime.displayReadme",
         () => {
