@@ -1,0 +1,182 @@
+            {
+                "command": "musictime.likedSongRecs",
+                "title": "Similar to Liked Songs"
+            },
+            {
+                "command": "musictime.soundtrackSongRecs",
+                "title": "Soundtracks"
+            },
+            {
+                "command": "musictime.classicalSongRecs",
+                "title": "Classical"
+            },
+            {
+                "command": "musictime.pianoSongRecs",
+                "title": "Piano"
+            },
+            {
+                "command": "musictime.highValenceSongRecs",
+                "title": "High Valence"
+            },
+            {
+                "command": "musictime.lowValenceSongRecs",
+                "title": "Low Valence"
+            },
+            {
+                "command": "musictime.highEnergySongRecs",
+                "title": "High Energy"
+            },
+            {
+                "command": "musictime.lowEnergySongRecs",
+                "title": "Low Energy"
+            },
+            {
+                "command": "musictime.highTempoSongRecs",
+                "title": "High Tempo"
+            },
+            {
+                "command": "musictime.lowTempoSongRecs",
+                "title": "Low Tempo"
+            }
+
+
+
+{
+                    "command": "musictime.likedSongRecs",
+                    "group": "inline",
+                    "when": "view =~ /.*-recommendations/"
+                },
+                {
+                    "command": "musictime.soundtrackSongRecs",
+                    "group": "inline",
+                    "when": "view =~ /.*-recommendations/"
+                },
+                {
+                    "command": "musictime.classicalSongRecs",
+                    "group": "inline",
+                    "when": "view =~ /.*-recommendations/"
+                },
+                {
+                    "command": "musictime.pianoSongRecs",
+                    "group": "inline",
+                    "when": "view =~ /.*-recommendations/"
+                },
+                {
+                    "command": "musictime.reggaetonSongRecs",
+                    "group": "inline",
+                    "when": "view =~ /.*-recommendations/"
+                },
+                {
+                    "command": "musictime.highValenceSongRecs",
+                    "group": "inline",
+                    "when": "view =~ /.*-recommendations/"
+                },
+                {
+                    "command": "musictime.lowValenceSongRecs",
+                    "group": "inline",
+                    "when": "view =~ /.*-recommendations/"
+                },
+                {
+                    "command": "musictime.highEnergySongRecs",
+                    "group": "inline",
+                    "when": "view =~ /.*-recommendations/"
+                },
+                {
+                    "command": "musictime.lowEnergySongRecs",
+                    "group": "inline",
+                    "when": "view =~ /.*-recommendations/"
+                },
+                {
+                    "command": "musictime.highTempoSongRecs",
+                    "group": "inline",
+                    "when": "view =~ /.*-recommendations/"
+                },
+                {
+                    "command": "musictime.lowTempoSongRecs",
+                    "group": "inline",
+                    "when": "view =~ /.*-recommendations/"
+                }
+
+    // const likedSongRecsCommand = commands.registerCommand(
+    //     "musictime.likedSongRecs",
+    //     () => musicMgr.updateRecommendations("Similar to Liked Songs", 5)
+    // );
+    // cmds.push(likedSongRecsCommand);
+
+    // const soundtrackSongRecsCommand = commands.registerCommand(
+    //     "musictime.soundtrackSongRecs",
+    //     () => musicMgr.updateRecommendations("Soundtracks", 0, ["soundtracks"])
+    // );
+    // cmds.push(soundtrackSongRecsCommand);
+
+    // const classicalSongRecsCommand = commands.registerCommand(
+    //     "musictime.classicalSongRecs",
+    //     () => musicMgr.updateRecommendations("Classical", 0, ["classical"])
+    // );
+    // cmds.push(classicalSongRecsCommand);
+
+    // const pianoSongRecsCommand = commands.registerCommand(
+    //     "musictime.pianoSongRecs",
+    //     () => musicMgr.updateRecommendations("Piano", 0, ["piano"])
+    // );
+    // cmds.push(pianoSongRecsCommand);
+
+    // const highEnergySongRecsCommand = commands.registerCommand(
+    //     "musictime.highEnergySongRecs",
+    //     () =>
+    //         musicMgr.updateRecommendations("High Energy", 5, [], {
+    //             min_energy: 0.6,
+    //             target_energy: 1
+    //         })
+    // );
+    // cmds.push(highEnergySongRecsCommand);
+
+    // const lowEnergySongRecsCommand = commands.registerCommand(
+    //     "musictime.lowEnergySongRecs",
+    //     () =>
+    //         musicMgr.updateRecommendations("Low Energy", 5, [], {
+    //             max_energy: 0.4,
+    //             target_energy: 0
+    //         })
+    // );
+    // cmds.push(lowEnergySongRecsCommand);
+
+    // const highValenceSongRecsCommand = commands.registerCommand(
+    //     "musictime.highValenceSongRecs",
+    //     () =>
+    //         musicMgr.updateRecommendations("High Valence", 5, [], {
+    //             min_valence: 0.6,
+    //             target_valence: 1
+    //         })
+    // );
+    // cmds.push(highValenceSongRecsCommand);
+
+    // const lowValenceSongRecsCommand = commands.registerCommand(
+    //     "musictime.lowValenceSongRecs",
+    //     () =>
+    //         musicMgr.updateRecommendations("Low Valence", 5, [], {
+    //             max_valence: 0.4,
+    //             target_valence: 0
+    //         })
+    // );
+    // cmds.push(lowValenceSongRecsCommand);
+
+    // const highTempoSongRecsCommand = commands.registerCommand(
+    //     "musictime.highTempoSongRecs",
+    //     () =>
+    //         musicMgr.updateRecommendations("High Tempo", 5, [], {
+    //             min_tempo: 145,
+    //             target_tempo: 220
+    //         })
+    // );
+    // cmds.push(highTempoSongRecsCommand);
+
+    // const lowTempoSongRecsCommand = commands.registerCommand(
+    //     "musictime.lowTempoSongRecs",
+    //     () =>
+    //         musicMgr.updateRecommendations("Low Tempo", 5, [], {
+    //             max_tempo: 95,
+    //             target_tempo: 0
+    //         })
+    // );
+    // cmds.push(lowTempoSongRecsCommand);

@@ -504,6 +504,10 @@ export function getImagesDir() {
 export function displayReadmeIfNotExists(override = false) {
     const displayedReadme = getItem("displayedMtReadme");
     if (!displayedReadme || override) {
+        setTimeout(() => {
+            commands.executeCommand("musictime.revealTree");
+        }, 1000);
+
         const readmeUri = Uri.file(getLocalREADMEFile());
 
         commands.executeCommand(

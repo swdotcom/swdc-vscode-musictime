@@ -46,11 +46,11 @@
         "commands": [
             {
                 "command": "musictime.next",
-                "title": "Play Next Song"
+                "title": "Play next song"
             },
             {
                 "command": "musictime.previous",
-                "title": "Play Previous Song"
+                "title": "Play previous song"
             },
             {
                 "command": "musictime.play",
@@ -62,7 +62,7 @@
             },
             {
                 "command": "musictime.copyTrack",
-                "title": "Copy Track Link",
+                "title": "Copy track link",
                 "icon": {
                     "light": "resources/light/icons8-copy-to-clipboard-16.png",
                     "dark": "resources/dark/icons8-copy-to-clipboard-16.png"
@@ -70,7 +70,7 @@
             },
             {
                 "command": "musictime.copyPlaylist",
-                "title": "Copy Playlist Link",
+                "title": "Copy playlist link",
                 "icon": {
                     "light": "resources/light/icons8-copy-to-clipboard-16.png",
                     "dark": "resources/dark/icons8-copy-to-clipboard-16.png"
@@ -78,7 +78,7 @@
             },
             {
                 "command": "musictime.shareTrack",
-                "title": "Share Track",
+                "title": "Share track",
                 "icon": {
                     "light": "resources/light/share.svg",
                     "dark": "resources/dark/share.svg"
@@ -86,7 +86,7 @@
             },
             {
                 "command": "musictime.sharePlaylist",
-                "title": "Share Playlist",
+                "title": "Share playlist",
                 "icon": {
                     "light": "resources/light/share.svg",
                     "dark": "resources/dark/share.svg"
@@ -118,7 +118,7 @@
             },
             {
                 "command": "musictime.reconcilePlaylist",
-                "title": "Reconcile Playlists",
+                "title": "Reconcile playlists",
                 "icon": {
                     "light": "resources/light/sync.svg",
                     "dark": "resources/dark/sync.svg"
@@ -126,7 +126,7 @@
             },
             {
                 "command": "musictime.refreshRecommendations",
-                "title": "Refresh Recommendations",
+                "title": "Refresh recommendations",
                 "icon": {
                     "light": "resources/light/sync.svg",
                     "dark": "resources/dark/sync.svg"
@@ -142,7 +142,7 @@
             },
             {
                 "command": "musictime.removeTrack",
-                "title": "Remove Track",
+                "title": "Remove track",
                 "icon": {
                     "light": "resources/light/round-delete-button.svg",
                     "dark": "resources/dark/round-delete-button.svg"
@@ -157,6 +157,22 @@
                 }
             },
             {
+                "command": "musictime.dropdownIcon",
+                "title": "Open",
+                "icon": {
+                    "light": "resources/light/ddown.svg",
+                    "dark": "resources/dark/ddown.svg"
+                }
+            },
+            {
+                "command": "musictime.dropdownOpenIcon",
+                "title": "Close",
+                "icon": {
+                    "light": "resources/light/ddown_open.svg",
+                    "dark": "resources/dark/ddown_open.svg"
+                }
+            },
+            {
                 "command": "musictime.progress",
                 "title": "Loading",
                 "tooltip": "Please wait"
@@ -167,11 +183,11 @@
             },
             {
                 "command": "musictime.sortToOriginal",
-                "title": "Sort Latest"
+                "title": "Sort latest"
             },
             {
                 "command": "musictime.like",
-                "title": "Like Song"
+                "title": "Like song"
             },
             {
                 "command": "musictime.unlike",
@@ -179,11 +195,11 @@
             },
             {
                 "command": "musictime.repeatOn",
-                "title": "Repeat Track"
+                "title": "Repeat track"
             },
             {
                 "command": "musictime.repeatOff",
-                "title": "Don't Repeat"
+                "title": "Don't repeat"
             },
             {
                 "command": "musictime.menu",
@@ -215,59 +231,35 @@
             },
             {
                 "command": "musictime.refreshSettings",
-                "title": "Refresh Settings"
+                "title": "Refresh settings"
             },
             {
                 "command": "musictime.refreshPlaylist",
-                "title": "Refresh Playlists"
+                "title": "Refresh playlists"
             },
             {
                 "command": "musictime.addToPlaylist",
-                "title": "Add Or Create A Playlist",
+                "title": "Add Or create a playlist",
                 "icon": {
                     "light": "resources/light/rounded-plus-button.svg",
                     "dark": "resources/dark/rounded-plus-button.svg"
                 }
             },
             {
-                "command": "musictime.likedSongRecs",
-                "title": "Similar to Liked Songs"
+                "command": "musictime.songGenreSelector",
+                "title": "Genre selection",
+                "icon": {
+                    "light": "resources/light/ddown.svg",
+                    "dark": "resources/dark/ddown.svg"
+                }
             },
             {
-                "command": "musictime.soundtrackSongRecs",
-                "title": "Soundtracks"
-            },
-            {
-                "command": "musictime.classicalSongRecs",
-                "title": "Classical"
-            },
-            {
-                "command": "musictime.pianoSongRecs",
-                "title": "Piano"
-            },
-            {
-                "command": "musictime.highValenceSongRecs",
-                "title": "High Valence"
-            },
-            {
-                "command": "musictime.lowValenceSongRecs",
-                "title": "Low Valence"
-            },
-            {
-                "command": "musictime.highEnergySongRecs",
-                "title": "High Energy"
-            },
-            {
-                "command": "musictime.lowEnergySongRecs",
-                "title": "Low Energy"
-            },
-            {
-                "command": "musictime.highTempoSongRecs",
-                "title": "High Tempo"
-            },
-            {
-                "command": "musictime.lowTempoSongRecs",
-                "title": "Low Tempo"
+                "command": "musictime.songCategorySelector",
+                "title": "Category selection",
+                "icon": {
+                    "light": "resources/light/ddown.svg",
+                    "dark": "resources/dark/ddown.svg"
+                }
             }
         ],
         "viewsContainers": {
@@ -332,57 +324,17 @@
                 },
                 {
                     "command": "musictime.refreshRecommendations",
-                    "group": "navigation",
+                    "group": "navigation@1",
                     "when": "view =~ /.*-recommendations/"
                 },
                 {
-                    "command": "musictime.likedSongRecs",
-                    "group": "inline",
+                    "command": "musictime.songGenreSelector",
+                    "group": "navigation@2",
                     "when": "view =~ /.*-recommendations/"
                 },
                 {
-                    "command": "musictime.soundtrackSongRecs",
-                    "group": "inline",
-                    "when": "view =~ /.*-recommendations/"
-                },
-                {
-                    "command": "musictime.classicalSongRecs",
-                    "group": "inline",
-                    "when": "view =~ /.*-recommendations/"
-                },
-                {
-                    "command": "musictime.pianoSongRecs",
-                    "group": "inline",
-                    "when": "view =~ /.*-recommendations/"
-                },
-                {
-                    "command": "musictime.highValenceSongRecs",
-                    "group": "inline",
-                    "when": "view =~ /.*-recommendations/"
-                },
-                {
-                    "command": "musictime.lowValenceSongRecs",
-                    "group": "inline",
-                    "when": "view =~ /.*-recommendations/"
-                },
-                {
-                    "command": "musictime.highEnergySongRecs",
-                    "group": "inline",
-                    "when": "view =~ /.*-recommendations/"
-                },
-                {
-                    "command": "musictime.lowEnergySongRecs",
-                    "group": "inline",
-                    "when": "view =~ /.*-recommendations/"
-                },
-                {
-                    "command": "musictime.highTempoSongRecs",
-                    "group": "inline",
-                    "when": "view =~ /.*-recommendations/"
-                },
-                {
-                    "command": "musictime.lowTempoSongRecs",
-                    "group": "inline",
+                    "command": "musictime.songCategorySelector",
+                    "group": "navigation@3",
                     "when": "view =~ /.*-recommendations/"
                 }
             ]

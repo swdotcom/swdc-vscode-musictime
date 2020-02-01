@@ -70,7 +70,7 @@ import { SpotifyUser } from "cody-music/dist/lib/profile";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { MusicControlManager } from "./MusicControlManager";
 import { ProviderItemManager } from "./ProviderItemManager";
-import { sortPlaylists, checkForDups, sortTracks } from "./MusicUtil";
+import { sortPlaylists, sortTracks } from "./MusicUtil";
 
 const providerItemMgr: ProviderItemManager = ProviderItemManager.getInstance();
 export class MusicManager {

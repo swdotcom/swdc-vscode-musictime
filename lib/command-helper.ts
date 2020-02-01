@@ -26,6 +26,10 @@ import {
     MusicRecommendationProvider,
     connectRecommendationPlaylistTreeView
 } from "./music/MusicRecommendationProvider";
+import {
+    showGenreSelections,
+    showCategorySelections
+} from "./selector/RecTypeSelectorManager";
 
 /**
  * add the commands to vscode....
@@ -62,6 +66,14 @@ export function createCommands(): {
     );
     recTreePlaylistProvider.bindView(recPlaylistTreeView);
     cmds.push(connectRecommendationPlaylistTreeView(recPlaylistTreeView));
+
+    const revealTreeCmd = commands.registerCommand(
+        "musictime.revealTree",
+        () => {
+            treePlaylistProvider.revealTree();
+        }
+    );
+    cmds.push(revealTreeCmd);
 
     const refreshPlaylistStateCmd = commands.registerCommand(
         "musictime.refreshPlaylistState",
@@ -237,9 +249,7 @@ export function createCommands(): {
         async () => {
             await musicMgr.clearPlaylists();
             await musicMgr.refreshPlaylists();
-            setTimeout(() => {
-                treePlaylistProvider.refresh();
-            }, 500);
+            treePlaylistProvider.refresh();
         }
     );
     cmds.push(refreshPlaylistCommand);
@@ -286,89 +296,21 @@ export function createCommands(): {
     );
     cmds.push(addToPlaylistCommand);
 
-    const likedSongRecsCommand = commands.registerCommand(
-        "musictime.likedSongRecs",
-        () => musicMgr.updateRecommendations("Similar to Liked Songs", 5)
+    const genreRecListCmd = commands.registerCommand(
+        "musictime.songGenreSelector",
+        () => {
+            showGenreSelections();
+        }
     );
-    cmds.push(likedSongRecsCommand);
+    cmds.push(genreRecListCmd);
 
-    const soundtrackSongRecsCommand = commands.registerCommand(
-        "musictime.soundtrackSongRecs",
-        () => musicMgr.updateRecommendations("Soundtracks", 0, ["soundtracks"])
+    const categoryRecListCmd = commands.registerCommand(
+        "musictime.songCategorySelector",
+        () => {
+            showCategorySelections();
+        }
     );
-    cmds.push(soundtrackSongRecsCommand);
-
-    const classicalSongRecsCommand = commands.registerCommand(
-        "musictime.classicalSongRecs",
-        () => musicMgr.updateRecommendations("Classical", 0, ["classical"])
-    );
-    cmds.push(classicalSongRecsCommand);
-
-    const pianoSongRecsCommand = commands.registerCommand(
-        "musictime.pianoSongRecs",
-        () => musicMgr.updateRecommendations("Piano", 0, ["piano"])
-    );
-    cmds.push(pianoSongRecsCommand);
-
-    const highEnergySongRecsCommand = commands.registerCommand(
-        "musictime.highEnergySongRecs",
-        () =>
-            musicMgr.updateRecommendations("High Energy", 5, [], {
-                min_energy: 0.6,
-                target_energy: 1
-            })
-    );
-    cmds.push(highEnergySongRecsCommand);
-
-    const lowEnergySongRecsCommand = commands.registerCommand(
-        "musictime.lowEnergySongRecs",
-        () =>
-            musicMgr.updateRecommendations("Low Energy", 5, [], {
-                max_energy: 0.4,
-                target_energy: 0
-            })
-    );
-    cmds.push(lowEnergySongRecsCommand);
-
-    const highValenceSongRecsCommand = commands.registerCommand(
-        "musictime.highValenceSongRecs",
-        () =>
-            musicMgr.updateRecommendations("High Valence", 5, [], {
-                min_valence: 0.6,
-                target_valence: 1
-            })
-    );
-    cmds.push(highValenceSongRecsCommand);
-
-    const lowValenceSongRecsCommand = commands.registerCommand(
-        "musictime.lowValenceSongRecs",
-        () =>
-            musicMgr.updateRecommendations("Low Valence", 5, [], {
-                max_valence: 0.4,
-                target_valence: 0
-            })
-    );
-    cmds.push(lowValenceSongRecsCommand);
-
-    const highTempoSongRecsCommand = commands.registerCommand(
-        "musictime.highTempoSongRecs",
-        () =>
-            musicMgr.updateRecommendations("High Tempo", 5, [], {
-                min_tempo: 145,
-                target_tempo: 220
-            })
-    );
-    cmds.push(highTempoSongRecsCommand);
-
-    const lowTempoSongRecsCommand = commands.registerCommand(
-        "musictime.lowTempoSongRecs",
-        () =>
-            musicMgr.updateRecommendations("Low Tempo", 5, [], {
-                max_tempo: 95,
-                target_tempo: 0
-            })
-    );
-    cmds.push(lowTempoSongRecsCommand);
+    cmds.push(categoryRecListCmd);
 
     const refreshRecommendationsCommand = commands.registerCommand(
         "musictime.refreshRecommendations",

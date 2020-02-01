@@ -39,9 +39,6 @@ const createPlaylistTreeItem = (
 const musicMgr: MusicManager = MusicManager.getInstance();
 const musicControlMgr: MusicControlManager = MusicControlManager.getInstance();
 
-let initializedPlaylist = false;
-let refresh_playlist_interval = null;
-
 export const playSelectedItem = async (
     playlistItem: PlaylistItem,
     isExpand: boolean
@@ -186,12 +183,30 @@ export const playSelectedItem = async (
             }
         }
     }
+};
 
-    if (launchConfirmInfo.isLaunching) {
+export const refreshPlaylistViewIfRequired = (
+    retryCount = 2,
+    revealWhenComplete = false
+) => {
+    if (
+        retryCount > 0 &&
+        (!musicMgr.spotifyPlaylists || musicMgr.spotifyPlaylists.length === 0)
+    ) {
+        commands.executeCommand("musictime.refreshPlaylist");
         setTimeout(() => {
-            // refresh the list to reflect the running device
-            commands.executeCommand("musictime.refreshPlaylist");
-        }, launchTimeout);
+            if (
+                !musicMgr.spotifyPlaylists ||
+                musicMgr.spotifyPlaylists.length === 0
+            ) {
+                retryCount--;
+                refreshPlaylistViewIfRequired(retryCount);
+            } else if (revealWhenComplete) {
+                commands.executeCommand("musictime.revealTree");
+            }
+        }, 2500);
+    } else if (revealWhenComplete) {
+        commands.executeCommand("musictime.revealTree");
     }
 };
 
@@ -236,18 +251,7 @@ export const connectPlaylistTreeView = (view: TreeView<PlaylistItem>) => {
         }),
         view.onDidChangeVisibility(e => {
             if (e.visible) {
-                if (!initializedPlaylist) {
-                    // fetch the playlist
-                    refresh_playlist_interval = setInterval(() => {
-                        if (!initializedPlaylist) {
-                            clearInterval(refresh_playlist_interval);
-                        } else {
-                            commands.executeCommand(
-                                "musictime.refreshPlaylist"
-                            );
-                        }
-                    }, 2000);
-                }
+                refreshPlaylistViewIfRequired();
             }
         })
     );
@@ -295,6 +299,19 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
         }
     }
 
+    revealTree() {
+        const item: PlaylistItem = ProviderItemManager.getInstance().getReadmeButton();
+        try {
+            // select the readme item
+            this.view.reveal(item, {
+                focus: true,
+                select: false
+            });
+        } catch (err) {
+            logIt(`Unable to select track: ${err.message}`);
+        }
+    }
+
     getTreeItem(p: PlaylistItem): PlaylistTreeItem {
         let treeItem: PlaylistTreeItem = null;
         if (p.type === "playlist") {
@@ -335,13 +352,6 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
                 return tracks;
             } else {
                 // get the top level playlist parents
-                let playlistChildren: PlaylistItem[] =
-                    musicMgr.currentPlaylists;
-
-                // set the flag that we've initialized the playlist
-                if (playlistChildren && playlistChildren.length > 0) {
-                    initializedPlaylist = true;
-                }
                 return musicMgr.currentPlaylists;
             }
         } else {

@@ -22,6 +22,7 @@ import {
 } from "./Util";
 import { getSpotifyLikedSongs, Track } from "cody-music";
 import { MusicManager } from "./music/MusicManager";
+import { refreshPlaylistViewIfRequired } from "./music/MusicPlaylistProvider";
 const moment = require("moment-timezone");
 
 let loggedInCacheState = null;
@@ -305,10 +306,15 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
         // send the top spotify songs from the users playlists to help seed song sessions
         seedLikedSongSessions(likedSongs);
 
+        musicMgr.clearSpotify();
+
+        // initiate the playlist build
+        commands.executeCommand("musictime.refreshPlaylist");
+
         setTimeout(() => {
-            musicMgr.clearSpotify();
-            commands.executeCommand("musictime.refreshPlaylist");
-        }, 1000);
+            // reveal the tree
+            refreshPlaylistViewIfRequired(4, true);
+        }, 4000);
     }
 }
 
