@@ -190,8 +190,12 @@ export class MusicManager {
         }
 
         // ! most important part !
-        let playlists: PlaylistItem[] = dataMgr.rawPlaylists;
-        let hasPlaylists = playlists.length > 0 ? true : false;
+        let playlists: PlaylistItem[] = dataMgr.rawPlaylists || [];
+        let hasPlaylists = playlists.length ? true : false;
+        let hasLikedSongs: boolean =
+            dataMgr.spotifyLikedSongs && dataMgr.spotifyLikedSongs.length
+                ? true
+                : false;
 
         // fetch the playlists
         if (!hasPlaylists && CONNECTED) {
@@ -200,11 +204,7 @@ export class MusicManager {
             hasPlaylists = playlists.length > 0 ? true : false;
         }
 
-        if (
-            (!dataMgr.spotifyLikedSongs ||
-                dataMgr.spotifyLikedSongs.length === 0) &&
-            CONNECTED
-        ) {
+        if (!hasLikedSongs && CONNECTED) {
             await populateLikedSongs();
         }
 
@@ -321,7 +321,7 @@ export class MusicManager {
             }
 
             // add the rest only if they don't need spotify access
-            if (serverIsOnline && CONNECTED) {
+            if ((serverIsOnline && CONNECTED) || hasPlaylists) {
                 // line break between actions and software playlist section
                 items.push(providerItemMgr.getLineBreakButton());
 

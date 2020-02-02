@@ -353,6 +353,7 @@
         "clipboardy": "^2.1.0",
         "cody-music": "2.7.4",
         "moment-timezone": "^0.5.25",
+        "node-cache": "^5.1.0",
         "open": "^6.4.0",
         "vsls": "0.3.1291"
     }

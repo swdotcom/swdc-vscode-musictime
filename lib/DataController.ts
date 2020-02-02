@@ -29,7 +29,10 @@ import {
 import { MusicManager } from "./music/MusicManager";
 import { refreshPlaylistViewIfRequired } from "./music/MusicPlaylistProvider";
 import { MusicDataManager } from "./music/MusicDataManager";
+import { CacheManager } from "./cache/CacheManager";
 const moment = require("moment-timezone");
+
+const cacheMgr: CacheManager = CacheManager.getInstance();
 
 let loggedInCacheState = null;
 let serverAvailable = true;
@@ -66,9 +69,8 @@ export function getToggleFileEventLoggingState() {
 }
 
 export async function serverIsAvailable() {
-    let nowSec = nowInSecs();
-    let diff = nowSec - serverAvailableLastCheck;
-    if (serverAvailableLastCheck === 0 || diff > 60) {
+    let serverAvailable = cacheMgr.get("serverAvailable") || null;
+    if (serverAvailable === null) {
         serverAvailableLastCheck = nowInSecs();
         serverAvailable = await softwareGet("/ping", null)
             .then(result => {
@@ -77,6 +79,9 @@ export async function serverIsAvailable() {
             .catch(e => {
                 return false;
             });
+    }
+    if (serverAvailable !== null) {
+        cacheMgr.set("serverAvailable", serverAvailable);
     }
     return serverAvailable;
 }
