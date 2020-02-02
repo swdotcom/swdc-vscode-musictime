@@ -161,6 +161,8 @@ export class PlaylistTreeItem extends TreeItem {
     ) {
         super(treeItem.name, collapsibleState);
 
+        this.description = treeItem.itemType === "track" ? treeItem.artist : "";
+
         const { lightPath, darkPath, contextValue } = getPlaylistIcon(treeItem);
         if (lightPath && darkPath) {
             this.iconPath.light = lightPath;
