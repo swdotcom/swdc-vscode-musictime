@@ -183,7 +183,7 @@ export class ProviderItemManager {
             "View your latest music metrics right here in your editor",
             "",
             null,
-            "dashboard.png"
+            "dashboard.svg"
         );
     }
 

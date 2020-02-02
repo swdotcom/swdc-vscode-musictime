@@ -30,6 +30,7 @@ import {
     showGenreSelections,
     showCategorySelections
 } from "./selector/RecTypeSelectorManager";
+import { showSortPlaylistMenu } from "./selector/SortPlaylistSelectorManager";
 
 /**
  * add the commands to vscode....
@@ -216,6 +217,14 @@ export function createCommands(): {
         }
     );
     cmds.push(reconcilePlaylistCommand);
+
+    const sortPlaylistCommand = commands.registerCommand(
+        "musictime.sortIcon",
+        async () => {
+            showSortPlaylistMenu();
+        }
+    );
+    cmds.push(sortPlaylistCommand);
 
     const sortPlaylistAlphabeticallyCommand = commands.registerCommand(
         "musictime.sortAlphabetically",

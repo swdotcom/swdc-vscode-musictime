@@ -1267,6 +1267,7 @@ export class MusicManager {
                     );
                     item.tag = "spotify";
                     item.type = "recommendation";
+                    item["icon"] = "track.svg";
                     items.push(item);
                 }
             }

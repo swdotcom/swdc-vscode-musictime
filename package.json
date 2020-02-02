@@ -157,25 +157,17 @@
                 }
             },
             {
-                "command": "musictime.dropdownIcon",
-                "title": "Open",
-                "icon": {
-                    "light": "resources/light/ddown.svg",
-                    "dark": "resources/dark/ddown.svg"
-                }
-            },
-            {
-                "command": "musictime.dropdownOpenIcon",
-                "title": "Close",
-                "icon": {
-                    "light": "resources/light/ddown_open.svg",
-                    "dark": "resources/dark/ddown_open.svg"
-                }
-            },
-            {
                 "command": "musictime.progress",
                 "title": "Loading",
                 "tooltip": "Please wait"
+            },
+            {
+                "command": "musictime.sortIcon",
+                "title": "Sort",
+                "icon": {
+                    "light": "resources/light/sort.svg",
+                    "dark": "resources/dark/sort.svg"
+                }
             },
             {
                 "command": "musictime.sortAlphabetically",
@@ -241,24 +233,24 @@
                 "command": "musictime.addToPlaylist",
                 "title": "Add Or create a playlist",
                 "icon": {
-                    "light": "resources/light/rounded-plus-button.svg",
-                    "dark": "resources/dark/rounded-plus-button.svg"
+                    "light": "resources/light/add.svg",
+                    "dark": "resources/dark/add.svg"
                 }
             },
             {
                 "command": "musictime.songGenreSelector",
                 "title": "Genre selection",
                 "icon": {
-                    "light": "resources/light/ddown.svg",
-                    "dark": "resources/dark/ddown.svg"
+                    "light": "resources/light/filter.svg",
+                    "dark": "resources/dark/filter.svg"
                 }
             },
             {
                 "command": "musictime.songCategorySelector",
                 "title": "Category selection",
                 "icon": {
-                    "light": "resources/light/ddown.svg",
-                    "dark": "resources/dark/ddown.svg"
+                    "light": "resources/light/beaker.svg",
+                    "dark": "resources/dark/beaker.svg"
                 }
             }
         ],
@@ -308,22 +300,17 @@
             ],
             "view/title": [
                 {
+                    "command": "musictime.sortIcon",
+                    "group": "navigation@1",
+                    "when": "view =~ /.*-playlists/"
+                },
+                {
                     "command": "musictime.reconcilePlaylist",
-                    "group": "navigation",
+                    "group": "navigation@2",
                     "when": "view =~ /.*-playlists/"
                 },
                 {
-                    "command": "musictime.sortAlphabetically",
-                    "group": "inline",
-                    "when": "view =~ /.*-playlists/"
-                },
-                {
-                    "command": "musictime.sortToOriginal",
-                    "group": "inline",
-                    "when": "view =~ /.*-playlists/"
-                },
-                {
-                    "command": "musictime.refreshRecommendations",
+                    "command": "musictime.songCategorySelector",
                     "group": "navigation@1",
                     "when": "view =~ /.*-recommendations/"
                 },
@@ -333,7 +320,7 @@
                     "when": "view =~ /.*-recommendations/"
                 },
                 {
-                    "command": "musictime.songCategorySelector",
+                    "command": "musictime.refreshRecommendations",
                     "group": "navigation@3",
                     "when": "view =~ /.*-recommendations/"
                 }
