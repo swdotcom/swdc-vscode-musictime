@@ -128,6 +128,7 @@ export class MusicManager {
 
     updateSort(sortAlpha) {
         if (!requiresSpotifyAccess()) {
+            dataMgr.rawPlaylists = [...dataMgr.origRawPlaylistOrder];
             dataMgr.sortAlphabetically = sortAlpha;
             commands.executeCommand("musictime.refreshPlaylist");
             window.showInformationMessage("Sorting playlist, please wait.");

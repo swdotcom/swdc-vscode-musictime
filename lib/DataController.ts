@@ -24,7 +24,8 @@ import {
     getSpotifyLikedSongs,
     Track,
     PlayerName,
-    getPlaylists
+    getPlaylists,
+    PlaylistItem
 } from "cody-music";
 import { MusicManager } from "./music/MusicManager";
 import { refreshPlaylistViewIfRequired } from "./music/MusicPlaylistProvider";
@@ -337,12 +338,12 @@ export async function populateLikedSongs() {
 }
 
 export async function populateSpotifyPlaylists() {
-    MusicDataManager.getInstance().rawPlaylists = await getPlaylists(
-        PlayerName.SpotifyWeb,
-        {
-            all: true
-        }
-    );
+    const rawPlaylists = await getPlaylists(PlayerName.SpotifyWeb, {
+        all: true
+    });
+    // set the list of playlistIds based on this current order
+    MusicDataManager.getInstance().origRawPlaylistOrder = [...rawPlaylists];
+    MusicDataManager.getInstance().rawPlaylists = rawPlaylists;
 }
 
 export function getBootstrapFileMetrics() {

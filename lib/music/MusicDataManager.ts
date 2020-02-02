@@ -38,6 +38,7 @@ export class MusicDataManager {
     public buildingPlaylists: boolean = false;
 
     public rawPlaylists: PlaylistItem[] = [];
+    public origRawPlaylistOrder: PlaylistItem[] = [];
     public itunesPlaylists: PlaylistItem[] = [];
     public spotifyPlaylists: PlaylistItem[] = [];
 

@@ -46,6 +46,7 @@ export class ProviderItemManager {
         item.tag = "spotify-liked-songs";
         item.itemType = "playlist";
         item.name = SPOTIFY_LIKED_SONGS_PLAYLIST_NAME;
+        item["icon"] = "heart-filled.svg";
         return item;
     }
 
@@ -309,6 +310,7 @@ export class ProviderItemManager {
             listItem.playerType = PlayerType.WebSpotify;
             listItem.name = personalPlaylistLabel;
             listItem.tooltip = personalPlaylistTooltip;
+            listItem["icon"] = "generate.svg";
             return listItem;
         }
         return null;

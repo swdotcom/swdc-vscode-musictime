@@ -109,6 +109,15 @@ export function sortTracks(tracks) {
 
 export async function buildTracksForRecommendations(playlists) {
     const dataMgr: MusicDataManager = MusicDataManager.getInstance();
+
+    // no need to refresh recommendations if we already have track IDs
+    if (
+        dataMgr.trackIdsForRecommendations &&
+        dataMgr.trackIdsForRecommendations.length > 0
+    ) {
+        return;
+    }
+
     const musicMgr: MusicManager = MusicManager.getInstance();
     let trackIds = [];
     let foundTracksForRec = false;

@@ -637,6 +637,9 @@ export class MusicControlManager {
                         }
                         await this.setLiked(true, track);
 
+                        // add to the trackIdsForRecommendations
+                        this.dataMgr.trackIdsForRecommendations.push(trackId);
+
                         // repopulate the liked songs
                         await populateLikedSongs();
                     }
