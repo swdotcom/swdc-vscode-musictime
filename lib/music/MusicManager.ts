@@ -11,8 +11,6 @@ import {
     createPlaylist,
     addTracksToPlaylist,
     replacePlaylistTracks,
-    CodyConfig,
-    setConfig,
     getUserProfile,
     launchPlayer,
     quitMacPlayer,
@@ -61,7 +59,6 @@ import {
     softwareDelete,
     softwarePut
 } from "../HttpClient";
-import { SpotifyUser } from "cody-music/dist/lib/profile";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { MusicControlManager } from "./MusicControlManager";
 import { ProviderItemManager } from "./ProviderItemManager";
@@ -184,6 +181,8 @@ export class MusicManager {
             dataMgr.spotifyUser = await getUserProfile();
             HAS_SPOTIFY_USER = this.hasSpotifyUser() ? true : false;
             if (!HAS_SPOTIFY_USER) {
+                // update cody config
+                dataMgr.updateCodyConfig();
                 // try 1 more time
                 dataMgr.spotifyUser = await getUserProfile();
                 HAS_SPOTIFY_USER = this.hasSpotifyUser() ? true : false;

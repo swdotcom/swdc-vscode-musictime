@@ -8,6 +8,7 @@ import {
 } from "cody-music";
 import { SpotifyUser } from "cody-music/dist/lib/profile";
 import { isMac, getItem } from "../Util";
+import { commands } from "vscode";
 
 export class MusicDataManager {
     private static instance: MusicDataManager;
@@ -107,6 +108,11 @@ export class MusicDataManager {
         if (foundIdx > -1) {
             // splice it out
             this.recommendationTracks.splice(foundIdx, 1);
+        }
+
+        if (this.recommendationTracks.length < 2) {
+            // refresh
+            commands.executeCommand("musictime.refreshRecommendations");
         }
     }
 }
