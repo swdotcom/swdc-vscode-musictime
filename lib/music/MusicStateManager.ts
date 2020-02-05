@@ -457,6 +457,8 @@ export class MusicStateManager {
             ...songData
         };
 
+        console.log("----- sending song session ----- ");
+
         // send the music data, if we're online
         sendMusicData(songSession);
     }

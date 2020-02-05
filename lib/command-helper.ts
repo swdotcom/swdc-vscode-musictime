@@ -52,7 +52,6 @@ export function createCommands(): {
             showCollapseAll: false
         }
     );
-    MusicCommandManager.setTreeProvider(treePlaylistProvider);
     treePlaylistProvider.bindView(playlistTreeView);
     cmds.push(connectPlaylistTreeView(playlistTreeView));
 

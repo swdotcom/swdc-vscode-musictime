@@ -115,4 +115,11 @@ export class MusicDataManager {
             commands.executeCommand("musictime.refreshRecommendations");
         }
     }
+
+    isLikedTrack(trackId: string) {
+        const foundSong = this.spotifyLikedSongs
+            ? this.spotifyLikedSongs.find((n: Track) => n.id === trackId)
+            : null;
+        return foundSong ? true : false;
+    }
 }

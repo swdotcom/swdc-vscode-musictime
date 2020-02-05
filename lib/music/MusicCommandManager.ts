@@ -7,9 +7,7 @@ import {
     PlayerContext,
     getSpotifyPlayerContext
 } from "cody-music";
-import { MusicPlaylistProvider } from "./MusicPlaylistProvider";
 import { MusicManager } from "./MusicManager";
-import { serverIsAvailable } from "../DataController";
 import { requiresSpotifyAccess } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 
@@ -38,7 +36,6 @@ export interface Button {
 export class MusicCommandManager {
     private static _buttons: Button[] = [];
     private static _hideSongTimeout = null;
-    private static _treeProvider: MusicPlaylistProvider;
     private static _isLoading: boolean = false;
 
     private constructor() {
@@ -47,10 +44,6 @@ export class MusicCommandManager {
 
     public static isLoading(): boolean {
         return this._isLoading;
-    }
-
-    public static setTreeProvider(provider: MusicPlaylistProvider) {
-        this._treeProvider = provider;
     }
 
     /**
@@ -142,10 +135,9 @@ export class MusicCommandManager {
         const pauseIt = trackStatus === TrackStatus.Playing;
         const playIt = trackStatus === TrackStatus.Paused;
 
-        if (showLoading) {
-            this.showLoadingTrack();
-        } else if (!needsSpotifyAccess && foundDevice && (pauseIt || playIt)) {
-            this._isLoading = false;
+        this._isLoading = showLoading;
+
+        if (!needsSpotifyAccess && foundDevice && (pauseIt || playIt)) {
             if (pauseIt) {
                 this.showPauseControls(track);
             } else {
@@ -258,15 +250,19 @@ export class MusicCommandManager {
      * @param trackInfo
      */
     private static async showPlayControls(trackInfo: Track) {
-        const serverIsOnline = await serverIsAvailable();
         if (!this._buttons || this._buttons.length === 0) {
             return;
         }
-        const { isLikedSong, repeatState } = await this.getSpotifyState();
+
+        const { repeatState } = await this.getSpotifyState();
 
         const songInfo = trackInfo
             ? `${trackInfo.name} (${trackInfo.artist})`
             : null;
+
+        const isLiked = MusicDataManager.getInstance().isLikedTrack(
+            trackInfo.id
+        );
 
         this._buttons.map(button => {
             const btnCmd = button.statusBarItem.command;
@@ -290,13 +286,13 @@ export class MusicCommandManager {
                 // always show the headphones menu icon
                 button.statusBarItem.show();
             } else if (isLikedButton) {
-                if (isLikedSong) {
+                if (isLiked) {
                     button.statusBarItem.hide();
                 } else {
                     button.statusBarItem.show();
                 }
             } else if (isUnLikedButton) {
-                if (isLikedSong) {
+                if (isLiked) {
                     button.statusBarItem.show();
                 } else {
                     button.statusBarItem.hide();
@@ -340,15 +336,18 @@ export class MusicCommandManager {
      * @param trackInfo
      */
     private static async showPauseControls(trackInfo: Track) {
-        const serverIsOnline = await serverIsAvailable();
         if (!this._buttons || this._buttons.length === 0) {
             return;
         }
-        const { isLikedSong, repeatState } = await this.getSpotifyState();
+        const { repeatState } = await this.getSpotifyState();
 
         const songInfo = trackInfo
             ? `${trackInfo.name} (${trackInfo.artist})`
             : null;
+
+        const isLiked = MusicDataManager.getInstance().isLikedTrack(
+            trackInfo.id
+        );
 
         this._buttons.map(button => {
             const btnCmd = button.statusBarItem.command;
@@ -372,13 +371,13 @@ export class MusicCommandManager {
                 // always show the headphones menu icon
                 button.statusBarItem.show();
             } else if (isLikedButton) {
-                if (isLikedSong) {
+                if (isLiked) {
                     button.statusBarItem.hide();
                 } else {
                     button.statusBarItem.show();
                 }
             } else if (isUnLikedButton) {
-                if (isLikedSong) {
+                if (isLiked) {
                     button.statusBarItem.show();
                 } else {
                     button.statusBarItem.hide();
@@ -457,7 +456,6 @@ export class MusicCommandManager {
         const needsSpotifyAccess = requiresSpotifyAccess();
         const hasSpotifyPlaybackAccess = musicMgr.hasSpotifyPlaybackAccess();
         const hasSpotifyUser = musicMgr.hasSpotifyUser();
-        const isLikedSong = await musicMgr.isLikedSong();
 
         const spotifyContext: PlayerContext = await getSpotifyPlayerContext();
         // "off", "track", "context", ""
@@ -477,7 +475,6 @@ export class MusicCommandManager {
             hasSpotifyPlaybackAccess,
             hasSpotifyUser,
             showPremiumRequired,
-            isLikedSong,
             repeatState,
             foundDevice,
             isPlaying,
