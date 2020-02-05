@@ -120,16 +120,16 @@
                 "command": "musictime.reconcilePlaylist",
                 "title": "Reconcile playlists",
                 "icon": {
-                    "light": "resources/light/sync.svg",
-                    "dark": "resources/dark/sync.svg"
+                    "light": "resources/light/refresh.svg",
+                    "dark": "resources/dark/refresh.svg"
                 }
             },
             {
                 "command": "musictime.refreshRecommendations",
                 "title": "Refresh recommendations",
                 "icon": {
-                    "light": "resources/light/sync.svg",
-                    "dark": "resources/dark/sync.svg"
+                    "light": "resources/light/refresh.svg",
+                    "dark": "resources/dark/refresh.svg"
                 }
             },
             {
@@ -144,8 +144,8 @@
                 "command": "musictime.removeTrack",
                 "title": "Remove track",
                 "icon": {
-                    "light": "resources/light/round-delete-button.svg",
-                    "dark": "resources/dark/round-delete-button.svg"
+                    "light": "resources/light/remove.svg",
+                    "dark": "resources/dark/remove.svg"
                 }
             },
             {
