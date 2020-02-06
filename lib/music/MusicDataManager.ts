@@ -185,23 +185,31 @@ export class MusicDataManager {
      * The playlistTypeId is used to match the set ID from music time
      * app. 1 = user's coding favorites, 2 = global top 40
      */
-    populateGeneratedPlaylists(playlists: PlaylistItem[]) {
+    populateGeneratedPlaylists() {
         this.generatedPlaylists = [];
-        if (this.savedPlaylists.length > 0 && playlists.length > 0) {
+        if (this.savedPlaylists.length > 0 && this.rawPlaylists.length > 0) {
             this.savedPlaylists.forEach((savedPlaylist: PlaylistItem) => {
                 const savedPlaylistTypeId = savedPlaylist.playlistTypeId;
-                let idx = -1;
-                for (let i = 0; i < playlists.length; i++) {
-                    const playlist = playlists[i];
-                    if (playlist.id === savedPlaylist.id) {
-                        playlist.playlistTypeId = savedPlaylistTypeId;
-                        playlist.tag = "paw";
-                        this.generatedPlaylists.push(playlist);
-                        break;
-                    }
+
+                const rawIdx = this.rawPlaylists.findIndex(
+                    (n: PlaylistItem) => n.id === savedPlaylist.id
+                );
+                const origRawPlaylistOrderIdx = this.origRawPlaylistOrder.findIndex(
+                    (n: PlaylistItem) => n.id === savedPlaylist.id
+                );
+                if (rawIdx !== -1) {
+                    const playlist = this.rawPlaylists[rawIdx];
+                    playlist.playlistTypeId = savedPlaylistTypeId;
+                    playlist.tag = "paw";
+                    this.generatedPlaylists.push(playlist);
+
+                    this.rawPlaylists.splice(rawIdx, 1);
                 }
-                if (idx !== -1) {
-                    playlists.splice(idx, 1);
+                if (origRawPlaylistOrderIdx !== -1) {
+                    this.origRawPlaylistOrder.splice(
+                        origRawPlaylistOrderIdx,
+                        1
+                    );
                 }
             });
         }

@@ -353,11 +353,13 @@ export async function populateSpotifyPlaylists() {
     const rawPlaylists = await getPlaylists(PlayerName.SpotifyWeb, {
         all: true
     });
-    // populate generated playlists
-    await dataMgr.populateGeneratedPlaylists(rawPlaylists);
+
     // set the list of playlistIds based on this current order
     dataMgr.origRawPlaylistOrder = [...rawPlaylists];
     dataMgr.rawPlaylists = rawPlaylists;
+
+    // populate generated playlists
+    await dataMgr.populateGeneratedPlaylists();
 }
 
 export function getBootstrapFileMetrics() {
