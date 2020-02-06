@@ -39,6 +39,7 @@ export class MusicDataManager {
     public savedPlaylists: PlaylistItem[] = [];
     public recommendationTracks: Track[] = [];
     public trackIdsForRecommendations: string[] = [];
+    public prevRecTrackMap: any = {};
     public recommendationLabel: string = "Similar to Liked Songs";
     public currentRecMeta: any = {};
     public ready: boolean = false;

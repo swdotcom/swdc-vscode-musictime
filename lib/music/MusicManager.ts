@@ -1091,7 +1091,7 @@ export class MusicManager {
                 this.dataMgr.currentRecMeta.likedSongSeedLimit,
                 this.dataMgr.currentRecMeta.seed_genres,
                 this.dataMgr.currentRecMeta.features,
-                this.dataMgr.currentRecMeta.offset + 1
+                this.dataMgr.currentRecMeta.offset
             );
         } else {
             // default to the similar liked songs recommendations
@@ -1113,21 +1113,57 @@ export class MusicManager {
             features,
             offset
         };
+
         const trackIds = await this.getTrackIdsForRecommendations(
             likedSongSeedLimit,
             offset
         );
-        const tracks: Track[] = await this.getRecommendedTracks(
-            trackIds,
-            seed_genres,
-            features
-        );
-        if (tracks && tracks.length > 0) {
-            // sort them alpabeticaly
-            sortTracks(tracks);
+
+        // fetch the recommendations from spotify
+        const tracks: Track[] =
+            (await this.getRecommendedTracks(
+                trackIds,
+                seed_genres,
+                features
+            )) || [];
+
+        // get the tracks that have already been recommended
+        let existingTrackIds = this.dataMgr.prevRecTrackMap[label]
+            ? this.dataMgr.prevRecTrackMap[label]
+            : [];
+        let finalTracks: Track[] = [];
+        if (existingTrackIds.length) {
+            // filter out the ones that are already used
+            tracks.forEach((track: Track) => {
+                if (!existingTrackIds.find((id: string) => id === track.id)) {
+                    finalTracks.push(track);
+                }
+            });
+            if (finalTracks.length < 10) {
+                // use the 1st 10 from recommendations and clear out the existing track ids
+                finalTracks = [];
+                finalTracks.push(...tracks);
+                existingTrackIds = [];
+            }
+        } else {
+            finalTracks.push(...tracks);
         }
+
+        // trim down to 10
+        finalTracks = finalTracks.splice(0, 10);
+
+        // add these tot he previously recommended tracks
+        const finalTrackIds = finalTracks.map((t: Track) => t.id);
+        existingTrackIds.push(...finalTrackIds);
+        this.dataMgr.prevRecTrackMap[label] = existingTrackIds;
+
+        if (finalTracks.length > 0) {
+            // sort them alpabeticaly
+            sortTracks(finalTracks);
+        }
+
         // set the manager's recommendation tracks
-        this.dataMgr.recommendationTracks = tracks;
+        this.dataMgr.recommendationTracks = finalTracks;
         this.dataMgr.recommendationLabel = label;
 
         // refresh the rec tree
@@ -1142,7 +1178,7 @@ export class MusicManager {
         try {
             return getRecommendationsForTracks(
                 trackIds,
-                10,
+                100,
                 "" /*market*/,
                 20,
                 100,
@@ -1425,6 +1461,7 @@ export class MusicManager {
         if (trackRecs.length > 0) {
             for (let i = 0; i < likedSongSeedLimit; i++) {
                 if (trackRecs.length > offset) {
+                    // we have enough, grab the next track
                     trackIds.push(trackRecs[offset]);
                 } else {
                     // start the offset back to the begining
