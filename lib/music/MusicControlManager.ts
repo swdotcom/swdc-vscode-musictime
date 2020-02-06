@@ -63,11 +63,7 @@ import { tmpdir } from "os";
 import { connectSlack } from "../slack/SlackControlManager";
 import { MusicManager } from "./MusicManager";
 import { MusicPlaylistManager } from "./MusicPlaylistManager";
-import {
-    sortPlaylists,
-    requiresSpotifyAccess,
-    getMusicTimePlaylistByTypeId
-} from "./MusicUtil";
+import { sortPlaylists, requiresSpotifyAccess } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 
 const moment = require("moment-timezone");
@@ -418,7 +414,7 @@ export class MusicControlManager {
             const savedPlaylists: PlaylistItem[] = this.dataMgr.savedPlaylists;
 
             // check if they've generated a playlist yet
-            const customPlaylist = getMusicTimePlaylistByTypeId(
+            const customPlaylist = this.dataMgr.getMusicTimePlaylistByTypeId(
                 PERSONAL_TOP_SONGS_PLID
             );
 

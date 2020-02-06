@@ -117,7 +117,7 @@
                 }
             },
             {
-                "command": "musictime.reconcilePlaylist",
+                "command": "musictime.refreshButton",
                 "title": "Reconcile playlists",
                 "icon": {
                     "light": "resources/light/refresh.svg",
@@ -305,7 +305,7 @@
                     "when": "view =~ /.*-playlists/"
                 },
                 {
-                    "command": "musictime.reconcilePlaylist",
+                    "command": "musictime.refreshButton",
                     "group": "navigation@2",
                     "when": "view =~ /.*-playlists/"
                 },

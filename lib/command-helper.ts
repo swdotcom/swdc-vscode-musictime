@@ -18,7 +18,6 @@ import {
     connectPlaylistTreeView
 } from "./music/MusicPlaylistProvider";
 import { PlaylistItem, PlayerName } from "cody-music";
-import { MusicCommandManager } from "./music/MusicCommandManager";
 import { SocialShareManager } from "./social/SocialShareManager";
 import { connectSlack } from "./slack/SlackControlManager";
 import { MusicManager } from "./music/MusicManager";
@@ -31,6 +30,8 @@ import {
     showCategorySelections
 } from "./selector/RecTypeSelectorManager";
 import { showSortPlaylistMenu } from "./selector/SortPlaylistSelectorManager";
+import { populateSpotifyPlaylists } from "./DataController";
+import { CacheManager } from "./cache/CacheManager";
 
 /**
  * add the commands to vscode....
@@ -209,13 +210,31 @@ export function createCommands(): {
     );
     cmds.push(disconnectSlackCommand);
 
+    // this should only be attached to the refresh button
     const reconcilePlaylistCommand = commands.registerCommand(
-        "musictime.reconcilePlaylist",
+        "musictime.refreshButton",
         async () => {
+            const lastRefresh = CacheManager.getInstance().get("lastRefresh");
+            if (!lastRefresh) {
+                await populateSpotifyPlaylists();
+                // 60 seconds ttl
+                CacheManager.getInstance().set("lastRefresh", true, 60);
+            }
+            musicMgr.clearPlaylists();
             commands.executeCommand("musictime.refreshPlaylist");
         }
     );
     cmds.push(reconcilePlaylistCommand);
+
+    const refreshPlaylistCommand = commands.registerCommand(
+        "musictime.refreshPlaylist",
+        async () => {
+            await musicMgr.clearPlaylists();
+            await musicMgr.refreshPlaylists();
+            treePlaylistProvider.refresh();
+        }
+    );
+    cmds.push(refreshPlaylistCommand);
 
     const sortPlaylistCommand = commands.registerCommand(
         "musictime.sortIcon",
@@ -240,16 +259,6 @@ export function createCommands(): {
         }
     );
     cmds.push(sortPlaylistToOriginalCommand);
-
-    const refreshPlaylistCommand = commands.registerCommand(
-        "musictime.refreshPlaylist",
-        async () => {
-            await musicMgr.clearPlaylists();
-            await musicMgr.refreshPlaylists();
-            treePlaylistProvider.refresh();
-        }
-    );
-    cmds.push(refreshPlaylistCommand);
 
     const launchSpotifyCommand = commands.registerCommand(
         "musictime.launchSpotify",

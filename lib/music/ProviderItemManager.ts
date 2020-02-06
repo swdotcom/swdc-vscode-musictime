@@ -13,12 +13,7 @@ import {
     GENERATE_CUSTOM_PLAYLIST_TOOLTIP,
     REFRESH_CUSTOM_PLAYLIST_TOOLTIP
 } from "../Constants";
-import {
-    getActiveDevice,
-    requiresSpotifyAccess,
-    getMusicTimePlaylistByTypeId
-} from "./MusicUtil";
-import { MusicManager } from "./MusicManager";
+import { getActiveDevice, requiresSpotifyAccess } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 
 export class ProviderItemManager {
@@ -284,7 +279,7 @@ export class ProviderItemManager {
     // otherwise, it will show the refresh label
     getCustomPlaylistButton() {
         // update the existing playlist that matches the personal playlist with a paw if found
-        const customPlaylist = getMusicTimePlaylistByTypeId(
+        const customPlaylist = MusicDataManager.getInstance().getMusicTimePlaylistByTypeId(
             PERSONAL_TOP_SONGS_PLID
         );
 

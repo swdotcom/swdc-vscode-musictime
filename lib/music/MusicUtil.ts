@@ -184,25 +184,3 @@ export function requiresSpotifyAccess() {
     let spotifyAccessToken = getItem("spotify_access_token");
     return spotifyAccessToken ? false : true;
 }
-
-/**
- * Checks if the user's spotify playlists contains either
- * the global top 40 or the user's coding favorites playlist.
- * The playlistTypeId is used to match the set ID from music time
- * app. 1 = user's coding favorites, 2 = global top 40
- */
-export function getMusicTimePlaylistByTypeId(
-    playlistTypeId: number
-): PlaylistItem {
-    const dataMgr: MusicDataManager = MusicDataManager.getInstance();
-    if (dataMgr.generatedPlaylists.length > 0) {
-        for (let i = 0; i < dataMgr.generatedPlaylists.length; i++) {
-            const playlist = dataMgr.generatedPlaylists[i];
-            const typeId = playlist.playlistTypeId;
-            if (typeId === playlistTypeId) {
-                return playlist;
-            }
-        }
-    }
-    return null;
-}

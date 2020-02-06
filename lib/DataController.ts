@@ -338,12 +338,26 @@ export async function populateLikedSongs() {
 }
 
 export async function populateSpotifyPlaylists() {
+    const dataMgr: MusicDataManager = MusicDataManager.getInstance();
+
+    // reconcile playlists
+    dataMgr.reconcilePlaylists();
+
+    // clear out the raw and orig playlists
+    dataMgr.origRawPlaylistOrder = [];
+    dataMgr.rawPlaylists = [];
+
+    // fetch music time app saved playlists
+    await dataMgr.fetchSavedPlaylists();
+    // fetch the playlists from spotify
     const rawPlaylists = await getPlaylists(PlayerName.SpotifyWeb, {
         all: true
     });
+    // populate generated playlists
+    await dataMgr.populateGeneratedPlaylists(rawPlaylists);
     // set the list of playlistIds based on this current order
-    MusicDataManager.getInstance().origRawPlaylistOrder = [...rawPlaylists];
-    MusicDataManager.getInstance().rawPlaylists = rawPlaylists;
+    dataMgr.origRawPlaylistOrder = [...rawPlaylists];
+    dataMgr.rawPlaylists = rawPlaylists;
 }
 
 export function getBootstrapFileMetrics() {
