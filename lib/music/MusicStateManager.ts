@@ -458,6 +458,14 @@ export class MusicStateManager {
         };
 
         console.log("----- sending song session ----- ");
+        // make sure we've set the "liked" to true if it's coming from the liked songs playlist
+        if (
+            !songSession.liked &&
+            songSession.playlistId &&
+            songSession.playlistId.toLowerCase === "liked songs"
+        ) {
+            songSession["liked"] = true;
+        }
 
         // send the music data, if we're online
         sendMusicData(songSession);
