@@ -72,7 +72,7 @@ export class MusicCommandManager {
             "musictime.connectSpotify",
             999
         );
-        // play previous
+        // play previous or unicode ⏪
         this.createButton(
             "$(chevron-left)",
             "Previous",
@@ -81,13 +81,14 @@ export class MusicCommandManager {
         );
         // 998 buttons (play, pause)
         this.createButton("$(play)", "Play", "musictime.play", 998);
+        // pause unicode ⏸
         this.createButton(
             "$(primitive-square)",
             "Stop",
             "musictime.pause",
             998
         );
-        // play next
+        // play next ⏩
         this.createButton("$(chevron-right)", "Next", "musictime.next", 997);
         // 996 buttons (unlike, like)
         this.createButton("♡", "Like", "musictime.like", 996);
@@ -106,10 +107,9 @@ export class MusicCommandManager {
             "",
             "Click to view track",
             "musictime.currentSong",
-            995
+            994
         );
 
-        const musicMgr: MusicManager = MusicManager.getInstance();
         await this.syncControls(MusicDataManager.getInstance().runningTrack);
     }
 
@@ -118,7 +118,6 @@ export class MusicCommandManager {
     }
 
     public static async syncControls(track: Track, showLoading = false) {
-        const musicMgr: MusicManager = MusicManager.getInstance();
         if (this._hideSongTimeout) {
             clearTimeout(this._hideSongTimeout);
         }

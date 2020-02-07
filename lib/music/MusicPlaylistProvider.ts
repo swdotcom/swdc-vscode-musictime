@@ -17,7 +17,6 @@ import {
     getSpotifyDevices,
     PlayerDevice
 } from "cody-music";
-import { PLAYLISTS_PROVIDER } from "../Constants";
 import { MusicManager } from "./MusicManager";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { logIt, getPlaylistIcon } from "../Util";

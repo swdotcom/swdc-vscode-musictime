@@ -92,7 +92,7 @@ function getCategorySelections() {
                 "No lyrics",
                 5,
                 [],
-                { max_speechiness: 0.4, target_speechiness: 0 }
+                { max_speechiness: 0.3, target_speechiness: 0 }
             ]
         },
         // Liked songs

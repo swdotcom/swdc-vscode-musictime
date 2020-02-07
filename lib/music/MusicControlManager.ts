@@ -275,7 +275,12 @@ export class MusicControlManager {
         );
         const deviceId = deviceToPlayOn ? deviceToPlayOn.id : "";
         // just play the 1st track
-        playSpotifyPlaylist(playlistId, trackId, deviceId);
+        await playSpotifyPlaylist(playlistId, trackId, deviceId);
+
+        setTimeout(() => {
+            // fetch the new track info
+            this.musicStateMgr.gatherMusicInfo();
+        }, 500);
     }
 
     async playSpotifyByTrack(
@@ -298,6 +303,11 @@ export class MusicControlManager {
             // just try to play it without the device
             playSpotifyTrack(track.id, "");
         }
+
+        setTimeout(() => {
+            // fetch the new track info
+            this.musicStateMgr.gatherMusicInfo();
+        }, 500);
     }
 
     async setLiked(liked: boolean, overrideTrack: Track = null) {
