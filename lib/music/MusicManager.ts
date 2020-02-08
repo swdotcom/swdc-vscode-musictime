@@ -952,10 +952,38 @@ export class MusicManager {
                 tries--;
                 this.checkDeviceLaunch(tries);
             } else {
-                // transferSpotifyDevice(device_id, false);
-                commands.executeCommand("musictime.refreshDeviceInfo");
+                // now that we have a device, transfer it to the device ID
+                const computerDevice: PlayerDevice = devices.find(
+                    (device: PlayerDevice) =>
+                        device.type.toLowerCase() === "computer"
+                );
+                if (computerDevice) {
+                    await transferSpotifyDevice(
+                        computerDevice.id,
+                        false /*play*/
+                    );
+                    this.checkDeviceIdRunning(computerDevice.id, 5);
+                } else {
+                    // just refresh, failed to get a computer device
+                    commands.executeCommand("musictime.refreshDeviceInfo");
+                }
             }
         }, 1500);
+    }
+
+    async checkDeviceIdRunning(device_id: string, tries: number = 5) {
+        setTimeout(async () => {
+            const devices: PlayerDevice[] = await getSpotifyDevices();
+            const foundDevice: PlayerDevice = devices
+                ? devices.find((d: PlayerDevice) => d.id === device_id)
+                : null;
+            if (!foundDevice && tries > 0) {
+                tries--;
+                this.checkDeviceIdRunning(device_id, tries);
+            } else {
+                commands.executeCommand("musictime.refreshDeviceInfo");
+            }
+        }, 1000);
     }
 
     async isLikedSong() {
