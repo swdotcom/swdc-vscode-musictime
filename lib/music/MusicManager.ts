@@ -161,8 +161,6 @@ export class MusicManager {
         const playerName = this.dataMgr.currentPlayerName;
         let items: PlaylistItem[] = [];
 
-        const devices: PlayerDevice[] = this.dataMgr.currentDevices;
-
         // states: [NOT_CONNECTED, MAC_PREMIUM, MAC_NON_PREMIUM, PC_PREMIUM, PC_NON_PREMIUM]
         const CONNECTED = !requiresSpotifyAccess() ? true : false;
         const IS_PREMIUM = this.isSpotifyPremium() ? true : false;
@@ -271,22 +269,15 @@ export class MusicManager {
         } else {
             // check to see if they have this device available, if not, show a button
             // to switch to this device
-            const switchToThisDeviceButton = await this.providerItemMgr.getSwitchToThisDeviceButton(
-                devices
-            );
+            const switchToThisDeviceButton = await this.providerItemMgr.getSwitchToThisDeviceButton();
             if (switchToThisDeviceButton) {
                 // add it
                 items.push(switchToThisDeviceButton);
             }
 
             // show the devices button
-            const devicesButton = await this.providerItemMgr.getActiveSpotifyDevicesButton(
-                devices
-            );
+            const devicesButton = await this.providerItemMgr.getActiveSpotifyDevicesButton();
             items.push(devicesButton);
-
-            // set the current devices
-            this.dataMgr.currentDevices = devices;
 
             if (isMac() && SHOW_ITUNES_LAUNCH_BUTTON) {
                 items.push(this.providerItemMgr.getSwitchToItunesButton());

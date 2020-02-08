@@ -25,7 +25,8 @@ import {
     Track,
     PlayerName,
     getPlaylists,
-    getSpotifyDevices
+    getSpotifyDevices,
+    PlayerDevice
 } from "cody-music";
 import { MusicManager } from "./music/MusicManager";
 import { refreshPlaylistViewIfRequired } from "./music/MusicPlaylistProvider";
@@ -345,7 +346,7 @@ export async function populateSpotifyPlaylists() {
     dataMgr.rawPlaylists = [];
 
     // fire off the populate spotify devices
-    const populateDevicesP = populateSpotifyDevices();
+    await populateSpotifyDevices();
 
     // fetch music time app saved playlists
     await dataMgr.fetchSavedPlaylists();
@@ -360,12 +361,11 @@ export async function populateSpotifyPlaylists() {
 
     // populate generated playlists
     await dataMgr.populateGeneratedPlaylists();
-
-    await populateDevicesP;
 }
 
 export async function populateSpotifyDevices() {
-    MusicDataManager.getInstance().currentDevices = await getSpotifyDevices();
+    const devices: PlayerDevice[] = await getSpotifyDevices();
+    MusicDataManager.getInstance().currentDevices = devices;
 }
 
 export function getBootstrapFileMetrics() {

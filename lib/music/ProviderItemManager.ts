@@ -69,8 +69,9 @@ export class ProviderItemManager {
         );
     }
 
-    async getActiveSpotifyDevicesButton(devices: PlayerDevice[]) {
-        devices = devices || [];
+    async getActiveSpotifyDevicesButton() {
+        const devices: PlayerDevice[] = MusicDataManager.getInstance()
+            .currentDevices;
 
         const activeDevice: PlayerDevice = devices.find(
             (device: PlayerDevice) => device.is_active
@@ -83,12 +84,13 @@ export class ProviderItemManager {
             msg = `Listening on ${activeDevice.name}`;
         } else if (!activeDevice && devices.length) {
             // no active device but found devices
-            msg = `Spotify devices available to connect`;
-            tooltip = "Select a device to transfer to";
+            const names = devices.map((d: PlayerDevice) => d.name);
+            msg = `Start Spotify on a selected device`;
+            tooltip = `Multiple devices available: ${names.join(", ")}`;
         } else if (!activeDevice && devices.length === 0) {
             // no active device and no devices
-            msg = "Connect a spotify device";
-            tooltip = "Connect a spotify device to control playback";
+            msg = "Connect to a spotify device";
+            tooltip = "Click to launch the web or desktop player";
         }
 
         return this.createSpotifyDevicesButton(
@@ -288,7 +290,9 @@ export class ProviderItemManager {
         );
     }
 
-    async getSwitchToThisDeviceButton(devices: PlayerDevice[]) {
+    async getSwitchToThisDeviceButton() {
+        const devices: PlayerDevice[] = MusicDataManager.getInstance()
+            .currentDevices;
         const activeDevice = getActiveDevice(devices);
 
         if (activeDevice && activeDevice.type.toLowerCase() !== "computer") {
