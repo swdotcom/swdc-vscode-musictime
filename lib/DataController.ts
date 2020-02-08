@@ -25,7 +25,7 @@ import {
     Track,
     PlayerName,
     getPlaylists,
-    PlaylistItem
+    getSpotifyDevices
 } from "cody-music";
 import { MusicManager } from "./music/MusicManager";
 import { refreshPlaylistViewIfRequired } from "./music/MusicPlaylistProvider";
@@ -36,8 +36,6 @@ const moment = require("moment-timezone");
 const cacheMgr: CacheManager = CacheManager.getInstance();
 
 let loggedInCacheState = null;
-let serverAvailable = true;
-let serverAvailableLastCheck = 0;
 let toggleFileEventLogging = null;
 
 let slackFetchTimeout = null;
@@ -72,7 +70,6 @@ export function getToggleFileEventLoggingState() {
 export async function serverIsAvailable() {
     let serverAvailable = cacheMgr.get("serverAvailable") || null;
     if (serverAvailable === null) {
-        serverAvailableLastCheck = nowInSecs();
         serverAvailable = await softwareGet("/ping", null)
             .then(result => {
                 return isResponseOk(result);
@@ -347,6 +344,9 @@ export async function populateSpotifyPlaylists() {
     dataMgr.origRawPlaylistOrder = [];
     dataMgr.rawPlaylists = [];
 
+    // fire off the populate spotify devices
+    const populateDevicesP = populateSpotifyDevices();
+
     // fetch music time app saved playlists
     await dataMgr.fetchSavedPlaylists();
     // fetch the playlists from spotify
@@ -360,6 +360,12 @@ export async function populateSpotifyPlaylists() {
 
     // populate generated playlists
     await dataMgr.populateGeneratedPlaylists();
+
+    await populateDevicesP;
+}
+
+export async function populateSpotifyDevices() {
+    MusicDataManager.getInstance().currentDevices = await getSpotifyDevices();
 }
 
 export function getBootstrapFileMetrics() {

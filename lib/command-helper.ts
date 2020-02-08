@@ -35,7 +35,10 @@ import {
     showCategorySelections
 } from "./selector/RecTypeSelectorManager";
 import { showSortPlaylistMenu } from "./selector/SortPlaylistSelectorManager";
-import { populateSpotifyPlaylists } from "./DataController";
+import {
+    populateSpotifyPlaylists,
+    populateSpotifyDevices
+} from "./DataController";
 import { CacheManager } from "./cache/CacheManager";
 import { showDeviceSelectorMenu } from "./selector/SpotifyDeviceSelectorManager";
 
@@ -222,15 +225,35 @@ export function createCommands(): {
         async () => {
             const lastRefresh = CacheManager.getInstance().get("lastRefresh");
             if (!lastRefresh) {
-                await populateSpotifyPlaylists();
+                commands.executeCommand("musictime.hardRefreshPlaylist");
                 // 60 seconds ttl
                 CacheManager.getInstance().set("lastRefresh", true, 60);
+            } else {
+                commands.executeCommand("musictime.refreshPlaylist");
             }
-            musicMgr.clearPlaylists();
-            commands.executeCommand("musictime.refreshPlaylist");
         }
     );
     cmds.push(reconcilePlaylistCommand);
+
+    // this should only be attached to the refresh button
+    const hardRefreshPlaylistCommand = commands.registerCommand(
+        "musictime.hardRefreshPlaylist",
+        async () => {
+            await populateSpotifyPlaylists();
+            commands.executeCommand("musictime.refreshPlaylist");
+        }
+    );
+    cmds.push(hardRefreshPlaylistCommand);
+
+    // this should only be attached to the refresh button
+    const refreshDeviceInfoCommand = commands.registerCommand(
+        "musictime.refreshDeviceInfo",
+        async () => {
+            await populateSpotifyDevices();
+            commands.executeCommand("musictime.refreshPlaylist");
+        }
+    );
+    cmds.push(refreshDeviceInfoCommand);
 
     const refreshPlaylistCommand = commands.registerCommand(
         "musictime.refreshPlaylist",
@@ -266,14 +289,17 @@ export function createCommands(): {
     );
     cmds.push(sortPlaylistToOriginalCommand);
 
+    const switchToThisDeviceCommand = commands.registerCommand(
+        "musictime.switchToThisDevice",
+        async () => {
+            musicMgr.launchTrackPlayer(PlayerName.SpotifyDesktop);
+        }
+    );
+
     const launchSpotifyCommand = commands.registerCommand(
         "musictime.launchSpotify",
         async () => {
             musicMgr.launchTrackPlayer(PlayerName.SpotifyWeb);
-            setTimeout(() => {
-                // refresh the tree, no need to refresh playlists
-                commands.executeCommand("musictime.refreshPlaylist");
-            }, 1000);
         }
     );
     cmds.push(launchSpotifyCommand);
@@ -282,10 +308,6 @@ export function createCommands(): {
         "musictime.launchSpotifyDesktop",
         async () => {
             await musicMgr.launchTrackPlayer(PlayerName.SpotifyDesktop);
-            setTimeout(() => {
-                // refresh the tree, no need to refresh playlists
-                commands.executeCommand("musictime.refreshPlaylist");
-            }, 1000);
         }
     );
     cmds.push(launchSpotifyDesktopCommand);
@@ -336,8 +358,8 @@ export function createCommands(): {
             await playSpotifyDevice(d.id);
             setTimeout(() => {
                 // refresh the tree, no need to refresh playlists
-                commands.executeCommand("musictime.refreshPlaylist");
-            }, 1000);
+                commands.executeCommand("musictime.refreshDeviceInfo");
+            }, 3000);
         }
     );
     cmds.push(deviceSelectTransferCmd);

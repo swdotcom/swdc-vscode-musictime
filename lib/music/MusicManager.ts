@@ -14,7 +14,6 @@ import {
     getUserProfile,
     launchPlayer,
     quitMacPlayer,
-    getSpotifyDevices,
     PlayerDevice,
     getSpotifyPlaylist,
     getRecommendationsForTracks,
@@ -22,7 +21,9 @@ import {
     playSpotifyDevice,
     playSpotifyTrack,
     PlayerContext,
-    getSpotifyPlayerContext
+    getSpotifyPlayerContext,
+    getSpotifyDevices,
+    transferSpotifyDevice
 } from "cody-music";
 import {
     PERSONAL_TOP_SONGS_NAME,
@@ -42,7 +43,8 @@ import {
     getAppJwt,
     getMusicTimeUserStatus,
     populateSpotifyPlaylists,
-    populateLikedSongs
+    populateLikedSongs,
+    populateSpotifyDevices
 } from "../DataController";
 import {
     getItem,
@@ -52,13 +54,7 @@ import {
     getCodyErrorMessage,
     isWindows
 } from "../Util";
-import {
-    isResponseOk,
-    softwareGet,
-    softwarePost,
-    softwareDelete,
-    softwarePut
-} from "../HttpClient";
+import { isResponseOk, softwareGet, softwarePost } from "../HttpClient";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { MusicControlManager } from "./MusicControlManager";
 import { ProviderItemManager } from "./ProviderItemManager";
@@ -66,7 +62,6 @@ import {
     sortPlaylists,
     sortTracks,
     buildTracksForRecommendations,
-    getActiveDevice,
     requiresSpotifyAccess
 } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
@@ -165,6 +160,8 @@ export class MusicManager {
     private async refreshPlaylistForPlayer(serverIsOnline: boolean) {
         const playerName = this.dataMgr.currentPlayerName;
         let items: PlaylistItem[] = [];
+
+        const devices: PlayerDevice[] = this.dataMgr.currentDevices;
 
         // states: [NOT_CONNECTED, MAC_PREMIUM, MAC_NON_PREMIUM, PC_PREMIUM, PC_NON_PREMIUM]
         const CONNECTED = !requiresSpotifyAccess() ? true : false;
@@ -272,9 +269,6 @@ export class MusicManager {
 
             this.dataMgr.itunesPlaylists = items;
         } else {
-            // get the devices
-            const devices: PlayerDevice[] = await getSpotifyDevices();
-
             // check to see if they have this device available, if not, show a button
             // to switch to this device
             const switchToThisDeviceButton = await this.providerItemMgr.getSwitchToThisDeviceButton(
@@ -406,7 +400,7 @@ export class MusicManager {
         devices: PlayerDevice[] = []
     ): Promise<PlayerDevice> {
         if (!devices || devices.length === 0) {
-            devices = await getSpotifyDevices();
+            devices = await this.dataMgr.currentDevices;
         }
         let anyActiveDevice: PlayerDevice = null;
         if (devices && devices.length > 0) {
@@ -936,43 +930,11 @@ export class MusicManager {
             return;
         }
 
-        // it's not null, this means we want to launch a player and we need to pause the other player
-        if (this.dataMgr.currentPlayerName === PlayerName.ItunesDesktop) {
-            // quit the mac player as the user is switching to spotify
-            await quitMacPlayer(PlayerName.ItunesDesktop);
-        } else {
-            // pause the spotify song as they're switching to itunes
-            const musicCtrlMgr: MusicControlManager = MusicControlManager.getInstance();
-            musicCtrlMgr.pauseSong(false);
-        }
+        await launchPlayer(playerName, { quietly: false });
 
-        // update the current player type to what was selected
-        this.dataMgr.currentPlayerName = playerName;
-
-        if (playerName !== PlayerName.ItunesDesktop) {
-            if (isMac()) {
-                // just launch the desktop
-                await launchPlayer(PlayerName.SpotifyDesktop, {
-                    quietly: false
-                });
-            } else {
-                // this will show a prompt as to why we're launching the web player
-                await this.launchSpotifyPlayer();
-            }
-        } else {
-            await launchPlayer(playerName, {
-                quietly: false
-            });
-        }
-
-        setTimeout(async () => {
-            if (playerName !== PlayerName.ItunesDesktop) {
-                // transfer to the computer device
-                await this.transferToComputerDevice();
-            }
-            // refresh to show the button labeling update
-            commands.executeCommand("musictime.refreshPlaylist");
-        }, 4000);
+        setTimeout(() => {
+            this.checkDeviceLaunch(5);
+        }, 1000);
     }
 
     launchSpotifyPlayer() {
@@ -981,6 +943,19 @@ export class MusicManager {
             ...[OK_LABEL]
         );
         launchPlayer(PlayerName.SpotifyWeb);
+    }
+
+    async checkDeviceLaunch(tries: number = 5) {
+        setTimeout(async () => {
+            const devices: PlayerDevice[] = await getSpotifyDevices();
+            if ((!devices || devices.length == 0) && tries > 0) {
+                tries--;
+                this.checkDeviceLaunch(tries);
+            } else {
+                // transferSpotifyDevice(device_id, false);
+                commands.executeCommand("musictime.refreshDeviceInfo");
+            }
+        }, 1500);
     }
 
     async isLikedSong() {
@@ -1276,7 +1251,7 @@ export class MusicManager {
      * @param computerDevice
      */
     async transferToComputerDevice(computerDevice: PlayerDevice = null) {
-        const devices: PlayerDevice[] = await getSpotifyDevices();
+        const devices: PlayerDevice[] = await this.dataMgr.currentDevices;
         if (!computerDevice) {
             computerDevice =
                 devices && devices.length > 0
@@ -1298,7 +1273,7 @@ export class MusicManager {
         devices: PlayerDevice[] = []
     ): Promise<PlayerDevice[]> {
         if (!devices || devices.length === 0) {
-            devices = await getSpotifyDevices();
+            devices = await this.dataMgr.currentDevices;
         }
 
         if (!devices || devices.length === 0) {
@@ -1318,9 +1293,9 @@ export class MusicManager {
         );
         if (computerDevice) {
             await this.transferToComputerDevice(computerDevice);
-            return await getSpotifyDevices();
+            await populateSpotifyDevices();
         }
-        return devices;
+        return this.dataMgr.currentDevices;
     }
 
     async isComputerDeviceRunning(devices: PlayerDevice[]) {

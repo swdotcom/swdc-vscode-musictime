@@ -1,8 +1,10 @@
 import { showQuickPick } from "../MenuManager";
-import { getSpotifyDevices, PlayerDevice, PlayerName } from "cody-music";
+import { PlayerDevice } from "cody-music";
+import { MusicDataManager } from "../music/MusicDataManager";
 
 export async function showDeviceSelectorMenu() {
-    const devices: PlayerDevice[] = await getSpotifyDevices();
+    const devices: PlayerDevice[] = await MusicDataManager.getInstance()
+        .currentDevices;
     let items: any[] = [];
     if (devices && devices.length) {
         items = devices.map((d: PlayerDevice) => {

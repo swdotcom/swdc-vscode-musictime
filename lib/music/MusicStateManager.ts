@@ -17,7 +17,9 @@ import {
     getRunningTrack,
     TrackStatus,
     getGenre,
-    getSpotifyTrackById
+    getSpotifyTrackById,
+    PlayerDevice,
+    getSpotifyDevices
 } from "cody-music";
 import { MusicManager } from "./MusicManager";
 import { KpmController } from "../KpmController";
@@ -25,6 +27,7 @@ import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { getDataRows } from "../OfflineManager";
 import { MusicDataManager } from "./MusicDataManager";
+import { commands } from "vscode";
 
 export class MusicStateManager {
     static readonly WINDOWS_SPOTIFY_TRACK_FIND: string =
@@ -196,9 +199,10 @@ export class MusicStateManager {
             return;
         }
 
+        this.gatheringSong = true;
+
         const dataMgr: MusicDataManager = MusicDataManager.getInstance();
 
-        this.gatheringSong = true;
         try {
             const utcLocalTimes = this.getUtcAndLocal();
             let playingTrack: Track = await getRunningTrack();
@@ -288,6 +292,8 @@ export class MusicStateManager {
 
             // update the music time status bar
             MusicCommandManager.syncControls(dataMgr.runningTrack, false);
+
+            this.updateDeviceInfoIfTrackNotAssigned(playingTrack);
         } catch (e) {
             const errMsg = e.message || e;
             logIt(`Unexpected track state processing error: ${errMsg}`);
@@ -324,6 +330,24 @@ export class MusicStateManager {
 
         // play the next song
         await musicMgr.playNextLikedSong();
+    }
+
+    private async updateDeviceInfoIfTrackNotAssigned(playingTrack: Track) {
+        if (
+            !playingTrack.name &&
+            playingTrack.state === TrackStatus.NotAssigned
+        ) {
+            const dataMgr: MusicDataManager = MusicDataManager.getInstance();
+            // get the current devices. if empty and our current list isn't, then refresh
+            if (dataMgr.currentDevices && dataMgr.currentDevices.length) {
+                const devices: PlayerDevice[] =
+                    (await getSpotifyDevices()) || [];
+                if (devices.length !== dataMgr.currentDevices.length) {
+                    dataMgr.currentDevices = [];
+                    commands.executeCommand("musictime.refreshDeviceInfo");
+                }
+            }
+        }
     }
 
     public async gatherCodingDataAndSendSongSession(songSession) {

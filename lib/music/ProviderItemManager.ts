@@ -170,7 +170,7 @@ export class ProviderItemManager {
         return this.buildActionItem(
             "title",
             "spotify",
-            "musictime.launchSpotify",
+            "musictime.launchSpotifyDesktop",
             PlayerType.WebSpotify,
             "Launch Spotify"
         );
@@ -297,7 +297,7 @@ export class ProviderItemManager {
             const button = this.buildActionItem(
                 "title",
                 "action",
-                "musictime.launchSpotify",
+                "musictime.switchToThisDevice",
                 PlayerType.MacSpotifyDesktop,
                 "Switch To This Device"
             );

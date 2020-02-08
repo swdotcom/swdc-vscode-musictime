@@ -9,20 +9,12 @@ import {
     TreeView,
     commands
 } from "vscode";
-import {
-    PlaylistItem,
-    PlayerName,
-    PlayerDevice,
-    getSpotifyDevices,
-    Track,
-    PlayerType
-} from "cody-music";
+import { PlaylistItem, PlayerName, PlayerDevice } from "cody-music";
 import { getPlaylistIcon } from "../Util";
 import { MusicManager } from "./MusicManager";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { MusicControlManager } from "./MusicControlManager";
 import { MusicDataManager } from "./MusicDataManager";
-import { requiresSpotifyAccess } from "./MusicUtil";
 import { ProviderItemManager } from "./ProviderItemManager";
 
 const musicMgr: MusicManager = MusicManager.getInstance();
@@ -42,7 +34,8 @@ const createPlaylistTreeItem = (
 
 const playRecommendationTrack = async (track: PlaylistItem) => {
     // ask to launch web or desktop if neither are running
-    const devices: PlayerDevice[] = await getSpotifyDevices();
+    const devices: PlayerDevice[] = await MusicDataManager.getInstance()
+        .currentDevices;
     const launchConfirmInfo: any = await musicMgr.launchConfirm(devices);
     if (!launchConfirmInfo.proceed) {
         return;

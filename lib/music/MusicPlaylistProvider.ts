@@ -14,7 +14,6 @@ import {
     PlayerName,
     PlayerType,
     playItunesTrackNumberInPlaylist,
-    getSpotifyDevices,
     PlayerDevice
 } from "cody-music";
 import { MusicManager } from "./MusicManager";
@@ -45,7 +44,7 @@ export const playSelectedItem = async (
     isExpand: boolean
 ) => {
     // ask to launch web or desktop if neither are running
-    const devices: PlayerDevice[] = await getSpotifyDevices();
+    const devices: PlayerDevice[] = await dataMgr.currentDevices;
     const launchConfirmInfo: any = await musicMgr.launchConfirm(devices);
     if (!launchConfirmInfo.proceed) {
         return;
