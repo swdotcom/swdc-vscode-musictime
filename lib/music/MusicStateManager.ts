@@ -320,10 +320,7 @@ export class MusicStateManager {
             return;
         }
 
-        const computerDeviceRunning: boolean = await musicMgr.isComputerDeviceRunning(
-            dataMgr.currentDevices
-        );
-        if (!computerDeviceRunning) {
+        if (!dataMgr.currentDevices || dataMgr.currentDevices.length === 0) {
             // they've closed the player, don't try to play again
             return;
         }

@@ -7,14 +7,17 @@ import {
     Event,
     Disposable,
     TreeView,
-    commands
+    commands,
+    window
 } from "vscode";
 import {
     PlaylistItem,
     PlayerName,
     PlayerType,
     playItunesTrackNumberInPlaylist,
-    PlayerDevice
+    PlayerDevice,
+    playSpotifyPlaylist,
+    playSpotifyTrack
 } from "cody-music";
 import { MusicManager } from "./MusicManager";
 import { MusicCommandManager } from "./MusicCommandManager";
@@ -22,6 +25,8 @@ import { logIt, getPlaylistIcon } from "../Util";
 import { MusicControlManager } from "./MusicControlManager";
 import { ProviderItemManager } from "./ProviderItemManager";
 import { MusicDataManager } from "./MusicDataManager";
+import { getComputerOrActiveDevice, getComputerDevice } from "./MusicUtil";
+import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
 
 /**
  * Create the playlist tree item (root or leaf)
@@ -37,151 +42,6 @@ const createPlaylistTreeItem = (
 
 const musicMgr: MusicManager = MusicManager.getInstance();
 const dataMgr: MusicDataManager = MusicDataManager.getInstance();
-const musicControlMgr: MusicControlManager = MusicControlManager.getInstance();
-
-export const playSelectedItem = async (
-    playlistItem: PlaylistItem,
-    isExpand: boolean
-) => {
-    // ask to launch web or desktop if neither are running
-    const devices: PlayerDevice[] = await dataMgr.currentDevices;
-    const launchConfirmInfo: any = await musicMgr.launchConfirm(devices);
-    if (!launchConfirmInfo.proceed) {
-        return;
-    }
-
-    // let the congtrols know we're loading
-    MusicCommandManager.syncControls(dataMgr.runningTrack, true /*loading*/);
-
-    const launchTimeout =
-        launchConfirmInfo.playerName === PlayerName.SpotifyDesktop
-            ? 4000
-            : 5000;
-
-    // is this a track or playlist item?
-    if (playlistItem.type === "track") {
-        let currentPlaylistId = playlistItem["playlist_id"];
-
-        // !important! set the selected track
-        dataMgr.selectedTrackItem = playlistItem;
-
-        if (!dataMgr.selectedPlaylist) {
-            // make sure we have a selected playlist
-            const playlist: PlaylistItem = await musicMgr.getPlaylistById(
-                currentPlaylistId
-            );
-            dataMgr.selectedPlaylist = playlist;
-        }
-
-        if (playlistItem.playerType === PlayerType.MacItunesDesktop) {
-            // ITUNES
-            const pos: number = playlistItem.position || 1;
-            await playItunesTrackNumberInPlaylist(
-                dataMgr.selectedPlaylist.name,
-                pos
-            );
-        } else if (launchConfirmInfo.playerName === PlayerName.SpotifyDesktop) {
-            // explicitly selected SPOTIFY DESKTOP
-            // ex: ["spotify:track:0R8P9KfGJCDULmlEoBagcO", "spotify:playlist:6ZG5lRT77aJ3btmArcykra"]
-            // make sure the track has spotify:track and the playlist has spotify:playlist
-            if (launchConfirmInfo.isLaunching) {
-                setTimeout(() => {
-                    musicControlMgr.playSpotifyDesktopPlaylistTrack(devices);
-                }, launchTimeout);
-            } else {
-                musicControlMgr.playSpotifyDesktopPlaylistTrack(devices);
-            }
-        } else {
-            // SPOTIFY WEB
-            if (launchConfirmInfo.isLaunching) {
-                setTimeout(() => {
-                    musicControlMgr.playSpotifyWebPlaylistTrack(
-                        true /*isTrack*/,
-                        devices
-                    );
-                }, launchTimeout);
-            } else {
-                musicControlMgr.playSpotifyWebPlaylistTrack(
-                    true /*isTrack*/,
-                    devices
-                );
-            }
-        }
-    } else {
-        // !important! set the selected playlist
-        dataMgr.selectedPlaylist = playlistItem;
-
-        if (!isExpand) {
-            // it's a play request, not just an expand. get the tracks
-            const tracks: PlaylistItem[] = await musicMgr.getPlaylistItemTracksForPlaylistId(
-                playlistItem.id
-            );
-
-            // get the tracks
-            const selectedTrack: PlaylistItem =
-                tracks && tracks.length > 0 ? tracks[0] : null;
-
-            if (!selectedTrack) {
-                // no tracks in this playlist, return out
-                return;
-            }
-
-            // !important! set the selected track now since it's not null
-            dataMgr.selectedTrackItem = selectedTrack;
-
-            if (playlistItem.playerType === PlayerType.MacItunesDesktop) {
-                const pos: number = 1;
-                if (launchConfirmInfo.isLaunching) {
-                    setTimeout(() => {
-                        playItunesTrackNumberInPlaylist(
-                            dataMgr.selectedPlaylist.name,
-                            pos
-                        );
-                    }, launchTimeout);
-                } else {
-                    playItunesTrackNumberInPlaylist(
-                        dataMgr.selectedPlaylist.name,
-                        pos
-                    );
-                }
-            } else {
-                if (launchConfirmInfo.isLaunching) {
-                    if (
-                        launchConfirmInfo.playerName ===
-                        PlayerName.SpotifyDesktop
-                    ) {
-                        setTimeout(() => {
-                            musicControlMgr.playSpotifyDesktopPlaylistTrack(
-                                devices
-                            );
-                        }, launchTimeout);
-                    } else {
-                        setTimeout(() => {
-                            musicControlMgr.playSpotifyWebPlaylistTrack(
-                                false /*isTrack*/,
-                                devices
-                            );
-                        }, launchTimeout);
-                    }
-                } else {
-                    if (
-                        launchConfirmInfo.playerName ===
-                        PlayerName.SpotifyDesktop
-                    ) {
-                        musicControlMgr.playSpotifyDesktopPlaylistTrack(
-                            devices
-                        );
-                    } else {
-                        musicControlMgr.playSpotifyWebPlaylistTrack(
-                            false /*isTrack*/,
-                            devices
-                        );
-                    }
-                }
-            }
-        }
-    }
-};
 
 export const refreshPlaylistViewIfRequired = async () => {
     if (!dataMgr.spotifyPlaylists || dataMgr.spotifyPlaylists.length === 0) {
@@ -227,7 +87,7 @@ export const connectPlaylistTreeView = (view: TreeView<PlaylistItem>) => {
             dataMgr.selectedPlaylist = selectedPlaylist;
 
             // play it
-            playSelectedItem(playlistItem, false /*isExpand*/);
+            musicMgr.playSelectedItem(playlistItem);
         }),
         view.onDidChangeVisibility(e => {
             if (e.visible) {

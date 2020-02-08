@@ -13,7 +13,6 @@ import {
     replacePlaylistTracks,
     getUserProfile,
     launchPlayer,
-    quitMacPlayer,
     PlayerDevice,
     getSpotifyPlaylist,
     getRecommendationsForTracks,
@@ -23,7 +22,8 @@ import {
     PlayerContext,
     getSpotifyPlayerContext,
     getSpotifyDevices,
-    transferSpotifyDevice
+    transferSpotifyDevice,
+    playSpotifyPlaylist
 } from "cody-music";
 import {
     PERSONAL_TOP_SONGS_NAME,
@@ -43,17 +43,9 @@ import {
     getAppJwt,
     getMusicTimeUserStatus,
     populateSpotifyPlaylists,
-    populateLikedSongs,
-    populateSpotifyDevices
+    populateLikedSongs
 } from "../DataController";
-import {
-    getItem,
-    setItem,
-    isMac,
-    logIt,
-    getCodyErrorMessage,
-    isWindows
-} from "../Util";
+import { getItem, setItem, isMac, logIt, getCodyErrorMessage } from "../Util";
 import { isResponseOk, softwareGet, softwarePost } from "../HttpClient";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { MusicControlManager } from "./MusicControlManager";
@@ -62,7 +54,10 @@ import {
     sortPlaylists,
     sortTracks,
     buildTracksForRecommendations,
-    requiresSpotifyAccess
+    requiresSpotifyAccess,
+    getActiveDevice,
+    getComputerOrActiveDevice,
+    getComputerDevice
 } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 
@@ -387,27 +382,6 @@ export class MusicManager {
         return playlistState;
     }
 
-    async getComputerOrActiveDevice(
-        devices: PlayerDevice[] = []
-    ): Promise<PlayerDevice> {
-        if (!devices || devices.length === 0) {
-            devices = await this.dataMgr.currentDevices;
-        }
-        let anyActiveDevice: PlayerDevice = null;
-        if (devices && devices.length > 0) {
-            for (let i = 0; i < devices.length; i++) {
-                const device: PlayerDevice = devices[i];
-
-                if (device.type.toLowerCase() === "computer") {
-                    return device;
-                } else if (!anyActiveDevice && device.is_active) {
-                    anyActiveDevice = device;
-                }
-            }
-        }
-        return anyActiveDevice;
-    }
-
     clearPlaylistTracksForId(playlist_id) {
         this.dataMgr.playlistTrackMap[playlist_id] = null;
     }
@@ -566,7 +540,7 @@ export class MusicManager {
     }
 
     async playNextLikedSong() {
-        const deviceToPlayOn: PlayerDevice = await this.getComputerOrActiveDevice(
+        const deviceToPlayOn: PlayerDevice = getComputerOrActiveDevice(
             this.dataMgr.currentDevices
         );
         // play the next song
@@ -584,7 +558,7 @@ export class MusicManager {
     }
 
     async playPreviousLikedSong() {
-        const deviceToPlayOn: PlayerDevice = await this.getComputerOrActiveDevice(
+        const deviceToPlayOn: PlayerDevice = getComputerOrActiveDevice(
             this.dataMgr.currentDevices
         );
         // play the next song
@@ -906,7 +880,10 @@ export class MusicManager {
         MusicCommandManager.initialize();
     }
 
-    async launchTrackPlayer(playerName: PlayerName = null) {
+    async launchTrackPlayer(
+        playerName: PlayerName = null,
+        callback: any = null
+    ) {
         // options.album_id or options.track_id
         const track_id = this.dataMgr.runningTrack
             ? this.dataMgr.runningTrack.id
@@ -924,25 +901,20 @@ export class MusicManager {
         await launchPlayer(playerName, { quietly: false });
 
         setTimeout(() => {
-            this.checkDeviceLaunch(5);
+            this.checkDeviceLaunch(5, callback);
         }, 1000);
     }
 
-    launchSpotifyPlayer() {
-        window.showInformationMessage(
-            `After you select and play your first song in Spotify, standard controls (play, pause, next, etc.) will appear in your status bar.`,
-            ...[OK_LABEL]
-        );
-        launchPlayer(PlayerName.SpotifyWeb);
-    }
-
-    async checkDeviceLaunch(tries: number = 5) {
+    async checkDeviceLaunch(tries: number = 5, callback: any = null) {
         setTimeout(async () => {
             const devices: PlayerDevice[] = await getSpotifyDevices();
             if ((!devices || devices.length == 0) && tries > 0) {
                 tries--;
                 this.checkDeviceLaunch(tries);
             } else {
+                // update the current devices
+                this.dataMgr.currentDevices = devices;
+
                 // now that we have a device, transfer it to the device ID
                 const computerDevice: PlayerDevice = devices.find(
                     (device: PlayerDevice) =>
@@ -953,10 +925,14 @@ export class MusicManager {
                         computerDevice.id,
                         false /*play*/
                     );
-                    this.checkDeviceIdRunning(computerDevice.id, 5);
-                } else {
-                    // just refresh, failed to get a computer device
+                }
+                setTimeout(() => {
+                    // refresh the device info
                     commands.executeCommand("musictime.refreshDeviceInfo");
+                }, 1000);
+
+                if (callback) {
+                    callback();
                 }
             }
         }, 1500);
@@ -1140,83 +1116,37 @@ export class MusicManager {
         return [];
     }
 
-    async launchConfirm(devices: PlayerDevice[]) {
-        // this will check if it needs to activate an inactive device
-        devices = await this.activateIfDeviceIsInactive(devices);
+    async playInitialization(callback: any = null) {
+        const devices: PlayerDevice[] = this.dataMgr.currentDevices;
+        const activeDevice = getActiveDevice(devices);
+        const computerDevice = getComputerOrActiveDevice(devices);
 
-        const isRunning = await this.isComputerDeviceRunning(devices);
-        let playerName = this.getPlayerNameForPlayback();
-        let isLaunching = false;
-        let proceed = true;
-        const isWin = isWindows();
-        const isPrem = await this.isSpotifyPremium();
+        let no_devices = !devices || devices.length === 0 ? true : false;
+        let active_device = activeDevice ? true : false;
+        let has_computer_device = computerDevice ? true : false;
 
-        // ask to show the desktop if they're a premium user
-        let launchResult = null;
-        let launchingDesktop = false;
-        if (!isWin && !isRunning && isPrem) {
-            // ask to launch
+        if (no_devices || (!has_computer_device && !active_device)) {
+            // no devices found at all OR no active devices and a computer device is not found in the list
             const selectedButton = await window.showInformationMessage(
                 `Music Time requires a running Spotify player. Choose a player to launch.`,
                 ...["Web Player", "Desktop Player"]
             );
-            if (!selectedButton) {
-                // the user selected the close button
-                window.showInformationMessage(
-                    "You will need to open a Spotify player to control tracks from the editor."
-                );
-                proceed = false;
-            } else {
-                isLaunching = true;
-                if (selectedButton === "Desktop Player") {
-                    launchingDesktop = true;
-                    // launch the desktop
-                    playerName = PlayerName.SpotifyDesktop;
-                }
-                launchResult = await launchPlayer(playerName, {
-                    quietly: false
-                });
+            if (
+                selectedButton === "Desktop Player" ||
+                selectedButton === "Web Player"
+            ) {
+                const playerName: PlayerName =
+                    selectedButton === "Desktop Player"
+                        ? PlayerName.SpotifyDesktop
+                        : PlayerName.SpotifyWeb;
+                // start the launch process and pass the callback when complete
+                return this.launchTrackPlayer(playerName, callback);
             }
-        } else if (!isRunning) {
-            if (isPrem) {
-                playerName = PlayerName.SpotifyDesktop;
-            }
-            isLaunching = true;
-            launchingDesktop = true;
-            // it's a windows or non-premium user, launch spotify
-            launchResult = await launchPlayer(playerName, {
-                quietly: false
-            });
         }
 
-        if (launchingDesktop && launchResult && launchResult.error) {
-            logIt(`Error launching desktop: ${launchResult.error}`);
+        if (callback) {
+            callback();
         }
-
-        // check to see if we've failed to launch the desktop player
-        if (
-            launchingDesktop &&
-            launchResult &&
-            launchResult.error &&
-            playerName !== PlayerName.SpotifyWeb
-        ) {
-            // window.showInformationMessage(
-            //     "Unable to launch the Spotify desktop player. Please confirm that it is installed."
-            // );
-            // launch the web player
-            playerName = PlayerName.SpotifyWeb;
-            await launchPlayer(PlayerName.SpotifyWeb);
-            isLaunching = true;
-        }
-
-        const info = {
-            isRunning,
-            playerName,
-            isLaunching,
-            proceed
-        };
-
-        return info;
     }
 
     async followSpotifyPlaylist(playlist: PlaylistItem) {
@@ -1282,78 +1212,6 @@ export class MusicManager {
         }
     }
 
-    /**
-     * Check if there are devices found. If so and none are
-     * active and any one of those is "Computer", then this
-     * will attempt to transfer to this device
-     * @param devices
-     */
-    async activateIfDeviceIsInactive(
-        devices: PlayerDevice[] = []
-    ): Promise<PlayerDevice[]> {
-        if (!devices || devices.length === 0) {
-            devices = await this.dataMgr.currentDevices;
-        }
-
-        if (!devices || devices.length === 0) {
-            return [];
-        }
-
-        const activeDevice: PlayerDevice = devices.find(
-            (device: PlayerDevice) => device.is_active
-        );
-        if (activeDevice) {
-            return devices;
-        }
-
-        // no active devices, activate one
-        const computerDevice: PlayerDevice = devices.find(
-            (device: PlayerDevice) => device.type.toLowerCase() === "computer"
-        );
-        if (computerDevice) {
-            await this.transferToComputerDevice(computerDevice);
-            await populateSpotifyDevices();
-        }
-        return this.dataMgr.currentDevices;
-    }
-
-    async isComputerDeviceRunning(devices: PlayerDevice[]) {
-        // let isRunning = await isSpotifyRunning();
-
-        const computerDevice =
-            devices && devices.length > 0
-                ? devices.find(
-                      (d: PlayerDevice) => d.type.toLowerCase() === "computer"
-                  )
-                : null;
-        /**
-            i.e.
-            [{id:"1664aa46e86f1d3b37826bab098d45fe6eff8477"
-            is_active:true,
-            is_private_session:false,
-            is_restricted:false,
-            name:"Xavier Luiz’s iPhone",
-            type:"Smartphone",
-            volume_percent:100},
-            {id:"4ca1a306c33fe36fc94c024db64a72702224dd9e",
-            is_active:true,
-            is_private_session:false,
-            is_restricted:false,
-            name:"Web Player (Chrome)",
-            type:"Computer",
-            volume_percent:100},
-            {id:"5e3111564c58047aae060fe9bc13e8b90fc1c613",
-            is_active:true,
-            is_private_session:false,
-            is_restricted:false,
-            name:"Xavier’s MacBook Pro",
-            type:"Computer",
-            volume_percent:100}]
-        */
-        const isRunning = computerDevice ? true : false;
-        return isRunning;
-    }
-
     async getTrackIdsForRecommendations(
         likedSongSeedLimit: number = 5,
         offset: number = 0
@@ -1413,4 +1271,70 @@ export class MusicManager {
         }
         return TrackStatus.NotAssigned;
     }
+
+    async playSelectedItem(playlistItem: PlaylistItem) {
+        // set the selected track and/or playlist
+        if (playlistItem.type !== "playlist") {
+            this.dataMgr.selectedTrackItem = playlistItem;
+            const currentPlaylistId = playlistItem["playlist_id"];
+            const playlist: PlaylistItem = await this.getPlaylistById(
+                currentPlaylistId
+            );
+            this.dataMgr.selectedPlaylist = playlist;
+        } else {
+            // set the selected playlist
+            this.dataMgr.selectedPlaylist = playlistItem;
+        }
+
+        // ask to launch web or desktop if neither are running
+        await this.playInitialization(this.playMusicSelection);
+    }
+
+    playMusicSelection = () => {
+        // get the playlist id, track id, and device id
+        const playlistId = this.dataMgr.selectedPlaylist
+            ? this.dataMgr.selectedPlaylist.id
+            : null;
+        let trackId = this.dataMgr.selectedTrackItem
+            ? this.dataMgr.selectedTrackItem.id
+            : null;
+        const activeDevice = getComputerOrActiveDevice(
+            this.dataMgr.currentDevices
+        );
+        const computerDevice = getComputerDevice(this.dataMgr.currentDevices);
+        const isLikedSong =
+            this.dataMgr.selectedPlaylist &&
+            this.dataMgr.selectedPlaylist.name ===
+                SPOTIFY_LIKED_SONGS_PLAYLIST_NAME
+                ? true
+                : false;
+
+        if (!activeDevice && !computerDevice) {
+            window.showInformationMessage(
+                `Music Time requires a running Spotify player. You will need to open a Spotify player to control tracks from the editor.`
+            );
+            return;
+        }
+
+        let deviceId = activeDevice ? activeDevice.id : computerDevice.id;
+
+        if (playlistId && !isLikedSong) {
+            // play a playlist
+            return playSpotifyPlaylist(playlistId, trackId, deviceId);
+        } else if (isLikedSong && !trackId) {
+            // get the 1st track from the liked songs and play it
+            trackId = this.dataMgr.spotifyLikedSongs.length
+                ? this.dataMgr.spotifyLikedSongs[0].id
+                : null;
+            if (!trackId) {
+                // no liked songs to play
+                window.showInformationMessage(
+                    `Add tracks to your Liked Songs.`
+                );
+                return;
+            }
+        }
+
+        playSpotifyTrack(trackId, deviceId);
+    };
 }

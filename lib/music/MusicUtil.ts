@@ -180,6 +180,38 @@ export function getActiveDevice(devices: PlayerDevice[]): PlayerDevice {
     return otherActiveDevice;
 }
 
+export function getComputerOrActiveDevice(
+    devices: PlayerDevice[] = []
+): PlayerDevice {
+    if (!devices || devices.length === 0) {
+        devices = MusicDataManager.getInstance().currentDevices;
+    }
+    let anyActiveDevice: PlayerDevice = null;
+    if (devices && devices.length > 0) {
+        for (let i = 0; i < devices.length; i++) {
+            const device: PlayerDevice = devices[i];
+            if (device.type.toLowerCase() === "computer") {
+                return device;
+            } else if (!anyActiveDevice && device.is_active) {
+                anyActiveDevice = device;
+            }
+        }
+    }
+    return anyActiveDevice;
+}
+
+export function getComputerDevice(devices: PlayerDevice[] = []): PlayerDevice {
+    if (devices && devices.length > 0) {
+        for (let i = 0; i < devices.length; i++) {
+            const device: PlayerDevice = devices[i];
+            if (device.type.toLowerCase() === "computer") {
+                return device;
+            }
+        }
+    }
+    return null;
+}
+
 export function requiresSpotifyAccess() {
     let spotifyAccessToken = getItem("spotify_access_token");
     return spotifyAccessToken ? false : true;

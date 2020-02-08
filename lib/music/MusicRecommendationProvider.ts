@@ -9,16 +9,13 @@ import {
     TreeView,
     commands
 } from "vscode";
-import { PlaylistItem, PlayerName, PlayerDevice } from "cody-music";
+import { PlaylistItem } from "cody-music";
 import { getPlaylistIcon } from "../Util";
 import { MusicManager } from "./MusicManager";
-import { MusicCommandManager } from "./MusicCommandManager";
-import { MusicControlManager } from "./MusicControlManager";
 import { MusicDataManager } from "./MusicDataManager";
 import { ProviderItemManager } from "./ProviderItemManager";
 
 const musicMgr: MusicManager = MusicManager.getInstance();
-const musicControlMgr: MusicControlManager = MusicControlManager.getInstance();
 
 /**
  * Create the playlist tree item (root or leaf)
@@ -32,32 +29,9 @@ const createPlaylistTreeItem = (
     return new PlaylistTreeItem(p, cstate);
 };
 
-const playRecommendationTrack = async (track: PlaylistItem) => {
-    // ask to launch web or desktop if neither are running
-    const devices: PlayerDevice[] = await MusicDataManager.getInstance()
-        .currentDevices;
-    const launchConfirmInfo: any = await musicMgr.launchConfirm(devices);
-    if (!launchConfirmInfo.proceed) {
-        return;
-    }
-
-    const launchTimeout =
-        launchConfirmInfo.playerName === PlayerName.SpotifyDesktop
-            ? 4000
-            : 5000;
-
-    MusicCommandManager.syncControls(
-        MusicDataManager.getInstance().runningTrack,
-        true /*loading*/
-    );
-
-    if (launchConfirmInfo.isLaunching) {
-        setTimeout(async () => {
-            await musicControlMgr.playSpotifyByTrack(track, devices);
-        }, launchTimeout);
-    } else {
-        await musicControlMgr.playSpotifyByTrack(track, devices);
-    }
+const playRecommendationTrack = async (playlistItem: PlaylistItem) => {
+    // play it
+    musicMgr.playSelectedItem(playlistItem);
 };
 
 /**

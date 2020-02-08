@@ -63,7 +63,11 @@ import { tmpdir } from "os";
 import { connectSlack } from "../slack/SlackControlManager";
 import { MusicManager } from "./MusicManager";
 import { MusicPlaylistManager } from "./MusicPlaylistManager";
-import { sortPlaylists, requiresSpotifyAccess } from "./MusicUtil";
+import {
+    sortPlaylists,
+    requiresSpotifyAccess,
+    getComputerOrActiveDevice
+} from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 
 const moment = require("moment-timezone");
@@ -270,9 +274,7 @@ export class MusicControlManager {
         trackId: string,
         devices: PlayerDevice[] = []
     ) {
-        const deviceToPlayOn: PlayerDevice = await MusicManager.getInstance().getComputerOrActiveDevice(
-            devices
-        );
+        const deviceToPlayOn: PlayerDevice = getComputerOrActiveDevice(devices);
         const deviceId = deviceToPlayOn ? deviceToPlayOn.id : "";
         // just play the 1st track
         await playSpotifyPlaylist(playlistId, trackId, deviceId);
@@ -290,7 +292,7 @@ export class MusicControlManager {
         const isPrem = await MusicManager.getInstance().isSpotifyPremium();
         const isWin = isWindows();
         if ((isPrem || isWin) && devices && devices.length > 0) {
-            const deviceToPlayOn: PlayerDevice = await MusicManager.getInstance().getComputerOrActiveDevice(
+            const deviceToPlayOn: PlayerDevice = getComputerOrActiveDevice(
                 devices
             );
             const deviceId = deviceToPlayOn ? deviceToPlayOn.id : "";
