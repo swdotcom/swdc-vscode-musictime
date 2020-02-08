@@ -901,16 +901,20 @@ export class MusicManager {
         await launchPlayer(playerName, { quietly: false });
 
         setTimeout(() => {
-            this.checkDeviceLaunch(5, callback);
+            this.checkDeviceLaunch(playerName, 5, callback);
         }, 1000);
     }
 
-    async checkDeviceLaunch(tries: number = 5, callback: any = null) {
+    async checkDeviceLaunch(
+        playerName: PlayerName,
+        tries: number = 5,
+        callback: any = null
+    ) {
         setTimeout(async () => {
             const devices: PlayerDevice[] = await getSpotifyDevices();
             if ((!devices || devices.length == 0) && tries > 0) {
                 tries--;
-                this.checkDeviceLaunch(tries);
+                this.checkDeviceLaunch(playerName, tries, callback);
             } else {
                 // update the current devices
                 this.dataMgr.currentDevices = devices;
@@ -932,7 +936,15 @@ export class MusicManager {
                 }, 1000);
 
                 if (callback) {
-                    callback();
+                    let timeout = 500;
+                    if (playerName === PlayerName.SpotifyWeb) {
+                        timeout = 1200;
+                    }
+
+                    // shorter timeout
+                    setTimeout(() => {
+                        callback();
+                    }, timeout);
                 }
             }
         }, 1500);
