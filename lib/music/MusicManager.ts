@@ -285,23 +285,14 @@ export class MusicManager {
                 items.push(switchToThisDeviceButton);
             }
 
-            // show the devices listening folder if they've already connected oauth
-            const activeDeviceInfo = await this.getActiveSpotifyDevicesTitleAndTooltip(
+            // show the devices button
+            const devicesButton = await this.providerItemMgr.getActiveSpotifyDevicesButton(
                 devices
             );
+            items.push(devicesButton);
 
             // set the current devices
             this.dataMgr.currentDevices = devices;
-
-            if (activeDeviceInfo) {
-                // only create the active device button if we have one
-                const devicesFoundButton = this.providerItemMgr.createSpotifyDevicesButton(
-                    activeDeviceInfo.title,
-                    activeDeviceInfo.tooltip,
-                    activeDeviceInfo.loggedIn
-                );
-                items.push(devicesFoundButton);
-            }
 
             if (isMac() && SHOW_ITUNES_LAUNCH_BUTTON) {
                 items.push(this.providerItemMgr.getSwitchToItunesButton());
@@ -430,46 +421,6 @@ export class MusicManager {
             }
         }
         return anyActiveDevice;
-    }
-
-    async getInactiveDevices(devices: PlayerDevice[]): Promise<PlayerDevice[]> {
-        let inactive_devices: PlayerDevice[] = [];
-        if (devices && devices.length > 0) {
-            for (let i = 0; i < devices.length; i++) {
-                const device: PlayerDevice = devices[i];
-                if (!device.is_active) {
-                    inactive_devices.push(device);
-                }
-            }
-        }
-
-        return inactive_devices;
-    }
-
-    async getActiveSpotifyDevicesTitleAndTooltip(devices: PlayerDevice[]) {
-        const inactiva_devices: PlayerDevice[] = await this.getInactiveDevices(
-            devices
-        );
-        const activeDevice: PlayerDevice = getActiveDevice(devices);
-
-        if (activeDevice) {
-            // done, found an active device
-            return {
-                title: `Listening on ${activeDevice.name}`,
-                tooltip: "Listening on a Spotify device",
-                loggedIn: true
-            };
-        } else if (inactiva_devices && inactiva_devices.length > 0) {
-            const names = inactiva_devices.map(device => {
-                return device.name;
-            });
-            return {
-                title: `Connected on ${names.join(", ")}`,
-                tooltip: "Multiple Spotify devices connected",
-                loggedIn: true
-            };
-        }
-        return null;
     }
 
     clearPlaylistTracksForId(playlist_id) {
@@ -1001,13 +952,17 @@ export class MusicManager {
         if (playerName !== PlayerName.ItunesDesktop) {
             if (isMac()) {
                 // just launch the desktop
-                await launchPlayer(PlayerName.SpotifyDesktop);
+                await launchPlayer(PlayerName.SpotifyDesktop, {
+                    quietly: false
+                });
             } else {
                 // this will show a prompt as to why we're launching the web player
                 await this.launchSpotifyPlayer();
             }
         } else {
-            await launchPlayer(playerName);
+            await launchPlayer(playerName, {
+                quietly: false
+            });
         }
 
         setTimeout(async () => {
@@ -1025,9 +980,7 @@ export class MusicManager {
             `After you select and play your first song in Spotify, standard controls (play, pause, next, etc.) will appear in your status bar.`,
             ...[OK_LABEL]
         );
-        setTimeout(() => {
-            launchPlayer(PlayerName.SpotifyWeb);
-        }, 3000);
+        launchPlayer(PlayerName.SpotifyWeb);
     }
 
     async isLikedSong() {
@@ -1191,44 +1144,6 @@ export class MusicManager {
         }
 
         return [];
-    }
-
-    convertTracksToPlaylistItems(tracks: Track[]) {
-        let items: PlaylistItem[] = [];
-
-        if (!requiresSpotifyAccess()) {
-            const labelButton = this.providerItemMgr.buildActionItem(
-                "label",
-                "label",
-                null,
-                PlayerType.NotAssigned,
-                this.dataMgr.recommendationLabel,
-                ""
-            );
-            labelButton.tag = "paw";
-
-            if (tracks && tracks.length > 0) {
-                // since we have recommendations, show the label button
-                items.push(labelButton);
-                for (let i = 0; i < tracks.length; i++) {
-                    const track: Track = tracks[i];
-                    const item: PlaylistItem = this.createPlaylistItemFromTrack(
-                        track,
-                        0
-                    );
-                    item.tag = "spotify";
-                    item.type = "recommendation";
-                    item["icon"] = "track.svg";
-                    items.push(item);
-                }
-            }
-        } else {
-            // create the connect button
-            items.push(
-                this.providerItemMgr.getRecommendationConnectToSpotifyButton()
-            );
-        }
-        return items;
     }
 
     async launchConfirm(devices: PlayerDevice[]) {

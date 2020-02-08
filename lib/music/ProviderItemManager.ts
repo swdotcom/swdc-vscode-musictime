@@ -3,7 +3,8 @@ import {
     PlaylistItem,
     PlaylistTrackInfo,
     PlayerDevice,
-    PlayerName
+    PlayerName,
+    Track
 } from "cody-music";
 import {
     SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
@@ -15,6 +16,7 @@ import {
 } from "../Constants";
 import { getActiveDevice, requiresSpotifyAccess } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
+import { MusicManager } from "./MusicManager";
 
 export class ProviderItemManager {
     private static instance: ProviderItemManager;
@@ -64,6 +66,36 @@ export class ProviderItemManager {
             PlayerType.WebSpotify,
             "Spotify Connected",
             "You've connected Spotify"
+        );
+    }
+
+    async getActiveSpotifyDevicesButton(devices: PlayerDevice[]) {
+        devices = devices || [];
+
+        const activeDevice: PlayerDevice = devices.find(
+            (device: PlayerDevice) => device.is_active
+        );
+
+        let msg = "";
+        let tooltip = "Listening on a Spotify device";
+        if (activeDevice) {
+            // found an active device
+            msg = `Listening on ${activeDevice.name}`;
+        } else if (!activeDevice && devices.length) {
+            // no active device but found devices
+            msg = `Spotify devices available to connect`;
+            tooltip = "Select a device to transfer to";
+        } else if (!activeDevice && devices.length === 0) {
+            // no active device and no devices
+            msg = "Connect a spotify device";
+            tooltip = "Connect a spotify device to control playback";
+        }
+
+        return this.createSpotifyDevicesButton(
+            msg,
+            tooltip,
+            true,
+            "musictime.deviceSelector"
         );
     }
 
@@ -183,11 +215,11 @@ export class ProviderItemManager {
         );
     }
 
-    createSpotifyDevicesButton(title, tooltip, loggedIn) {
+    createSpotifyDevicesButton(title, tooltip, loggedIn, command = null) {
         const button = this.buildActionItem(
             "title",
             "spotify",
-            null,
+            command,
             PlayerType.WebSpotify,
             title,
             tooltip
@@ -309,5 +341,55 @@ export class ProviderItemManager {
             return listItem;
         }
         return null;
+    }
+
+    async getInactiveDevices(devices: PlayerDevice[]): Promise<PlayerDevice[]> {
+        let inactive_devices: PlayerDevice[] = [];
+        if (devices && devices.length > 0) {
+            for (let i = 0; i < devices.length; i++) {
+                const device: PlayerDevice = devices[i];
+                if (!device.is_active) {
+                    inactive_devices.push(device);
+                }
+            }
+        }
+
+        return inactive_devices;
+    }
+
+    convertTracksToPlaylistItems(tracks: Track[]) {
+        let items: PlaylistItem[] = [];
+
+        if (!requiresSpotifyAccess()) {
+            const labelButton = this.buildActionItem(
+                "label",
+                "label",
+                null,
+                PlayerType.NotAssigned,
+                MusicDataManager.getInstance().recommendationLabel,
+                ""
+            );
+            labelButton.tag = "paw";
+
+            if (tracks && tracks.length > 0) {
+                // since we have recommendations, show the label button
+                items.push(labelButton);
+                for (let i = 0; i < tracks.length; i++) {
+                    const track: Track = tracks[i];
+                    const item: PlaylistItem = MusicManager.getInstance().createPlaylistItemFromTrack(
+                        track,
+                        0
+                    );
+                    item.tag = "spotify";
+                    item.type = "recommendation";
+                    item["icon"] = "track.svg";
+                    items.push(item);
+                }
+            }
+        } else {
+            // create the connect button
+            items.push(this.getRecommendationConnectToSpotifyButton());
+        }
+        return items;
     }
 }

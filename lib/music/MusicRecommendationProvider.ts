@@ -13,13 +13,17 @@ import {
     PlaylistItem,
     PlayerName,
     PlayerDevice,
-    getSpotifyDevices
+    getSpotifyDevices,
+    Track,
+    PlayerType
 } from "cody-music";
 import { getPlaylistIcon } from "../Util";
 import { MusicManager } from "./MusicManager";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { MusicControlManager } from "./MusicControlManager";
 import { MusicDataManager } from "./MusicDataManager";
+import { requiresSpotifyAccess } from "./MusicUtil";
+import { ProviderItemManager } from "./ProviderItemManager";
 
 const musicMgr: MusicManager = MusicManager.getInstance();
 const musicControlMgr: MusicControlManager = MusicControlManager.getInstance();
@@ -141,7 +145,7 @@ export class MusicRecommendationProvider
     }
 
     async getChildren(element?: PlaylistItem): Promise<PlaylistItem[]> {
-        const recTrackPlaylistItems = musicMgr.convertTracksToPlaylistItems(
+        const recTrackPlaylistItems = ProviderItemManager.getInstance().convertTracksToPlaylistItems(
             MusicDataManager.getInstance().recommendationTracks
         );
         return recTrackPlaylistItems;

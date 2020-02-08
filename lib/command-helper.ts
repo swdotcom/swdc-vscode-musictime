@@ -17,7 +17,12 @@ import {
     MusicPlaylistProvider,
     connectPlaylistTreeView
 } from "./music/MusicPlaylistProvider";
-import { PlaylistItem, PlayerName } from "cody-music";
+import {
+    PlaylistItem,
+    PlayerName,
+    PlayerDevice,
+    playSpotifyDevice
+} from "cody-music";
 import { SocialShareManager } from "./social/SocialShareManager";
 import { connectSlack } from "./slack/SlackControlManager";
 import { MusicManager } from "./music/MusicManager";
@@ -32,6 +37,7 @@ import {
 import { showSortPlaylistMenu } from "./selector/SortPlaylistSelectorManager";
 import { populateSpotifyPlaylists } from "./DataController";
 import { CacheManager } from "./cache/CacheManager";
+import { showDeviceSelectorMenu } from "./selector/SpotifyDeviceSelectorManager";
 
 /**
  * add the commands to vscode....
@@ -262,9 +268,27 @@ export function createCommands(): {
 
     const launchSpotifyCommand = commands.registerCommand(
         "musictime.launchSpotify",
-        () => musicMgr.launchTrackPlayer(PlayerName.SpotifyWeb)
+        async () => {
+            musicMgr.launchTrackPlayer(PlayerName.SpotifyWeb);
+            setTimeout(() => {
+                // refresh the tree, no need to refresh playlists
+                commands.executeCommand("musictime.refreshPlaylist");
+            }, 1000);
+        }
     );
     cmds.push(launchSpotifyCommand);
+
+    const launchSpotifyDesktopCommand = commands.registerCommand(
+        "musictime.launchSpotifyDesktop",
+        async () => {
+            await musicMgr.launchTrackPlayer(PlayerName.SpotifyDesktop);
+            setTimeout(() => {
+                // refresh the tree, no need to refresh playlists
+                commands.executeCommand("musictime.refreshPlaylist");
+            }, 1000);
+        }
+    );
+    cmds.push(launchSpotifyDesktopCommand);
 
     const launchSpotifyPlaylistCommand = commands.registerCommand(
         "musictime.spotifyPlaylist",
@@ -302,6 +326,22 @@ export function createCommands(): {
     );
     cmds.push(addToPlaylistCommand);
 
+    const deviceSelectTransferCmd = commands.registerCommand(
+        "musictime.transferToDevice",
+        async (d: PlayerDevice) => {
+            // transfer to this device
+            window.showInformationMessage(
+                `Transferring to Spotify device ${d.name}`
+            );
+            await playSpotifyDevice(d.id);
+            setTimeout(() => {
+                // refresh the tree, no need to refresh playlists
+                commands.executeCommand("musictime.refreshPlaylist");
+            }, 1000);
+        }
+    );
+    cmds.push(deviceSelectTransferCmd);
+
     const genreRecListCmd = commands.registerCommand(
         "musictime.songGenreSelector",
         () => {
@@ -317,6 +357,14 @@ export function createCommands(): {
         }
     );
     cmds.push(categoryRecListCmd);
+
+    const deviceSelectorCmd = commands.registerCommand(
+        "musictime.deviceSelector",
+        () => {
+            showDeviceSelectorMenu();
+        }
+    );
+    cmds.push(deviceSelectorCmd);
 
     const refreshRecommendationsCommand = commands.registerCommand(
         "musictime.refreshRecommendations",
