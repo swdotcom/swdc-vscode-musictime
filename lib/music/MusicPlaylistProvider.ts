@@ -7,26 +7,13 @@ import {
     Event,
     Disposable,
     TreeView,
-    commands,
-    window
+    commands
 } from "vscode";
-import {
-    PlaylistItem,
-    PlayerName,
-    PlayerType,
-    playItunesTrackNumberInPlaylist,
-    PlayerDevice,
-    playSpotifyPlaylist,
-    playSpotifyTrack
-} from "cody-music";
+import { PlaylistItem } from "cody-music";
 import { MusicManager } from "./MusicManager";
-import { MusicCommandManager } from "./MusicCommandManager";
 import { logIt, getPlaylistIcon } from "../Util";
-import { MusicControlManager } from "./MusicControlManager";
 import { ProviderItemManager } from "./ProviderItemManager";
 import { MusicDataManager } from "./MusicDataManager";
-import { getComputerOrActiveDevice, getComputerDevice } from "./MusicUtil";
-import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
 
 /**
  * Create the playlist tree item (root or leaf)

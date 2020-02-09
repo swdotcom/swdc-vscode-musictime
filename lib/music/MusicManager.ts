@@ -891,14 +891,28 @@ export class MusicManager {
 
         // if the player name is null, this means all we want to do is launch the currently set player
         if (!playerName) {
-            launchPlayer(this.dataMgr.currentPlayerName, {
+            await launchPlayer(this.dataMgr.currentPlayerName, {
                 quietly: false,
                 track_id
             });
             return;
         }
 
-        await launchPlayer(playerName, { quietly: false });
+        // spotify device launch error would look like this...
+        // error:"Command failed: open -a spotify\nUnable to find application named 'spotify'\n"
+        let result = await launchPlayer(playerName, { quietly: false });
+
+        // test if there was an error, fallback to the web player
+        if (
+            playerName === PlayerName.SpotifyDesktop &&
+            result &&
+            result.error &&
+            result.error.includes("failed")
+        ) {
+            // start the process of launching the web player
+            playerName = PlayerName.SpotifyWeb;
+            await launchPlayer(playerName, { quietly: false });
+        }
 
         setTimeout(() => {
             this.checkDeviceLaunch(playerName, 5, callback);
@@ -1132,17 +1146,24 @@ export class MusicManager {
         const devices: PlayerDevice[] = this.dataMgr.currentDevices;
         const activeDevice = getActiveDevice(devices);
         const computerDevice = getComputerOrActiveDevice(devices);
+        const hasSpotifyUser = MusicManager.getInstance().hasSpotifyUser();
 
+        let isWinNonPremium = isMac() && !hasSpotifyUser ? true : false;
         let no_devices = !devices || devices.length === 0 ? true : false;
         let active_device = activeDevice ? true : false;
         let has_computer_device = computerDevice ? true : false;
 
         if (no_devices || (!has_computer_device && !active_device)) {
+            const buttons = isWinNonPremium
+                ? ["Web Player"]
+                : ["Web Player", "Desktop Player"];
+
             // no devices found at all OR no active devices and a computer device is not found in the list
             const selectedButton = await window.showInformationMessage(
                 `Music Time requires a running Spotify player. Choose a player to launch.`,
-                ...["Web Player", "Desktop Player"]
+                ...buttons
             );
+
             if (
                 selectedButton === "Desktop Player" ||
                 selectedButton === "Web Player"
