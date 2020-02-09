@@ -15,7 +15,6 @@ import {
     launchPlayer,
     PlayerDevice,
     getSpotifyPlaylist,
-    getRecommendationsForTracks,
     followPlaylist,
     playSpotifyDevice,
     playSpotifyTrack,
@@ -52,7 +51,6 @@ import { MusicControlManager } from "./MusicControlManager";
 import { ProviderItemManager } from "./ProviderItemManager";
 import {
     sortPlaylists,
-    sortTracks,
     buildTracksForRecommendations,
     requiresSpotifyAccess,
     getActiveDevice,
@@ -1025,123 +1023,6 @@ export class MusicManager {
         return this.dataMgr.currentPlayerName;
     }
 
-    async refreshRecommendations() {
-        if (requiresSpotifyAccess()) {
-            // update the recommended tracks to empty
-            this.dataMgr.recommendationTracks = [];
-            commands.executeCommand("musictime.refreshRecommendationsTree");
-        } else if (
-            this.dataMgr.currentRecMeta &&
-            this.dataMgr.currentRecMeta.label
-        ) {
-            // use the current recommendation metadata and bump the offset
-            this.updateRecommendations(
-                this.dataMgr.currentRecMeta.label,
-                this.dataMgr.currentRecMeta.likedSongSeedLimit,
-                this.dataMgr.currentRecMeta.seed_genres,
-                this.dataMgr.currentRecMeta.features,
-                this.dataMgr.currentRecMeta.offset
-            );
-        } else {
-            // default to the similar liked songs recommendations
-            this.updateRecommendations("Similar to Liked Songs", 5);
-        }
-    }
-
-    async updateRecommendations(
-        label: string,
-        likedSongSeedLimit: number = 5,
-        seed_genres: string[] = [],
-        features: any = {},
-        offset: number = 0
-    ) {
-        this.dataMgr.currentRecMeta = {
-            label,
-            likedSongSeedLimit,
-            seed_genres,
-            features,
-            offset
-        };
-
-        const trackIds = await this.getTrackIdsForRecommendations(
-            likedSongSeedLimit,
-            offset
-        );
-
-        // fetch the recommendations from spotify
-        const tracks: Track[] =
-            (await this.getRecommendedTracks(
-                trackIds,
-                seed_genres,
-                features
-            )) || [];
-
-        // get the tracks that have already been recommended
-        let existingTrackIds = this.dataMgr.prevRecTrackMap[label]
-            ? this.dataMgr.prevRecTrackMap[label]
-            : [];
-        let finalTracks: Track[] = [];
-        if (existingTrackIds.length) {
-            // filter out the ones that are already used
-            tracks.forEach((track: Track) => {
-                if (!existingTrackIds.find((id: string) => id === track.id)) {
-                    finalTracks.push(track);
-                }
-            });
-            if (finalTracks.length < 10) {
-                // use the 1st 10 from recommendations and clear out the existing track ids
-                finalTracks = [];
-                finalTracks.push(...tracks);
-                existingTrackIds = [];
-            }
-        } else {
-            finalTracks.push(...tracks);
-        }
-
-        // trim down to 10
-        finalTracks = finalTracks.splice(0, 10);
-
-        // add these tot he previously recommended tracks
-        const finalTrackIds = finalTracks.map((t: Track) => t.id);
-        existingTrackIds.push(...finalTrackIds);
-        this.dataMgr.prevRecTrackMap[label] = existingTrackIds;
-
-        if (finalTracks.length > 0) {
-            // sort them alpabeticaly
-            sortTracks(finalTracks);
-        }
-
-        // set the manager's recommendation tracks
-        this.dataMgr.recommendationTracks = finalTracks;
-        this.dataMgr.recommendationLabel = label;
-
-        // refresh the rec tree
-        commands.executeCommand("musictime.refreshRecommendationsTree");
-    }
-
-    async getRecommendedTracks(
-        trackIds,
-        seed_genres,
-        features
-    ): Promise<Track[]> {
-        try {
-            return getRecommendationsForTracks(
-                trackIds,
-                100,
-                "" /*market*/,
-                20,
-                100,
-                seed_genres,
-                [],
-                features
-            );
-        } catch (e) {
-            //
-        }
-
-        return [];
-    }
-
     async playInitialization(callback: any = null) {
         const devices: PlayerDevice[] = this.dataMgr.currentDevices;
         const activeDevice = getActiveDevice(devices);
@@ -1243,35 +1124,6 @@ export class MusicManager {
         if (computerDevice) {
             await playSpotifyDevice(computerDevice.id);
         }
-    }
-
-    async getTrackIdsForRecommendations(
-        likedSongSeedLimit: number = 5,
-        offset: number = 0
-    ) {
-        let trackIds = [];
-        let trackRecs = this.dataMgr.trackIdsForRecommendations || [];
-
-        if (trackRecs.length === 0) {
-            // call the music util to populate the rec track ids
-            await buildTracksForRecommendations(this.dataMgr.spotifyPlaylists);
-            trackRecs = this.dataMgr.trackIdsForRecommendations || [];
-        }
-
-        if (trackRecs.length > 0) {
-            for (let i = 0; i < likedSongSeedLimit; i++) {
-                if (trackRecs.length > offset) {
-                    // we have enough, grab the next track
-                    trackIds.push(trackRecs[offset]);
-                } else {
-                    // start the offset back to the begining
-                    offset = 0;
-                    trackIds.push(trackRecs[offset]);
-                }
-                offset++;
-            }
-        }
-        return trackIds;
     }
 
     async isTrackRepeating(): Promise<boolean> {

@@ -28,6 +28,7 @@ import { MusicCommandManager } from "./MusicCommandManager";
 import { getDataRows } from "../OfflineManager";
 import { MusicDataManager } from "./MusicDataManager";
 import { commands } from "vscode";
+import { requiresSpotifyAccess } from "./MusicUtil";
 
 export class MusicStateManager {
     static readonly WINDOWS_SPOTIFY_TRACK_FIND: string =
@@ -195,7 +196,7 @@ export class MusicStateManager {
      * Core logic in gathering tracks. This is called every 5 seconds.
      */
     public async gatherMusicInfo(): Promise<any> {
-        if (this.gatheringSong) {
+        if (this.gatheringSong || requiresSpotifyAccess()) {
             return;
         }
 

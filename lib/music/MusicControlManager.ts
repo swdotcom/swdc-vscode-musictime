@@ -342,8 +342,6 @@ export class MusicControlManager {
             MusicDataManager.getInstance().spotifyLikedSongs = [];
             // repopulate the liked songs
             await populateLikedSongs();
-            // refresh
-            commands.executeCommand("musictime.refreshPlaylist");
         }
 
         runningTrack.loved = liked;
@@ -359,6 +357,19 @@ export class MusicControlManager {
         if (!isResponseOk(resp)) {
             logIt(`Error updating track like state: ${resp.message}`);
         }
+
+        // check if it's in the recommendation list
+        const foundRecTrack = this.dataMgr.recommendationTracks.find(
+            (t: Track) => t.id === track.id
+        );
+
+        if (foundRecTrack) {
+            this.dataMgr.removeTrackFromRecommendations(track.id);
+            commands.executeCommand("musictime.refreshRecommendationsTree");
+        }
+
+        // refresh
+        commands.executeCommand("musictime.refreshPlaylist");
     }
 
     async copySpotifyLink(id: string, isPlaylist: boolean) {

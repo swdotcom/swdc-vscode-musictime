@@ -41,6 +41,10 @@ import {
 } from "./DataController";
 import { CacheManager } from "./cache/CacheManager";
 import { showDeviceSelectorMenu } from "./selector/SpotifyDeviceSelectorManager";
+import {
+    updateRecommendations,
+    refreshRecommendations
+} from "./music/MusicRecommendationManager";
 
 /**
  * add the commands to vscode....
@@ -391,7 +395,7 @@ export function createCommands(): {
     const refreshRecommendationsCommand = commands.registerCommand(
         "musictime.refreshRecommendations",
         async () => {
-            musicMgr.refreshRecommendations();
+            refreshRecommendations();
         }
     );
     cmds.push(refreshRecommendationsCommand);
@@ -412,7 +416,7 @@ export function createCommands(): {
             const likedSongSeedLimit = args[1];
             const seed_genres = args[2];
             const features = args.length > 3 ? args[3] : {};
-            musicMgr.updateRecommendations(
+            updateRecommendations(
                 label,
                 likedSongSeedLimit,
                 seed_genres,
