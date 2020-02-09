@@ -882,18 +882,13 @@ export class MusicManager {
         playerName: PlayerName = null,
         callback: any = null
     ) {
-        // options.album_id or options.track_id
-        const track_id = this.dataMgr.runningTrack
-            ? this.dataMgr.runningTrack.id
-            : null;
-
         // if the player name is null, this means all we want to do is launch the currently set player
         if (!playerName) {
-            await launchPlayer(this.dataMgr.currentPlayerName, {
-                quietly: false,
-                track_id
-            });
-            return;
+            // set it to spotify desktop if it's not itunes
+            playerName =
+                this.dataMgr.currentPlayerName !== PlayerName.ItunesDesktop
+                    ? PlayerName.SpotifyDesktop
+                    : this.dataMgr.currentPlayerName;
         }
 
         // spotify device launch error would look like this...
@@ -936,11 +931,19 @@ export class MusicManager {
                     (device: PlayerDevice) =>
                         device.type.toLowerCase() === "computer"
                 );
+
                 if (computerDevice) {
-                    await transferSpotifyDevice(
-                        computerDevice.id,
-                        false /*play*/
-                    );
+                    const runningTrack: Track = this.dataMgr.runningTrack;
+                    // transfer it only if it's not playing
+                    if (
+                        !runningTrack &&
+                        runningTrack.state !== TrackStatus.Playing
+                    ) {
+                        await transferSpotifyDevice(
+                            computerDevice.id,
+                            true /*play*/
+                        );
+                    }
                 }
                 setTimeout(() => {
                     // refresh the device info

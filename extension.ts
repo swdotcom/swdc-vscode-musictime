@@ -4,7 +4,6 @@
 // Import the module and reference it with the alias vscode in your code below
 import { ExtensionContext } from "vscode";
 import { onboardPlugin } from "./lib/OnboardManager";
-import { sendHeartbeat, serverIsAvailable } from "./lib/DataController";
 import {
     nowInSecs,
     getOffsetSecends,
