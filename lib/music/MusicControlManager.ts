@@ -606,10 +606,12 @@ export class MusicControlManager {
             .currentPlaylists;
 
         // filter out the ones with itemType = playlist
-        playlists = playlists.filter(
-            (n: PlaylistItem) =>
-                n.itemType === "playlist" && n.name !== "Software Top 40"
-        );
+        playlists = playlists
+            .filter(
+                (n: PlaylistItem) =>
+                    n.itemType === "playlist" && n.name !== "Software Top 40"
+            )
+            .map((n: PlaylistItem) => n);
 
         sortPlaylists(playlists);
 
@@ -623,9 +625,9 @@ export class MusicControlManager {
         const pick = await showQuickPick(menuOptions);
         if (pick && pick.label) {
             // add it to this playlist
-            const matchingPlaylists = playlists.filter(
-                (n: PlaylistItem) => n.name === pick.label
-            );
+            const matchingPlaylists = playlists
+                .filter((n: PlaylistItem) => n.name === pick.label)
+                .map((n: PlaylistItem) => n);
             if (matchingPlaylists.length) {
                 const matchingPlaylist = matchingPlaylists[0];
                 if (matchingPlaylist) {

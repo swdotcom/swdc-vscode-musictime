@@ -3,8 +3,8 @@ import { PlayerDevice } from "cody-music";
 import { MusicDataManager } from "../music/MusicDataManager";
 
 export async function showDeviceSelectorMenu() {
-    const devices: PlayerDevice[] = await MusicDataManager.getInstance()
-        .currentDevices;
+    const devices: PlayerDevice[] =
+        (await MusicDataManager.getInstance().currentDevices) || [];
     let items: any[] = [];
     if (devices && devices.length) {
         devices.forEach((d: PlayerDevice) => {
@@ -26,14 +26,29 @@ export async function showDeviceSelectorMenu() {
         (d: any) => d.type.toLowerCase() === "computer"
     );
 
-    // add Spotify Web and Spotify Desktop
-    if (!foundNonActiveWebDevice && !foundNonActiveComputerDevice) {
+    const foundActiveComputerDevice = devices.find(
+        (d: PlayerDevice) => d.type.toLowerCase() === "computer"
+    );
+    const foundWebComputerDevice = devices.find((d: PlayerDevice) =>
+        d.name.toLowerCase().includes("web")
+    );
+
+    const computerDevicesFound = devices
+        .filter((d: PlayerDevice) => d.type.toLowerCase() === "computer")
+        .map((d: PlayerDevice) => d);
+
+    // show the launch desktop option if it's not already in the list
+    // or if it's an active device
+    if (
+        computerDevicesFound.length === 0 ||
+        (computerDevicesFound.length < 2 && foundWebComputerDevice)
+    ) {
         items.push({
             label: "Launch Spotify desktop",
             command: "musictime.launchSpotifyDesktop"
         });
     }
-    if (!foundNonActiveWebDevice) {
+    if (!foundWebComputerDevice) {
         items.push({
             label: "Launch Spotify web player",
             command: "musictime.launchSpotify"

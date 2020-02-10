@@ -260,8 +260,10 @@ export class MusicManager {
             }
 
             // show the devices button
-            const devicesButton = await this.providerItemMgr.getActiveSpotifyDevicesButton();
-            items.push(devicesButton);
+            if (CONNECTED) {
+                const devicesButton = await this.providerItemMgr.getActiveSpotifyDevicesButton();
+                items.push(devicesButton);
+            }
 
             if (isMac() && SHOW_ITUNES_LAUNCH_BUTTON) {
                 items.push(this.providerItemMgr.getSwitchToItunesButton());

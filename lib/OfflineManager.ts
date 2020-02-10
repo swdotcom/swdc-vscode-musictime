@@ -173,7 +173,8 @@ export async function getDataRows(file) {
                             return obj;
                         }
                     })
-                    .filter(item => item);
+                    .filter(item => item)
+                    .map(item => item);
                 return payloads;
             }
         }

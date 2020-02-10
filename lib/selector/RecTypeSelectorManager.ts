@@ -86,10 +86,10 @@ function getCategorySelections() {
         },
         // Low speechiness
         {
-            label: "No lyrics",
+            label: "Instrumental",
             description: "good for complex work requiring maximum focus",
             args: [
-                "No lyrics",
+                "Instrumental",
                 5,
                 [],
                 { max_speechiness: 0.1, target_speechiness: 0 }

@@ -233,6 +233,8 @@ export function createCommands(): {
                 // 60 seconds ttl
                 CacheManager.getInstance().set("lastRefresh", true, 60);
             } else {
+                // refresh the device info and playlist
+                commands.executeCommand("musictime.refreshDeviceInfo");
                 commands.executeCommand("musictime.refreshPlaylist");
             }
         }

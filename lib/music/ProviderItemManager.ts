@@ -74,7 +74,7 @@ export class ProviderItemManager {
         } else if (!activeDevice && devices.length) {
             // no active device but found devices
             const names = devices.map((d: PlayerDevice) => d.name);
-            msg = `Start Spotify on a selected device`;
+            msg = `Launch Spotify on a selected device`;
             tooltip = `Multiple devices available: ${names.join(", ")}`;
         } else if (!activeDevice && devices.length === 0) {
             // no active device and no devices
