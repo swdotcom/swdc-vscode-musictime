@@ -58,17 +58,6 @@ export class ProviderItemManager {
         );
     }
 
-    getSpotifyConnectedButton() {
-        return this.buildActionItem(
-            "spotifyconnected",
-            "connected",
-            null,
-            PlayerType.WebSpotify,
-            "Spotify Connected",
-            "You've connected Spotify"
-        );
-    }
-
     async getActiveSpotifyDevicesButton() {
         const devices: PlayerDevice[] = MusicDataManager.getInstance()
             .currentDevices;

@@ -211,15 +211,6 @@ export class MusicManager {
             });
         }
 
-        // if itunes, show the itunes connected button
-        if (playerName === PlayerName.ItunesDesktop) {
-            // add the action items specific to itunes
-            items.push(this.providerItemMgr.getItunesConnectedButton());
-        } else if (IS_PREMIUM && HAS_SPOTIFY_USER) {
-            // show the spotify connected button if we allow playlist fetch
-            items.push(this.providerItemMgr.getSpotifyConnectedButton());
-        }
-
         // add the no music time connection button if we're not online
         if (!serverIsOnline && CONNECTED) {
             items.push(this.providerItemMgr.getNoMusicTimeConnectionButton());

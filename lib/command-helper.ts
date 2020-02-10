@@ -356,9 +356,7 @@ export function createCommands(): {
         "musictime.transferToDevice",
         async (d: PlayerDevice) => {
             // transfer to this device
-            window.showInformationMessage(
-                `Transferring to Spotify device ${d.name}`
-            );
+            window.showInformationMessage(`Connected to ${d.name}`);
             await playSpotifyDevice(d.id);
             setTimeout(() => {
                 // refresh the tree, no need to refresh playlists
