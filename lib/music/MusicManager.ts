@@ -43,7 +43,8 @@ import {
     getAppJwt,
     getMusicTimeUserStatus,
     populateSpotifyPlaylists,
-    populateLikedSongs
+    populateLikedSongs,
+    populateSpotifyDevices
 } from "../DataController";
 import { getItem, setItem, isMac, logIt, getCodyErrorMessage } from "../Util";
 import { isResponseOk, softwareGet, softwarePost } from "../HttpClient";
@@ -939,22 +940,23 @@ export class MusicManager {
                         );
                     }
                 }
-                setTimeout(() => {
-                    // refresh the device info
-                    commands.executeCommand("musictime.refreshDeviceInfo");
-                }, 1000);
 
                 if (callback) {
                     let timeout = 500;
                     if (playerName === PlayerName.SpotifyWeb) {
-                        timeout = 1200;
+                        // longer timeout for the web player
+                        timeout = 1500;
                     }
 
-                    // shorter timeout
-                    setTimeout(() => {
+                    setTimeout(async () => {
                         callback();
                     }, timeout);
                 }
+
+                setTimeout(() => {
+                    // refresh the device info
+                    this.checkDeviceActive(5);
+                }, 1000);
             }
         }, 1500);
     }
@@ -968,6 +970,21 @@ export class MusicManager {
             if (!foundDevice && tries > 0) {
                 tries--;
                 this.checkDeviceIdRunning(device_id, tries);
+            } else {
+                commands.executeCommand("musictime.refreshDeviceInfo");
+            }
+        }, 1000);
+    }
+
+    async checkDeviceActive(tries: number = 5) {
+        setTimeout(async () => {
+            const devices: PlayerDevice[] = await getSpotifyDevices();
+            const activeDevice: PlayerDevice = devices
+                ? devices.find((d: PlayerDevice) => d.is_active)
+                : null;
+            if (!activeDevice && tries > 0) {
+                tries--;
+                this.checkDeviceActive(tries);
             } else {
                 commands.executeCommand("musictime.refreshDeviceInfo");
             }
@@ -1204,11 +1221,8 @@ export class MusicManager {
 
         let deviceId = activeDevice ? activeDevice.id : computerDevice.id;
 
-        /**
-         * dataMgr.recommendationTracks
-         */
-
         if (isRecommendationTrack) {
+            // RECOMMENDATION track request
             // get the offset of this track
             const offset = this.dataMgr.recommendationTracks.findIndex(
                 (t: Track) => trackId === t.id
@@ -1223,9 +1237,11 @@ export class MusicManager {
                 offset
             });
         } else if (playlistId && !isLikedSong) {
+            // NORMAL playlist request
             // play a playlist
             return playSpotifyPlaylist(playlistId, trackId, deviceId);
         } else if (isLikedSong && !trackId) {
+            // LIKED SONG track request
             // get the 1st track from the liked songs and play it
             trackId = this.dataMgr.spotifyLikedSongs.length
                 ? this.dataMgr.spotifyLikedSongs[0].id

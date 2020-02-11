@@ -3,8 +3,9 @@ import { PlayerDevice } from "cody-music";
 import { MusicDataManager } from "../music/MusicDataManager";
 
 export async function showDeviceSelectorMenu() {
-    const devices: PlayerDevice[] =
-        (await MusicDataManager.getInstance().currentDevices) || [];
+    let devices: PlayerDevice[] =
+        MusicDataManager.getInstance().currentDevices || [];
+
     let items: any[] = [];
     if (devices && devices.length) {
         devices.forEach((d: PlayerDevice) => {
@@ -19,16 +20,6 @@ export async function showDeviceSelectorMenu() {
         });
     }
 
-    const foundNonActiveWebDevice = items.find((d: any) =>
-        d.label.toLowerCase().includes("web")
-    );
-    const foundNonActiveComputerDevice = items.find(
-        (d: any) => d.type.toLowerCase() === "computer"
-    );
-
-    const foundActiveComputerDevice = devices.find(
-        (d: PlayerDevice) => d.type.toLowerCase() === "computer"
-    );
     const foundWebComputerDevice = devices.find((d: PlayerDevice) =>
         d.name.toLowerCase().includes("web")
     );
