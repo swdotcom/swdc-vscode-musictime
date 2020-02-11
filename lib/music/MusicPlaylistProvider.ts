@@ -15,6 +15,8 @@ import { logIt, getPlaylistIcon } from "../Util";
 import { ProviderItemManager } from "./ProviderItemManager";
 import { MusicDataManager } from "./MusicDataManager";
 
+const dataMgr: MusicDataManager = MusicDataManager.getInstance();
+
 /**
  * Create the playlist tree item (root or leaf)
  * @param p
@@ -27,12 +29,9 @@ const createPlaylistTreeItem = (
     return new PlaylistTreeItem(p, cstate);
 };
 
-const musicMgr: MusicManager = MusicManager.getInstance();
-const dataMgr: MusicDataManager = MusicDataManager.getInstance();
-
 export const refreshPlaylistViewIfRequired = async () => {
     if (!dataMgr.spotifyPlaylists || dataMgr.spotifyPlaylists.length === 0) {
-        await musicMgr.refreshPlaylists();
+        await MusicManager.getInstance().refreshPlaylists();
     }
     commands.executeCommand("musictime.revealTree");
 };
@@ -48,6 +47,7 @@ export const connectPlaylistTreeView = (view: TreeView<PlaylistItem>) => {
             if (!e.selection || e.selection.length === 0) {
                 return;
             }
+
             let playlistItem: PlaylistItem = e.selection[0];
 
             if (playlistItem.command) {
@@ -65,6 +65,8 @@ export const connectPlaylistTreeView = (view: TreeView<PlaylistItem>) => {
                 // are no functions associated with it
                 return;
             }
+
+            const musicMgr: MusicManager = MusicManager.getInstance();
 
             // set the selected playlist
             const currentPlaylistId = playlistItem["playlist_id"];
@@ -131,7 +133,7 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
             !dataMgr.spotifyPlaylists ||
             dataMgr.spotifyPlaylists.length === 0
         ) {
-            await musicMgr.refreshPlaylists();
+            await MusicManager.getInstance().refreshPlaylists();
         }
 
         this.refresh();

@@ -22,7 +22,8 @@ import {
     getSpotifyPlayerContext,
     getSpotifyDevices,
     transferSpotifyDevice,
-    playSpotifyPlaylist
+    playSpotifyPlaylist,
+    play
 } from "cody-music";
 import {
     PERSONAL_TOP_SONGS_NAME,
@@ -1189,6 +1190,10 @@ export class MusicManager {
                 SPOTIFY_LIKED_SONGS_PLAYLIST_NAME
                 ? true
                 : false;
+        const isRecommendationTrack =
+            this.dataMgr.selectedTrackItem.type === "recommendation"
+                ? true
+                : false;
 
         if (!activeDevice && !computerDevice) {
             window.showInformationMessage(
@@ -1199,7 +1204,25 @@ export class MusicManager {
 
         let deviceId = activeDevice ? activeDevice.id : computerDevice.id;
 
-        if (playlistId && !isLikedSong) {
+        /**
+         * dataMgr.recommendationTracks
+         */
+
+        if (isRecommendationTrack) {
+            // get the offset of this track
+            const offset = this.dataMgr.recommendationTracks.findIndex(
+                (t: Track) => trackId === t.id
+            );
+            // play the list of recommendation tracks
+            const track_ids = this.dataMgr.recommendationTracks.map(
+                (t: Track) => t.id
+            );
+            return play(PlayerName.SpotifyWeb, {
+                track_ids,
+                device_id: deviceId,
+                offset
+            });
+        } else if (playlistId && !isLikedSong) {
             // play a playlist
             return playSpotifyPlaylist(playlistId, trackId, deviceId);
         } else if (isLikedSong && !trackId) {

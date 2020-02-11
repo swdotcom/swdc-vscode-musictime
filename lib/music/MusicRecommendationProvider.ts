@@ -15,8 +15,6 @@ import { MusicManager } from "./MusicManager";
 import { MusicDataManager } from "./MusicDataManager";
 import { ProviderItemManager } from "./ProviderItemManager";
 
-const musicMgr: MusicManager = MusicManager.getInstance();
-
 /**
  * Create the playlist tree item (root or leaf)
  * @param p
@@ -31,7 +29,7 @@ const createPlaylistTreeItem = (
 
 const playRecommendationTrack = async (playlistItem: PlaylistItem) => {
     // play it
-    musicMgr.playSelectedItem(playlistItem);
+    MusicManager.getInstance().playSelectedItem(playlistItem);
 };
 
 /**

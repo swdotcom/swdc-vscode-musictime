@@ -92,7 +92,7 @@ function getCategorySelections() {
                 "Instrumental",
                 5,
                 [],
-                { max_speechiness: 0.1, target_speechiness: 0 }
+                { max_instrumentalness: 1, target_instrumentalness: 0.8 }
             ]
         },
         // Liked songs
