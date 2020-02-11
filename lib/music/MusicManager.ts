@@ -1221,40 +1221,58 @@ export class MusicManager {
 
         let deviceId = activeDevice ? activeDevice.id : computerDevice.id;
 
-        if (isRecommendationTrack) {
-            // RECOMMENDATION track request
-            // get the offset of this track
-            const offset = this.dataMgr.recommendationTracks.findIndex(
-                (t: Track) => trackId === t.id
+        if (isRecommendationTrack || isLikedSong) {
+            // it's a liked song or recommendation track play request
+            return this.playRecommendationsOrLikedSongsByPlaylist(
+                this.dataMgr.selectedTrackItem,
+                deviceId
             );
-            // play the list of recommendation tracks
-            const track_ids = this.dataMgr.recommendationTracks.map(
-                (t: Track) => t.id
-            );
-            return play(PlayerName.SpotifyWeb, {
-                track_ids,
-                device_id: deviceId,
-                offset
-            });
-        } else if (playlistId && !isLikedSong) {
+        }
+
+        if (playlistId) {
             // NORMAL playlist request
             // play a playlist
             return playSpotifyPlaylist(playlistId, trackId, deviceId);
-        } else if (isLikedSong && !trackId) {
-            // LIKED SONG track request
-            // get the 1st track from the liked songs and play it
-            trackId = this.dataMgr.spotifyLikedSongs.length
-                ? this.dataMgr.spotifyLikedSongs[0].id
-                : null;
-            if (!trackId) {
-                // no liked songs to play
-                window.showInformationMessage(
-                    `Add tracks to your Liked Songs.`
-                );
-                return;
-            }
         }
 
+        // else it's not a liked or recommendation play request, just play the selected track
         playSpotifyTrack(trackId, deviceId);
+    };
+
+    playRecommendationsOrLikedSongsByPlaylist = (
+        playlistItem: PlaylistItem,
+        deviceId: string
+    ) => {
+        const trackId = playlistItem.id;
+        const isRecommendationTrack =
+            playlistItem.type === "recommendation" ? true : false;
+
+        let offset = 0;
+        let track_ids = [];
+        if (isRecommendationTrack) {
+            // RECOMMENDATION track request
+            // get the offset of this track
+            offset = this.dataMgr.recommendationTracks.findIndex(
+                (t: Track) => trackId === t.id
+            );
+            // play the list of recommendation tracks
+            track_ids = this.dataMgr.recommendationTracks.map(
+                (t: Track) => t.id
+            );
+        } else {
+            offset = this.dataMgr.spotifyLikedSongs.findIndex(
+                (t: Track) => trackId === t.id
+            );
+            // play the list of recommendation tracks
+            track_ids = this.dataMgr.spotifyLikedSongs.map((t: Track) => t.id);
+            // trim it down to 50
+            track_ids = track_ids.splice(0, 50);
+        }
+
+        return play(PlayerName.SpotifyWeb, {
+            track_ids,
+            device_id: deviceId,
+            offset
+        });
     };
 }
