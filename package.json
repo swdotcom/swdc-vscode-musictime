@@ -231,7 +231,7 @@
             },
             {
                 "command": "musictime.addToPlaylist",
-                "title": "Add Or create a playlist",
+                "title": "Add or create a playlist",
                 "icon": {
                     "light": "resources/light/add.svg",
                     "dark": "resources/dark/add.svg"

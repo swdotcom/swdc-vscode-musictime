@@ -78,7 +78,7 @@ export class ProviderItemManager {
             tooltip = `Multiple devices available: ${names.join(", ")}`;
         } else if (!activeDevice && devices.length === 0) {
             // no active device and no devices
-            msg = "Connect to a spotify device";
+            msg = "Connect to a Spotify device";
             tooltip = "Click to launch the web or desktop player";
         }
 
