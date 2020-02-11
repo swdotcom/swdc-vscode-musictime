@@ -274,13 +274,6 @@ export class MusicStateManager {
                 this.existingTrack.state = playingTrack.state;
             }
 
-            // If the current playlist is the Liked Songs,
-            // check if we should start the next track
-            // {isNewTrack, sendSongSession, initiateNextLikedSong}
-            if (changeStatus.initiateNextLikedSong) {
-                await this.playNextLikedSpotifyCheck();
-            }
-
             // set the start for the playing track
             if (isValidRunningOrPausedTrack && !this.existingTrack["start"]) {
                 this.existingTrack["start"] = utcLocalTimes.utc;
