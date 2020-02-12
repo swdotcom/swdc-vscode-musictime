@@ -1259,6 +1259,14 @@ export class MusicManager {
             track_ids = this.dataMgr.recommendationTracks.map(
                 (t: Track) => t.id
             );
+
+            // make it a list of 50, so get the rest from trackIdsForRecommendations
+            const otherTrackIds = this.dataMgr.trackIdsForRecommendations.filter(
+                (t: string) => !track_ids.includes(t)
+            );
+            const spliceLimit = 50 - track_ids.length;
+            const addtionalTrackIds = otherTrackIds.splice(0, spliceLimit);
+            track_ids.push(...addtionalTrackIds);
         } else {
             offset = this.dataMgr.spotifyLikedSongs.findIndex(
                 (t: Track) => trackId === t.id
