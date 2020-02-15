@@ -21,7 +21,7 @@ export async function showDeviceSelectorMenu() {
     }
 
     const foundWebComputerDevice = devices.find((d: PlayerDevice) =>
-        d.name.toLowerCase().includes("web")
+        d.name.toLowerCase().includes("web player")
     );
 
     const computerDevicesFound = devices

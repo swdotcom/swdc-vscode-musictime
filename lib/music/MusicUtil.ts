@@ -212,6 +212,21 @@ export function getComputerDevice(devices: PlayerDevice[] = []): PlayerDevice {
     return null;
 }
 
+export function getComputerWebDevice(devices: PlayerDevice[]): PlayerDevice {
+    if (devices && devices.length > 0) {
+        for (let i = 0; i < devices.length; i++) {
+            const device: PlayerDevice = devices[i];
+            if (
+                device.type.toLowerCase() === "computer" &&
+                device.name.toLowerCase().includes("web player")
+            ) {
+                return device;
+            }
+        }
+    }
+    return null;
+}
+
 export function requiresSpotifyAccess() {
     let spotifyAccessToken = getItem("spotify_access_token");
     return spotifyAccessToken ? false : true;

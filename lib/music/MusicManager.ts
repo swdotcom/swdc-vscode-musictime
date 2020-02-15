@@ -886,6 +886,12 @@ export class MusicManager {
                     : this.dataMgr.currentPlayerName;
         }
 
+        const label =
+            playerName === PlayerName.SpotifyDesktop
+                ? "Spotify desktop"
+                : "Spotify web player";
+        window.showInformationMessage(`Launching the ${label}, please wait.`);
+
         // spotify device launch error would look like this...
         // error:"Command failed: open -a spotify\nUnable to find application named 'spotify'\n"
         let result = await launchPlayer(playerName, { quietly: false });
@@ -903,7 +909,7 @@ export class MusicManager {
         }
 
         setTimeout(() => {
-            this.checkDeviceLaunch(playerName, 5, callback);
+            this.checkDeviceLaunch(playerName, 7, callback);
         }, 1000);
     }
 
@@ -941,24 +947,15 @@ export class MusicManager {
                     }
                 }
 
-                if (callback) {
-                    let timeout = 500;
-                    if (playerName === PlayerName.SpotifyWeb) {
-                        // longer timeout for the web player
-                        timeout = 1500;
-                    }
+                commands.executeCommand("musictime.refreshDeviceInfo");
 
+                if (callback) {
                     setTimeout(async () => {
                         callback();
-                    }, timeout);
+                    }, 1000);
                 }
-
-                setTimeout(() => {
-                    // refresh the device info
-                    this.checkDeviceActive(5);
-                }, 1000);
             }
-        }, 1500);
+        }, 1000);
     }
 
     async checkDeviceIdRunning(device_id: string, tries: number = 5) {
@@ -1237,6 +1234,10 @@ export class MusicManager {
 
         // else it's not a liked or recommendation play request, just play the selected track
         playSpotifyTrack(trackId, deviceId);
+
+        setTimeout(() => {
+            commands.executeCommand("musictime.refreshPlaylist");
+        }, 500);
     };
 
     playRecommendationsOrLikedSongsByPlaylist = (

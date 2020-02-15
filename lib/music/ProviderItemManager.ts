@@ -59,11 +59,24 @@ export class ProviderItemManager {
     }
 
     async getActiveSpotifyDevicesButton() {
-        const devices: PlayerDevice[] = MusicDataManager.getInstance()
-            .currentDevices;
+        const dataMgr: MusicDataManager = MusicDataManager.getInstance();
+
+        const devices: PlayerDevice[] = dataMgr.currentDevices;
+
+        console.log("DEVICES: ", JSON.stringify(devices));
 
         const activeDevice: PlayerDevice = devices.find(
-            (device: PlayerDevice) => device.is_active
+            (d: PlayerDevice) => d.is_active
+        );
+
+        const webPlayerDevice: PlayerDevice = devices.find(
+            (d: PlayerDevice) =>
+                d.type.toLowerCase() === "computer" &&
+                d.name.toLowerCase().includes("web player")
+        );
+
+        const desktopDevice: PlayerDevice = devices.find(
+            (d: PlayerDevice) => d.type.toLowerCase() === "computer"
         );
 
         let msg = "";
@@ -71,12 +84,18 @@ export class ProviderItemManager {
         if (activeDevice) {
             // found an active device
             msg = `Listening on ${activeDevice.name}`;
-        } else if (!activeDevice && devices.length) {
+        } else if (webPlayerDevice) {
+            // show that the web player is an active device
+            msg = `Listening on ${webPlayerDevice.name}`;
+        } else if (desktopDevice) {
+            // show that the desktop player is an active device
+            msg = `Listening on ${desktopDevice.name}`;
+        } else if (devices.length) {
             // no active device but found devices
             const names = devices.map((d: PlayerDevice) => d.name);
-            msg = `Launch Spotify on a selected device`;
+            msg = `Spotify devices available`;
             tooltip = `Multiple devices available: ${names.join(", ")}`;
-        } else if (!activeDevice && devices.length === 0) {
+        } else if (devices.length === 0) {
             // no active device and no devices
             msg = "Connect to a Spotify device";
             tooltip = "Click to launch the web or desktop player";
