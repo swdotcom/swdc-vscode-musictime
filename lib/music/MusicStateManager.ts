@@ -341,6 +341,18 @@ export class MusicStateManager {
         }
     }
 
+    numerics = [
+        "add",
+        "paste",
+        "delete",
+        "netkeys",
+        "linesAdded",
+        "linesRemoved",
+        "open",
+        "close",
+        "keystrokes"
+    ];
+
     public async gatherCodingDataAndSendSongSession(songSession) {
         // if this track doesn't have album json data null it out
         if (songSession.album) {
@@ -400,7 +412,7 @@ export class MusicStateManager {
         }
 
         // add any file payloads we found
-        const filePayloads = [];
+        const songSessionSource = {};
         if (payloads && payloads.length) {
             payloads.forEach(payload => {
                 Object.keys(payload.source).forEach(sourceKey => {
@@ -411,7 +423,20 @@ export class MusicStateManager {
                         data[sourceKey] &&
                         data[sourceKey].end > songSession.start
                     ) {
-                        filePayloads.push(data);
+                        // filePayloads.push(data);
+                        if (songSessionSource[sourceKey]) {
+                            // aggregate it
+                            const existingData = songSessionSource[sourceKey];
+                            const fileData = data[sourceKey];
+                            Object.keys(existingData).forEach(key => {
+                                if (this.numerics.includes(key)) {
+                                    existingData[key] += fileData[key];
+                                }
+                            });
+                        } else {
+                            // assign it
+                            songSessionSource[sourceKey] = data[sourceKey];
+                        }
                     }
                 });
             });
@@ -432,7 +457,7 @@ export class MusicStateManager {
             pluginId: getPluginId(),
             os: getOs(),
             version: getVersion(),
-            source: filePayloads,
+            source: songSessionSource,
             repoFileCount: 0,
             repoContributorCount: 0
         };
@@ -472,7 +497,6 @@ export class MusicStateManager {
             ...songData
         };
 
-        console.log("----- sending song session ----- ");
         // make sure we've set the "liked" to true if it's coming from the liked songs playlist
         if (
             !songSession.liked &&
@@ -510,17 +534,6 @@ export class MusicStateManager {
         repoContributorCount: 0,
      */
     private buildAggregateData(payloads, initialValue, start) {
-        const numerics = [
-            "add",
-            "paste",
-            "delete",
-            "netkeys",
-            "linesAdded",
-            "linesRemoved",
-            "open",
-            "close",
-            "keystrokes"
-        ];
         let totalKeystrokes = 0;
         if (payloads && payloads.length > 0) {
             for (let i = 0; i < payloads.length; i++) {
@@ -553,7 +566,7 @@ export class MusicStateManager {
                             if (sourceObjKeys && sourceObjKeys.length > 0) {
                                 sourceObjKeys.forEach(sourceObjKey => {
                                     const val = sourceObj[sourceObjKey];
-                                    if (numerics.includes(sourceObjKey)) {
+                                    if (this.numerics.includes(sourceObjKey)) {
                                         // aggregate
                                         initialValue[sourceObjKey] += val;
                                     }
