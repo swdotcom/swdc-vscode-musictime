@@ -1,0 +1,5 @@
+blank_issues_enabled: true # default
+contact_links:
+  - name: 🌱 Join the community
+    url: https://join.slack.com/t/software-community/shared_invite/enQtOTM4NjEyMjI1MDQ0LWM2ZDk0MDZiYzRjNjJiNGE2NWM3NDI3YzI1MjYzMmVjNjBmY2Q4Mzg4NjgyMjBmODMzZjk4M2RkMzYxMmY0ZjI
+    about: Want to talk to our engineering team directly? Join us on Slack
