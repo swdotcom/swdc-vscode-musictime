@@ -93,8 +93,13 @@ export class MusicCommandManager {
         // 996 buttons (unlike, like)
         this.createButton("♡", "Like", "musictime.like", 996);
         this.createButton("♥", "Unlike", "musictime.unlike", 996);
-        this.createButton("🔁", "Repeat Track", "musictime.repeatOn", 995);
-        this.createButton("🔂", "Don't Repeat", "musictime.repeatOff", 995);
+        this.createButton("$(sync)", "Repeat Track", "musictime.repeatOn", 995);
+        this.createButton(
+            "$(sync)1",
+            "Don't Repeat",
+            "musictime.repeatOff",
+            995
+        );
         // button area for the current song name
         this.createButton(
             "",

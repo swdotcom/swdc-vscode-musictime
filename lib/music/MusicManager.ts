@@ -1057,9 +1057,13 @@ export class MusicManager {
                         : PlayerName.SpotifyWeb;
                 // start the launch process and pass the callback when complete
                 return this.launchTrackPlayer(playerName, callback);
+            } else {
+                // operation cancelled
+                return;
             }
         }
 
+        // we have a device, continue to the callback if we have it
         if (callback) {
             callback();
         }
@@ -1198,28 +1202,6 @@ export class MusicManager {
             this.dataMgr.selectedTrackItem.type === "recommendation"
                 ? true
                 : false;
-
-        if (!deviceId) {
-            window.showInformationMessage(
-                `Music Time requires a running Spotify player. You will need to open a Spotify player to control tracks from the editor.`
-            );
-            return;
-        }
-
-        const {
-            webPlayer,
-            desktop,
-            activeDevice,
-            activeComputerDevice
-        } = getDeviceSet();
-
-        if (!activeDevice) {
-            await populateSpotifyDevices();
-        }
-
-        setTimeout(() => {
-            commands.executeCommand("musictime.refreshPlaylist");
-        }, 1500);
 
         if (isRecommendationTrack || isLikedSong) {
             // it's a liked song or recommendation track play request

@@ -63,8 +63,6 @@ export class ProviderItemManager {
 
         const devices: PlayerDevice[] = dataMgr.currentDevices;
 
-        console.log("DEVICES: ", JSON.stringify(devices));
-
         const activeDevice: PlayerDevice = devices.find(
             (d: PlayerDevice) => d.is_active
         );

@@ -124,6 +124,11 @@ export class MusicStateManager {
         const playingTrackId = playingTrack.id || null;
         const isValidExistingTrack = existingTrackId ? true : false;
         const isValidTrack = playingTrackId ? true : false;
+        const playerStateChanged =
+            (!existingTrackId && playingTrackId) ||
+            (existingTrackId && !playingTrackId)
+                ? true
+                : false;
 
         // get the flag to determine if it's a new track or not
         const isNewTrack = existingTrackId !== playingTrackId ? true : false;
@@ -188,7 +193,8 @@ export class MusicStateManager {
         return {
             isNewTrack,
             sendSongSession,
-            initiateNextLikedSong
+            initiateNextLikedSong,
+            playerStateChanged
         };
     }
 
@@ -287,7 +293,9 @@ export class MusicStateManager {
             // update the music time status bar
             MusicCommandManager.syncControls(dataMgr.runningTrack, false);
 
-            this.updateDeviceInfoIfTrackNotAssigned(playingTrack);
+            if (changeStatus.playerStateChanged) {
+                commands.executeCommand("musictime.refreshDeviceInfo");
+            }
         } catch (e) {
             const errMsg = e.message || e;
             logIt(`Unexpected track state processing error: ${errMsg}`);
@@ -321,24 +329,6 @@ export class MusicStateManager {
 
         // play the next song
         await musicMgr.playNextLikedSong();
-    }
-
-    private async updateDeviceInfoIfTrackNotAssigned(playingTrack: Track) {
-        if (
-            !playingTrack.name &&
-            playingTrack.state === TrackStatus.NotAssigned
-        ) {
-            const dataMgr: MusicDataManager = MusicDataManager.getInstance();
-            // get the current devices. if empty and our current list isn't, then refresh
-            if (dataMgr.currentDevices && dataMgr.currentDevices.length) {
-                const devices: PlayerDevice[] =
-                    (await getSpotifyDevices()) || [];
-                if (devices.length !== dataMgr.currentDevices.length) {
-                    dataMgr.currentDevices = [];
-                    commands.executeCommand("musictime.refreshDeviceInfo");
-                }
-            }
-        }
     }
 
     numerics = [

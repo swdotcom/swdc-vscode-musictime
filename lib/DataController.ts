@@ -26,7 +26,8 @@ import {
     PlayerName,
     getPlaylists,
     getSpotifyDevices,
-    PlayerDevice
+    PlayerDevice,
+    repeatOff
 } from "cody-music";
 import { MusicManager } from "./music/MusicManager";
 import { refreshPlaylistViewIfRequired } from "./music/MusicPlaylistProvider";
@@ -111,13 +112,8 @@ export async function sendMusicData(trackData) {
     }
 
     if (serverIsOnline) {
-        // logIt(`sending ${JSON.stringify(trackData)}`);
         logIt(
-            `Sending Track: ${trackData.name}:${
-                trackData.artist
-            }, Keystrokes: ${trackData.keystrokes}, Start: ${moment
-                .unix(trackData.start)
-                .format()}, End: ${moment.unix(trackData.end).format()}`
+            `sending song session {song: ${trackData.name}, start: ${trackData.start}, end: ${trackData.end}}`
         );
 
         // add the "local_start", "start", and "end"
@@ -365,6 +361,7 @@ export async function populateSpotifyPlaylists() {
 
 export async function populateSpotifyDevices() {
     const devices: PlayerDevice[] = await getSpotifyDevices();
+    console.log("populating devices: ", JSON.stringify(devices));
     MusicDataManager.getInstance().currentDevices = devices;
 }
 

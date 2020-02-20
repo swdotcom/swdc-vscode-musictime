@@ -697,7 +697,7 @@ export function getSongDisplayName(name) {
     } else {
         displayName = name;
     }
-    return displayName;
+    return displayName.trim();
 }
 
 export async function getGitEmail() {
