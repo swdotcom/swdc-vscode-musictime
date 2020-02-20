@@ -43,7 +43,8 @@ import {
     getAppJwt,
     getMusicTimeUserStatus,
     populateSpotifyPlaylists,
-    populateLikedSongs
+    populateLikedSongs,
+    populateSpotifyDevices
 } from "../DataController";
 import { getItem, setItem, isMac, logIt, getCodyErrorMessage } from "../Util";
 import { isResponseOk, softwareGet, softwarePost } from "../HttpClient";
@@ -1176,7 +1177,7 @@ export class MusicManager {
         await this.playInitialization(this.playMusicSelection);
     }
 
-    playMusicSelection = () => {
+    playMusicSelection = async () => {
         // get the playlist id, track id, and device id
         const playlistId = this.dataMgr.selectedPlaylist
             ? this.dataMgr.selectedPlaylist.id
@@ -1205,6 +1206,21 @@ export class MusicManager {
             return;
         }
 
+        const {
+            webPlayer,
+            desktop,
+            activeDevice,
+            activeComputerDevice
+        } = getDeviceSet();
+
+        if (!activeDevice) {
+            await populateSpotifyDevices();
+        }
+
+        setTimeout(() => {
+            commands.executeCommand("musictime.refreshPlaylist");
+        }, 1500);
+
         if (isRecommendationTrack || isLikedSong) {
             // it's a liked song or recommendation track play request
             return this.playRecommendationsOrLikedSongsByPlaylist(
@@ -1221,10 +1237,6 @@ export class MusicManager {
 
         // else it's not a liked or recommendation play request, just play the selected track
         playSpotifyTrack(trackId, deviceId);
-
-        setTimeout(() => {
-            commands.executeCommand("musictime.refreshPlaylist");
-        }, 500);
     };
 
     playRecommendationsOrLikedSongsByPlaylist = (

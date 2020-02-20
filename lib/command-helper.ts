@@ -231,7 +231,7 @@ export function createCommands(): {
             if (!lastRefresh) {
                 commands.executeCommand("musictime.hardRefreshPlaylist");
                 // 60 seconds ttl
-                CacheManager.getInstance().set("lastRefresh", true, 30);
+                CacheManager.getInstance().set("lastRefresh", true, 10);
             } else {
                 // refresh the device info and playlist
                 await populateSpotifyDevices();
