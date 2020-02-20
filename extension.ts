@@ -22,7 +22,6 @@ import { MusicManager } from "./lib/music/MusicManager";
 import { KpmController } from "./lib/KpmController";
 
 let TELEMETRY_ON = true;
-let statusBarItem = null;
 let _ls = null;
 
 let token_check_interval = null;
@@ -34,10 +33,6 @@ let session_check_interval = null;
 
 export function isTelemetryOn() {
     return TELEMETRY_ON;
-}
-
-export function getStatusBarItem() {
-    return statusBarItem;
 }
 
 export function deactivate(ctx: ExtensionContext) {

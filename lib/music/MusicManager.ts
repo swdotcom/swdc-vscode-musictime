@@ -43,8 +43,7 @@ import {
     getAppJwt,
     getMusicTimeUserStatus,
     populateSpotifyPlaylists,
-    populateLikedSongs,
-    populateSpotifyDevices
+    populateLikedSongs
 } from "../DataController";
 import { getItem, setItem, isMac, logIt, getCodyErrorMessage } from "../Util";
 import { isResponseOk, softwareGet, softwarePost } from "../HttpClient";
@@ -55,9 +54,8 @@ import {
     sortPlaylists,
     buildTracksForRecommendations,
     requiresSpotifyAccess,
-    getActiveDevice,
-    getComputerOrActiveDevice,
-    getComputerDevice
+    getDeviceSet,
+    getDeviceId
 } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 
@@ -533,9 +531,8 @@ export class MusicManager {
     }
 
     async playNextLikedSong() {
-        const deviceToPlayOn: PlayerDevice = getComputerOrActiveDevice(
-            this.dataMgr.currentDevices
-        );
+        const deviceId = getDeviceId();
+
         // play the next song
         const nextTrack: Track = this.getNextSpotifyLikedSong();
         if (nextTrack) {
@@ -544,16 +541,13 @@ export class MusicManager {
                 0
             );
             this.dataMgr.selectedTrackItem = playlistItem;
-            const deviceId = deviceToPlayOn ? deviceToPlayOn.id : "";
             // play the next track
             playSpotifyTrack(playlistItem.id, deviceId);
         }
     }
 
     async playPreviousLikedSong() {
-        const deviceToPlayOn: PlayerDevice = getComputerOrActiveDevice(
-            this.dataMgr.currentDevices
-        );
+        const deviceId = getDeviceId();
         // play the next song
         const prevTrack: Track = this.getPreviousSpotifyLikedSong();
         if (prevTrack) {
@@ -562,8 +556,7 @@ export class MusicManager {
                 0
             );
             this.dataMgr.selectedTrackItem = playlistItem;
-            // play the prev track
-            const deviceId = deviceToPlayOn ? deviceToPlayOn.id : "";
+
             // launch and play the next track
             playSpotifyTrack(playlistItem.id, deviceId);
         }
@@ -886,12 +879,6 @@ export class MusicManager {
                     : this.dataMgr.currentPlayerName;
         }
 
-        const label =
-            playerName === PlayerName.SpotifyDesktop
-                ? "Spotify desktop"
-                : "Spotify web player";
-        window.showInformationMessage(`Launching the ${label}, please wait.`);
-
         // spotify device launch error would look like this...
         // error:"Command failed: open -a spotify\nUnable to find application named 'spotify'\n"
         let result = await launchPlayer(playerName, { quietly: false });
@@ -1036,16 +1023,19 @@ export class MusicManager {
 
     async playInitialization(callback: any = null) {
         const devices: PlayerDevice[] = this.dataMgr.currentDevices;
-        const activeDevice = getActiveDevice(devices);
-        const computerDevice = getComputerOrActiveDevice(devices);
-        const hasSpotifyUser = MusicManager.getInstance().hasSpotifyUser();
 
+        const {
+            webPlayer,
+            desktop,
+            activeDevice,
+            activeComputerDevice
+        } = getDeviceSet();
+
+        const hasSpotifyUser = MusicManager.getInstance().hasSpotifyUser();
         let isWinNonPremium = isMac() && !hasSpotifyUser ? true : false;
         let no_devices = !devices || devices.length === 0 ? true : false;
-        let active_device = activeDevice ? true : false;
-        let has_computer_device = computerDevice ? true : false;
 
-        if (no_devices || (!has_computer_device && !active_device)) {
+        if (no_devices || (!webPlayer && !desktop && !activeDevice)) {
             const buttons = isWinNonPremium
                 ? ["Web Player"]
                 : ["Web Player", "Desktop Player"];
@@ -1194,10 +1184,9 @@ export class MusicManager {
         let trackId = this.dataMgr.selectedTrackItem
             ? this.dataMgr.selectedTrackItem.id
             : null;
-        const activeDevice = getComputerOrActiveDevice(
-            this.dataMgr.currentDevices
-        );
-        const computerDevice = getComputerDevice(this.dataMgr.currentDevices);
+
+        const deviceId = getDeviceId();
+
         const isLikedSong =
             this.dataMgr.selectedPlaylist &&
             this.dataMgr.selectedPlaylist.name ===
@@ -1209,14 +1198,12 @@ export class MusicManager {
                 ? true
                 : false;
 
-        if (!activeDevice && !computerDevice) {
+        if (!deviceId) {
             window.showInformationMessage(
                 `Music Time requires a running Spotify player. You will need to open a Spotify player to control tracks from the editor.`
             );
             return;
         }
-
-        let deviceId = activeDevice ? activeDevice.id : computerDevice.id;
 
         if (isRecommendationTrack || isLikedSong) {
             // it's a liked song or recommendation track play request

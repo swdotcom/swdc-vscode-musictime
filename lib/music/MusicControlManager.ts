@@ -66,7 +66,8 @@ import { MusicPlaylistManager } from "./MusicPlaylistManager";
 import {
     sortPlaylists,
     requiresSpotifyAccess,
-    getComputerOrActiveDevice
+    getDeviceSet,
+    getDeviceId
 } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 
@@ -274,8 +275,14 @@ export class MusicControlManager {
         trackId: string,
         devices: PlayerDevice[] = []
     ) {
-        const deviceToPlayOn: PlayerDevice = getComputerOrActiveDevice(devices);
-        const deviceId = deviceToPlayOn ? deviceToPlayOn.id : "";
+        const {
+            webPlayer,
+            desktop,
+            activeDevice,
+            activeComputerDevice
+        } = getDeviceSet();
+
+        const deviceId = activeDevice ? activeDevice.id : "";
         // just play the 1st track
         await playSpotifyPlaylist(playlistId, trackId, deviceId);
 
@@ -289,16 +296,11 @@ export class MusicControlManager {
         track: PlaylistItem,
         devices: PlayerDevice[] = []
     ) {
-        const isPrem = await MusicManager.getInstance().isSpotifyPremium();
-        const isWin = isWindows();
-        if ((isPrem || isWin) && devices && devices.length > 0) {
-            const deviceToPlayOn: PlayerDevice = getComputerOrActiveDevice(
-                devices
-            );
-            const deviceId = deviceToPlayOn ? deviceToPlayOn.id : "";
-            // just play the 1st track
+        const deviceId = getDeviceId();
+
+        if (deviceId) {
             playSpotifyTrack(track.id, deviceId);
-        } else if (!isWin) {
+        } else if (!isWindows()) {
             // try with the desktop app
             playSpotifyMacDesktopTrack(track.id);
         } else {

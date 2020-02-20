@@ -4,7 +4,6 @@ import {
     isWindows,
     deleteFile,
     humanizeMinutes,
-    showStatus,
     getNowTimes,
     getItem
 } from "./Util";
@@ -76,23 +75,6 @@ export function incrementSessionSummaryData(keystrokes) {
     sessionSummaryData.lastStart = nowInSec;
 
     saveSessionSummaryToDisk(sessionSummaryData);
-}
-
-export function updateStatusBarWithSummaryData() {
-    // update the session summary data with what is found in the sessionSummary.json
-    sessionSummaryData = getSessionSummaryFileAsJson();
-
-    let currentDayMinutes = sessionSummaryData.currentDayMinutes;
-    let currentDayMinutesTime = humanizeMinutes(currentDayMinutes);
-    let averageDailyMinutes = sessionSummaryData.averageDailyMinutes;
-    let averageDailyMinutesTime = humanizeMinutes(averageDailyMinutes);
-
-    let inFlowIcon = currentDayMinutes > averageDailyMinutes ? "🚀 " : "";
-    let msg = `${inFlowIcon}${currentDayMinutesTime}`;
-    if (averageDailyMinutes > 0) {
-        msg += ` | ${averageDailyMinutesTime}`;
-    }
-    showStatus(msg, null);
 }
 
 export function getSessionSummaryData() {

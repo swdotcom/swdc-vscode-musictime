@@ -1,4 +1,3 @@
-import { getStatusBarItem } from "../extension";
 import {
     workspace,
     extensions,
@@ -44,9 +43,6 @@ const NUMBER_IN_EMAIL_REGEX = new RegExp("^\\d+\\+");
 // switch will set this to false if the file isn't CodeTime
 let cachedSessionKeys = {};
 let editorSessiontoken = null;
-let lastMsg = null;
-let lastTooltip = null;
-let showStatusBarText = true;
 let extensionName = null;
 let extensionDisplayName = null; // Code Time or Music Time
 
@@ -232,69 +228,6 @@ export function getItem(key) {
     // update the cache map
     cachedSessionKeys[key] = val;
     return val;
-}
-
-export function showErrorStatus(errorTooltip) {
-    let fullMsg = `$(${"alert"}) ${"Code Time"}`;
-    if (!errorTooltip) {
-        errorTooltip =
-            "To see your coding data in Code Time, please log in to your account.";
-    }
-    showStatus(fullMsg, errorTooltip);
-}
-
-export function showLoading() {
-    let loadingMsg = "⏳ code time metrics";
-    updateStatusBar(loadingMsg, "");
-}
-
-export function showStatus(fullMsg, tooltip) {
-    if (!tooltip) {
-        tooltip =
-            "Code time today vs. your daily average. Click to see more from Code Time";
-    }
-    updateStatusBar(fullMsg, tooltip);
-}
-
-export function handleCodeTimeStatusToggle() {
-    toggleStatusBar();
-}
-
-function updateStatusBar(msg, tooltip) {
-    let loggedInName = getItem("name");
-    let userInfo = "";
-    if (loggedInName && loggedInName !== "") {
-        userInfo = ` (${loggedInName})`;
-    }
-    if (!tooltip) {
-        tooltip = `Click to see more from Code Time`;
-    }
-
-    if (!showStatusBarText) {
-        // add the message to the tooltip
-        tooltip = msg + " | " + tooltip;
-    } else {
-        lastTooltip = tooltip;
-        lastMsg = msg;
-    }
-    if (!getStatusBarItem()) {
-        return;
-    }
-    getStatusBarItem().tooltip = `${tooltip}${userInfo}`;
-    if (!showStatusBarText) {
-        getStatusBarItem().text = "$(clock)";
-    } else {
-        getStatusBarItem().text = msg;
-    }
-}
-
-export function toggleStatusBar() {
-    showStatusBarText = !showStatusBarText;
-    updateStatusBar(lastMsg, lastTooltip);
-}
-
-export function isStatusBarTextVisible() {
-    return showStatusBarText;
 }
 
 export function isEmptyObj(obj) {
@@ -746,11 +679,25 @@ export function getSongDisplayName(name) {
     if (!name) {
         return "";
     }
+    let displayName = "";
     name = name.trim();
-    if (name.length > 11) {
-        return `${name.substring(0, 10)}...`;
+    if (name.length > 14) {
+        const parts = name.split(" ");
+        for (let i = 0; i < parts.length; i++) {
+            displayName = `${displayName} ${parts[i]}`;
+            if (displayName.length >= 12) {
+                if (displayName.length > 14) {
+                    // trim it down to at least 14
+                    displayName = `${displayName.substring(0, 14)}`;
+                }
+                displayName = `${displayName}..`;
+                break;
+            }
+        }
+    } else {
+        displayName = name;
     }
-    return name;
+    return displayName;
 }
 
 export async function getGitEmail() {

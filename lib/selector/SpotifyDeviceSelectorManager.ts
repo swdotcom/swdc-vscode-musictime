@@ -1,9 +1,10 @@
 import { showQuickPick } from "../MenuManager";
 import { PlayerDevice } from "cody-music";
 import { MusicDataManager } from "../music/MusicDataManager";
+import { getDeviceSet } from "../music/MusicUtil";
 
 export async function showDeviceSelectorMenu() {
-    let devices: PlayerDevice[] =
+    const devices: PlayerDevice[] =
         MusicDataManager.getInstance().currentDevices || [];
 
     let items: any[] = [];
@@ -22,17 +23,12 @@ export async function showDeviceSelectorMenu() {
         });
     }
 
-    const webPlayer = devices.find((d: PlayerDevice) =>
-        d.name.toLowerCase().includes("web player")
-    );
-
-    const desktop = devices
-        .filter(
-            (d: PlayerDevice) =>
-                d.type.toLowerCase() === "computer" &&
-                !d.name.toLowerCase().includes("web player")
-        )
-        .map((d: PlayerDevice) => d);
+    const {
+        webPlayer,
+        desktop,
+        activeDevice,
+        activeComputerDevice
+    } = getDeviceSet();
 
     // show the launch desktop option if it's not already in the list
     // or if it's an active device

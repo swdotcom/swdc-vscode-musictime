@@ -14,7 +14,7 @@ import {
     GENERATE_CUSTOM_PLAYLIST_TOOLTIP,
     REFRESH_CUSTOM_PLAYLIST_TOOLTIP
 } from "../Constants";
-import { getActiveDevice, requiresSpotifyAccess } from "./MusicUtil";
+import { requiresSpotifyAccess, getDeviceSet } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 import { MusicManager } from "./MusicManager";
 
@@ -299,11 +299,14 @@ export class ProviderItemManager {
     }
 
     async getSwitchToThisDeviceButton() {
-        const devices: PlayerDevice[] = MusicDataManager.getInstance()
-            .currentDevices;
-        const activeDevice = getActiveDevice(devices);
+        const {
+            webPlayer,
+            desktop,
+            activeDevice,
+            activeComputerDevice
+        } = getDeviceSet();
 
-        if (activeDevice && activeDevice.type.toLowerCase() !== "computer") {
+        if (activeDevice && !webPlayer && !desktop) {
             // return a button to switch to this computer if we have devices
             // and none of them are of type "Computer"
             const button = this.buildActionItem(

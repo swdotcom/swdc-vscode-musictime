@@ -158,76 +158,51 @@ export async function buildTracksForRecommendations(playlists) {
     }
 }
 
-export function getActiveDevice(devices: PlayerDevice[]): PlayerDevice {
-    let computerDevice: PlayerDevice = null;
-    let otherActiveDevice: PlayerDevice = null;
-    if (devices && devices.length > 0) {
-        for (let i = 0; i < devices.length; i++) {
-            const device: PlayerDevice = devices[i];
-            if (device.is_active) {
-                if (device.type.toLowerCase() === "computer") {
-                    computerDevice = device;
-                } else {
-                    otherActiveDevice = device;
-                }
-            }
-        }
-    }
-
-    if (computerDevice) {
-        return computerDevice;
-    }
-    return otherActiveDevice;
-}
-
-export function getComputerOrActiveDevice(
-    devices: PlayerDevice[] = []
-): PlayerDevice {
-    if (!devices || devices.length === 0) {
-        devices = MusicDataManager.getInstance().currentDevices;
-    }
-    let anyActiveDevice: PlayerDevice = null;
-    if (devices && devices.length > 0) {
-        for (let i = 0; i < devices.length; i++) {
-            const device: PlayerDevice = devices[i];
-            if (device.type.toLowerCase() === "computer") {
-                return device;
-            } else if (!anyActiveDevice && device.is_active) {
-                anyActiveDevice = device;
-            }
-        }
-    }
-    return anyActiveDevice;
-}
-
-export function getComputerDevice(devices: PlayerDevice[] = []): PlayerDevice {
-    if (devices && devices.length > 0) {
-        for (let i = 0; i < devices.length; i++) {
-            const device: PlayerDevice = devices[i];
-            if (device.type.toLowerCase() === "computer") {
-                return device;
-            }
-        }
-    }
-    return null;
-}
-
-export function getComputerWebDevice(devices: PlayerDevice[]): PlayerDevice {
-    if (devices && devices.length > 0) {
-        for (let i = 0; i < devices.length; i++) {
-            const device: PlayerDevice = devices[i];
-            if (
-                device.type.toLowerCase() === "computer" &&
-                device.name.toLowerCase().includes("web player")
-            ) {
-                return device;
-            }
-        }
-    }
-    return null;
-}
-
 export function requiresSpotifyAccess() {
     let spotifyAccessToken = getItem("spotify_access_token");
     return spotifyAccessToken ? false : true;
+}
+
+/**
+ * returns { webPlayer, desktop, activeDevice, activeComputerDevice }
+ * Either of these values can be null
+ */
+export function getDeviceSet() {
+    const devices: PlayerDevice[] =
+        MusicDataManager.getInstance().currentDevices || [];
+    const webPlayer = devices.find((d: PlayerDevice) =>
+        d.name.toLowerCase().includes("web player")
+    );
+
+    const desktop = devices.find(
+        (d: PlayerDevice) =>
+            d.type.toLowerCase() === "computer" &&
+            !d.name.toLowerCase().includes("web player")
+    );
+
+    const activeDevice = devices.find((d: PlayerDevice) => d.is_active);
+
+    const activeComputerDevice = devices.find(
+        (d: PlayerDevice) => d.is_active && d.type.toLowerCase() === "computer"
+    );
+
+    return { webPlayer, desktop, activeDevice, activeComputerDevice };
+}
+
+export function getDeviceId() {
+    const {
+        webPlayer,
+        desktop,
+        activeDevice,
+        activeComputerDevice
+    } = getDeviceSet();
+
+    const deviceId = activeDevice
+        ? activeDevice.id
+        : desktop
+        ? desktop.id
+        : webPlayer
+        ? webPlayer.id
+        : "";
+    return deviceId;
 }
