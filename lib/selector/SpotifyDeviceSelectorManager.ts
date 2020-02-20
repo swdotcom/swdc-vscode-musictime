@@ -9,37 +9,40 @@ export async function showDeviceSelectorMenu() {
     let items: any[] = [];
     if (devices && devices.length) {
         devices.forEach((d: PlayerDevice) => {
-            if (!d.is_active) {
-                items.push({
-                    label: d.name,
-                    command: "musictime.transferToDevice",
-                    args: d,
-                    type: d.type
-                });
-            }
+            const detail = d.is_active
+                ? `Active at ${d.volume_percent}% volume`
+                : `Inactive at ${d.volume_percent}% volume`;
+            items.push({
+                label: d.name,
+                command: "musictime.transferToDevice",
+                args: d,
+                type: d.type,
+                detail
+            });
         });
     }
 
-    const foundWebComputerDevice = devices.find((d: PlayerDevice) =>
+    const webPlayer = devices.find((d: PlayerDevice) =>
         d.name.toLowerCase().includes("web player")
     );
 
-    const computerDevicesFound = devices
-        .filter((d: PlayerDevice) => d.type.toLowerCase() === "computer")
+    const desktop = devices
+        .filter(
+            (d: PlayerDevice) =>
+                d.type.toLowerCase() === "computer" &&
+                !d.name.toLowerCase().includes("web player")
+        )
         .map((d: PlayerDevice) => d);
 
     // show the launch desktop option if it's not already in the list
     // or if it's an active device
-    if (
-        computerDevicesFound.length === 0 ||
-        (computerDevicesFound.length < 2 && foundWebComputerDevice)
-    ) {
+    if (!desktop) {
         items.push({
             label: "Launch Spotify desktop",
             command: "musictime.launchSpotifyDesktop"
         });
     }
-    if (!foundWebComputerDevice) {
+    if (!webPlayer) {
         items.push({
             label: "Launch Spotify web player",
             command: "musictime.launchSpotify"
@@ -47,7 +50,7 @@ export async function showDeviceSelectorMenu() {
     }
     let menuOptions = {
         items,
-        placeholder: "Connect a Spotify device"
+        placeholder: "Launch a Spotify device"
     };
 
     const pick = await showQuickPick(menuOptions);

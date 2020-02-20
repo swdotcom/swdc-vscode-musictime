@@ -217,7 +217,7 @@ export class ProviderItemManager {
             "action",
             "musictime.displayDashboard",
             null,
-            "Generate dashboard",
+            "Open dashboard",
             "View your latest music metrics right here in your editor",
             "",
             null,

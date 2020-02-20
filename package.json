@@ -247,7 +247,7 @@
             },
             {
                 "command": "musictime.songCategorySelector",
-                "title": "Category selection",
+                "title": "Mood selection",
                 "icon": {
                     "light": "resources/light/beaker.svg",
                     "dark": "resources/dark/beaker.svg"

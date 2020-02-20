@@ -33,7 +33,7 @@ export async function showGenreSelections() {
 export async function showCategorySelections() {
     let menuOptions = {
         items: [],
-        placeholder: "Select a category"
+        placeholder: "Select a mood"
     };
 
     // add the categories
@@ -62,56 +62,56 @@ function getCategorySelections() {
         {
             label: "Happy",
             description:
-                "positive, uplifting, mood-boosting; good for any type of coding",
-            args: ["Happy", 5, [], { min_valence: 0.6, target_valence: 1 }]
+                "Positive, uplifting, mood-boosting; good for any type of coding",
+            args: ["Happy", 5, [], { min_valence: 0.7, target_valence: 1 }]
         },
         // high energy
         {
             label: "Energetic",
             description:
-                "dynamic, loud, stimulating; grab a coffee and let's go",
-            args: ["Energetic", 5, [], { min_energy: 0.6, target_energy: 1 }]
+                "Dynamic, loud, stimulating; grab a coffee and let's go",
+            args: ["Energetic", 5, [], { min_energy: 0.7, target_energy: 1 }]
         },
         // high danceability
         {
             label: "Danceable",
             description:
-                "songs with a stable beat and rhythm; good for fast-paced work",
+                "Songs with a stable beat and rhythm; good for fast-paced work",
             args: [
                 "Danceable",
                 5,
                 [],
-                { min_danceability: 0.6, target_danceability: 1 }
+                { min_danceability: 0.7, target_danceability: 1 }
             ]
         },
         // Low speechiness
         {
             label: "Instrumental",
-            description: "good for complex work requiring maximum focus",
+            description: "Good for complex work requiring maximum focus",
             args: [
                 "Instrumental",
                 5,
                 [],
-                { max_instrumentalness: 1, target_instrumentalness: 0.8 }
+                { min_instrumentalness: 0.8, target_instrumentalness: 1 }
             ]
         },
         // Liked songs
         {
             label: "Familiar",
             description:
-                "similar to your Liked Songs, familiar songs helps you get into flow faster",
+                "Similar to your Liked Songs, familiar songs helps you get into flow faster",
             args: ["Similar to Liked Songs", 5]
         },
         // Low loudness
         {
             label: "Quiet music",
             description:
-                "songs that are soft and low energy, helping you stay focused",
+                "Songs that are soft and low energy, helping you stay focused",
             args: [
                 "Quiet music",
                 5,
                 [],
-                { max_loudness: -10, target_loudness: -45 }
+                { max_loudness: -13, target_loudness: -50 }
             ]
         }
     ];
