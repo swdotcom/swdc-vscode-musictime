@@ -907,33 +907,21 @@ export class MusicManager {
         callback: any = null
     ) {
         setTimeout(async () => {
-            const devices: PlayerDevice[] = await getSpotifyDevices();
+            await populateSpotifyDevices();
+            const devices = this.dataMgr.currentDevices;
             if ((!devices || devices.length == 0) && tries > 0) {
                 tries--;
                 this.checkDeviceLaunch(playerName, tries, callback);
             } else {
-                // update the current devices
-                this.dataMgr.currentDevices = devices;
+                const {
+                    webPlayer,
+                    desktop,
+                    activeDevice,
+                    activeComputerDevice
+                } = getDeviceSet();
 
-                // now that we have a device, transfer it to the device ID
-                const computerDevice: PlayerDevice = devices.find(
-                    (device: PlayerDevice) =>
-                        device.type.toLowerCase() === "computer"
-                );
-
-                if (computerDevice) {
-                    const runningTrack: Track = this.dataMgr.runningTrack;
-                    // transfer it only if it's not playing
-                    if (
-                        !runningTrack &&
-                        runningTrack.state !== TrackStatus.Playing
-                    ) {
-                        await transferSpotifyDevice(
-                            computerDevice.id,
-                            true /*play*/
-                        );
-                    }
-                }
+                // do we need to transfer it?
+                // await transferSpotifyDevice(deviceId, play);
 
                 commands.executeCommand("musictime.refreshDeviceInfo");
 

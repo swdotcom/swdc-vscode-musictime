@@ -361,7 +361,6 @@ export async function populateSpotifyPlaylists() {
 
 export async function populateSpotifyDevices() {
     const devices: PlayerDevice[] = await getSpotifyDevices();
-    console.log("populating devices: ", JSON.stringify(devices));
     MusicDataManager.getInstance().currentDevices = devices;
 }
 
