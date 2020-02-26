@@ -73,7 +73,7 @@ Click on any song in your list of playlists. Music Time will prompt you to open 
 
 ### **3. Generate your personal playlist**
 
-Click the **Generate AI Playlist** button to get a personalized AI playlist generated using deep learning. Your playlist improves as you listen to more music.
+Click the **Generate AI Playlist** button to get a personalized AI playlist generated using deep learning. Your AI Top 40 playlist is initially based on your liked songs and global developer data, but will improve as you listen to more music while you code. 
 
 <p align="center" style="margin: 0 10%">
   <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/my-ai-top-40.png" alt="My AI Top 40" />
@@ -81,7 +81,7 @@ Click the **Generate AI Playlist** button to get a personalized AI playlist gene
 
 ### **4. Try a song recommendation**
 
-Find songs similar to your listening history. Try high tempo, high energy, and high valence songs for upbeat work or Classical or Piano for slower, more complex coding. Add a song to a playlist using the "+" button.
+We also recommend songs by genre and mood of music based on your listening history. Try happy, energetic, or danceable music for upbeat work or classical or jazz for slower, more complex tasks. You can add a song to a playlist using the "+" button.
 
 <p align="center" style="margin: 0 10%">
   <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/recommendations.png" alt="recommendations" />
