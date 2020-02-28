@@ -461,9 +461,15 @@ export class MusicStateManager {
         );
 
         // await for either promise, whichever one is available
-        if (genreP) {
-            genre = await genreP;
-            songSession["genre"] = genre;
+        if (songSession.type === "spotify" && fullTrackP) {
+            // update the tracks with the result
+            const fullTrack = await fullTrackP;
+            songSession["album"] = fullTrack.album;
+            songSession["features"] = fullTrack.features;
+            songSession["artists"] = fullTrack.artists;
+            if (!genre) {
+                songSession["genre"] = fullTrack.genre;
+            }
         } else if (fullTrackP) {
             // update the tracks with the result
             const fullTrack = await fullTrackP;
@@ -473,6 +479,9 @@ export class MusicStateManager {
             if (!genre) {
                 songSession["genre"] = fullTrack.genre;
             }
+        } else if (genreP) {
+            genre = await genreP;
+            songSession["genre"] = genre;
         }
 
         // set a convenience "spotifyTrackId" attribute based on the URI
