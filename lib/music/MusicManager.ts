@@ -23,7 +23,8 @@ import {
     getSpotifyDevices,
     transferSpotifyDevice,
     playSpotifyPlaylist,
-    play
+    play,
+    getRunningTrack
 } from "cody-music";
 import {
     PERSONAL_TOP_SONGS_NAME,
@@ -1193,21 +1194,50 @@ export class MusicManager {
 
         if (isRecommendationTrack || isLikedSong) {
             // it's a liked song or recommendation track play request
-            return this.playRecommendationsOrLikedSongsByPlaylist(
+            this.playRecommendationsOrLikedSongsByPlaylist(
                 this.dataMgr.selectedTrackItem,
                 deviceId
             );
-        }
-
-        if (playlistId) {
+        } else if (playlistId) {
             // NORMAL playlist request
             // play a playlist
-            return playSpotifyPlaylist(playlistId, trackId, deviceId);
+            playSpotifyPlaylist(playlistId, trackId, deviceId);
+        } else {
+            // else it's not a liked or recommendation play request, just play the selected track
+            playSpotifyTrack(trackId, deviceId);
         }
 
-        // else it's not a liked or recommendation play request, just play the selected track
-        playSpotifyTrack(trackId, deviceId);
+        // check in a second if it's playing or not.
+        setTimeout(() => {
+            this.checkIfPlaying(trackId);
+        }, 1200);
     };
+
+    async checkIfPlaying(trackId, tries = 2) {
+        let playingTrack: Track = await getRunningTrack();
+        if (tries <= 0) {
+            if (playingTrack && playingTrack.state !== TrackStatus.Playing) {
+                MusicControlManager.getInstance().playSong();
+            }
+            return;
+        }
+
+        if (
+            playingTrack &&
+            (playingTrack.id !== trackId ||
+                playingTrack.state !== TrackStatus.Playing)
+        ) {
+            tries -= 1;
+            setTimeout(() => {
+                this.checkIfPlaying(trackId, tries);
+            }, 1000);
+        } else if (!playingTrack) {
+            tries -= 1;
+            setTimeout(() => {
+                this.checkIfPlaying(trackId, tries);
+            }, 1000);
+        }
+    }
 
     playRecommendationsOrLikedSongsByPlaylist = (
         playlistItem: PlaylistItem,
