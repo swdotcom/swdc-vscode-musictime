@@ -27,7 +27,8 @@ export async function showDeviceSelectorMenu() {
         webPlayer,
         desktop,
         activeDevice,
-        activeComputerDevice
+        activeComputerDevice,
+        activeWebPlayerDevice
     } = getDeviceSet();
 
     // show the launch desktop option if it's not already in the list

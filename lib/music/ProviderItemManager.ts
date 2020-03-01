@@ -301,7 +301,8 @@ export class ProviderItemManager {
             webPlayer,
             desktop,
             activeDevice,
-            activeComputerDevice
+            activeComputerDevice,
+            activeWebPlayerDevice
         } = getDeviceSet();
 
         if (activeDevice && !webPlayer && !desktop) {

@@ -872,13 +872,27 @@ export class MusicManager {
         playerName: PlayerName = null,
         callback: any = null
     ) {
-        // if the player name is null, this means all we want to do is launch the currently set player
+        const {
+            webPlayer,
+            desktop,
+            activeDevice,
+            activeComputerDevice,
+            activeWebPlayerDevice
+        } = getDeviceSet();
+
+        // if the player name is null, definitely check if there's an active or available device
         if (!playerName) {
-            // set it to spotify desktop if it's not itunes
-            playerName =
-                this.dataMgr.currentPlayerName !== PlayerName.ItunesDesktop
-                    ? PlayerName.SpotifyDesktop
-                    : this.dataMgr.currentPlayerName;
+            if (!activeDevice) {
+                if (webPlayer) {
+                    playerName = PlayerName.SpotifyWeb;
+                }
+            } else if (activeDevice && activeWebPlayerDevice) {
+                // it's an active web player device
+                playerName = PlayerName.SpotifyWeb;
+            }
+        }
+        if (!playerName) {
+            playerName = PlayerName.SpotifyDesktop;
         }
 
         // spotify device launch error would look like this...
@@ -897,9 +911,11 @@ export class MusicManager {
             await launchPlayer(playerName, { quietly: false });
         }
 
-        setTimeout(() => {
-            this.checkDeviceLaunch(playerName, 7, callback);
-        }, 1000);
+        if (callback) {
+            setTimeout(() => {
+                this.checkDeviceLaunch(playerName, 7, callback);
+            }, 1000);
+        }
     }
 
     async checkDeviceLaunch(
@@ -914,13 +930,6 @@ export class MusicManager {
                 tries--;
                 this.checkDeviceLaunch(playerName, tries, callback);
             } else {
-                const {
-                    webPlayer,
-                    desktop,
-                    activeDevice,
-                    activeComputerDevice
-                } = getDeviceSet();
-
                 // do we need to transfer it?
                 // await transferSpotifyDevice(deviceId, play);
 
@@ -1018,7 +1027,8 @@ export class MusicManager {
             webPlayer,
             desktop,
             activeDevice,
-            activeComputerDevice
+            activeComputerDevice,
+            activeWebPlayerDevice
         } = getDeviceSet();
 
         const hasSpotifyUser = MusicManager.getInstance().hasSpotifyUser();

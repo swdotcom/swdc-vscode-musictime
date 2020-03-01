@@ -277,7 +277,8 @@ export class MusicControlManager {
             webPlayer,
             desktop,
             activeDevice,
-            activeComputerDevice
+            activeComputerDevice,
+            activeWebPlayerDevice
         } = getDeviceSet();
 
         const deviceId = activeDevice ? activeDevice.id : "";

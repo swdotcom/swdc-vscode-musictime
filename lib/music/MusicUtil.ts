@@ -186,7 +186,20 @@ export function getDeviceSet() {
         (d: PlayerDevice) => d.is_active && d.type.toLowerCase() === "computer"
     );
 
-    return { webPlayer, desktop, activeDevice, activeComputerDevice };
+    const activeWebPlayerDevice = devices.find(
+        (d: PlayerDevice) =>
+            d.is_active &&
+            d.type.toLowerCase() === "computer" &&
+            d.name.toLowerCase().includes("web player")
+    );
+
+    return {
+        webPlayer,
+        desktop,
+        activeDevice,
+        activeComputerDevice,
+        activeWebPlayerDevice
+    };
 }
 
 export function getDeviceId() {
@@ -194,7 +207,8 @@ export function getDeviceId() {
         webPlayer,
         desktop,
         activeDevice,
-        activeComputerDevice
+        activeComputerDevice,
+        activeWebPlayerDevice
     } = getDeviceSet();
 
     const deviceId = activeDevice
