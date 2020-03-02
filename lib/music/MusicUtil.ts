@@ -164,7 +164,7 @@ export function requiresSpotifyAccess() {
 }
 
 /**
- * returns { webPlayer, desktop, activeDevice, activeComputerDevice }
+ * returns { webPlayer, desktop, activeDevice, activeComputerDevice, activeWebPlayerDevice }
  * Either of these values can be null
  */
 export function getDeviceSet() {
