@@ -120,7 +120,6 @@ export class MusicManager {
             this.dataMgr.rawPlaylists = [...this.dataMgr.origRawPlaylistOrder];
             this.dataMgr.sortAlphabetically = sortAlpha;
             commands.executeCommand("musictime.refreshPlaylist");
-            window.showInformationMessage("Sorting playlist, please wait.");
         }
     }
 
