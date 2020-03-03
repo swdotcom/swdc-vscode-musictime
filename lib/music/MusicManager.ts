@@ -929,8 +929,12 @@ export class MusicManager {
                 tries--;
                 this.checkDeviceLaunch(playerName, tries, callback);
             } else {
-                // do we need to transfer it?
-                // await transferSpotifyDevice(deviceId, play);
+                // it should only have either the desktop or web device available
+                // since this is part of the check device launch path
+                const deviceId = getDeviceId();
+
+                // transfer to the device
+                await transferSpotifyDevice(deviceId, false);
 
                 commands.executeCommand("musictime.refreshDeviceInfo");
 

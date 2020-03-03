@@ -395,7 +395,9 @@ export function createCommands(): {
     const refreshRecommendationsCommand = commands.registerCommand(
         "musictime.refreshRecommendations",
         async () => {
-            refreshRecommendations();
+            setTimeout(() => {
+                refreshRecommendations();
+            }, 100);
         }
     );
     cmds.push(refreshRecommendationsCommand);
