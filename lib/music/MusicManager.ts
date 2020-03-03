@@ -519,6 +519,7 @@ export class MusicManager {
         playlistItem.artist = artistName;
         playlistItem.playerType = track.playerType;
         playlistItem.itemType = "track";
+        playlistItem["icon"] = "track.svg";
 
         delete playlistItem.tracks;
 

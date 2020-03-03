@@ -38,10 +38,10 @@ export const SPOTIFY_CLIENT_SECRET: string = "2b40b4975b2743189c87f4712c0cd59e";
 export const PERSONAL_TOP_SONGS_NAME = "My AI Top 40";
 export const PERSONAL_TOP_SONGS_PLID = 1;
 
-export const REFRESH_CUSTOM_PLAYLIST_TITLE = "Refresh My AI Playlist";
-export const REFRESH_CUSTOM_PLAYLIST_TOOLTIP = `Refresh My AI Playlist (${PERSONAL_TOP_SONGS_NAME})`;
-export const GENERATE_CUSTOM_PLAYLIST_TITLE = "Generate My AI Playlist";
-export const GENERATE_CUSTOM_PLAYLIST_TOOLTIP = `Generate My AI Playlist (${PERSONAL_TOP_SONGS_NAME})`;
+export const REFRESH_CUSTOM_PLAYLIST_TITLE = "Refresh My AI Top 40";
+export const REFRESH_CUSTOM_PLAYLIST_TOOLTIP = `Refresh your personalized playlist (${PERSONAL_TOP_SONGS_NAME})`;
+export const GENERATE_CUSTOM_PLAYLIST_TITLE = "Generate My AI Top 40";
+export const GENERATE_CUSTOM_PLAYLIST_TOOLTIP = `Generate your personalized playlist (${PERSONAL_TOP_SONGS_NAME})`;
 
 export const SOFTWARE_TOP_40_PLAYLIST_ID = "6jCkTED0V5NEuM8sKbGG1Z";
 

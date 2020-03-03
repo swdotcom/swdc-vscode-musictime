@@ -941,8 +941,8 @@ export function getPlaylistIcon(treeItem: PlaylistItem) {
         lightPath = path.join(resourcePath, "light", treeItem["icon"]);
         darkPath = path.join(resourcePath, "dark", treeItem["icon"]);
     } else if (
-        treeItem.tag.includes("spotify") ||
-        treeItem.type.includes("spotify")
+        treeItem.type.includes("spotify") ||
+        (treeItem.tag.includes("spotify") && treeItem.itemType !== "playlist")
     ) {
         const spotifySvg =
             treeItem.tag === "disabled"
@@ -950,12 +950,16 @@ export function getPlaylistIcon(treeItem: PlaylistItem) {
                 : "spotify-logo.svg";
         lightPath = path.join(resourcePath, "light", spotifySvg);
         darkPath = path.join(resourcePath, "dark", spotifySvg);
+    } else if (treeItem.itemType === "playlist" && treeItem.tag !== "paw") {
+        const playlistSvg = "playlist.svg";
+        lightPath = path.join(resourcePath, "light", playlistSvg);
+        darkPath = path.join(resourcePath, "dark", playlistSvg);
     } else if (treeItem.tag === "itunes" || treeItem.type === "itunes") {
         lightPath = path.join(resourcePath, "light", "itunes-logo.svg");
         darkPath = path.join(resourcePath, "dark", "itunes-logo.svg");
     } else if (treeItem.tag === "paw") {
-        lightPath = path.join(resourcePath, "light", "sw-paw-circle.svg");
-        darkPath = path.join(resourcePath, "dark", "sw-paw-circle.svg");
+        lightPath = path.join(resourcePath, "light", "paw.svg");
+        darkPath = path.join(resourcePath, "dark", "paw.svg");
     } else if (treeItem.type === "connected") {
         lightPath = path.join(resourcePath, "light", "radio-tower.svg");
         darkPath = path.join(resourcePath, "dark", "radio-tower.svg");

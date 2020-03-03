@@ -201,11 +201,11 @@ export class ProviderItemManager {
             "action",
             "musictime.displayReadme",
             null,
-            "Learn More",
+            "Learn more",
             "View the Music Time Readme to learn more",
             "",
             null,
-            "document.svg"
+            "readme.svg"
         );
     }
 
@@ -281,7 +281,7 @@ export class ProviderItemManager {
         listItem.id = "launchmusicanalytics";
         listItem.command = "musictime.launchAnalytics";
         listItem.playerType = PlayerType.WebSpotify;
-        listItem.name = "See Web Analytics";
+        listItem.name = "See web analytics";
         listItem.tooltip = "See music analytics in the web app";
         return listItem;
     }
