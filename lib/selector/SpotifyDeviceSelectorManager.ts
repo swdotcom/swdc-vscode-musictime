@@ -7,6 +7,7 @@ export async function showDeviceSelectorMenu() {
     const devices: PlayerDevice[] =
         MusicDataManager.getInstance().currentDevices || [];
 
+    // list all devices that are found
     let items: any[] = [];
     if (devices && devices.length) {
         devices.forEach((d: PlayerDevice) => {
@@ -23,6 +24,7 @@ export async function showDeviceSelectorMenu() {
         });
     }
 
+    // get the device set
     const {
         webPlayer,
         desktop,

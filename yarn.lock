@@ -148,10 +148,10 @@ clone@2.x:
   resolved "https://registry.yarnpkg.com/clone/-/clone-2.1.2.tgz#1b7f4b9f591f1e8f83670401600345a02887435f"
   integrity sha1-G39Ln1kfHo+DZwQBYANFoCiHQ18=
 
-cody-music@2.8.5:
-  version "2.8.5"
-  resolved "https://registry.yarnpkg.com/cody-music/-/cody-music-2.8.5.tgz#1890f954c5ece10549bdc29a1213f54b2fab9b78"
-  integrity sha512-BdbvoW1QDW0GNMjqYLZ78K4Tm0ubi4cEGFS+jImgiEm7Dc7iNsmmHIZvLZuLFTFryzhI3yLF7vuLKoN9x/+F5Q==
+cody-music@2.8.6:
+  version "2.8.6"
+  resolved "https://registry.yarnpkg.com/cody-music/-/cody-music-2.8.6.tgz#9638ae7371a15af6022ab3860b712cb1da779022"
+  integrity sha512-nZcW24HAXh5zT2daofxIfN23qO5t9SAGOal9WtAffRhFA3xDMSUbfPyiM36ZncJ/uW8RHoOcafYQ+l48qte/XQ==
   dependencies:
     axios "^0.19.0"
     natural "^0.6.3"
