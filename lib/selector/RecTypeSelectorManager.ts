@@ -92,7 +92,7 @@ function getCategorySelections() {
                 "Instrumental",
                 5,
                 [],
-                { min_instrumentalness: 0.8, target_instrumentalness: 1 }
+                { min_instrumentalness: 0.5, target_instrumentalness: 1 }
             ]
         },
         // Liked songs
