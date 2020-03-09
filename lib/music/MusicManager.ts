@@ -20,7 +20,6 @@ import {
     playSpotifyTrack,
     PlayerContext,
     getSpotifyPlayerContext,
-    getSpotifyDevices,
     transferSpotifyDevice,
     playSpotifyPlaylist,
     play,
@@ -60,6 +59,7 @@ import {
     getDeviceId
 } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
+import { MusicCommandUtil } from "./MusicCommandUtil";
 
 export class MusicManager {
     private static instance: MusicManager;
@@ -544,7 +544,10 @@ export class MusicManager {
             );
             this.dataMgr.selectedTrackItem = playlistItem;
             // play the next track
-            playSpotifyTrack(playlistItem.id, deviceId);
+            await MusicCommandUtil.getInstance().runSpotifyCommand(
+                playSpotifyTrack,
+                [playlistItem.id, deviceId]
+            );
         }
     }
 
@@ -560,7 +563,10 @@ export class MusicManager {
             this.dataMgr.selectedTrackItem = playlistItem;
 
             // launch and play the next track
-            playSpotifyTrack(playlistItem.id, deviceId);
+            await MusicCommandUtil.getInstance().runSpotifyCommand(
+                playSpotifyTrack,
+                [playlistItem.id, deviceId]
+            );
         }
     }
 
@@ -948,36 +954,6 @@ export class MusicManager {
         }, 1000);
     }
 
-    async checkDeviceIdRunning(device_id: string, tries: number = 5) {
-        setTimeout(async () => {
-            const devices: PlayerDevice[] = await getSpotifyDevices();
-            const foundDevice: PlayerDevice = devices
-                ? devices.find((d: PlayerDevice) => d.id === device_id)
-                : null;
-            if (!foundDevice && tries > 0) {
-                tries--;
-                this.checkDeviceIdRunning(device_id, tries);
-            } else {
-                commands.executeCommand("musictime.refreshDeviceInfo");
-            }
-        }, 1000);
-    }
-
-    async checkDeviceActive(tries: number = 5) {
-        setTimeout(async () => {
-            const devices: PlayerDevice[] = await getSpotifyDevices();
-            const activeDevice: PlayerDevice = devices
-                ? devices.find((d: PlayerDevice) => d.is_active)
-                : null;
-            if (!activeDevice && tries > 0) {
-                tries--;
-                this.checkDeviceActive(tries);
-            } else {
-                commands.executeCommand("musictime.refreshDeviceInfo");
-            }
-        }, 1000);
-    }
-
     async isLikedSong() {
         const playlistId = this.dataMgr.selectedPlaylist
             ? this.dataMgr.selectedPlaylist.id
@@ -1025,21 +1001,29 @@ export class MusicManager {
     }
 
     async playInitialization(callback: any = null) {
-        const devices: PlayerDevice[] = this.dataMgr.currentDevices;
+        let devices: PlayerDevice[] = this.dataMgr.currentDevices;
 
-        const {
-            webPlayer,
-            desktop,
-            activeDevice,
-            activeComputerDevice,
-            activeWebPlayerDevice
-        } = getDeviceSet();
+        let deviceSet = getDeviceSet();
 
         const hasSpotifyUser = MusicManager.getInstance().hasSpotifyUser();
         let isWinNonPremium = isMac() && !hasSpotifyUser ? true : false;
         let no_devices = !devices || devices.length === 0 ? true : false;
 
-        if (no_devices || (!webPlayer && !desktop && !activeDevice)) {
+        if (no_devices) {
+            // first try refreshing the devices
+            await populateSpotifyPlaylists();
+            devices = this.dataMgr.currentDevices;
+            if (devices && devices.length) {
+                deviceSet = getDeviceSet();
+            }
+        }
+
+        if (
+            no_devices ||
+            (!deviceSet.webPlayer &&
+                !deviceSet.desktop &&
+                !deviceSet.activeDevice)
+        ) {
             const buttons = isWinNonPremium
                 ? ["Web Player"]
                 : ["Web Player", "Desktop Player"];
@@ -1185,6 +1169,7 @@ export class MusicManager {
     }
 
     playMusicSelection = async () => {
+        const musicCommandUtil: MusicCommandUtil = MusicCommandUtil.getInstance();
         // get the playlist id, track id, and device id
         const playlistId = this.dataMgr.selectedPlaylist
             ? this.dataMgr.selectedPlaylist.id
@@ -1215,10 +1200,17 @@ export class MusicManager {
         } else if (playlistId) {
             // NORMAL playlist request
             // play a playlist
-            playSpotifyPlaylist(playlistId, trackId, deviceId);
+            await musicCommandUtil.runSpotifyCommand(playSpotifyPlaylist, [
+                playlistId,
+                trackId,
+                deviceId
+            ]);
         } else {
             // else it's not a liked or recommendation play request, just play the selected track
-            playSpotifyTrack(trackId, deviceId);
+            await musicCommandUtil.runSpotifyCommand(playSpotifyTrack, [
+                trackId,
+                deviceId
+            ]);
         }
 
         // check in a second if it's playing or not.
@@ -1253,7 +1245,7 @@ export class MusicManager {
         }
     }
 
-    playRecommendationsOrLikedSongsByPlaylist = (
+    playRecommendationsOrLikedSongsByPlaylist = async (
         playlistItem: PlaylistItem,
         deviceId: string
     ) => {
@@ -1291,10 +1283,18 @@ export class MusicManager {
             track_ids = track_ids.splice(0, 50);
         }
 
-        return play(PlayerName.SpotifyWeb, {
-            track_ids,
-            device_id: deviceId,
-            offset
-        });
+        const result: any = MusicCommandUtil.getInstance().runSpotifyCommand(
+            play,
+            [
+                PlayerName.SpotifyWeb,
+                {
+                    track_ids,
+                    device_id: deviceId,
+                    offset
+                }
+            ]
+        );
+
+        return result;
     };
 }

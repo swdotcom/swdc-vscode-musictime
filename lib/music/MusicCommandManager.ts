@@ -115,7 +115,11 @@ export class MusicCommandManager {
         this.showProgress(progressLabel);
     }
 
-    public static async syncControls(track: Track, showLoading = false) {
+    public static async syncControls(
+        track: Track,
+        showLoading = false,
+        statusOverride = null
+    ) {
         if (this._hideSongTimeout) {
             clearTimeout(this._hideSongTimeout);
         }
@@ -129,8 +133,18 @@ export class MusicCommandManager {
             foundDevice
         } = await this.getSpotifyState();
 
-        const pauseIt = trackStatus === TrackStatus.Playing;
-        const playIt = trackStatus === TrackStatus.Paused;
+        let pauseIt = trackStatus === TrackStatus.Playing;
+        let playIt = trackStatus === TrackStatus.Paused;
+
+        if (statusOverride) {
+            if (statusOverride === TrackStatus.Playing) {
+                playIt = false;
+                pauseIt = true;
+            } else {
+                playIt = true;
+                pauseIt = false;
+            }
+        }
 
         this._isLoading = showLoading;
 

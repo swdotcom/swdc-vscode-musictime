@@ -18,8 +18,7 @@ import {
     TrackStatus,
     getGenre,
     getSpotifyTrackById,
-    PlayerDevice,
-    getSpotifyDevices
+    PlayerDevice
 } from "cody-music";
 import { MusicManager } from "./MusicManager";
 import { KpmController } from "../KpmController";
@@ -461,27 +460,22 @@ export class MusicStateManager {
         );
 
         // await for either promise, whichever one is available
-        if (songSession.type === "spotify" && fullTrackP) {
+        const fullTrack = await fullTrackP;
+        if (fullTrack) {
             // update the tracks with the result
-            const fullTrack = await fullTrackP;
             songSession["album"] = fullTrack.album;
             songSession["features"] = fullTrack.features;
             songSession["artists"] = fullTrack.artists;
             if (!genre) {
                 songSession["genre"] = fullTrack.genre;
             }
-        } else if (fullTrackP) {
-            // update the tracks with the result
-            const fullTrack = await fullTrackP;
-            songSession["album"] = fullTrack.album;
-            songSession["features"] = fullTrack.features;
-            songSession["artists"] = fullTrack.artists;
-            if (!genre) {
-                songSession["genre"] = fullTrack.genre;
-            }
-        } else if (genreP) {
+        }
+
+        if (!songSession.genre) {
             genre = await genreP;
-            songSession["genre"] = genre;
+            if (genre) {
+                songSession["genre"] = genre;
+            }
         }
 
         // set a convenience "spotifyTrackId" attribute based on the URI
@@ -504,6 +498,8 @@ export class MusicStateManager {
         ) {
             songSession["liked"] = true;
         }
+
+        console.log("SENDING MUSIC DATA");
 
         // send the music data, if we're online
         sendMusicData(songSession);

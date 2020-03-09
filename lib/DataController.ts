@@ -33,6 +33,7 @@ import { MusicManager } from "./music/MusicManager";
 import { refreshPlaylistViewIfRequired } from "./music/MusicPlaylistProvider";
 import { MusicDataManager } from "./music/MusicDataManager";
 import { CacheManager } from "./cache/CacheManager";
+import { MusicCommandUtil } from "./music/MusicCommandUtil";
 const moment = require("moment-timezone");
 
 const cacheMgr: CacheManager = CacheManager.getInstance();
@@ -347,9 +348,16 @@ export async function populateSpotifyPlaylists() {
     // fetch music time app saved playlists
     await dataMgr.fetchSavedPlaylists();
     // fetch the playlists from spotify
-    const rawPlaylists = await getPlaylists(PlayerName.SpotifyWeb, {
-        all: true
-    });
+
+    const rawPlaylists = await MusicCommandUtil.getInstance().runSpotifyCommand(
+        getPlaylists,
+        [
+            PlayerName.SpotifyWeb,
+            {
+                all: true
+            }
+        ]
+    );
 
     // set the list of playlistIds based on this current order
     dataMgr.origRawPlaylistOrder = [...rawPlaylists];
@@ -360,8 +368,35 @@ export async function populateSpotifyPlaylists() {
 }
 
 export async function populateSpotifyDevices() {
-    const devices: PlayerDevice[] = await getSpotifyDevices();
-    MusicDataManager.getInstance().currentDevices = devices;
+    const musicMgr: MusicDataManager = MusicDataManager.getInstance();
+
+    let devices: PlayerDevice[] = await MusicCommandUtil.getInstance().runSpotifyCommand(
+        getSpotifyDevices
+    );
+    if (!devices) {
+        devices = [];
+    }
+
+    const currDevices: PlayerDevice[] = musicMgr.currentDevices || [];
+
+    if (devices.length) {
+        // add/update to the current devices
+        for (let i = 0; i < devices.length; i++) {
+            const device: PlayerDevice = devices[i];
+            const deviceIdx = currDevices.findIndex(
+                (d: PlayerDevice) => d.id === device.id
+            );
+            if (deviceIdx !== -1) {
+                // update it
+                currDevices[deviceIdx] = device;
+            } else {
+                // add to it
+                currDevices.push(device);
+            }
+        }
+    }
+
+    MusicDataManager.getInstance().currentDevices = currDevices;
 }
 
 export function getBootstrapFileMetrics() {

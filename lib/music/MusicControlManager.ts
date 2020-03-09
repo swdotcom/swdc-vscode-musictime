@@ -18,7 +18,8 @@ import {
     PlayerDevice,
     playSpotifyMacDesktopTrack,
     playSpotifyTrack,
-    playSpotifyPlaylist
+    playSpotifyPlaylist,
+    TrackStatus
 } from "cody-music";
 import { window, ViewColumn, Uri, commands } from "vscode";
 import { MusicCommandManager } from "./MusicCommandManager";
@@ -70,6 +71,7 @@ import {
     getDeviceId
 } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
+import { MusicCommandUtil } from "./MusicCommandUtil";
 
 const moment = require("moment-timezone");
 const clipboardy = require("clipboardy");
@@ -87,6 +89,7 @@ export class MusicControlManager {
     private currentTrackToAdd: PlaylistItem = null;
 
     private static instance: MusicControlManager;
+    private musicCmdUtil: MusicCommandUtil = MusicCommandUtil.getInstance();
 
     private constructor() {
         //
@@ -111,7 +114,7 @@ export class MusicControlManager {
             await next(playerName);
         }
         // fetch the new track info
-        await this.musicStateMgr.gatherMusicInfo();
+        // await this.musicStateMgr.gatherMusicInfo();
     }
 
     async previousSong() {
@@ -122,43 +125,63 @@ export class MusicControlManager {
             await MusicManager.getInstance().playPreviousLikedSong();
         } else {
             const playerName = MusicManager.getInstance().getPlayerNameForPlayback();
-            await previous(playerName);
+            await this.musicCmdUtil.runSpotifyCommand(previous, [playerName]);
         }
-        // fetch the new track info
-        await this.musicStateMgr.gatherMusicInfo();
     }
+
+    /**
+     * {status, state, statusText, message, data.status, error}
+     */
 
     async playSong() {
         const playerName = MusicManager.getInstance().getPlayerNameForPlayback();
-        await play(playerName);
-        MusicCommandManager.syncControls(dataMgr.runningTrack, true);
-        // fetch the new track info
-        await this.musicStateMgr.gatherMusicInfo();
+
+        const result: any = await this.musicCmdUtil.runSpotifyCommand(play, [
+            playerName
+        ]);
+        if (result && result.status < 300) {
+            MusicCommandManager.syncControls(
+                dataMgr.runningTrack,
+                true,
+                TrackStatus.Playing
+            );
+        }
     }
 
-    async pauseSong(needsRefresh = true) {
+    async pauseSong() {
         const playerName = MusicManager.getInstance().getPlayerNameForPlayback();
-        await pause(playerName);
-        if (needsRefresh) {
-            MusicCommandManager.syncControls(dataMgr.runningTrack, true);
-            // fetch the new track info
-            await this.musicStateMgr.gatherMusicInfo();
+        const result: any = await this.musicCmdUtil.runSpotifyCommand(pause, [
+            playerName
+        ]);
+        if (result && result.status < 300) {
+            MusicCommandManager.syncControls(
+                dataMgr.runningTrack,
+                true,
+                TrackStatus.Paused
+            );
         }
     }
 
     async playSongInContext(params) {
         const playerName = MusicManager.getInstance().getPlayerNameForPlayback();
-        await playTrackInContext(playerName, params);
-        MusicCommandManager.syncControls(dataMgr.runningTrack, true);
-        // fetch the new track info
-        await this.musicStateMgr.gatherMusicInfo();
+        const result: any = await this.musicCmdUtil.runSpotifyCommand(
+            playTrackInContext,
+            [playerName, params]
+        );
+        if (result && result.status < 300) {
+            MusicCommandManager.syncControls(
+                dataMgr.runningTrack,
+                true,
+                TrackStatus.Playing
+            );
+        }
     }
 
     async playSongById(playerName: PlayerName, trackId: string) {
         await playTrack(playerName, trackId);
         MusicCommandManager.syncControls(dataMgr.runningTrack, true);
         // fetch the new track info
-        await this.musicStateMgr.gatherMusicInfo();
+        // await this.musicStateMgr.gatherMusicInfo();
     }
 
     async setRepeatOnOff(setToOn: boolean) {
