@@ -4,7 +4,8 @@ import {
     Track,
     PlayerDevice,
     CodyConfig,
-    setConfig
+    setConfig,
+    PlayerContext
 } from "cody-music";
 import { SpotifyUser } from "cody-music/dist/lib/profile";
 import { isMac, getItem } from "../Util";
@@ -44,6 +45,7 @@ export class MusicDataManager {
     public currentRecMeta: any = {};
     public ready: boolean = false;
     public currentDevices: PlayerDevice[] = [];
+    public spotifyContext: PlayerContext;
     public buildingPlaylists: boolean = false;
 
     public rawPlaylists: PlaylistItem[] = [];

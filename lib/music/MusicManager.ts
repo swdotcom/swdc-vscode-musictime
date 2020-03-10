@@ -1121,7 +1121,7 @@ export class MusicManager {
 
     async isTrackRepeating(): Promise<boolean> {
         // get the current repeat state
-        const spotifyContext: PlayerContext = await getSpotifyPlayerContext();
+        const spotifyContext: PlayerContext = this.dataMgr.spotifyContext;
         // "off", "track", "context", ""
         const repeatState = spotifyContext ? spotifyContext.repeat_state : "";
 

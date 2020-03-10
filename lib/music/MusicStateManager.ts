@@ -11,14 +11,13 @@ import {
     logIt,
     getSongSessionDataFile
 } from "../Util";
-import { sendMusicData } from "../DataController";
+import { sendMusicData, populatePlayerContext } from "../DataController";
 import {
     Track,
     getRunningTrack,
     TrackStatus,
     getGenre,
-    getSpotifyTrackById,
-    PlayerDevice
+    getSpotifyTrackById
 } from "cody-music";
 import { MusicManager } from "./MusicManager";
 import { KpmController } from "../KpmController";
@@ -28,6 +27,8 @@ import { getDataRows } from "../OfflineManager";
 import { MusicDataManager } from "./MusicDataManager";
 import { commands } from "vscode";
 import { requiresSpotifyAccess } from "./MusicUtil";
+
+const moment = require("moment-timezone");
 
 export class MusicStateManager {
     static readonly WINDOWS_SPOTIFY_TRACK_FIND: string =
@@ -43,6 +44,10 @@ export class MusicStateManager {
         id: null,
         lastUpdateUtc: 0,
         playlistId: null
+    };
+    private lastTrackSentInfo = {
+        timestamp: 0,
+        trackId: null
     };
     private gatheringSong: boolean = false;
 
@@ -148,15 +153,24 @@ export class MusicStateManager {
         const onRepeatStartingOver = this.isOnRepeatStartingOver(playingTrack);
 
         // get the flag to determine if the track is done or not
-        const trackIsDone = this.trackIsDone(playingTrack);
         const isLongPaused = this.trackIsLongPaused(playingTrack);
 
         // get the flag to determine if we should send the song session
-        const sendSongSession =
+        let sendSongSession =
             isValidExistingTrack &&
-            (isNewTrack || onRepeatStartingOver || trackIsDone || isLongPaused)
+            (isNewTrack || onRepeatStartingOver || isLongPaused)
                 ? true
                 : false;
+
+        if (sendSongSession) {
+            // make sure the track hasn't already been sent within a minute
+            if (
+                this.lastTrackSentInfo.trackId === playingTrackId &&
+                utcLocalTimes.nowInSecs - this.lastTrackSentInfo.timestamp < 60
+            ) {
+                sendSongSession = false;
+            }
+        }
 
         if (isLongPaused) {
             if (sendSongSession) {
@@ -239,6 +253,8 @@ export class MusicStateManager {
             if (changeStatus.isNewTrack) {
                 // update the playlistId
                 this.updateTrackPlaylistId(playingTrack);
+                // update the player context
+                await populatePlayerContext();
             }
 
             // has the existing track ended or have we started a new track?
@@ -397,6 +413,7 @@ export class MusicStateManager {
                 songSession.artists && songSession.artists.length
                     ? songSession.artists[0].id
                     : "";
+            // async
             genreP = getGenre(artistName, songName, artistId);
         }
 
@@ -461,7 +478,7 @@ export class MusicStateManager {
 
         // await for either promise, whichever one is available
         const fullTrack = await fullTrackP;
-        if (fullTrack) {
+        if (fullTrack && fullTrack.album) {
             // update the tracks with the result
             songSession["album"] = fullTrack.album;
             songSession["features"] = fullTrack.features;
@@ -499,7 +516,8 @@ export class MusicStateManager {
             songSession["liked"] = true;
         }
 
-        console.log("SENDING MUSIC DATA");
+        this.lastTrackSentInfo.timestamp = moment().unix();
+        this.lastTrackSentInfo.trackId = songSession.id;
 
         // send the music data, if we're online
         sendMusicData(songSession);

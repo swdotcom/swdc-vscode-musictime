@@ -45,6 +45,7 @@ import {
     updateRecommendations,
     refreshRecommendations
 } from "./music/MusicRecommendationManager";
+import { MusicCommandUtil } from "./music/MusicCommandUtil";
 
 /**
  * add the commands to vscode....
@@ -359,7 +360,10 @@ export function createCommands(): {
         async (d: PlayerDevice) => {
             // transfer to this device
             window.showInformationMessage(`Connected to ${d.name}`);
-            await playSpotifyDevice(d.id);
+            await MusicCommandUtil.getInstance().runSpotifyCommand(
+                playSpotifyDevice,
+                [d.id]
+            );
             setTimeout(() => {
                 // refresh the tree, no need to refresh playlists
                 commands.executeCommand("musictime.refreshDeviceInfo");

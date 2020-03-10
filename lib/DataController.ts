@@ -27,7 +27,8 @@ import {
     getPlaylists,
     getSpotifyDevices,
     PlayerDevice,
-    repeatOff
+    PlayerContext,
+    getSpotifyPlayerContext
 } from "cody-music";
 import { MusicManager } from "./music/MusicManager";
 import { refreshPlaylistViewIfRequired } from "./music/MusicPlaylistProvider";
@@ -332,6 +333,11 @@ export async function populateLikedSongs() {
     MusicDataManager.getInstance().spotifyLikedSongs = await getSpotifyLikedSongs();
 }
 
+export async function populatePlayerContext() {
+    const spotifyContext: PlayerContext = await getSpotifyPlayerContext();
+    MusicDataManager.getInstance().spotifyContext = spotifyContext;
+}
+
 export async function populateSpotifyPlaylists() {
     const dataMgr: MusicDataManager = MusicDataManager.getInstance();
 
@@ -344,6 +350,9 @@ export async function populateSpotifyPlaylists() {
 
     // fire off the populate spotify devices
     await populateSpotifyDevices();
+
+    // populate player context
+    await populatePlayerContext();
 
     // fetch music time app saved playlists
     await dataMgr.fetchSavedPlaylists();

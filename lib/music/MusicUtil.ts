@@ -203,13 +203,7 @@ export function getDeviceSet() {
 }
 
 export function getDeviceId() {
-    const {
-        webPlayer,
-        desktop,
-        activeDevice,
-        activeComputerDevice,
-        activeWebPlayerDevice
-    } = getDeviceSet();
+    const { webPlayer, desktop, activeDevice } = getDeviceSet();
 
     const deviceId = activeDevice
         ? activeDevice.id

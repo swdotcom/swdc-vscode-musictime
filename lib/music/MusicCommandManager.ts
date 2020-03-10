@@ -8,7 +8,7 @@ import {
     getSpotifyPlayerContext
 } from "cody-music";
 import { MusicManager } from "./MusicManager";
-import { requiresSpotifyAccess } from "./MusicUtil";
+import { requiresSpotifyAccess, getDeviceId } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 
 export interface Button {
@@ -117,8 +117,8 @@ export class MusicCommandManager {
 
     public static async syncControls(
         track: Track,
-        showLoading = false,
-        statusOverride = null
+        showLoading: boolean = false,
+        statusOverride: TrackStatus = null
     ) {
         if (this._hideSongTimeout) {
             clearTimeout(this._hideSongTimeout);
@@ -265,7 +265,9 @@ export class MusicCommandManager {
             return;
         }
 
-        const { repeatState } = await this.getSpotifyState();
+        const context: PlayerContext = MusicDataManager.getInstance()
+            .spotifyContext;
+        const repeatState = context ? context.repeat_state : "";
 
         const songInfo = trackInfo
             ? `${trackInfo.name} (${trackInfo.artist})`
@@ -326,10 +328,6 @@ export class MusicCommandManager {
                 button.statusBarItem.tooltip = `(${trackInfo.name}) ${button.tooltip}`;
                 button.statusBarItem.text = getSongDisplayName(trackInfo.name);
                 button.statusBarItem.show();
-                // this._hideSongTimeout = setTimeout(() => {
-                //     // hide this name in 10 seconds
-                //     this.hideSongDisplay();
-                // }, songNameDisplayTimeoutMillis);
             } else if (isPlayButton) {
                 if (songInfo) {
                     // show the song info over the play button
@@ -350,7 +348,10 @@ export class MusicCommandManager {
         if (!this._buttons || this._buttons.length === 0) {
             return;
         }
-        const { repeatState } = await this.getSpotifyState();
+
+        const context: PlayerContext = MusicDataManager.getInstance()
+            .spotifyContext;
+        const repeatState = context ? context.repeat_state : "";
 
         const songInfo = trackInfo
             ? `${trackInfo.name} (${trackInfo.artist})`
@@ -411,10 +412,6 @@ export class MusicCommandManager {
                 button.statusBarItem.tooltip = `(${trackInfo.name}) ${button.tooltip}`;
                 button.statusBarItem.text = getSongDisplayName(trackInfo.name);
                 button.statusBarItem.show();
-                // this._hideSongTimeout = setTimeout(() => {
-                //     // hide this name in 10 seconds
-                //     this.hideSongDisplay();
-                // }, songNameDisplayTimeoutMillis);
             } else if (isPauseButton) {
                 if (songInfo) {
                     button.statusBarItem.tooltip = `${button.tooltip} - ${songInfo}`;
@@ -468,28 +465,14 @@ export class MusicCommandManager {
         const hasSpotifyPlaybackAccess = musicMgr.hasSpotifyPlaybackAccess();
         const hasSpotifyUser = musicMgr.hasSpotifyUser();
 
-        const spotifyContext: PlayerContext = await getSpotifyPlayerContext();
-        // "off", "track", "context", ""
-        const repeatState = spotifyContext ? spotifyContext.repeat_state : "";
-        const isPlaying = spotifyContext ? spotifyContext.is_playing : false;
-        const foundDevice =
-            spotifyContext && spotifyContext.device ? true : false;
-        const type =
-            MusicDataManager.getInstance().currentPlayerName ===
-            PlayerName.ItunesDesktop
-                ? "itunes"
-                : "spotify";
+        const foundDevice = getDeviceId() ? true : false;
+
         const showPremiumRequired =
             isMac() && !hasSpotifyPlaybackAccess && hasSpotifyUser;
         return {
             needsSpotifyAccess,
-            hasSpotifyPlaybackAccess,
-            hasSpotifyUser,
             showPremiumRequired,
-            repeatState,
-            foundDevice,
-            isPlaying,
-            type
+            foundDevice
         };
     }
 

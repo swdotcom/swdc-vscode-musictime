@@ -29,7 +29,8 @@ import {
     refetchSpotifyConnectStatusLazily,
     getAppJwt,
     populateLikedSongs,
-    populateSpotifyPlaylists
+    populateSpotifyPlaylists,
+    populatePlayerContext
 } from "../DataController";
 import {
     getItem,
@@ -178,18 +179,28 @@ export class MusicControlManager {
     }
 
     async playSongById(playerName: PlayerName, trackId: string) {
-        await playTrack(playerName, trackId);
-        MusicCommandManager.syncControls(dataMgr.runningTrack, true);
-        // fetch the new track info
-        // await this.musicStateMgr.gatherMusicInfo();
+        const result: any = await this.musicCmdUtil.runSpotifyCommand(
+            playTrack,
+            [playerName, trackId]
+        );
+        if (result && result.status < 300) {
+            MusicCommandManager.syncControls(
+                dataMgr.runningTrack,
+                true,
+                TrackStatus.Playing
+            );
+        }
     }
 
     async setRepeatOnOff(setToOn: boolean) {
+        let result = null;
         if (setToOn) {
-            await repeatOn(PlayerName.SpotifyWeb);
+            result = await repeatOn(PlayerName.SpotifyWeb);
         } else {
-            await repeatOff(PlayerName.SpotifyWeb);
+            result = await repeatOff(PlayerName.SpotifyWeb);
         }
+        // get the latest player context (repeat would be part of this data)
+        await populatePlayerContext();
         MusicCommandManager.syncControls(dataMgr.runningTrack, true);
     }
 

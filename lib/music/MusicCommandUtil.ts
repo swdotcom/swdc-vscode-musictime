@@ -19,16 +19,8 @@ export class MusicCommandUtil {
         let result = null;
         if (args && args.length) {
             result = await fnc(...args);
-            if (this.isTooManyRequestsError(result)) {
-                // try one more time
-                result = await fnc(...args);
-            }
         } else {
             result = await fnc();
-            if (this.isTooManyRequestsError(result)) {
-                // try one more time
-                result = await fnc();
-            }
         }
         if (this.isTooManyRequestsError(result)) {
             window.showErrorMessage(
