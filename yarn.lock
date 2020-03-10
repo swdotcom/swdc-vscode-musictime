@@ -148,12 +148,13 @@ clone@2.x:
   resolved "https://registry.yarnpkg.com/clone/-/clone-2.1.2.tgz#1b7f4b9f591f1e8f83670401600345a02887435f"
   integrity sha1-G39Ln1kfHo+DZwQBYANFoCiHQ18=
 
-cody-music@2.8.8:
-  version "2.8.8"
-  resolved "https://registry.yarnpkg.com/cody-music/-/cody-music-2.8.8.tgz#c3d63b72b68863e255d28574c647d0e963d3dd4d"
-  integrity sha512-U/Ka8F3ZJNF6lyITl+lm23sMk3/52JztH1f3RRSBTR36SH+DBtGuo2FsV6U5WtnuanzDFUcsuoxoeoOg9UitNQ==
+cody-music@2.8.9:
+  version "2.8.9"
+  resolved "https://registry.yarnpkg.com/cody-music/-/cody-music-2.8.9.tgz#8e93cb6210a781ddd938610500c2c1d7d345e418"
+  integrity sha512-OkUGt+SHE8/wMu/k5Ee/3lZ2cNjK6fx+V2WhvoKN9Q/m237Uhn8V+152Y5siAdSpL/SOihUanCEs8ncGdXceRQ==
   dependencies:
     axios "^0.19.0"
+    moment-timezone "^0.5.28"
     natural "^0.6.3"
     node-cache "^5.1.0"
 
@@ -376,6 +377,13 @@ moment-timezone@^0.5.25:
   version "0.5.27"
   resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.27.tgz#73adec8139b6fe30452e78f210f27b1f346b8877"
   integrity sha512-EIKQs7h5sAsjhPCqN6ggx6cEbs94GK050254TIJySD1bzoM5JTYDwAU1IoVOeTOL6Gm27kYJ51/uuvq1kIlrbw==
+  dependencies:
+    moment ">= 2.9.0"
+
+moment-timezone@^0.5.28:
+  version "0.5.28"
+  resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.28.tgz#f093d789d091ed7b055d82aa81a82467f72e4338"
+  integrity sha512-TDJkZvAyKIVWg5EtVqRzU97w0Rb0YVbfpqyjgu6GwXCAohVRqwZjf4fOzDE6p1Ch98Sro/8hQQi65WDXW5STPw==
   dependencies:
     moment ">= 2.9.0"
 

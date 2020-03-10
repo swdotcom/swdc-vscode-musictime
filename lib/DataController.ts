@@ -28,7 +28,8 @@ import {
     getSpotifyDevices,
     PlayerDevice,
     PlayerContext,
-    getSpotifyPlayerContext
+    getSpotifyPlayerContext,
+    getUserProfile
 } from "cody-music";
 import { MusicManager } from "./music/MusicManager";
 import { refreshPlaylistViewIfRequired } from "./music/MusicPlaylistProvider";
@@ -286,6 +287,8 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
             `Successfully connected to Spotify. Loading playlists...`
         );
 
+        await populateSpotifyUser();
+
         const spotifyPlaylistsP = populateSpotifyPlaylists();
 
         // only add the "Liked Songs" playlist if there are tracks found in that playlist
@@ -326,6 +329,13 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
             // reveal the tree
             refreshPlaylistViewIfRequired();
         }, 4000);
+    }
+}
+
+export async function populateSpotifyUser() {
+    if (!this.dataMgr.spotifyUser) {
+        // get the user
+        this.dataMgr.spotifyUser = await getUserProfile();
     }
 }
 
@@ -380,6 +390,7 @@ export async function populateSpotifyDevices() {
     if (fetchingDevices) {
         return;
     }
+    console.log("fetching devices");
     fetchingDevices = true;
     const musicMgr: MusicDataManager = MusicDataManager.getInstance();
 

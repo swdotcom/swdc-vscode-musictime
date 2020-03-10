@@ -19,7 +19,6 @@ import {
     playSpotifyDevice,
     playSpotifyTrack,
     PlayerContext,
-    getSpotifyPlayerContext,
     transferSpotifyDevice,
     playSpotifyPlaylist,
     play,
@@ -168,14 +167,6 @@ export class MusicManager {
         if (CONNECTED && !HAS_SPOTIFY_USER) {
             // get it
             this.dataMgr.spotifyUser = await getUserProfile();
-            HAS_SPOTIFY_USER = this.hasSpotifyUser() ? true : false;
-            if (!HAS_SPOTIFY_USER) {
-                // update cody config
-                this.dataMgr.updateCodyConfig();
-                // try 1 more time
-                this.dataMgr.spotifyUser = await getUserProfile();
-                HAS_SPOTIFY_USER = this.hasSpotifyUser() ? true : false;
-            }
         }
 
         // ! most important part !
@@ -831,8 +822,6 @@ export class MusicManager {
             setItem("spotify_refresh_token", spotifyOauth.refresh_token);
             // update cody config
             this.dataMgr.updateCodyConfig();
-            // get the user
-            this.dataMgr.spotifyUser = await getUserProfile();
         } else {
             setItem("spotify_access_token", null);
             setItem("spotify_refresh_token", null);
@@ -977,9 +966,6 @@ export class MusicManager {
     }
 
     async isSpotifyPremium() {
-        if (!this.dataMgr.spotifyUser && !requiresSpotifyAccess()) {
-            this.dataMgr.spotifyUser = await getUserProfile();
-        }
         return this.hasSpotifyUser() &&
             this.dataMgr.spotifyUser.product === "premium"
             ? true
@@ -1216,7 +1202,7 @@ export class MusicManager {
         // check in a second if it's playing or not.
         setTimeout(() => {
             this.checkIfPlaying(trackId);
-        }, 1200);
+        }, 2000);
     };
 
     async checkIfPlaying(trackId, tries = 2) {
@@ -1236,12 +1222,12 @@ export class MusicManager {
             tries -= 1;
             setTimeout(() => {
                 this.checkIfPlaying(trackId, tries);
-            }, 1000);
+            }, 2000);
         } else if (!playingTrack) {
             tries -= 1;
             setTimeout(() => {
                 this.checkIfPlaying(trackId, tries);
-            }, 1000);
+            }, 2000);
         }
     }
 
