@@ -44,7 +44,7 @@ let toggleFileEventLogging = null;
 
 let slackFetchTimeout = null;
 let spotifyFetchTimeout = null;
-
+let fetchingDevices = false;
 let currentDayHour = null;
 
 export function isNewHour() {
@@ -377,6 +377,10 @@ export async function populateSpotifyPlaylists() {
 }
 
 export async function populateSpotifyDevices() {
+    if (fetchingDevices) {
+        return;
+    }
+    fetchingDevices = true;
     const musicMgr: MusicDataManager = MusicDataManager.getInstance();
 
     let devices: PlayerDevice[] = await MusicCommandUtil.getInstance().runSpotifyCommand(
@@ -406,6 +410,7 @@ export async function populateSpotifyDevices() {
     }
 
     MusicDataManager.getInstance().currentDevices = currDevices;
+    fetchingDevices = false;
 }
 
 export function getBootstrapFileMetrics() {
