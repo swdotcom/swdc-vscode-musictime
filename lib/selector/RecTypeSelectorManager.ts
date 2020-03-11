@@ -111,7 +111,7 @@ function getCategorySelections() {
                 "Quiet music",
                 5,
                 [],
-                { max_loudness: -13, target_loudness: -50 }
+                { max_loudness: -10, target_loudness: -50 }
             ]
         }
     ];
