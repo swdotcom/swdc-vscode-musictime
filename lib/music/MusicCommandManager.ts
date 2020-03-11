@@ -53,7 +53,12 @@ export class MusicCommandManager {
     public static async initialize() {
         const musictimeMenuTooltip = this.getMusicMenuTooltip();
         // start with 100 0and go down in sequence
-        this.createButton("🎧", musictimeMenuTooltip, "musictime.menu", 1000);
+        this.createButton(
+            "🎧",
+            musictimeMenuTooltip,
+            "musictime.revealTree",
+            1000
+        );
         this.createButton(
             "$(settings) Loading",
             "updating",
@@ -200,7 +205,7 @@ export class MusicCommandManager {
         this._buttons = this._buttons.map(button => {
             const btnCmd = button.statusBarItem.command;
 
-            const isMusicTimeMenuButton = btnCmd === "musictime.menu";
+            const isMusicTimeMenuButton = btnCmd === "musictime.revealTree";
             const isProgressButton = btnCmd === "musictime.progress";
 
             if (isMusicTimeMenuButton || isProgressButton) {
@@ -232,7 +237,7 @@ export class MusicCommandManager {
         this._buttons = this._buttons.map(button => {
             const btnCmd = button.statusBarItem.command;
 
-            const isMusicTimeMenuButton = btnCmd === "musictime.menu";
+            const isMusicTimeMenuButton = btnCmd === "musictime.revealTree";
             const isConnectSpotifyButton =
                 button.statusBarItem.text === "Connect Spotify";
             const isConnectPremiumSpotifyButton =
@@ -279,7 +284,7 @@ export class MusicCommandManager {
 
         this._buttons.map(button => {
             const btnCmd = button.statusBarItem.command;
-            const isMusicTimeMenuButton = btnCmd === "musictime.menu";
+            const isMusicTimeMenuButton = btnCmd === "musictime.revealTree";
             const isPlayButton = btnCmd === "musictime.play";
             const isLikedButton = btnCmd === "musictime.like";
             const isUnLikedButton = btnCmd === "musictime.unlike";
@@ -363,7 +368,7 @@ export class MusicCommandManager {
 
         this._buttons.map(button => {
             const btnCmd = button.statusBarItem.command;
-            const isMusicTimeMenuButton = btnCmd === "musictime.menu";
+            const isMusicTimeMenuButton = btnCmd === "musictime.revealTree";
             const isPauseButton = btnCmd === "musictime.pause";
             const isLikedButton = btnCmd === "musictime.like";
             const isUnLikedButton = btnCmd === "musictime.unlike";
@@ -426,7 +431,7 @@ export class MusicCommandManager {
     private static showProgress(progressLabel: string) {
         this._buttons.map(button => {
             const btnCmd = button.statusBarItem.command;
-            const isMusicTimeMenuButton = btnCmd === "musictime.menu";
+            const isMusicTimeMenuButton = btnCmd === "musictime.revealTree";
             const isMusicTimeProgress = btnCmd === "musictime.progress";
 
             if (isMusicTimeMenuButton || isMusicTimeProgress) {
