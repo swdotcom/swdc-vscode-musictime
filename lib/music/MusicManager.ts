@@ -29,8 +29,6 @@ import {
     PERSONAL_TOP_SONGS_PLID,
     SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
     SOFTWARE_TOP_40_PLAYLIST_ID,
-    SPOTIFY_CLIENT_ID,
-    SPOTIFY_CLIENT_SECRET,
     SHOW_ITUNES_LAUNCH_BUTTON,
     OK_LABEL,
     YES_LABEL
@@ -836,8 +834,8 @@ export class MusicManager {
         const serverIsOnline = await serverIsAvailable();
 
         // get the client id and secret
-        let clientId = SPOTIFY_CLIENT_ID;
-        let clientSecret = SPOTIFY_CLIENT_SECRET;
+        let clientId;
+        let clientSecret;
         if (serverIsOnline) {
             let jwt = getItem("jwt");
             if (!jwt) {
@@ -853,13 +851,12 @@ export class MusicManager {
 
         this.dataMgr.spotifyClientId = clientId;
         this.dataMgr.spotifyClientSecret = clientSecret;
-
         this.dataMgr.updateCodyConfig();
 
         // update the user info
         await getMusicTimeUserStatus(serverIsOnline);
 
-        // initialize the music player
+        // initialize the status bar music controls
         MusicCommandManager.initialize();
     }
 

@@ -2,15 +2,15 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch Extension",
             "type": "extensionHost",
             "request": "launch",
+            "name": "Launch Extension",
             "runtimeExecutable": "${execPath}",
-            "args": ["--extensionDevelopmentPath=${workspaceRoot}"],
             "stopOnEntry": false,
             "sourceMaps": true,
+            "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
             "outFiles": ["${workspaceFolder}/out/**/*.js"],
-            "preLaunchTask": "yarn"
+            "preLaunchTask": "npm: watch"
         },
         {
             "name": "Launch Tests",

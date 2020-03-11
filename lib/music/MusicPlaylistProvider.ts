@@ -14,6 +14,7 @@ import { MusicManager } from "./MusicManager";
 import { logIt, getPlaylistIcon } from "../Util";
 import { ProviderItemManager } from "./ProviderItemManager";
 import { MusicDataManager } from "./MusicDataManager";
+import { populateSpotifyUser } from "../DataController";
 
 const dataMgr: MusicDataManager = MusicDataManager.getInstance();
 
@@ -30,7 +31,9 @@ const createPlaylistTreeItem = (
 };
 
 export const refreshPlaylistViewIfRequired = async () => {
+    console.log("checking to refresh the playlist");
     if (!dataMgr.spotifyPlaylists || dataMgr.spotifyPlaylists.length === 0) {
+        console.log("no playlists, refreshing");
         await MusicManager.getInstance().refreshPlaylists();
     }
     commands.executeCommand("musictime.revealTree");
@@ -193,6 +196,9 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
                 return musicMgr.currentPlaylists;
             }
         } else {
+            if (!musicMgr.hasSpotifyUser()) {
+                await populateSpotifyUser();
+            }
             const loadingItem: PlaylistItem = providerItemMgr.getLoadingButton();
             return [loadingItem];
         }

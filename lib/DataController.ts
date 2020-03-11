@@ -32,7 +32,6 @@ import {
     getUserProfile
 } from "cody-music";
 import { MusicManager } from "./music/MusicManager";
-import { refreshPlaylistViewIfRequired } from "./music/MusicPlaylistProvider";
 import { MusicDataManager } from "./music/MusicDataManager";
 import { CacheManager } from "./cache/CacheManager";
 import { MusicCommandUtil } from "./music/MusicCommandUtil";
@@ -45,7 +44,6 @@ let toggleFileEventLogging = null;
 
 let slackFetchTimeout = null;
 let spotifyFetchTimeout = null;
-let fetchingDevices = false;
 let currentDayHour = null;
 
 export function isNewHour() {
@@ -167,6 +165,7 @@ export async function getMusicTimeUserStatus(serverIsOnline) {
     // We don't have a user yet, check the users via the plugin/state
     const jwt = getItem("jwt");
     const spotify_refresh_token = getItem("spotify_refresh_token");
+
     if (serverIsOnline && (jwt || spotify_refresh_token)) {
         const api = "/users/plugin/state";
         const additionalHeaders = spotify_refresh_token
@@ -182,12 +181,11 @@ export async function getMusicTimeUserStatus(serverIsOnline) {
                  * {email, jwt, state}
                  */
                 const stateData = resp.data;
-                const sessionEmail = getItem("name");
-                if (sessionEmail !== stateData.email) {
+                if (stateData.email) {
                     setItem("name", stateData.email);
                 }
                 // check the jwt
-                if (stateData.jwt && stateData.jwt !== jwt) {
+                if (stateData.jwt) {
                     // update it
                     setItem("jwt", stateData.jwt);
                 }
@@ -286,10 +284,8 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
         window.showInformationMessage(
             `Successfully connected to Spotify. Loading playlists...`
         );
-
+        // first get the spotify user
         await populateSpotifyUser();
-
-        const spotifyPlaylistsP = populateSpotifyPlaylists();
 
         // only add the "Liked Songs" playlist if there are tracks found in that playlist
         await populateLikedSongs();
@@ -320,22 +316,19 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
         // send the top spotify songs from the users playlists to help seed song sessions
         seedLikedSongSessions(dataMgr.spotifyLikedSongs);
 
-        await spotifyPlaylistsP;
-
         // initiate the playlist build
-        commands.executeCommand("musictime.refreshPlaylist");
-
         setTimeout(() => {
-            // reveal the tree
-            refreshPlaylistViewIfRequired();
-        }, 4000);
+            commands.executeCommand("musictime.hardRefreshPlaylist");
+        }, 2000);
     }
 }
 
 export async function populateSpotifyUser() {
-    if (!this.dataMgr.spotifyUser) {
+    const dataMgr: MusicDataManager = MusicDataManager.getInstance();
+    if (!dataMgr.spotifyUser) {
         // get the user
-        this.dataMgr.spotifyUser = await getUserProfile();
+        dataMgr.spotifyUser = await getUserProfile();
+        console.log("spotify user: ", dataMgr.spotifyUser);
     }
 }
 
@@ -366,8 +359,8 @@ export async function populateSpotifyPlaylists() {
 
     // fetch music time app saved playlists
     await dataMgr.fetchSavedPlaylists();
-    // fetch the playlists from spotify
 
+    // fetch the playlists from spotify
     const rawPlaylists = await MusicCommandUtil.getInstance().runSpotifyCommand(
         getPlaylists,
         [
@@ -387,11 +380,6 @@ export async function populateSpotifyPlaylists() {
 }
 
 export async function populateSpotifyDevices() {
-    if (fetchingDevices) {
-        return;
-    }
-    console.log("fetching devices");
-    fetchingDevices = true;
     const musicMgr: MusicDataManager = MusicDataManager.getInstance();
 
     let devices: PlayerDevice[] = await MusicCommandUtil.getInstance().runSpotifyCommand(
@@ -421,7 +409,6 @@ export async function populateSpotifyDevices() {
     }
 
     MusicDataManager.getInstance().currentDevices = currDevices;
-    fetchingDevices = false;
 }
 
 export function getBootstrapFileMetrics() {

@@ -32,9 +32,6 @@ export const MUSIC_TIME_EXT_ID = "softwaredotcom.music-time";
 
 export const MUSIC_TIME_TYPE = "musictime";
 
-export const SPOTIFY_CLIENT_ID: string = "eb67e22ba1c6474aad8ec8067480d9dc";
-export const SPOTIFY_CLIENT_SECRET: string = "2b40b4975b2743189c87f4712c0cd59e";
-
 export const PERSONAL_TOP_SONGS_NAME = "My AI Top 40";
 export const PERSONAL_TOP_SONGS_PLID = 1;
 

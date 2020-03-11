@@ -80,7 +80,7 @@ export async function onboardPlugin(
 }
 
 /**
- * create an anonymous user based on github email or mac addr
+ * create an anonymous user
  */
 export async function createAnonymousUser(serverIsOnline) {
     let appJwt = await getAppJwt(serverIsOnline);

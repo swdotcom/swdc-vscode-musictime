@@ -38,9 +38,10 @@
     },
     "main": "./out/extension",
     "scripts": {
-        "start": "node initializer && tsc -watch -p ./",
-        "vscode:prepublish": "tsc -p ./",
-        "compile": "tsc -watch -p ./"
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "lint": "tslint -p ./",
+        "watch": "tsc -watch -p ./"
     },
     "contributes": {
         "commands": [

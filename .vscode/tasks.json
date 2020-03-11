@@ -1,10 +1,5 @@
 {
     "version": "2.0.0",
-    "command": "yarn",
-    "type": "shell",
-    "reveal": "silent",
-    "args": ["run", "compile"],
-    "isBackground": true,
     "problemMatcher": {
         "owner": "typescript",
         "fileLocation": "relative",
@@ -24,9 +19,13 @@
     },
     "tasks": [
         {
-            "label": "prebuildmusictime",
             "type": "npm",
-            "script": "prebuildmusictime",
+            "script": "watch",
+            "problemMatcher": "$tsc-watch",
+            "isBackground": true,
+            "presentation": {
+                "reveal": "never"
+            },
             "group": {
                 "kind": "build",
                 "isDefault": true

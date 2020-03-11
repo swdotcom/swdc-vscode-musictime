@@ -475,17 +475,4 @@ export class MusicCommandManager {
             foundDevice
         };
     }
-
-    /**
-     * Hide the song name display
-     */
-    private static hideSongDisplay() {
-        this._buttons.map(button => {
-            const btnCmd = button.statusBarItem.command;
-            if (btnCmd === "musictime.currentSong") {
-                button.statusBarItem.hide();
-            }
-        });
-        this._hideSongTimeout = null;
-    }
 }

@@ -21,19 +21,12 @@ import { setSessionSummaryLiveshareMinutes } from "./lib/OfflineManager";
 import { MusicManager } from "./lib/music/MusicManager";
 import { KpmController } from "./lib/KpmController";
 
-let TELEMETRY_ON = true;
 let _ls = null;
 
-let token_check_interval = null;
 let liveshare_update_interval = null;
-let historical_commits_interval = null;
 let gather_music_interval = null;
 let offline_data_interval = null;
-let session_check_interval = null;
-
-export function isTelemetryOn() {
-    return TELEMETRY_ON;
-}
+let offline_song_data_interval = null;
 
 export function deactivate(ctx: ExtensionContext) {
     if (_ls && _ls.id) {
@@ -48,12 +41,9 @@ export function deactivate(ctx: ExtensionContext) {
         _ls = null;
     }
 
-    clearInterval(token_check_interval);
     clearInterval(liveshare_update_interval);
-    clearInterval(historical_commits_interval);
     clearInterval(offline_data_interval);
     clearInterval(gather_music_interval);
-    clearInterval(session_check_interval);
 
     // softwareDelete(`/integrations/${PLUGIN_ID}`, getItem("jwt")).then(resp => {
     //     if (isResponseOk(resp)) {
@@ -94,17 +84,18 @@ export async function intializePlugin(ctx: ExtensionContext) {
     // every half hour, send offline data
     const hourly_interval_ms = 1000 * 60 * 60;
     const half_hour_ms = hourly_interval_ms / 2;
+    const ten_min_ms = 1000 * 60 * 10;
     offline_data_interval = setInterval(() => {
         if (!codeTimeExtInstalled()) {
             // send the offline code time data
             KpmController.getInstance().processOfflineKeystrokes();
         }
-
-        // send the offline song sessions
-        setTimeout(() => {
-            MusicStateManager.getInstance().processOfflineSongSessions();
-        }, 1000 * 60);
     }, half_hour_ms);
+
+    // send the offline song sessions
+    offline_song_data_interval = setInterval(() => {
+        MusicStateManager.getInstance().processOfflineSongSessions();
+    }, ten_min_ms);
 
     // send any offline data in a few seconds, then fire off the
     // track listening timer
