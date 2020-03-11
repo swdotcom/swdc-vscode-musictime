@@ -325,10 +325,9 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
 
 export async function populateSpotifyUser() {
     const dataMgr: MusicDataManager = MusicDataManager.getInstance();
-    if (!dataMgr.spotifyUser) {
+    if (!dataMgr.spotifyUser || !dataMgr.spotifyUser.id) {
         // get the user
         dataMgr.spotifyUser = await getUserProfile();
-        console.log("spotify user: ", dataMgr.spotifyUser);
     }
 }
 

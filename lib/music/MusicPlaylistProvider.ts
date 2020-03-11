@@ -31,9 +31,7 @@ const createPlaylistTreeItem = (
 };
 
 export const refreshPlaylistViewIfRequired = async () => {
-    console.log("checking to refresh the playlist");
     if (!dataMgr.spotifyPlaylists || dataMgr.spotifyPlaylists.length === 0) {
-        console.log("no playlists, refreshing");
         await MusicManager.getInstance().refreshPlaylists();
     }
     commands.executeCommand("musictime.revealTree");

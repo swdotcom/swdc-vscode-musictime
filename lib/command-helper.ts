@@ -15,8 +15,7 @@ import {
 import { KpmController } from "./KpmController";
 import {
     MusicPlaylistProvider,
-    connectPlaylistTreeView,
-    refreshPlaylistViewIfRequired
+    connectPlaylistTreeView
 } from "./music/MusicPlaylistProvider";
 import {
     PlaylistItem,
@@ -269,7 +268,6 @@ export function createCommands(): {
             await musicMgr.clearPlaylists();
             await musicMgr.refreshPlaylists();
             treePlaylistProvider.refresh();
-            refreshPlaylistViewIfRequired();
         }
     );
     cmds.push(refreshPlaylistCommand);

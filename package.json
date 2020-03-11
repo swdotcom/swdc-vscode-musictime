@@ -1,7 +1,7 @@
 {
     "name": "music-time",
     "displayName": "Music Time",
-    "version": "1.7.3",
+    "version": "1.7.4",
     "publisher": "softwaredotcom",
     "description": "Music Time is an open source plugin that curates and launches playlists for coding right from your editor.",
     "author": {
@@ -339,7 +339,7 @@
         "aws-sdk": "^2.470.0",
         "axios": "^0.19.0",
         "clipboardy": "^2.1.0",
-        "cody-music": "2.9.0",
+        "cody-music": "2.9.1",
         "moment-timezone": "^0.5.25",
         "node-cache": "^5.1.0",
         "open": "^6.4.0",
