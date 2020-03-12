@@ -230,18 +230,6 @@ export class MusicStateManager {
      * Core logic in gathering tracks. This is called every 5 seconds.
      */
     public async gatherMusicInfo(): Promise<any> {
-        const secondsSinceLastFetch = moment().unix() - this.fetchSongTimer;
-        if (
-            this.gatheringSong ||
-            requiresSpotifyAccess() ||
-            this.pauseSongFetch ||
-            secondsSinceLastFetch < 5
-        ) {
-            return;
-        }
-
-        this.gatheringSong = true;
-
         const dataMgr: MusicDataManager = MusicDataManager.getInstance();
 
         try {
@@ -353,8 +341,6 @@ export class MusicStateManager {
             const errMsg = e.message || e;
             logIt(`Unexpected track state processing error: ${errMsg}`);
         }
-
-        this.gatheringSong = false;
     }
 
     private async playNextLikedSpotifyCheck() {
