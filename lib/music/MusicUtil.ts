@@ -160,7 +160,8 @@ export async function buildTracksForRecommendations(playlists) {
 
 export function requiresSpotifyAccess() {
     let spotifyAccessToken = getItem("spotify_access_token");
-    return spotifyAccessToken ? false : true;
+    // no spotify access token then return true, the user requires spotify access
+    return !spotifyAccessToken ? true : false;
 }
 
 /**

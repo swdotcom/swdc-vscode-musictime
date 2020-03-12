@@ -26,6 +26,7 @@ export class MusicCommandUtil {
             window.showErrorMessage(
                 "Currently experiencing too many spotify requests, try again soon."
             );
+            return { status: 429 };
         }
         return result;
     }

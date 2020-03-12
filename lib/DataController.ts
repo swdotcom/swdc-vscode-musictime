@@ -35,6 +35,7 @@ import { MusicManager } from "./music/MusicManager";
 import { MusicDataManager } from "./music/MusicDataManager";
 import { CacheManager } from "./cache/CacheManager";
 import { MusicCommandUtil } from "./music/MusicCommandUtil";
+import { MusicCommandManager } from "./music/MusicCommandManager";
 const moment = require("moment-timezone");
 
 const cacheMgr: CacheManager = CacheManager.getInstance();
@@ -338,6 +339,10 @@ export async function populateLikedSongs() {
 export async function populatePlayerContext() {
     const spotifyContext: PlayerContext = await getSpotifyPlayerContext();
     MusicDataManager.getInstance().spotifyContext = spotifyContext;
+    MusicCommandManager.syncControls(
+        MusicDataManager.getInstance().runningTrack,
+        false
+    );
 }
 
 export async function populateSpotifyPlaylists() {
@@ -352,9 +357,6 @@ export async function populateSpotifyPlaylists() {
 
     // fire off the populate spotify devices
     await populateSpotifyDevices();
-
-    // populate player context
-    await populatePlayerContext();
 
     // fetch music time app saved playlists
     await dataMgr.fetchSavedPlaylists();
@@ -371,43 +373,34 @@ export async function populateSpotifyPlaylists() {
     );
 
     // set the list of playlistIds based on this current order
-    dataMgr.origRawPlaylistOrder = [...rawPlaylists];
-    dataMgr.rawPlaylists = rawPlaylists;
+    if (rawPlaylists && rawPlaylists.status && rawPlaylists.status >= 400) {
+        // try again in a few seconds
+        setTimeout(() => {
+            populateSpotifyPlaylists();
+        }, 3000);
+    } else {
+        dataMgr.origRawPlaylistOrder = [...rawPlaylists];
+        dataMgr.rawPlaylists = rawPlaylists;
+    }
 
     // populate generated playlists
     await dataMgr.populateGeneratedPlaylists();
+
+    // populate player context
+    await populatePlayerContext();
 }
 
 export async function populateSpotifyDevices() {
-    const musicMgr: MusicDataManager = MusicDataManager.getInstance();
-
-    let devices: PlayerDevice[] = await MusicCommandUtil.getInstance().runSpotifyCommand(
+    let devices = await MusicCommandUtil.getInstance().runSpotifyCommand(
         getSpotifyDevices
     );
-    if (!devices) {
-        devices = [];
+
+    if (devices && devices.status && devices.status === 429) {
+        // leave the current device set alone
+        return;
     }
 
-    const currDevices: PlayerDevice[] = musicMgr.currentDevices || [];
-
-    if (devices.length) {
-        // add/update to the current devices
-        for (let i = 0; i < devices.length; i++) {
-            const device: PlayerDevice = devices[i];
-            const deviceIdx = currDevices.findIndex(
-                (d: PlayerDevice) => d.id === device.id
-            );
-            if (deviceIdx !== -1) {
-                // update it
-                currDevices[deviceIdx] = device;
-            } else {
-                // add to it
-                currDevices.push(device);
-            }
-        }
-    }
-
-    MusicDataManager.getInstance().currentDevices = currDevices;
+    MusicDataManager.getInstance().currentDevices = devices;
 }
 
 export function getBootstrapFileMetrics() {

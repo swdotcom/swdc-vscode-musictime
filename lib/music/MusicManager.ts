@@ -22,7 +22,8 @@ import {
     transferSpotifyDevice,
     playSpotifyPlaylist,
     play,
-    getRunningTrack
+    getRunningTrack,
+    getTrack
 } from "cody-music";
 import {
     PERSONAL_TOP_SONGS_NAME,
@@ -41,7 +42,8 @@ import {
     getMusicTimeUserStatus,
     populateSpotifyPlaylists,
     populateLikedSongs,
-    populateSpotifyDevices
+    populateSpotifyDevices,
+    populateSpotifyUser
 } from "../DataController";
 import { getItem, setItem, isMac, logIt, getCodyErrorMessage } from "../Util";
 import { isResponseOk, softwareGet, softwarePost } from "../HttpClient";
@@ -57,6 +59,7 @@ import {
 } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 import { MusicCommandUtil } from "./MusicCommandUtil";
+import { MusicStateManager } from "./MusicStateManager";
 
 export class MusicManager {
     private static instance: MusicManager;
@@ -906,7 +909,7 @@ export class MusicManager {
         if (callback) {
             setTimeout(() => {
                 this.checkDeviceLaunch(playerName, 7, callback);
-            }, 1000);
+            }, 1500);
         }
     }
 
@@ -934,10 +937,10 @@ export class MusicManager {
                 if (callback) {
                     setTimeout(async () => {
                         callback();
-                    }, 1000);
+                    }, 1100);
                 }
             }
-        }, 1000);
+        }, 1500);
     }
 
     async isLikedSong() {
@@ -988,18 +991,14 @@ export class MusicManager {
 
         let deviceSet = getDeviceSet();
 
-        const hasSpotifyUser = MusicManager.getInstance().hasSpotifyUser();
-        let isWinNonPremium = isMac() && !hasSpotifyUser ? true : false;
         let no_devices = !devices || devices.length === 0 ? true : false;
-
-        if (no_devices) {
-            // first try refreshing the devices
-            await populateSpotifyPlaylists();
-            devices = this.dataMgr.currentDevices;
-            if (devices && devices.length) {
-                deviceSet = getDeviceSet();
-            }
+        let hasSpotifyUser = MusicManager.getInstance().hasSpotifyUser();
+        if (!hasSpotifyUser) {
+            // try again
+            await populateSpotifyUser();
+            hasSpotifyUser = MusicManager.getInstance().hasSpotifyUser();
         }
+        let isWinNonPremium = isMac() && !hasSpotifyUser ? true : false;
 
         if (
             no_devices ||
@@ -1007,6 +1006,9 @@ export class MusicManager {
                 !deviceSet.desktop &&
                 !deviceSet.activeDevice)
         ) {
+            MusicStateManager.getInstance().updatePauseSongFetch(
+                true /*pauseIt*/
+            );
             const buttons = isWinNonPremium
                 ? ["Web Player"]
                 : ["Web Player", "Desktop Player"];
@@ -1028,6 +1030,9 @@ export class MusicManager {
                 // start the launch process and pass the callback when complete
                 return this.launchTrackPlayer(playerName, callback);
             } else {
+                MusicStateManager.getInstance().updatePauseSongFetch(
+                    false /*pauseIt*/
+                );
                 // operation cancelled
                 return;
             }
@@ -1152,6 +1157,8 @@ export class MusicManager {
     }
 
     playMusicSelection = async () => {
+        MusicStateManager.getInstance().updatePauseSongFetch(false /*pauseIt*/);
+
         const musicCommandUtil: MusicCommandUtil = MusicCommandUtil.getInstance();
         // get the playlist id, track id, and device id
         const playlistId = this.dataMgr.selectedPlaylist
@@ -1203,8 +1210,11 @@ export class MusicManager {
     };
 
     async checkIfPlaying(trackId, tries = 2) {
-        let playingTrack: Track = await getRunningTrack();
+        let playingTrack: Track = this.dataMgr.runningTrack;
         if (tries <= 0) {
+            if (!playingTrack || !playingTrack.id) {
+                playingTrack = await getTrack(PlayerName.SpotifyWeb);
+            }
             if (playingTrack && playingTrack.state !== TrackStatus.Playing) {
                 MusicControlManager.getInstance().playSong();
             }

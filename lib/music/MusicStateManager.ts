@@ -9,15 +9,21 @@ import {
     isValidJson,
     getMusicDataFile,
     logIt,
-    getSongSessionDataFile
+    getSongSessionDataFile,
+    isMac
 } from "../Util";
-import { sendMusicData, populatePlayerContext } from "../DataController";
+import {
+    sendMusicData,
+    populatePlayerContext,
+    serverIsAvailable
+} from "../DataController";
 import {
     Track,
-    getRunningTrack,
     TrackStatus,
     getGenre,
-    getSpotifyTrackById
+    getSpotifyTrackById,
+    getTrack,
+    PlayerName
 } from "cody-music";
 import { MusicManager } from "./MusicManager";
 import { KpmController } from "../KpmController";
@@ -25,7 +31,7 @@ import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { getDataRows } from "../OfflineManager";
 import { MusicDataManager } from "./MusicDataManager";
-import { commands } from "vscode";
+import { commands, window } from "vscode";
 import { requiresSpotifyAccess } from "./MusicUtil";
 
 const moment = require("moment-timezone");
@@ -50,6 +56,8 @@ export class MusicStateManager {
         trackId: null
     };
     private gatheringSong: boolean = false;
+    private pauseSongFetch: boolean = false;
+    private fetchSongTimer: number = 0;
 
     private constructor() {
         // private to prevent non-singleton usage
@@ -60,6 +68,10 @@ export class MusicStateManager {
             MusicStateManager.instance = new MusicStateManager();
         }
         return MusicStateManager.instance;
+    }
+
+    public updatePauseSongFetch(pauseIt: boolean) {
+        this.pauseSongFetch = pauseIt;
     }
 
     /**
@@ -128,6 +140,7 @@ export class MusicStateManager {
         const playingTrackId = playingTrack.id || null;
         const isValidExistingTrack = existingTrackId ? true : false;
         const isValidTrack = playingTrackId ? true : false;
+
         const playerStateChanged =
             (!existingTrackId && playingTrackId) ||
             (existingTrackId && !playingTrackId)
@@ -136,6 +149,9 @@ export class MusicStateManager {
 
         // get the flag to determine if it's a new track or not
         const isNewTrack = existingTrackId !== playingTrackId ? true : false;
+        if (isNewTrack) {
+            console.log("here!!!");
+        }
 
         const endInRange = this.isEndInRange(playingTrack);
 
@@ -210,12 +226,17 @@ export class MusicStateManager {
             playerStateChanged
         };
     }
-
     /**
      * Core logic in gathering tracks. This is called every 5 seconds.
      */
     public async gatherMusicInfo(): Promise<any> {
-        if (this.gatheringSong || requiresSpotifyAccess()) {
+        const secondsSinceLastFetch = moment().unix() - this.fetchSongTimer;
+        if (
+            this.gatheringSong ||
+            requiresSpotifyAccess() ||
+            this.pauseSongFetch ||
+            secondsSinceLastFetch < 5
+        ) {
             return;
         }
 
@@ -225,14 +246,25 @@ export class MusicStateManager {
 
         try {
             const utcLocalTimes = this.getUtcAndLocal();
-            let playingTrack: Track = await getRunningTrack();
+            const serverIsOnline = await serverIsAvailable();
+            // let playingTrack: Track = await getRunningTrack();
+            let playingTrack: Track = null;
+            if (isMac() && !serverIsOnline) {
+                // fetch from the desktop
+                playingTrack = await getTrack(PlayerName.SpotifyDesktop);
+            } else {
+                playingTrack = await getTrack(PlayerName.SpotifyWeb);
+            }
+
+            if (playingTrack && playingTrack.httpStatus >= 400) {
+                // currently unable to fetch the track
+                return;
+            }
+
             if (!playingTrack) {
                 playingTrack = new Track();
             }
 
-            const isValidRunningOrPausedTrack = this.isValidPlayingOrPausedTrack(
-                playingTrack
-            );
             const isValidTrack = this.isValidTrack(playingTrack);
 
             // convert the playing track id to an id
@@ -253,8 +285,7 @@ export class MusicStateManager {
             if (changeStatus.isNewTrack) {
                 // update the playlistId
                 this.updateTrackPlaylistId(playingTrack);
-                // update the player context
-                await populatePlayerContext();
+                populatePlayerContext();
             }
 
             // has the existing track ended or have we started a new track?
@@ -285,7 +316,10 @@ export class MusicStateManager {
                 this.resetTrackProgressInfo();
             }
 
-            if (this.existingTrack.id !== playingTrack.id) {
+            if (
+                !this.existingTrack ||
+                this.existingTrack.id !== playingTrack.id
+            ) {
                 // update the entire object if the id's don't match
                 this.existingTrack = { ...playingTrack };
             }
@@ -296,7 +330,11 @@ export class MusicStateManager {
             }
 
             // set the start for the playing track
-            if (isValidRunningOrPausedTrack && !this.existingTrack["start"]) {
+            if (
+                this.existingTrack &&
+                this.existingTrack.id &&
+                !this.existingTrack["start"]
+            ) {
                 this.existingTrack["start"] = utcLocalTimes.utc;
                 this.existingTrack["local_start"] = utcLocalTimes.local;
                 this.existingTrack["end"] = 0;
@@ -380,10 +418,11 @@ export class MusicStateManager {
         // the code time data for music and code time (only if code time is not installed)
         await KpmController.getInstance().sendKeystrokeDataIntervalHandler();
 
-        // get the reows from the music data file
+        // get the rows from the music data file
         const payloads = await getDataRows(getMusicDataFile());
 
-        const isValidSession = songSession.end - songSession.start > 5;
+        // 10 second minimum threshold
+        const isValidSession = songSession.end - songSession.start > 10;
 
         if (!isValidSession) {
             // the song did not play long enough to constitute as a valid session

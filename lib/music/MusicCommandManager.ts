@@ -113,7 +113,7 @@ export class MusicCommandManager {
             994
         );
 
-        await this.syncControls(MusicDataManager.getInstance().runningTrack);
+        // await this.syncControls(MusicDataManager.getInstance().runningTrack);
     }
 
     public static initiateProgress(progressLabel: string) {
@@ -270,9 +270,7 @@ export class MusicCommandManager {
             return;
         }
 
-        const context: PlayerContext = MusicDataManager.getInstance()
-            .spotifyContext;
-        const repeatState = context ? context.repeat_state : "";
+        const trackRepeating = await MusicManager.getInstance().isTrackRepeating();
 
         const songInfo = trackInfo
             ? `${trackInfo.name} (${trackInfo.artist})`
@@ -294,9 +292,6 @@ export class MusicCommandManager {
             const isPrevButton = btnCmd === "musictime.previous";
             const isNextButton = btnCmd === "musictime.next";
 
-            const playerIsInRepeatMode =
-                repeatState && repeatState === "track" ? true : false;
-
             if (isMusicTimeMenuButton || isPrevButton || isNextButton) {
                 if (isMusicTimeMenuButton) {
                     button.tooltip = this.getMusicMenuTooltip();
@@ -316,14 +311,14 @@ export class MusicCommandManager {
                     button.statusBarItem.hide();
                 }
             } else if (isRepeatOnButton) {
-                if (playerIsInRepeatMode) {
+                if (trackRepeating) {
                     // it's either not available or it's a track, hide the repeat On button
                     button.statusBarItem.hide();
                 } else {
                     button.statusBarItem.show();
                 }
             } else if (isRepeatOffButton) {
-                if (playerIsInRepeatMode) {
+                if (trackRepeating) {
                     // it has to be available and a track to show the repeat off button
                     button.statusBarItem.show();
                 } else {
@@ -354,9 +349,7 @@ export class MusicCommandManager {
             return;
         }
 
-        const context: PlayerContext = MusicDataManager.getInstance()
-            .spotifyContext;
-        const repeatState = context ? context.repeat_state : "";
+        const trackRepeating = await MusicManager.getInstance().isTrackRepeating();
 
         const songInfo = trackInfo
             ? `${trackInfo.name} (${trackInfo.artist})`
@@ -378,9 +371,6 @@ export class MusicCommandManager {
             const isPrevButton = btnCmd === "musictime.previous";
             const isNextButton = btnCmd === "musictime.next";
 
-            const playerIsInRepeatMode =
-                repeatState && repeatState === "track" ? true : false;
-
             if (isMusicTimeMenuButton || isPrevButton || isNextButton) {
                 if (isMusicTimeMenuButton) {
                     button.tooltip = this.getMusicMenuTooltip();
@@ -400,14 +390,14 @@ export class MusicCommandManager {
                     button.statusBarItem.hide();
                 }
             } else if (isRepeatOnButton) {
-                if (playerIsInRepeatMode) {
+                if (trackRepeating) {
                     // it's either not available or it's a track, hide the repeat On button
                     button.statusBarItem.hide();
                 } else {
                     button.statusBarItem.show();
                 }
             } else if (isRepeatOffButton) {
-                if (playerIsInRepeatMode) {
+                if (trackRepeating) {
                     // it has to be available and a track to show the repeat off button
                     button.statusBarItem.show();
                 } else {
