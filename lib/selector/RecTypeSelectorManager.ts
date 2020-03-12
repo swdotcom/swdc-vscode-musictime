@@ -100,7 +100,7 @@ function getCategorySelections() {
             label: "Familiar",
             description:
                 "Similar to your Liked Songs, familiar songs helps you get into flow faster",
-            args: ["Similar to Liked Songs", 5]
+            args: ["Familiar", 5]
         },
         // Low loudness
         {

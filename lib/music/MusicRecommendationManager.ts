@@ -25,7 +25,7 @@ export async function refreshRecommendations() {
         );
     } else {
         // default to the similar liked songs recommendations
-        this.updateRecommendations("Similar to Liked Songs", 5);
+        this.updateRecommendations("Familiar", 5);
     }
 }
 

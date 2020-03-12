@@ -222,13 +222,14 @@ export class MusicManager {
             items.push(this.providerItemMgr.getConnectToSpotifyButton());
         }
 
+        items.push(this.providerItemMgr.getGenerateDashboardButton());
+
+        if (CONNECTED) {
+            items.push(this.providerItemMgr.getWebAnalyticsButton());
+        }
+
         // add the readme button
         items.push(this.providerItemMgr.getReadmeButton());
-
-        if (serverIsOnline && CONNECTED) {
-            items.push(this.providerItemMgr.getWebAnalyticsButton());
-            items.push(this.providerItemMgr.getGenerateDashboardButton());
-        }
 
         if (playerName === PlayerName.ItunesDesktop) {
             // add the action items specific to itunes

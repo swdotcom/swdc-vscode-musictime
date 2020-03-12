@@ -41,7 +41,7 @@ export class MusicDataManager {
     public recommendationTracks: Track[] = [];
     public trackIdsForRecommendations: string[] = [];
     public prevRecTrackMap: any = {};
-    public recommendationLabel: string = "Similar to Liked Songs";
+    public recommendationLabel: string = "Familiar";
     public currentRecMeta: any = {};
     public ready: boolean = false;
     public currentDevices: PlayerDevice[] = [];
