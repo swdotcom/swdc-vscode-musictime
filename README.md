@@ -30,7 +30,7 @@
 -->
 
 <p align="center" style="margin: 0 0">
-  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/vscode-music-time-diagram.png" alt="Music Time diagram" />
+  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/music-time-diagram.png" alt="Music Time diagram" />
 </p>
 
 ## Features
@@ -62,7 +62,7 @@ Music Time currently supports Spotify. We will support iTunes and other players 
 Click the **Connect Spotify** button in the status bar or in the playlist tree, which will prompt you to log in to your Spotify account.
 
 <p align="center" style="margin: 0 10%">
-  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/connect-spotify-status-bar.png" alt="Connect Spotify in the status bar" />
+  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/music-time-connect-spotify.png" alt="Connect Spotify in the status bar" />
 </p>
 
 ### **2. Control your music and playlists right from your editor**
@@ -76,7 +76,7 @@ Click on any song in your list of playlists. Music Time will prompt you to open 
 Click the **Generate AI Playlist** button to get a personalized AI playlist generated using deep learning. Your AI Top 40 playlist is initially based on your liked songs and global developer data, but will improve as you listen to more music while you code. 
 
 <p align="center" style="margin: 0 10%">
-  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/my-ai-top-40.png" alt="My AI Top 40" />
+  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/music-time-ai-playlist.png" alt="Music Time AI Top 40" />
 </p>
 
 ### **4. Try a song recommendation**
@@ -84,7 +84,7 @@ Click the **Generate AI Playlist** button to get a personalized AI playlist gene
 We also recommend songs by genre and mood of music based on your listening history. Try happy, energetic, or danceable music for upbeat work or classical or jazz for slower, more complex tasks. You can add a song to a playlist using the "+" button.
 
 <p align="center" style="margin: 0 10%">
-  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/recommendations.png" alt="recommendations" />
+  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/music-time-recommendations.png" alt="Music Time recommendations" />
 </p>
 
 ### **5. Like a song**
@@ -92,7 +92,7 @@ We also recommend songs by genre and mood of music based on your listening histo
 Like a song from the status bar by pressing the "♡" button, which helps us improve your song recommendations and adds that song to your Liked Songs playlist on Spotify.
 
 <p align="center" style="margin: 0 10%">
-  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/like-song-status-bar.png" alt="Like a song in the status bar" />
+  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/music-time-player-controls.png" alt="Like a song in the status bar" />
 </p>
 
 ### **6. Check out the Software Top 40**
@@ -112,7 +112,7 @@ Here are the different ways you can discover your most productive music.
 Click on the “See web analytics” button to see your most productive songs, artists, and genres by productivity score. You can also visit app.software.com/login and use your Spotify email address to log in.
 
 <p align="center" style="margin: 0 10%">
-  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/see-web-analytics.png" alt="See web analytics button" />
+  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/music-time-see-web-analytics.png" alt="Music Time web analytics button" />
 </p>
 
 ### **2. Open your Music Time dashboard**
@@ -120,12 +120,12 @@ Click on the “See web analytics” button to see your most productive songs, a
 Click the “🎧” icon in the status bar then **Music Time Dashboard** to generate an in-editor report of your top songs, artists, and genres by productivity score.
 
 <p align="center" style="margin: 0 10%">
-  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/open-music-time-dashboard.png" alt="Music Time dashboard" />
+  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/music-time-open-dashboard.png" alt="Music Time dashboard" />
 </p>
 
 ### **3. Explore your music metrics**
 
-Discover how the underlying [metrics of music](app.software.com/music/metrics) (including tempo, loudness, speechiness, energy, and valence) impact how you code.
+Discover how the underlying [metrics of music](https://app.software.com/music/metrics) (including tempo, loudness, speechiness, energy, and valence) impact how you code.
 
 <p align="center" style="margin: 0 10%">
   <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/music-metrics.png" alt="Music Time music metrics" />
@@ -133,7 +133,7 @@ Discover how the underlying [metrics of music](app.software.com/music/metrics) (
 
 ### **4. Visualize your Code Time metrics**
 
-Music Time is built on our [Code Time plugin](https://github.com/swdotcom/swdc-vscode). You will be able to see data—such as your keystrokes, time by file and project, and lines of code—which is used calculate to your productivity scores. [Visit your feed](app.software.com) to see simple visualizations of your Code Time data, such as a rolling heatmap of your top programming times by hour of the day.
+Music Time is built on our [Code Time plugin](https://github.com/swdotcom/swdc-vscode). You will be able to see data—such as your keystrokes, time by file and project, and lines of code—which is used calculate to your productivity scores. [Visit your feed](https://app.software.com) to see simple visualizations of your Code Time data, such as a rolling heatmap of your top programming times by hour of the day.
 
 <p align="center" style="margin: 0 10%">
   <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/average-heatmap.png" width="800px" alt="90-day rolling average heatmap" />
@@ -146,7 +146,7 @@ Music Time is built on our [Code Time plugin](https://github.com/swdotcom/swdc-v
 Share your top songs on Facebook, Twitter, WhatsApp, and Tumblr by clicking on the share icon next to a song in the playlist tree. You can also Connect Slack to share songs with your team.
 
 <p align="center" style="margin: 0 10%">
-  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/share-menu.png" alt="Share button" />
+  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/music-time-share-menu.png" alt="Music Time share button" />
 </p>
 
 Connecting Slack requires team member permissions or above. You will not be able to connect Slack as a single or multi-channel guest.
