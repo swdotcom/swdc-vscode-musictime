@@ -7,10 +7,10 @@ import {
     getVersion,
     getPluginId,
     isValidJson,
-    getMusicDataFile,
     logIt,
     getSongSessionDataFile,
-    isMac
+    isMac,
+    getSoftwareDataStoreFile
 } from "../Util";
 import {
     sendMusicData,
@@ -31,8 +31,7 @@ import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { getDataRows } from "../OfflineManager";
 import { MusicDataManager } from "./MusicDataManager";
-import { commands, window } from "vscode";
-import { requiresSpotifyAccess } from "./MusicUtil";
+import { commands } from "vscode";
 
 const moment = require("moment-timezone");
 
@@ -43,6 +42,7 @@ export class MusicStateManager {
     private static instance: MusicStateManager;
 
     private existingTrack: Track = new Track();
+
     private trackProgressInfo: any = {
         endInRange: false,
         duration_ms: 0,
@@ -51,13 +51,11 @@ export class MusicStateManager {
         lastUpdateUtc: 0,
         playlistId: null
     };
+
     private lastTrackSentInfo = {
         timestamp: 0,
         trackId: null
     };
-    private gatheringSong: boolean = false;
-    private pauseSongFetch: boolean = false;
-    private fetchSongTimer: number = 0;
 
     private constructor() {
         // private to prevent non-singleton usage
@@ -68,10 +66,6 @@ export class MusicStateManager {
             MusicStateManager.instance = new MusicStateManager();
         }
         return MusicStateManager.instance;
-    }
-
-    public updatePauseSongFetch(pauseIt: boolean) {
-        this.pauseSongFetch = pauseIt;
     }
 
     /**
@@ -122,6 +116,14 @@ export class MusicStateManager {
         return playingTrack.progress_ms >= playingTrack.duration_ms - buffer;
     }
 
+    public isExistingTrackPlaying(): boolean {
+        return this.existingTrack &&
+            this.existingTrack.id &&
+            this.existingTrack.state === TrackStatus.Playing
+            ? true
+            : false;
+    }
+
     /**
      *
      * @param playingTrack
@@ -149,9 +151,6 @@ export class MusicStateManager {
 
         // get the flag to determine if it's a new track or not
         const isNewTrack = existingTrackId !== playingTrackId ? true : false;
-        if (isNewTrack) {
-            console.log("here!!!");
-        }
 
         const endInRange = this.isEndInRange(playingTrack);
 
@@ -226,6 +225,7 @@ export class MusicStateManager {
             playerStateChanged
         };
     }
+
     /**
      * Core logic in gathering tracks. This is called every 5 seconds.
      */
@@ -235,7 +235,7 @@ export class MusicStateManager {
         try {
             const utcLocalTimes = this.getUtcAndLocal();
             const serverIsOnline = await serverIsAvailable();
-            // let playingTrack: Track = await getRunningTrack();
+
             let playingTrack: Track = null;
             if (isMac() && !serverIsOnline) {
                 // fetch from the desktop
@@ -402,10 +402,17 @@ export class MusicStateManager {
 
         // Make sure the current keystrokes payload completes. This will save
         // the code time data for music and code time (only if code time is not installed)
-        await KpmController.getInstance().sendKeystrokeDataIntervalHandler();
+        const latestPayload = await KpmController.getInstance().sendKeystrokeDataIntervalHandler();
 
         // get the rows from the music data file
-        const payloads = await getDataRows(getMusicDataFile());
+        let payloads = await getDataRows(getSoftwareDataStoreFile());
+        if (!payloads) {
+            payloads = [];
+        }
+
+        if (latestPayload) {
+            payloads.push(...latestPayload);
+        }
 
         // 10 second minimum threshold
         const isValidSession = songSession.end - songSession.start > 10;
@@ -454,7 +461,6 @@ export class MusicStateManager {
                         data[sourceKey] &&
                         data[sourceKey].end > songSession.start
                     ) {
-                        // filePayloads.push(data);
                         if (songSessionSource[sourceKey]) {
                             // aggregate it
                             const existingData = songSessionSource[sourceKey];

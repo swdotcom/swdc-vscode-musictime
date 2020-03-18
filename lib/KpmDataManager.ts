@@ -1,6 +1,5 @@
 import {
     storePayload,
-    storeKpmDataForMusic,
     getOs,
     getVersion,
     logIt,
@@ -135,11 +134,6 @@ export class KpmDataManager {
             //
         }
         return payload;
-    }
-
-    postMusicData(payload: any) {
-        logIt(`storing kpm metrics for music time`);
-        storeKpmDataForMusic(payload);
     }
 
     /**

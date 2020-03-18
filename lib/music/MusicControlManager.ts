@@ -191,7 +191,6 @@ export class MusicControlManager {
     }
 
     async setRepeatOnOff(setToOn: boolean) {
-        this.musicStateMgr.updatePauseSongFetch(true /*pauseIt*/);
         let result = null;
         if (setToOn) {
             result = await repeatOn(PlayerName.SpotifyWeb);
@@ -202,7 +201,6 @@ export class MusicControlManager {
         setTimeout(async () => {
             // get the latest player context (repeat would be part of this data)
             await populatePlayerContext();
-            this.musicStateMgr.updatePauseSongFetch(false /*pauseIt*/);
         }, 2000);
     }
 

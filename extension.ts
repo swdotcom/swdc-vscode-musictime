@@ -90,7 +90,7 @@ export async function intializePlugin(ctx: ExtensionContext) {
             // send the offline code time data
             KpmController.getInstance().processOfflineKeystrokes();
         }
-    }, half_hour_ms);
+    }, half_hour_ms / 2);
 
     // send the offline song sessions
     offline_song_data_interval = setInterval(() => {

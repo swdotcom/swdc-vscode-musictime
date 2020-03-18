@@ -7,7 +7,6 @@ import {
     displayMusicTimeMetricsMarkdownDashboard
 } from "./music/MusicControlManager";
 import {
-    launchWebUrl,
     codeTimeExtInstalled,
     launchMusicAnalytics,
     displayReadmeIfNotExists
@@ -432,17 +431,8 @@ export function createCommands(): {
     );
     cmds.push(updateRecsCommand);
 
-    if (!codeTimeExtInstalled()) {
-        // initialize the kpm controller to start the listener
-        KpmController.getInstance();
-        const top40Cmd = commands.registerCommand(
-            "musictime.viewSoftwareTop40",
-            () => {
-                launchWebUrl("https://api.software.com/music/top40");
-            }
-        );
-        cmds.push(top40Cmd);
-    }
+    // initialize the kpm controller to start the listener
+    KpmController.getInstance();
 
     return Disposable.from(...cmds);
 }

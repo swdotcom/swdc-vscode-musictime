@@ -346,16 +346,6 @@ export function getMusicTimeMarkdownFile() {
     return file;
 }
 
-export function getMusicDataFile() {
-    let file = getSoftwareDir();
-    if (isWindows()) {
-        file += "\\musicData.json";
-    } else {
-        file += "/musicData.json";
-    }
-    return file;
-}
-
 export function getSongSessionDataFile() {
     let file = getSoftwareDir();
     if (isWindows()) {
@@ -582,20 +572,6 @@ export function getNowTimes() {
 export function storePayload(payload) {
     // store the payload into the data.json file
     const file = getSoftwareDataStoreFile();
-
-    // also store the payload into the data.json file
-    try {
-        fs.appendFileSync(file, JSON.stringify(payload) + os.EOL);
-    } catch (err) {
-        logIt(
-            `Error appending to the code time data store file: ${err.message}`
-        );
-    }
-}
-
-export function storeKpmDataForMusic(payload) {
-    // store the payload into the musicData.json file
-    const file = getMusicDataFile();
 
     // also store the payload into the data.json file
     try {

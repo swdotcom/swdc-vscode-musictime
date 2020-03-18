@@ -22,7 +22,6 @@ import {
     transferSpotifyDevice,
     playSpotifyPlaylist,
     play,
-    getRunningTrack,
     getTrack
 } from "cody-music";
 import {
@@ -59,7 +58,6 @@ import {
 } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 import { MusicCommandUtil } from "./MusicCommandUtil";
-import { MusicStateManager } from "./MusicStateManager";
 
 export class MusicManager {
     private static instance: MusicManager;
@@ -222,9 +220,8 @@ export class MusicManager {
             items.push(this.providerItemMgr.getConnectToSpotifyButton());
         }
 
-        items.push(this.providerItemMgr.getGenerateDashboardButton());
-
         if (CONNECTED) {
+            items.push(this.providerItemMgr.getGenerateDashboardButton());
             items.push(this.providerItemMgr.getWebAnalyticsButton());
         }
 
@@ -1007,9 +1004,6 @@ export class MusicManager {
                 !deviceSet.desktop &&
                 !deviceSet.activeDevice)
         ) {
-            MusicStateManager.getInstance().updatePauseSongFetch(
-                true /*pauseIt*/
-            );
             const buttons = isWinNonPremium
                 ? ["Web Player"]
                 : ["Web Player", "Desktop Player"];
@@ -1031,9 +1025,6 @@ export class MusicManager {
                 // start the launch process and pass the callback when complete
                 return this.launchTrackPlayer(playerName, callback);
             } else {
-                MusicStateManager.getInstance().updatePauseSongFetch(
-                    false /*pauseIt*/
-                );
                 // operation cancelled
                 return;
             }
@@ -1158,8 +1149,6 @@ export class MusicManager {
     }
 
     playMusicSelection = async () => {
-        MusicStateManager.getInstance().updatePauseSongFetch(false /*pauseIt*/);
-
         const musicCommandUtil: MusicCommandUtil = MusicCommandUtil.getInstance();
         // get the playlist id, track id, and device id
         const playlistId = this.dataMgr.selectedPlaylist

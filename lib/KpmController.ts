@@ -11,8 +11,8 @@ import {
     logEvent,
     getFileAgeInDays,
     getFileType,
-    codeTimeExtInstalled,
-    getSoftwareDataStoreFile
+    getSoftwareDataStoreFile,
+    codeTimeExtInstalled
 } from "./Util";
 import {
     getRepoContributorInfo,
@@ -21,6 +21,7 @@ import {
 } from "./KpmRepoManager";
 import { sendBatchPayload } from "./DataController";
 import { getDataRows } from "./OfflineManager";
+import { MusicStateManager } from "./music/MusicStateManager";
 
 const NO_PROJ_NAME = "Unnamed";
 
@@ -43,6 +44,7 @@ export class KpmController {
         workspace.onDidChangeTextDocument(this._onEventHandler, this);
         this._disposable = Disposable.from(...subscriptions);
     }
+
     static getInstance(): KpmController {
         if (!KpmController.instance) {
             KpmController.instance = new KpmController();
@@ -51,13 +53,23 @@ export class KpmController {
         return KpmController.instance;
     }
 
+    public allowDocumentListen() {
+        if (
+            !codeTimeExtInstalled() ||
+            MusicStateManager.getInstance().isExistingTrackPlaying()
+        ) {
+            return true;
+        }
+        return false;
+    }
+
     public async sendKeystrokeDataIntervalHandler() {
         //
         // Go through all keystroke count objects found in the map and send
         // the ones that have data (data is greater than 1), then clear the map
         // And only if code time is not instaled, post the data
         //
-        let latestPayloads = [];
+        let latestPayload = null;
         if (_keystrokeMap && !isEmptyObj(_keystrokeMap)) {
             let keys = Object.keys(_keystrokeMap);
             // use a normal for loop since we have an await within the loop
@@ -65,19 +77,16 @@ export class KpmController {
                 const key = keys[i];
                 const keystrokeCount = _keystrokeMap[key];
 
-                const hasData = keystrokeCount.hasData();
-
-                if (hasData) {
+                if (keystrokeCount.hasData()) {
                     // post the payload offline until the batch interval sends it out
 
                     // get the payload
-                    const payload = keystrokeCount.getLatestPayload();
+                    latestPayload = { ...keystrokeCount.getLatestPayload() };
 
                     // post it to the file right away so the song session can obtain it
                     if (!codeTimeExtInstalled()) {
-                        await keystrokeCount.postData(payload);
+                        await keystrokeCount.postData(latestPayload);
                     }
-                    await keystrokeCount.postMusicData(payload);
                 }
             }
         }
@@ -88,7 +97,7 @@ export class KpmController {
         // clear out the static info map
         _staticInfoMap = {};
 
-        return latestPayloads;
+        return latestPayload;
     }
 
     /**
@@ -96,7 +105,7 @@ export class KpmController {
      * @param event
      */
     private async _onCloseHandler(event) {
-        if (!event) {
+        if (!event || !this.allowDocumentListen()) {
             return;
         }
         const staticInfo = await this.getStaticEventInfo(event);
@@ -125,7 +134,7 @@ export class KpmController {
      * @param event
      */
     private async _onOpenHandler(event) {
-        if (!event) {
+        if (!event || !this.allowDocumentListen()) {
             return;
         }
 
@@ -155,7 +164,7 @@ export class KpmController {
      * @param event
      */
     private async _onEventHandler(event) {
-        if (!event) {
+        if (!event || !this.allowDocumentListen()) {
             // code time is installed, let it gather the event data
             return;
         }
