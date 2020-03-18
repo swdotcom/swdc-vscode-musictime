@@ -129,7 +129,7 @@ export function getSessionSummaryFileAsJson() {
  * Fetch the data rows of a given file
  * @param file
  */
-export async function getDataRows(file) {
+export async function getDataRows(file, deleteAfterRead = true) {
     const isonline = await serverIsAvailable();
     if (!isonline) {
         return [];
@@ -138,7 +138,9 @@ export async function getDataRows(file) {
         if (fs.existsSync(file)) {
             const content = fs.readFileSync(file).toString();
             // we're online so just delete the file
-            deleteFile(file);
+            if (deleteAfterRead) {
+                deleteFile(file);
+            }
             if (content) {
                 const payloads = content
                     .split(/\r?\n/)
