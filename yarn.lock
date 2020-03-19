@@ -148,15 +148,16 @@ clone@2.x:
   resolved "https://registry.yarnpkg.com/clone/-/clone-2.1.2.tgz#1b7f4b9f591f1e8f83670401600345a02887435f"
   integrity sha1-G39Ln1kfHo+DZwQBYANFoCiHQ18=
 
-cody-music@2.9.5:
-  version "2.9.5"
-  resolved "https://registry.yarnpkg.com/cody-music/-/cody-music-2.9.5.tgz#df8c3f18c8be164157b87ab253fed115dfb6fea7"
-  integrity sha512-VYzn6cxhQxgELtU9mEhEQ8S7ih29O3Q5s/AR9vtfSMLv4queLs4IkN65Leo9O1VpPyOqGMoiUuMmzGs448NMDw==
+cody-music@2.9.7:
+  version "2.9.7"
+  resolved "https://registry.yarnpkg.com/cody-music/-/cody-music-2.9.7.tgz#7b3bd92a0ec26ddc967f2eba6f28ceede38646e3"
+  integrity sha512-fdjeXbN6iWjSjPtULfMcson746DKewfBSp38zIlFVZYnTuxl1uKLq+asyxeVQut+dprDQSLBXDguloXHexnyFQ==
   dependencies:
     axios "^0.19.0"
     moment-timezone "^0.5.28"
     natural "^0.6.3"
     node-cache "^5.1.0"
+    open "^7.0.3"
 
 combined-stream@^1.0.6:
   version "1.0.8"
@@ -310,6 +311,11 @@ is-date-object@^1.0.1:
   resolved "https://registry.yarnpkg.com/is-date-object/-/is-date-object-1.0.1.tgz#9aa20eb6aeebbff77fbd33e74ca01b33581d3a16"
   integrity sha1-mqIOtq7rv/d/vTPnTKAbM1gdOhY=
 
+is-docker@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/is-docker/-/is-docker-2.0.0.tgz#2cb0df0e75e2d064fe1864c37cdeacb7b2dcf25b"
+  integrity sha512-pJEdRugimx4fBMra5z2/5iRdZ63OhYV0vr0Dwm5+xtW4D1FvRkB8hamMIhnWfyJeDdyr/aa7BDyNbtG38VxgoQ==
+
 is-regex@^1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/is-regex/-/is-regex-1.0.4.tgz#5517489b547091b0930e095654ced25ee97e9491"
@@ -333,6 +339,11 @@ is-wsl@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/is-wsl/-/is-wsl-1.1.0.tgz#1f16e4aa22b04d1336b66188a66af3c600c3a66d"
   integrity sha1-HxbkqiKwTRM2tmGIpmrzxgDDpm0=
+
+is-wsl@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/is-wsl/-/is-wsl-2.1.1.tgz#4a1c152d429df3d441669498e2486d3596ebaf1d"
+  integrity sha512-umZHcSrwlDHo2TGMXv0DZ8dIUGunZ2Iv68YZnrmCiBPkZ4aaOhtv7pXJKeki9k3qJ3RJr0cDyitcl5wEH3AYog==
 
 isarray@^1.0.0:
   version "1.0.0"
@@ -458,6 +469,14 @@ open@^6.4.0:
   integrity sha512-IFenVPgF70fSm1keSd2iDBIDIBZkroLeuffXq+wKTzTJlBpesFWojV9lb8mzOfaAzM1sr7HQHuO0vtV0zYekGg==
   dependencies:
     is-wsl "^1.1.0"
+
+open@^7.0.3:
+  version "7.0.3"
+  resolved "https://registry.yarnpkg.com/open/-/open-7.0.3.tgz#db551a1af9c7ab4c7af664139930826138531c48"
+  integrity sha512-sP2ru2v0P290WFfv49Ap8MF6PkzGNnGlAwHweB4WR4mr5d2d0woiCluUeJ218w7/+PmoBy9JmYgD5A4mLcWOFA==
+  dependencies:
+    is-docker "^2.0.0"
+    is-wsl "^2.1.1"
 
 p-finally@^1.0.0:
   version "1.0.0"
