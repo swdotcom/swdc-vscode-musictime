@@ -119,7 +119,7 @@
             },
             {
                 "command": "musictime.refreshButton",
-                "title": "Reconcile playlists",
+                "title": "Refresh playlists",
                 "icon": {
                     "light": "resources/light/refresh.svg",
                     "dark": "resources/dark/refresh.svg"
