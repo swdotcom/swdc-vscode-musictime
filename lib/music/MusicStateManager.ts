@@ -414,7 +414,7 @@ export class MusicStateManager {
         }
 
         if (latestPayload) {
-            payloads.push(...latestPayload);
+            payloads.push(latestPayload);
         }
 
         // 10 second minimum threshold
