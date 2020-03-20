@@ -24,7 +24,7 @@ export class MusicCommandUtil {
         }
         if (this.isTooManyRequestsError(result)) {
             window.showErrorMessage(
-                "Currently experiencing too many spotify requests, try again soon."
+                "Currently experiencing frequent spotify requests, please try again soon."
             );
             return { status: 429 };
         }
