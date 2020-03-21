@@ -1,21 +1,21 @@
 {
     "name": "music-time",
     "displayName": "Music Time",
-    "version": "1.7.9",
+    "version": "1.8.0",
     "publisher": "softwaredotcom",
     "description": "Music Time is an open source plugin that curates and launches playlists for coding right from your editor.",
     "author": {
         "name": "Software.com"
     },
     "license": "SEE LICENSE IN LICENSE",
-    "icon": "images/app-icon-blue.png",
+    "icon": "images/app-icon-music-time.png",
     "galleryBanner": {
         "color": "#384356",
         "theme": "dark"
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/swdotcom/swdc-vscode"
+        "url": "https://github.com/swdotcom/swdc-vscode-musictime"
     },
     "remote.extensionKind": {
         "softwaredotcom.swdc-vscode": "ui"
@@ -26,6 +26,7 @@
     "keywords": [
         "spotify",
         "music",
+        "cody",
         "playlists",
         "tracks",
         "productivity",
