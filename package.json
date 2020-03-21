@@ -24,11 +24,13 @@
         "Other"
     ],
     "keywords": [
-        "time tracking",
+        "spotify",
+        "music",
+        "playlists",
+        "tracks",
         "productivity",
-        "timer",
-        "git",
-        "spotify"
+        "songs",
+        "player"
     ],
     "activationEvents": [
         "*"
