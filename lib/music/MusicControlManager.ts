@@ -539,16 +539,6 @@ export class MusicControlManager {
                     command: "musictime.disconnectSpotify"
                 });
 
-                if (!isPrem) {
-                    menuOptions.items.push({
-                        label: "Connect Premium",
-                        detail:
-                            "Non premium connected. Connect to your premium Spotify account to use the web based play, pause, next, and previous controls",
-                        url: null,
-                        command: "musictime.connectSpotify"
-                    });
-                }
-
                 if (!slackAccessToken) {
                     menuOptions.items.push({
                         label: "Connect Slack",

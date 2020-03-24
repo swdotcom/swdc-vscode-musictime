@@ -118,17 +118,6 @@ export class ProviderItemManager {
         );
     }
 
-    getSpotifyConnectPremiumButton() {
-        return this.buildActionItem(
-            "spotifypremium",
-            "action",
-            "musictime.connectSpotify",
-            PlayerType.NotAssigned,
-            "Connect Premium",
-            "Connect to your premium Spotify account to use the play, pause, next, and previous controls"
-        );
-    }
-
     getItunesConnectedButton() {
         return this.buildActionItem(
             "itunesconnected",

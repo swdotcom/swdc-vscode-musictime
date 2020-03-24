@@ -6,11 +6,7 @@ import {
     disconnectSlack,
     displayMusicTimeMetricsMarkdownDashboard
 } from "./music/MusicControlManager";
-import {
-    codeTimeExtInstalled,
-    launchMusicAnalytics,
-    displayReadmeIfNotExists
-} from "./Util";
+import { launchMusicAnalytics, displayReadmeIfNotExists } from "./Util";
 import { KpmController } from "./KpmController";
 import {
     MusicPlaylistProvider,
@@ -38,7 +34,6 @@ import {
     populateSpotifyPlaylists,
     populateSpotifyDevices
 } from "./DataController";
-import { CacheManager } from "./cache/CacheManager";
 import { showDeviceSelectorMenu } from "./selector/SpotifyDeviceSelectorManager";
 import {
     updateRecommendations,
@@ -227,15 +222,13 @@ export function createCommands(): {
     const reconcilePlaylistCommand = commands.registerCommand(
         "musictime.refreshButton",
         async () => {
-            const lastRefresh = CacheManager.getInstance().get("lastRefresh");
-            if (!lastRefresh) {
+            // no devices found at all OR no active devices and a computer device is not found in the list
+            const selectedButton = await window.showInformationMessage(
+                `Reload your playlists?`,
+                ...["Yes"]
+            );
+            if (selectedButton && selectedButton === "Yes") {
                 commands.executeCommand("musictime.hardRefreshPlaylist");
-                // 60 seconds ttl
-                CacheManager.getInstance().set("lastRefresh", true, 10);
-            } else {
-                // refresh the device info and playlist
-                await populateSpotifyDevices();
-                commands.executeCommand("musictime.refreshPlaylist");
             }
         }
     );

@@ -65,12 +65,6 @@ export class MusicCommandManager {
             "musictime.connectSpotify",
             999
         );
-        this.createButton(
-            "Connect Premium",
-            "Connect to your premium Spotify account to use web based  play, pause, next, and previous controls.",
-            "musictime.connectSpotify",
-            999
-        );
         // play previous or unicode ⏪
         this.createButton(
             "$(chevron-left)",
@@ -234,8 +228,6 @@ export class MusicCommandManager {
             const isMusicTimeMenuButton = btnCmd === "musictime.revealTree";
             const isConnectSpotifyButton =
                 button.statusBarItem.text === "Connect Spotify";
-            const isConnectPremiumSpotifyButton =
-                button.statusBarItem.text === "Connect Premium";
 
             if (isMusicTimeMenuButton) {
                 button.tooltip = this.getMusicMenuTooltip();
@@ -243,9 +235,6 @@ export class MusicCommandManager {
                 button.statusBarItem.show();
             } else if (isConnectSpotifyButton && needsSpotifyAccess) {
                 // show the connect button
-                button.statusBarItem.show();
-            } else if (isConnectPremiumSpotifyButton && showPremiumRequired) {
-                // show the premium button required button
                 button.statusBarItem.show();
             } else {
                 // hide the rest

@@ -1,7 +1,7 @@
 {
     "name": "music-time",
     "displayName": "Music Time",
-    "version": "1.8.2",
+    "version": "1.8.4",
     "publisher": "softwaredotcom",
     "description": "Music Time is an open source plugin that curates and launches playlists for coding right from your editor.",
     "author": {
@@ -51,15 +51,15 @@
         "commands": [
             {
                 "command": "musictime.next",
-                "title": "Play next song"
+                "title": "Music Time: Play next song"
             },
             {
                 "command": "musictime.previous",
-                "title": "Play previous song"
+                "title": "Music Time: Play previous song"
             },
             {
                 "command": "musictime.play",
-                "title": "Play",
+                "title": "Music Time: Play",
                 "icon": {
                     "light": "resources/light/play.svg",
                     "dark": "resources/dark/play.svg"
@@ -99,7 +99,7 @@
             },
             {
                 "command": "musictime.pause",
-                "title": "Stop",
+                "title": "Music Time: Stop",
                 "icon": {
                     "light": "resources/light/stop.svg",
                     "dark": "resources/dark/stop.svg"
@@ -123,7 +123,7 @@
             },
             {
                 "command": "musictime.refreshButton",
-                "title": "Refresh playlists",
+                "title": "Music Time: Reload playlists",
                 "icon": {
                     "light": "resources/light/refresh.svg",
                     "dark": "resources/dark/refresh.svg"
@@ -131,7 +131,7 @@
             },
             {
                 "command": "musictime.refreshRecommendations",
-                "title": "Refresh recommendations",
+                "title": "Music Time: Refresh recommendations",
                 "icon": {
                     "light": "resources/light/refresh.svg",
                     "dark": "resources/dark/refresh.svg"
@@ -168,7 +168,7 @@
             },
             {
                 "command": "musictime.sortIcon",
-                "title": "Sort",
+                "title": "Music Time: Sort",
                 "icon": {
                     "light": "resources/light/sort.svg",
                     "dark": "resources/dark/sort.svg"
@@ -176,31 +176,31 @@
             },
             {
                 "command": "musictime.sortAlphabetically",
-                "title": "Sort A-Z"
+                "title": "Music Time: Sort A-Z"
             },
             {
                 "command": "musictime.sortToOriginal",
-                "title": "Sort latest"
+                "title": "Music Time: Sort latest"
             },
             {
                 "command": "musictime.like",
-                "title": "Like song"
+                "title": "Music Time: Like song"
             },
             {
                 "command": "musictime.unlike",
-                "title": "Unlike Song"
+                "title": "Music Time: Unlike Song"
             },
             {
                 "command": "musictime.repeatOn",
-                "title": "Repeat track"
+                "title": "Music Time: Repeat track"
             },
             {
                 "command": "musictime.repeatOff",
-                "title": "Don't repeat"
+                "title": "Music Time: Don't repeat"
             },
             {
                 "command": "musictime.menu",
-                "title": "Click to see more from Music Time"
+                "title": "Music Time: Click to see more from Music Time"
             },
             {
                 "command": "musictime.currentSong",
@@ -208,35 +208,31 @@
             },
             {
                 "command": "musictime.connectSpotify",
-                "title": "Connect your Spotify account",
+                "title": "Music Time: Connect your Spotify account",
                 "tooltip": "Connect your Spotify account to view your playlists"
             },
             {
                 "command": "musictime.connectSlack",
-                "title": "Connect your Slack account",
+                "title": "Music Time: Connect your Slack account",
                 "tooltip": "Connect your Slack account to share your playlists or tracks"
             },
             {
                 "command": "musictime.disconnectSpotify",
-                "title": "Disconnect your Spotify account",
+                "title": "Music Time: Disconnect your Spotify account",
                 "tooltip": "Disconnect your Spotify account"
             },
             {
                 "command": "musictime.disconnectSlack",
-                "title": "Disconnect your Slack account",
+                "title": "Music Time: Disconnect your Slack account",
                 "tooltip": "Disconnect your Slack account"
             },
             {
-                "command": "musictime.refreshSettings",
-                "title": "Refresh settings"
-            },
-            {
                 "command": "musictime.refreshPlaylist",
-                "title": "Refresh playlists"
+                "title": "Music Time: Refresh playlists"
             },
             {
                 "command": "musictime.addToPlaylist",
-                "title": "Add or create a playlist",
+                "title": "Music Time: Add or create a playlist",
                 "icon": {
                     "light": "resources/light/add.svg",
                     "dark": "resources/dark/add.svg"
@@ -244,7 +240,7 @@
             },
             {
                 "command": "musictime.songGenreSelector",
-                "title": "Genre selection",
+                "title": "Music Time: Genre selection",
                 "icon": {
                     "light": "resources/light/filter.svg",
                     "dark": "resources/dark/filter.svg"
@@ -252,7 +248,7 @@
             },
             {
                 "command": "musictime.songCategorySelector",
-                "title": "Mood selection",
+                "title": "Music Time: Mood selection",
                 "icon": {
                     "light": "resources/light/beaker.svg",
                     "dark": "resources/dark/beaker.svg"
