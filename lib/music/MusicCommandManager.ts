@@ -1,12 +1,6 @@
 import { window, StatusBarAlignment, StatusBarItem } from "vscode";
 import { getSongDisplayName, isMac, getItem } from "../Util";
-import {
-    TrackStatus,
-    Track,
-    PlayerName,
-    PlayerContext,
-    getSpotifyPlayerContext
-} from "cody-music";
+import { TrackStatus, Track } from "cody-music";
 import { MusicManager } from "./MusicManager";
 import { requiresSpotifyAccess, getDeviceId } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";

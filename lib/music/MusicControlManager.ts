@@ -104,27 +104,50 @@ export class MusicControlManager {
         return MusicControlManager.instance;
     }
 
-    async nextSong() {
-        if (
-            dataMgr.selectedPlaylist &&
+    isLikedSongPlaylist() {
+        return dataMgr.selectedPlaylist &&
             dataMgr.selectedPlaylist.id == SPOTIFY_LIKED_SONGS_PLAYLIST_NAME
-        ) {
-            await MusicManager.getInstance().playNextLikedSong();
+            ? true
+            : false;
+    }
+
+    async nextSong() {
+        const hasSpotifyPlaybackAccess = MusicManager.getInstance().hasSpotifyPlaybackAccess();
+
+        if (hasSpotifyPlaybackAccess) {
+            if (this.isLikedSongPlaylist()) {
+                await MusicManager.getInstance().playNextLikedSong();
+            } else {
+                const playerName = MusicManager.getInstance().getPlayerNameForPlayback();
+                await next(playerName);
+            }
         } else {
-            const playerName = MusicManager.getInstance().getPlayerNameForPlayback();
-            await next(playerName);
+            if (this.isLikedSongPlaylist()) {
+                await MusicManager.getInstance().playNextLikedSong();
+            } else {
+                next(PlayerName.SpotifyDesktop);
+            }
         }
     }
 
     async previousSong() {
-        if (
-            dataMgr.selectedPlaylist &&
-            dataMgr.selectedPlaylist.id == SPOTIFY_LIKED_SONGS_PLAYLIST_NAME
-        ) {
-            await MusicManager.getInstance().playPreviousLikedSong();
+        const hasSpotifyPlaybackAccess = MusicManager.getInstance().hasSpotifyPlaybackAccess();
+
+        if (hasSpotifyPlaybackAccess) {
+            if (this.isLikedSongPlaylist()) {
+                await MusicManager.getInstance().playPreviousLikedSong();
+            } else {
+                const playerName = MusicManager.getInstance().getPlayerNameForPlayback();
+                await this.musicCmdUtil.runSpotifyCommand(previous, [
+                    playerName
+                ]);
+            }
         } else {
-            const playerName = MusicManager.getInstance().getPlayerNameForPlayback();
-            await this.musicCmdUtil.runSpotifyCommand(previous, [playerName]);
+            if (this.isLikedSongPlaylist()) {
+                await MusicManager.getInstance().playPreviousLikedSong();
+            } else {
+                previous(PlayerName.SpotifyDesktop);
+            }
         }
     }
 
@@ -133,60 +156,38 @@ export class MusicControlManager {
      */
 
     async playSong() {
-        const playerName = MusicManager.getInstance().getPlayerNameForPlayback();
+        const hasSpotifyPlaybackAccess = MusicManager.getInstance().hasSpotifyPlaybackAccess();
 
-        const result: any = await this.musicCmdUtil.runSpotifyCommand(play, [
-            playerName
-        ]);
-        if (result && result.status < 300) {
-            MusicCommandManager.syncControls(
-                dataMgr.runningTrack,
-                true,
-                TrackStatus.Playing
-            );
+        if (hasSpotifyPlaybackAccess) {
+            const result: any = await this.musicCmdUtil.runSpotifyCommand(play);
+            if (result && result.status < 300) {
+                MusicCommandManager.syncControls(
+                    dataMgr.runningTrack,
+                    true,
+                    TrackStatus.Playing
+                );
+            }
+        } else {
+            play(PlayerName.SpotifyDesktop);
         }
     }
 
     async pauseSong() {
-        const playerName = MusicManager.getInstance().getPlayerNameForPlayback();
-        const result: any = await this.musicCmdUtil.runSpotifyCommand(pause, [
-            playerName
-        ]);
-        if (result && result.status < 300) {
-            MusicCommandManager.syncControls(
-                dataMgr.runningTrack,
-                true,
-                TrackStatus.Paused
-            );
-        }
-    }
+        const hasSpotifyPlaybackAccess = MusicManager.getInstance().hasSpotifyPlaybackAccess();
 
-    async playSongInContext(params) {
-        const playerName = MusicManager.getInstance().getPlayerNameForPlayback();
-        const result: any = await this.musicCmdUtil.runSpotifyCommand(
-            playTrackInContext,
-            [playerName, params]
-        );
-        if (result && result.status < 300) {
-            MusicCommandManager.syncControls(
-                dataMgr.runningTrack,
-                true,
-                TrackStatus.Playing
+        if (hasSpotifyPlaybackAccess) {
+            const result: any = await this.musicCmdUtil.runSpotifyCommand(
+                pause
             );
-        }
-    }
-
-    async playSongById(playerName: PlayerName, trackId: string) {
-        const result: any = await this.musicCmdUtil.runSpotifyCommand(
-            playTrack,
-            [playerName, trackId]
-        );
-        if (result && result.status < 300) {
-            MusicCommandManager.syncControls(
-                dataMgr.runningTrack,
-                true,
-                TrackStatus.Playing
-            );
+            if (result && result.status < 300) {
+                MusicCommandManager.syncControls(
+                    dataMgr.runningTrack,
+                    true,
+                    TrackStatus.Paused
+                );
+            }
+        } else {
+            pause(PlayerName.SpotifyDesktop);
         }
     }
 

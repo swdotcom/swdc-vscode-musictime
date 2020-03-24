@@ -834,6 +834,14 @@ export function createUriFromTrackId(track_id: string) {
     return track_id;
 }
 
+export function createUriFromPlaylistId(playlist_id: string) {
+    if (playlist_id && !playlist_id.includes("spotify:playlist:")) {
+        playlist_id = `spotify:playlist:${playlist_id}`;
+    }
+
+    return playlist_id;
+}
+
 export function createSpotifyIdFromUri(id: string) {
     if (id && id.indexOf("spotify:") === 0) {
         return id.substring(id.lastIndexOf(":") + 1);
