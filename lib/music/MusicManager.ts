@@ -974,6 +974,18 @@ export class MusicManager {
         return isLikedSong;
     }
 
+    isMacDesktopEnabled() {
+        const {
+            webPlayer,
+            desktop,
+            activeDevice,
+            activeComputerDevice,
+            activeWebPlayerDevice,
+            activeDesktopPlayerDevice
+        } = getDeviceSet();
+        return isMac() && activeDesktopPlayerDevice ? true : false;
+    }
+
     hasSpotifyPlaybackAccess() {
         return this.dataMgr.spotifyUser &&
             this.dataMgr.spotifyUser.product === "premium"
@@ -1196,7 +1208,9 @@ export class MusicManager {
                 ? true
                 : false;
 
-        const hasSpotifyPlaybackAccess = MusicManager.getInstance().hasSpotifyPlaybackAccess();
+        const musicMgr: MusicManager = MusicManager.getInstance();
+        const hasSpotifyPlaybackAccess = musicMgr.hasSpotifyPlaybackAccess();
+        const isMacDesktopEnabled = musicMgr.isMacDesktopEnabled();
 
         if (isRecommendationTrack || isLikedSong) {
             if (hasSpotifyPlaybackAccess || !isMac()) {
@@ -1214,7 +1228,13 @@ export class MusicManager {
                 await playTrackInContext(PlayerName.SpotifyDesktop, params);
             }
         } else if (playlistId) {
-            if (hasSpotifyPlaybackAccess || !isMac()) {
+            if (isMacDesktopEnabled || !hasSpotifyPlaybackAccess) {
+                // play it using applescript
+                const trackUri = createUriFromTrackId(trackId);
+                const playlistUri = createUriFromPlaylistId(playlistId);
+                const params = [trackUri, playlistUri];
+                await playTrackInContext(PlayerName.SpotifyDesktop, params);
+            } else {
                 // NORMAL playlist request
                 // play a playlist
                 await musicCommandUtil.runSpotifyCommand(playSpotifyPlaylist, [
@@ -1222,12 +1242,6 @@ export class MusicManager {
                     trackId,
                     deviceId
                 ]);
-            } else {
-                // play it using applescript
-                const trackUri = createUriFromTrackId(trackId);
-                const playlistUri = createUriFromPlaylistId(playlistId);
-                const params = [trackUri, playlistUri];
-                await playTrackInContext(PlayerName.SpotifyDesktop, params);
             }
         } else {
             if (hasSpotifyPlaybackAccess || !isMac()) {

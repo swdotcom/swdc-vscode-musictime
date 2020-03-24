@@ -125,7 +125,7 @@ export class MusicControlManager {
             if (this.isLikedSongPlaylist()) {
                 await MusicManager.getInstance().playNextLikedSong();
             } else {
-                next(PlayerName.SpotifyDesktop);
+                await next(PlayerName.SpotifyDesktop);
             }
         }
     }
@@ -146,7 +146,7 @@ export class MusicControlManager {
             if (this.isLikedSongPlaylist()) {
                 await MusicManager.getInstance().playPreviousLikedSong();
             } else {
-                previous(PlayerName.SpotifyDesktop);
+                await previous(PlayerName.SpotifyDesktop);
             }
         }
     }
@@ -156,38 +156,44 @@ export class MusicControlManager {
      */
 
     async playSong() {
-        const hasSpotifyPlaybackAccess = MusicManager.getInstance().hasSpotifyPlaybackAccess();
+        const musicMgr: MusicManager = MusicManager.getInstance();
+        const hasSpotifyPlaybackAccess = musicMgr.hasSpotifyPlaybackAccess();
+        const isMacDesktopEnabled = musicMgr.isMacDesktopEnabled();
 
-        if (hasSpotifyPlaybackAccess) {
-            const result: any = await this.musicCmdUtil.runSpotifyCommand(play);
-            if (result && result.status < 300) {
-                MusicCommandManager.syncControls(
-                    dataMgr.runningTrack,
-                    true,
-                    TrackStatus.Playing
-                );
-            }
+        let result: any = null;
+        if (isMacDesktopEnabled || !hasSpotifyPlaybackAccess) {
+            result = await play(PlayerName.SpotifyDesktop);
         } else {
-            play(PlayerName.SpotifyDesktop);
+            result = await this.musicCmdUtil.runSpotifyCommand(play);
+        }
+
+        if (result && (result.status < 300 || result === "ok")) {
+            MusicCommandManager.syncControls(
+                dataMgr.runningTrack,
+                true,
+                TrackStatus.Playing
+            );
         }
     }
 
     async pauseSong() {
-        const hasSpotifyPlaybackAccess = MusicManager.getInstance().hasSpotifyPlaybackAccess();
+        const musicMgr: MusicManager = MusicManager.getInstance();
+        const hasSpotifyPlaybackAccess = musicMgr.hasSpotifyPlaybackAccess();
+        const isMacDesktopEnabled = musicMgr.isMacDesktopEnabled();
 
-        if (hasSpotifyPlaybackAccess) {
-            const result: any = await this.musicCmdUtil.runSpotifyCommand(
-                pause
-            );
-            if (result && result.status < 300) {
-                MusicCommandManager.syncControls(
-                    dataMgr.runningTrack,
-                    true,
-                    TrackStatus.Paused
-                );
-            }
+        let result: any = null;
+        if (isMacDesktopEnabled || !hasSpotifyPlaybackAccess) {
+            result = await pause(PlayerName.SpotifyDesktop);
         } else {
-            pause(PlayerName.SpotifyDesktop);
+            result = await this.musicCmdUtil.runSpotifyCommand(pause);
+        }
+
+        if (result && (result.status < 300 || result === "ok")) {
+            MusicCommandManager.syncControls(
+                dataMgr.runningTrack,
+                true,
+                TrackStatus.Paused
+            );
         }
     }
 
