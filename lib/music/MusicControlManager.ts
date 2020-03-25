@@ -164,7 +164,7 @@ export class MusicControlManager {
         if (isMacDesktopEnabled || !hasSpotifyPlaybackAccess) {
             result = await play(PlayerName.SpotifyDesktop);
         } else {
-            result = await this.musicCmdUtil.runSpotifyCommand(play);
+            result = await play(PlayerName.SpotifyWeb);
         }
 
         if (result && (result.status < 300 || result === "ok")) {
@@ -185,7 +185,7 @@ export class MusicControlManager {
         if (isMacDesktopEnabled || !hasSpotifyPlaybackAccess) {
             result = await pause(PlayerName.SpotifyDesktop);
         } else {
-            result = await this.musicCmdUtil.runSpotifyCommand(pause);
+            result = await pause(PlayerName.SpotifyWeb);
         }
 
         if (result && (result.status < 300 || result === "ok")) {

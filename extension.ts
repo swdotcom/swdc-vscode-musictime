@@ -11,7 +11,8 @@ import {
     logIt,
     getPluginName,
     codeTimeExtInstalled,
-    displayReadmeIfNotExists
+    displayReadmeIfNotExists,
+    isMac
 } from "./lib/Util";
 import { manageLiveshareSession } from "./lib/LiveshareManager";
 import * as vsls from "vsls/vscode";
@@ -105,9 +106,10 @@ export async function intializePlugin(ctx: ExtensionContext) {
     }, 1000 * 3);
 
     // 5 second interval to check music info
+    const gatherMusicInterval = isMac() ? 1000 * 5 : 1000 * 6;
     gather_music_interval = setInterval(() => {
         MusicStateManager.getInstance().gatherMusicInfo();
-    }, 1000 * 5);
+    }, gatherMusicInterval);
 
     // show the readme if it doesn't exist
     displayReadmeIfNotExists();

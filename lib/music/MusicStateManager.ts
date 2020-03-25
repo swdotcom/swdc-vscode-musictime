@@ -43,15 +43,6 @@ export class MusicStateManager {
 
     private existingTrack: Track = new Track();
 
-    private trackProgressInfo: any = {
-        endInRange: false,
-        duration_ms: 0,
-        progress_ms: 0,
-        id: null,
-        lastUpdateUtc: 0,
-        playlistId: null
-    };
-
     private lastTrackSentInfo = {
         timestamp: 0,
         trackId: null
@@ -95,18 +86,6 @@ export class MusicStateManager {
         return offset * 60;
     }
 
-    private resetTrackProgressInfo() {
-        this.trackProgressInfo = {
-            endInRange: false,
-            duration_ms: 0,
-            progress_ms: 0,
-            id: null,
-            lastUpdateUtc: 0,
-            state: null,
-            playlistId: null
-        };
-    }
-
     private isEndInRange(playingTrack: Track): boolean {
         if (!playingTrack || !playingTrack.id) {
             return false;
@@ -125,108 +104,6 @@ export class MusicStateManager {
     }
 
     /**
-     *
-     * @param playingTrack
-     * Returns:
-     * {
-     *   sendSongSession = previous song has ended
-     *      (is on repeat OR explicitly paused for over a minute and it wasn't about to end OR a new track has started)
-     *   isNewTrack = the track id doesn't equal the existing track id
-     *   playNextLikedSong = if the current playlist id is equal to the liked songs playlist id
-     *   updateMusicStatus = change in play state (pause/play/different track/no track)
-     * }
-     */
-    private getChangeStatus(playingTrack: Track, utcLocalTimes: any): any {
-        const dataMgr: MusicDataManager = MusicDataManager.getInstance();
-        const existingTrackId = this.existingTrack.id || null;
-        const playingTrackId = playingTrack.id || null;
-        const isValidExistingTrack = existingTrackId ? true : false;
-        const isValidTrack = playingTrackId ? true : false;
-
-        const playerStateChanged =
-            (!existingTrackId && playingTrackId) ||
-            (existingTrackId && !playingTrackId)
-                ? true
-                : false;
-
-        // get the flag to determine if it's a new track or not
-        const isNewTrack = existingTrackId !== playingTrackId ? true : false;
-
-        const endInRange = this.isEndInRange(playingTrack);
-
-        const playlistId = dataMgr.selectedPlaylist
-            ? dataMgr.selectedPlaylist.id
-            : null;
-        const isLikedSong =
-            playlistId === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME ? true : false;
-
-        let lastUpdateUtc =
-            isValidTrack && playingTrack.state === TrackStatus.Playing
-                ? utcLocalTimes.utc
-                : this.trackProgressInfo.lastUpdateUtc;
-
-        const onRepeatStartingOver = this.isOnRepeatStartingOver(playingTrack);
-
-        // get the flag to determine if the track is done or not
-        const isLongPaused = this.trackIsLongPaused(playingTrack);
-
-        // get the flag to determine if we should send the song session
-        let sendSongSession =
-            isValidExistingTrack &&
-            (isNewTrack || onRepeatStartingOver || isLongPaused)
-                ? true
-                : false;
-
-        if (sendSongSession) {
-            // make sure the track hasn't already been sent within a minute
-            if (
-                this.lastTrackSentInfo.trackId === playingTrackId &&
-                utcLocalTimes.nowInSecs - this.lastTrackSentInfo.timestamp < 60
-            ) {
-                sendSongSession = false;
-            }
-        }
-
-        if (isLongPaused) {
-            if (sendSongSession) {
-                // update the end time to what the lastUpdateUtc + 5 seconds was
-                const offset_sec = this.timeOffsetSeconds();
-                this.existingTrack["end"] = lastUpdateUtc + 5;
-                const local = lastUpdateUtc - offset_sec;
-                this.existingTrack["local_end"] = local + 5;
-            }
-            // update the lastUpdateTimeUtc
-            lastUpdateUtc = utcLocalTimes.utc;
-        }
-
-        // get the flag to determine if we should play the next liked song automatically
-        const initiateNextLikedSong =
-            this.trackProgressInfo.endInRange &&
-            sendSongSession &&
-            isLikedSong &&
-            !onRepeatStartingOver
-                ? true
-                : false;
-
-        this.trackProgressInfo = {
-            endInRange,
-            lastUpdateUtc,
-            state: playingTrack.state || null,
-            duration_ms: playingTrack.duration_ms || 0,
-            progress_ms: playingTrack.progress_ms || 0,
-            id: playingTrack.id || null,
-            playlistId
-        };
-
-        return {
-            isNewTrack,
-            sendSongSession,
-            initiateNextLikedSong,
-            playerStateChanged
-        };
-    }
-
-    /**
      * Core logic in gathering tracks. This is called every 5 seconds.
      */
     public async gatherMusicInfo(): Promise<any> {
@@ -236,20 +113,30 @@ export class MusicStateManager {
             const utcLocalTimes = this.getUtcAndLocal();
             const serverIsOnline = await serverIsAvailable();
 
+            if (!serverIsOnline && !isMac) {
+                return;
+            }
+
+            const isMacDesktopEnabled = MusicManager.getInstance().isMacDesktopEnabled();
+
             let playingTrack: Track = null;
-            if (isMac() && !serverIsOnline) {
+            if (isMacDesktopEnabled || (!serverIsOnline && isMac)) {
                 // fetch from the desktop
                 playingTrack = await getTrack(PlayerName.SpotifyDesktop);
             } else {
                 playingTrack = await getTrack(PlayerName.SpotifyWeb);
             }
 
-            if (playingTrack && playingTrack.httpStatus >= 400) {
+            if (
+                !playingTrack ||
+                (playingTrack && playingTrack.httpStatus >= 400)
+            ) {
                 // currently unable to fetch the track
                 return;
             }
 
             if (!playingTrack) {
+                // make an empty track
                 playingTrack = new Track();
             }
 
@@ -263,21 +150,15 @@ export class MusicStateManager {
                 playingTrack.id = createSpotifyIdFromUri(playingTrack.id);
             }
 
-            // get the change status info:
-            // {isNewTrack, sendSongSession, initiateNextLikedSong}
-            const changeStatus = this.getChangeStatus(
-                playingTrack,
-                utcLocalTimes
-            );
-
-            if (changeStatus.isNewTrack) {
-                // update the playlistId
-                this.updateTrackPlaylistId(playingTrack);
-                populatePlayerContext();
-            }
+            const isNewTrack =
+                this.existingTrack.id !== playingTrack.id ? true : false;
+            const sendSongSession =
+                isNewTrack && this.existingTrack.id ? true : false;
+            const trackStateChanged =
+                this.existingTrack.state !== playingTrack.state ? true : false;
 
             // has the existing track ended or have we started a new track?
-            if (changeStatus.sendSongSession) {
+            if (sendSongSession) {
                 // just set it to playing
                 this.existingTrack.state = TrackStatus.Playing;
                 if (this.existingTrack["end"] === 0) {
@@ -299,9 +180,6 @@ export class MusicStateManager {
                 if (playingTrack) {
                     this.existingTrack = new Track();
                 }
-
-                // reset the track progress info
-                this.resetTrackProgressInfo();
             }
 
             if (
@@ -334,8 +212,15 @@ export class MusicStateManager {
             // update the music time status bar
             MusicCommandManager.syncControls(dataMgr.runningTrack, false);
 
-            if (changeStatus.playerStateChanged) {
-                commands.executeCommand("musictime.refreshDeviceInfo");
+            if (isNewTrack) {
+                // update the playlistId
+                this.updateTrackPlaylistId(playingTrack);
+                // the player context such as player device status
+                populatePlayerContext();
+                if (trackStateChanged) {
+                    // update the device info in case the device has changed
+                    commands.executeCommand("musictime.refreshDeviceInfo");
+                }
             }
         } catch (e) {
             const errMsg = e.message || e;
@@ -680,96 +565,6 @@ export class MusicStateManager {
         if (playingTrack && playingTrack.id) {
             return true;
         }
-        return false;
-    }
-
-    private isValidPlayingOrPausedTrack(playingTrack: Track) {
-        if (
-            playingTrack &&
-            playingTrack.id &&
-            (playingTrack.state === TrackStatus.Playing ||
-                playingTrack.state === TrackStatus.Paused)
-        ) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Checks whether the playing track is on repeat. Meaning the current
-     * progress of the current track is zero or a bit more and the id of the current
-     * track matches the track that was in the progress info previously.
-     * @param playingTrack
-     */
-    private isOnRepeatStartingOver(playingTrack) {
-        if (
-            playingTrack.progress_ms === null ||
-            playingTrack.progress_ms === undefined
-        ) {
-            return false;
-        }
-
-        if (
-            playingTrack.id &&
-            this.trackProgressInfo.id === playingTrack.id &&
-            playingTrack.progress_ms >= 0 &&
-            playingTrack.status === TrackStatus.Playing &&
-            this.trackProgressInfo.progress_ms > playingTrack.progress_ms &&
-            this.trackProgressInfo.endInRange
-        ) {
-            return true;
-        }
-        return false;
-    }
-
-    private trackIsDone(playingTrack) {
-        if (
-            playingTrack.progress_ms === null ||
-            playingTrack.progress_ms === undefined
-        ) {
-            return false;
-        }
-
-        const playingTrackId = playingTrack.id || null;
-        const hasProgress =
-            playingTrackId && playingTrack.progress_ms > 0 ? true : false;
-        const isPausedOrNotPlaying =
-            !playingTrackId || playingTrack.state !== TrackStatus.Playing
-                ? true
-                : false;
-
-        // check to see if it's not playing and doesn't have any progress
-        if (isPausedOrNotPlaying && !hasProgress) {
-            return true;
-        }
-
-        return false;
-    }
-
-    private trackIsLongPaused(playingTrack) {
-        if (
-            playingTrack.progress_ms === null ||
-            playingTrack.progress_ms === undefined
-        ) {
-            return false;
-        }
-
-        const playingTrackId = playingTrack ? playingTrack.id : null;
-        const hasProgress =
-            playingTrackId && playingTrack.progress_ms > 0 ? true : false;
-
-        // check to see if it's paused more than a minute
-        const utcLocalTimes: any = this.getUtcAndLocal();
-        const pauseThreshold = 60 * 5;
-        const diff = utcLocalTimes.utc - this.trackProgressInfo.lastUpdateUtc;
-        if (
-            hasProgress &&
-            this.trackProgressInfo.lastUpdateUtc > 0 &&
-            diff > pauseThreshold
-        ) {
-            return true;
-        }
-
         return false;
     }
 }
