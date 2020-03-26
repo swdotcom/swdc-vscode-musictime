@@ -40,6 +40,7 @@ import {
     refreshRecommendations
 } from "./music/MusicRecommendationManager";
 import { MusicCommandUtil } from "./music/MusicCommandUtil";
+import { showSearchInput } from "./selector/SearchSelectorManager";
 
 /**
  * add the commands to vscode....
@@ -76,123 +77,147 @@ export function createCommands(): {
     recTreePlaylistProvider.bindView(recPlaylistTreeView);
     cmds.push(connectRecommendationPlaylistTreeView(recPlaylistTreeView));
 
-    const revealTreeCmd = commands.registerCommand(
-        "musictime.revealTree",
-        () => {
+    // REVEAL TREE CMD
+    cmds.push(
+        commands.registerCommand("musictime.revealTree", () => {
             treePlaylistProvider.revealTree();
-        }
+        })
     );
-    cmds.push(revealTreeCmd);
 
-    const launchReadmeCmd = commands.registerCommand(
-        "musictime.displayReadme",
-        () => {
+    // DISPLAY README CMD
+    cmds.push(
+        commands.registerCommand("musictime.displayReadme", () => {
             displayReadmeIfNotExists(true /*override*/);
-        }
+        })
     );
-    cmds.push(launchReadmeCmd);
 
-    const launchDashboardCmd = commands.registerCommand(
-        "musictime.displayDashboard",
-        () => {
+    // DISPLAY REPORT DASHBOARD CMD
+    cmds.push(
+        commands.registerCommand("musictime.displayDashboard", () => {
             displayMusicTimeMetricsMarkdownDashboard();
-        }
+        })
     );
-    cmds.push(launchDashboardCmd);
 
-    const nextCmd = commands.registerCommand("musictime.next", () => {
-        controller.nextSong();
-    });
-    cmds.push(nextCmd);
+    // PLAY NEXT CMD
+    cmds.push(
+        commands.registerCommand("musictime.next", () => {
+            controller.nextSong();
+        })
+    );
 
-    const previousCmd = commands.registerCommand("musictime.previous", () => {
-        controller.previousSong();
-    });
-    cmds.push(previousCmd);
+    // PLAY PREV CMD
+    cmds.push(
+        commands.registerCommand("musictime.previous", () => {
+            controller.previousSong();
+        })
+    );
 
     const progressCmd = commands.registerCommand("musictime.progress", () => {
         // do nothing for now
     });
     cmds.push(progressCmd);
 
-    const playCmd = commands.registerCommand("musictime.play", async () => {
-        controller.playSong();
-    });
-    cmds.push(playCmd);
-
-    const removeTrackCmd = commands.registerCommand(
-        "musictime.removeTrack",
-        async (p: PlaylistItem) => {
-            musicMgr.removeTrackFromPlaylist(p);
-        }
+    // PLAY CMD
+    cmds.push(
+        commands.registerCommand("musictime.play", async () => {
+            controller.playSong();
+        })
     );
-    cmds.push(removeTrackCmd);
 
-    const shareTrackLinkCmd = commands.registerCommand(
-        "musictime.shareTrack",
-        (node: PlaylistItem) => {
-            SocialShareManager.getInstance().showMenu(
-                node.id,
-                node.name,
-                false
-            );
-        }
+    // REMOVE TRACK CMD
+    cmds.push(
+        commands.registerCommand(
+            "musictime.removeTrack",
+            async (p: PlaylistItem) => {
+                musicMgr.removeTrackFromPlaylist(p);
+            }
+        )
     );
-    cmds.push(shareTrackLinkCmd);
 
-    const pauseCmd = commands.registerCommand("musictime.pause", () => {
-        controller.pauseSong();
-    });
-    cmds.push(pauseCmd);
+    // SHARE CMD
+    cmds.push(
+        commands.registerCommand(
+            "musictime.shareTrack",
+            (node: PlaylistItem) => {
+                SocialShareManager.getInstance().showMenu(
+                    node.id,
+                    node.name,
+                    false
+                );
+            }
+        )
+    );
 
-    const likeCmd = commands.registerCommand("musictime.like", () => {
-        controller.setLiked(true);
-    });
-    cmds.push(likeCmd);
+    // SEARCH CMD
+    cmds.push(
+        commands.registerCommand("musictime.searchTracks", () => {
+            // show the search input popup
+            showSearchInput();
+        })
+    );
 
-    const unlikeCmd = commands.registerCommand("musictime.unlike", () => {
-        controller.setLiked(false);
-    });
-    cmds.push(unlikeCmd);
+    // PAUSE CMD
+    cmds.push(
+        commands.registerCommand("musictime.pause", () => {
+            controller.pauseSong();
+        })
+    );
 
-    const repeatOnCmd = commands.registerCommand("musictime.repeatOn", () => {
-        controller.setRepeatOnOff(true);
-    });
-    cmds.push(repeatOnCmd);
+    // LIKE CMD
+    cmds.push(
+        commands.registerCommand("musictime.like", () => {
+            controller.setLiked(true);
+        })
+    );
 
-    const repeatOffCmd = commands.registerCommand("musictime.repeatOff", () => {
-        controller.setRepeatOnOff(false);
-    });
-    cmds.push(repeatOffCmd);
+    // UNLIKE CMD
+    cmds.push(
+        commands.registerCommand("musictime.unlike", () => {
+            controller.setLiked(false);
+        })
+    );
 
-    const menuCmd = commands.registerCommand("musictime.menu", () => {
-        controller.showMenu();
-    });
-    cmds.push(menuCmd);
+    // REPEAT OFF CMD
+    cmds.push(
+        commands.registerCommand("musictime.repeatOn", () => {
+            controller.setRepeatOnOff(true);
+        })
+    );
 
-    const followCmd = commands.registerCommand(
-        "musictime.follow",
-        (p: PlaylistItem) => {
+    // REPEAT ON OFF CMD
+    cmds.push(
+        commands.registerCommand("musictime.repeatOff", () => {
+            controller.setRepeatOnOff(false);
+        })
+    );
+
+    // SHOW MENU CMD
+    cmds.push(
+        commands.registerCommand("musictime.menu", () => {
+            controller.showMenu();
+        })
+    );
+
+    // FOLLOW PLAYLIST CMD
+    cmds.push(
+        commands.registerCommand("musictime.follow", (p: PlaylistItem) => {
             musicMgr.followSpotifyPlaylist(p);
-        }
+        })
     );
-    cmds.push(followCmd);
 
-    const launchTrackPlayerCmd = commands.registerCommand(
-        "musictime.currentSong",
-        () => {
+    // DISPLAY CURRENT SONG CMD
+    cmds.push(
+        commands.registerCommand("musictime.currentSong", () => {
             musicMgr.launchTrackPlayer();
-        }
+        })
     );
-    cmds.push(launchTrackPlayerCmd);
 
-    const spotifyConnectCommand = commands.registerCommand(
-        "musictime.connectSpotify",
-        () => {
+    // CONNECT SPOTIFY CMD
+    cmds.push(
+        commands.registerCommand("musictime.connectSpotify", () => {
             connectSpotify();
-        }
+        })
     );
-    cmds.push(spotifyConnectCommand);
 
     const slackConnectCommand = commands.registerCommand(
         "musictime.connectSlack",
@@ -406,9 +431,9 @@ export function createCommands(): {
     );
     cmds.push(refreshRecPlaylistCommand);
 
-    const updateRecsCommand = commands.registerCommand(
-        "musictime.updateRecommendations",
-        args => {
+    // UPDATE RECOMMENDATIONS CMD
+    cmds.push(
+        commands.registerCommand("musictime.updateRecommendations", args => {
             // there's always at least 3 args
             const label = args[0];
             const likedSongSeedLimit = args[1];
@@ -420,9 +445,8 @@ export function createCommands(): {
                 seed_genres,
                 features
             );
-        }
+        })
     );
-    cmds.push(updateRecsCommand);
 
     // initialize the kpm controller to start the listener
     KpmController.getInstance();

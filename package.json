@@ -1,7 +1,7 @@
 {
     "name": "music-time",
     "displayName": "Music Time",
-    "version": "1.8.8",
+    "version": "1.8.9",
     "publisher": "softwaredotcom",
     "description": "Music Time is an open source plugin that curates and launches playlists for coding right from your editor.",
     "author": {
@@ -253,6 +253,14 @@
                     "light": "resources/light/beaker.svg",
                     "dark": "resources/dark/beaker.svg"
                 }
+            },
+            {
+                "command": "musictime.searchTracks",
+                "title": "Music Time: Search for a song",
+                "icon": {
+                    "light": "resources/light/search.svg",
+                    "dark": "resources/dark/search.svg"
+                }
             }
         ],
         "viewsContainers": {
@@ -308,6 +316,11 @@
                 {
                     "command": "musictime.refreshButton",
                     "group": "navigation@2",
+                    "when": "view =~ /.*-playlists/"
+                },
+                {
+                    "command": "musictime.searchTracks",
+                    "group": "navigation@3",
                     "when": "view =~ /.*-playlists/"
                 },
                 {
