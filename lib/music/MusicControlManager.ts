@@ -459,8 +459,6 @@ export class MusicControlManager {
         // check if they need to connect to spotify
         const needsSpotifyAccess = requiresSpotifyAccess();
 
-        const isPrem = await MusicManager.getInstance().isSpotifyPremium();
-
         // check to see if they have the slack access token
         const slackAccessToken = getItem("slack_access_token");
 
