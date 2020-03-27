@@ -1255,41 +1255,7 @@ export class MusicManager {
                 await playTrackInContext(PlayerName.SpotifyDesktop, params);
             }
         }
-
-        // check in a second if it's playing or not.
-        setTimeout(() => {
-            this.checkIfPlaying(trackId);
-        }, 2000);
     };
-
-    async checkIfPlaying(trackId, tries = 2) {
-        let playingTrack: Track = this.dataMgr.runningTrack;
-        if (tries <= 0) {
-            if (!playingTrack || !playingTrack.id) {
-                playingTrack = await getTrack(PlayerName.SpotifyWeb);
-            }
-            if (playingTrack && playingTrack.state !== TrackStatus.Playing) {
-                MusicControlManager.getInstance().playSong();
-            }
-            return;
-        }
-
-        if (
-            playingTrack &&
-            (playingTrack.id !== trackId ||
-                playingTrack.state !== TrackStatus.Playing)
-        ) {
-            tries -= 1;
-            setTimeout(() => {
-                this.checkIfPlaying(trackId, tries);
-            }, 2000);
-        } else if (!playingTrack) {
-            tries -= 1;
-            setTimeout(() => {
-                this.checkIfPlaying(trackId, tries);
-            }, 2000);
-        }
-    }
 
     playRecommendationsOrLikedSongsByPlaylist = async (
         playlistItem: PlaylistItem,
