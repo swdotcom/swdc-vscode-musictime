@@ -928,11 +928,9 @@ export class MusicManager {
             await launchPlayer(playerName, { quietly: false });
         }
 
-        if (callback) {
-            setTimeout(() => {
-                this.checkDeviceLaunch(playerName, 7, callback);
-            }, 1500);
-        }
+        setTimeout(() => {
+            this.checkDeviceLaunch(playerName, 7, callback);
+        }, 1500);
     }
 
     async checkDeviceLaunch(
