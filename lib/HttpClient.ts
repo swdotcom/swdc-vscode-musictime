@@ -10,7 +10,7 @@ const beApi = axios.create({
 });
 
 /**
- * Response returns a paylod with the following...
+ * Response returns a paylod with the following
  * data: <payload>, status: 200, statusText: "OK", config: Object
  * @param api
  * @param jwt
