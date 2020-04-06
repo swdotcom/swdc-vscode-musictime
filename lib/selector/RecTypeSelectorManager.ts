@@ -3,14 +3,14 @@ import { showQuickPick } from "../MenuManager";
 export async function showGenreSelections() {
     let menuOptions = {
         items: [],
-        placeholder: "Select a genre"
+        placeholder: "Select a genre",
     };
 
     // get the available genres
     const genres = getGenreSelections();
     genres.sort();
 
-    genres.forEach(genre => {
+    genres.forEach((genre) => {
         let label = genre.replace(/[_-]/g, " ");
         // capitalize the 1st character
         label = label.charAt(0).toUpperCase() + label.substring(1);
@@ -19,7 +19,7 @@ export async function showGenreSelections() {
         menuOptions.items.push({
             label,
             args,
-            command: "musictime.updateRecommendations"
+            command: "musictime.updateRecommendations",
         });
     });
 
@@ -33,17 +33,17 @@ export async function showGenreSelections() {
 export async function showCategorySelections() {
     let menuOptions = {
         items: [],
-        placeholder: "Select a mood"
+        placeholder: "Select a mood",
     };
 
     // add the categories
     const categories = getCategorySelections();
-    categories.forEach(cateogry => {
+    categories.forEach((cateogry) => {
         menuOptions.items.push({
             label: cateogry.label,
             detail: cateogry.description,
             args: cateogry.args,
-            command: "musictime.updateRecommendations"
+            command: "musictime.updateRecommendations",
         });
     });
 
@@ -63,14 +63,14 @@ function getCategorySelections() {
             label: "Happy",
             description:
                 "Positive, uplifting, mood-boosting; good for any type of coding",
-            args: ["Happy", 5, [], { min_valence: 0.7, target_valence: 1 }]
+            args: ["Happy", 5, [], { min_valence: 0.7, target_valence: 1 }],
         },
         // high energy
         {
             label: "Energetic",
             description:
                 "Dynamic, loud, stimulating; grab a coffee and let's go",
-            args: ["Energetic", 5, [], { min_energy: 0.7, target_energy: 1 }]
+            args: ["Energetic", 5, [], { min_energy: 0.7, target_energy: 1 }],
         },
         // high danceability
         {
@@ -81,8 +81,8 @@ function getCategorySelections() {
                 "Danceable",
                 5,
                 [],
-                { min_danceability: 0.7, target_danceability: 1 }
-            ]
+                { min_danceability: 0.7, target_danceability: 1 },
+            ],
         },
         // Low speechiness
         {
@@ -92,15 +92,15 @@ function getCategorySelections() {
                 "Instrumental",
                 5,
                 [],
-                { min_instrumentalness: 0.5, target_instrumentalness: 1 }
-            ]
+                { min_instrumentalness: 0.5, target_instrumentalness: 1 },
+            ],
         },
         // Liked songs
         {
             label: "Familiar",
             description:
                 "Similar to your Liked Songs, familiar songs helps you get into flow faster",
-            args: ["Familiar", 5]
+            args: ["Familiar", 5],
         },
         // Low loudness
         {
@@ -111,9 +111,9 @@ function getCategorySelections() {
                 "Quiet music",
                 5,
                 [],
-                { max_loudness: -10, target_loudness: -50 }
-            ]
-        }
+                { max_loudness: -10, target_loudness: -50 },
+            ],
+        },
     ];
 
     return items;
@@ -246,7 +246,7 @@ function getGenreSelections() {
         "trip-hop",
         "turkish",
         "work-out",
-        "world-music"
+        "world-music",
     ];
 
     return items;

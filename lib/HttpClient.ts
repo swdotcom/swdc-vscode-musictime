@@ -6,7 +6,7 @@ import { logIt } from "./Util";
 
 // build the axios api base url
 const beApi = axios.create({
-    baseURL: `${api_endpoint}`
+    baseURL: `${api_endpoint}`,
 });
 
 /**
@@ -23,11 +23,11 @@ export async function softwareGet(api, jwt, additionHeaders = null) {
     if (additionHeaders) {
         beApi.defaults.headers.common = {
             ...beApi.defaults.headers.common,
-            ...additionHeaders
+            ...additionHeaders,
         };
     }
 
-    return await beApi.get(api).catch(err => {
+    return await beApi.get(api).catch((err) => {
         logIt(`error fetching data for ${api}, message: ${err.message}`);
         return err;
     });
@@ -42,10 +42,10 @@ export async function softwarePut(api, payload, jwt) {
 
     return await beApi
         .put(api, payload)
-        .then(resp => {
+        .then((resp) => {
             return resp;
         })
-        .catch(err => {
+        .catch((err) => {
             let errMsg = err.message;
             if (
                 err.response &&
@@ -67,10 +67,10 @@ export async function softwarePost(api, payload, jwt) {
     beApi.defaults.headers.common["Authorization"] = jwt;
     return beApi
         .post(api, payload)
-        .then(resp => {
+        .then((resp) => {
             return resp;
         })
-        .catch(err => {
+        .catch((err) => {
             let errMsg = err.message;
             if (
                 err.response &&
@@ -91,10 +91,10 @@ export async function softwareDelete(api, jwt) {
     beApi.defaults.headers.common["Authorization"] = jwt;
     return beApi
         .delete(api)
-        .then(resp => {
+        .then((resp) => {
             return resp;
         })
-        .catch(err => {
+        .catch((err) => {
             logIt(
                 `error with delete request for ${api}, message: ${err.message}`
             );
