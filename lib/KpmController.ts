@@ -1,5 +1,5 @@
 import { workspace, Disposable, ExtensionContext } from "vscode";
-import { KpmDataManager } from "./KpmDataManager";
+import { KpmDataManager, completePayloadInfo } from "./KpmDataManager";
 import { UNTITLED, UNTITLED_WORKSPACE } from "./Constants";
 import { DEFAULT_DURATION } from "./Constants";
 import {
@@ -75,7 +75,7 @@ export class KpmController {
             local_now_in_sec - latestPayload.local_start <= 60
         ) {
             // the one in memory has data right now, use it
-            return latestPayload;
+            return completePayloadInfo(latestPayload);
         }
 
         if (_keystrokeMap && !isEmptyObj(_keystrokeMap)) {
