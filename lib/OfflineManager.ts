@@ -5,7 +5,7 @@ import {
     deleteFile,
     humanizeMinutes,
     getNowTimes,
-    getItem
+    getItem,
 } from "./Util";
 import { DEFAULT_SESSION_THRESHOLD_SECONDS } from "./Constants";
 import { serverIsAvailable } from "./DataController";
@@ -26,7 +26,7 @@ let sessionSummaryData = {
     averageDailyKeystrokes: 0,
     currentDayKeystrokes: 0,
     liveshareMinutes: null,
-    lastStart: null
+    lastStart: null,
 };
 
 export function clearSessionSummaryData() {
@@ -36,7 +36,7 @@ export function clearSessionSummaryData() {
         averageDailyKeystrokes: 0,
         currentDayKeystrokes: 0,
         liveshareMinutes: null,
-        lastStart: null
+        lastStart: null,
     };
 
     saveSessionSummaryToDisk(sessionSummaryData);
@@ -95,7 +95,7 @@ export function saveSessionSummaryToDisk(sessionSummaryData) {
     try {
         // JSON.stringify(data, replacer, number of spaces)
         const content = JSON.stringify(sessionSummaryData, null, 4);
-        fs.writeFileSync(getSessionSummaryFile(), content, err => {
+        fs.writeFileSync(getSessionSummaryFile(), content, (err) => {
             if (err)
                 logIt(
                     `Deployer: Error writing session summary data: ${err.message}`
@@ -144,7 +144,7 @@ export async function getDataRows(file, deleteAfterRead = true) {
             if (content) {
                 const payloads = content
                     .split(/\r?\n/)
-                    .map(item => {
+                    .map((item) => {
                         let obj = null;
                         if (item) {
                             try {
@@ -157,8 +157,8 @@ export async function getDataRows(file, deleteAfterRead = true) {
                             return obj;
                         }
                     })
-                    .filter(item => item)
-                    .map(item => item);
+                    .filter((item) => item)
+                    .map((item) => item);
                 return payloads;
             }
         }
@@ -166,4 +166,32 @@ export async function getDataRows(file, deleteAfterRead = true) {
         logIt(`Unable to read data file ${file}: ${e.message}`);
     }
     return [];
+}
+
+export function getCurrentPayloadFile() {
+    let file = getSoftwareDir();
+    if (isWindows()) {
+        file += "\\latestKeystrokes.json";
+    } else {
+        file += "/latestKeystrokes.json";
+    }
+    return file;
+}
+
+export function getCurrentPayload() {
+    let data = null;
+
+    const file = getCurrentPayloadFile();
+    if (fs.existsSync(file)) {
+        const content = fs.readFileSync(file).toString();
+        if (content) {
+            try {
+                data = JSON.parse(content);
+            } catch (e) {
+                logIt(`unable to read file info: ${e.message}`);
+                data = {};
+            }
+        }
+    }
+    return data ? data : {};
 }

@@ -3,6 +3,8 @@ import { searchTracks } from "cody-music";
 import { MusicDataManager } from "../music/MusicDataManager";
 import { requiresSpotifyAccess } from "../music/MusicUtil";
 
+// lkjlkjlkjlkjlkjlkjljk lksjdf lkj lkj lkj lkj lkj
+// lkjsdflkjsdlfk
 export async function showSearchInput() {
     if (requiresSpotifyAccess()) {
         window.showInformationMessage("Spotify connection required");
@@ -12,11 +14,11 @@ export async function showSearchInput() {
         value: "",
         placeHolder: "Search",
         prompt: "Search for songs",
-        validateInput: text => {
+        validateInput: (text) => {
             return !text
                 ? "Please enter one more more keywords to continue."
                 : null;
-        }
+        },
     });
     if (!keywords) {
         return;

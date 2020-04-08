@@ -1,4 +1,4 @@
-import { workspace, Disposable } from "vscode";
+import { workspace, Disposable, ExtensionContext } from "vscode";
 import { KpmDataManager } from "./KpmDataManager";
 import { UNTITLED, UNTITLED_WORKSPACE } from "./Constants";
 import { DEFAULT_DURATION } from "./Constants";
@@ -12,16 +12,15 @@ import {
     getFileAgeInDays,
     getFileType,
     getSoftwareDataStoreFile,
-    codeTimeExtInstalled
+    codeTimeExtInstalled,
 } from "./Util";
 import {
     getRepoContributorInfo,
     getRepoFileCount,
-    getFileContributorCount
+    getFileContributorCount,
 } from "./KpmRepoManager";
 import { sendBatchPayload } from "./DataController";
-import { getDataRows } from "./OfflineManager";
-import { MusicStateManager } from "./music/MusicStateManager";
+import { getDataRows, getCurrentPayload } from "./OfflineManager";
 
 const NO_PROJ_NAME = "Unnamed";
 
@@ -54,10 +53,8 @@ export class KpmController {
     }
 
     public allowDocumentListen() {
-        if (
-            !codeTimeExtInstalled() ||
-            MusicStateManager.getInstance().isExistingTrackPlaying()
-        ) {
+        // don't listen if code time is installed
+        if (!codeTimeExtInstalled()) {
             return true;
         }
         return false;
@@ -69,7 +66,18 @@ export class KpmController {
         // the ones that have data (data is greater than 1), then clear the map
         // And only if code time is not instaled, post the data
         //
-        let latestPayload = null;
+        let latestPayload: any = getCurrentPayload();
+        const { local_now_in_sec } = getNowTimes();
+        if (
+            latestPayload &&
+            latestPayload.source &&
+            Object.keys(latestPayload.source).length &&
+            local_now_in_sec - latestPayload.local_start <= 60
+        ) {
+            // the one in memory has data right now, use it
+            return latestPayload;
+        }
+
         if (_keystrokeMap && !isEmptyObj(_keystrokeMap)) {
             let keys = Object.keys(_keystrokeMap);
             // use a normal for loop since we have an await within the loop
@@ -388,7 +396,7 @@ export class KpmController {
             repoContributorCount,
             repoFileCount,
             lineCount,
-            repoFileContributorCount
+            repoFileContributorCount,
         };
 
         _staticInfoMap[filename] = staticInfo;
@@ -477,7 +485,7 @@ export class KpmController {
         const fileKeys = Object.keys(keystrokeCount.source);
         if (fileKeys.length > 1) {
             // set the end time to now for the other files that don't match this file
-            fileKeys.forEach(key => {
+            fileKeys.forEach((key) => {
                 let sourceObj = keystrokeCount.source[key];
                 if (key !== filename && sourceObj.end === 0) {
                     sourceObj.end = nowTimes.now_in_sec;
@@ -508,7 +516,7 @@ export class KpmController {
             syntax: "",
             fileAgeDays: 0,
             repoFileContributorCount: 0,
-            keystrokes: 0
+            keystrokes: 0,
         };
         keystrokeCount.source[filename] = fileInfo;
     }
@@ -523,7 +531,7 @@ export class KpmController {
             directory: rootPath,
             name,
             identifier: "",
-            resource: {}
+            resource: {},
         });
 
         keystrokeCount["start"] = nowTimes.now_in_sec;

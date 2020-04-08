@@ -4,7 +4,7 @@ import {
     window,
     ViewColumn,
     Uri,
-    commands
+    commands,
 } from "vscode";
 import {
     CODE_TIME_EXT_ID,
@@ -13,14 +13,14 @@ import {
     MUSIC_TIME_PLUGIN_ID,
     MUSIC_TIME_TYPE,
     SOFTWARE_TOP_40_PLAYLIST_ID,
-    SPOTIFY_LIKED_SONGS_PLAYLIST_NAME
+    SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
 } from "./Constants";
 import { getToggleFileEventLoggingState } from "./DataController";
 import {
     PlaylistItem,
     TrackStatus,
     CodyResponse,
-    CodyResponseType
+    CodyResponseType,
 } from "cody-music";
 const moment = require("moment-timezone");
 
@@ -212,7 +212,7 @@ export function setItem(key, value) {
     const content = JSON.stringify(jsonObj);
 
     const sessionFile = getSoftwareSessionFile();
-    fs.writeFileSync(sessionFile, content, err => {
+    fs.writeFileSync(sessionFile, content, (err) => {
         if (err)
             logIt(`Error writing to the Software session file: ${err.message}`);
     });
@@ -565,7 +565,7 @@ export function getNowTimes() {
     return {
         now_in_sec,
         local_now_in_sec: now_in_sec - offset_sec,
-        offset_sec
+        offset_sec,
     };
 }
 
@@ -600,7 +600,7 @@ export function storeMusicSessionPayload(songSession) {
 export function randomCode() {
     return crypto
         .randomBytes(16)
-        .map(value =>
+        .map((value) =>
             alpha.charCodeAt(Math.floor((value * alpha.length) / 256))
         )
         .toString();
@@ -628,7 +628,7 @@ export function formatPathIfNecessary(pathString: string) {
 }
 
 function execPromise(command, opts) {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
         exec(command, opts, (error, stdout, stderr) => {
             if (error) {
                 reject(error);
@@ -707,7 +707,7 @@ export async function wrapExecPromise(cmd, projectDir = null) {
             projectDir !== undefined && projectDir !== null
                 ? { cwd: projectDir }
                 : {};
-        result = await execPromise(cmd, opts).catch(e => {
+        result = await execPromise(cmd, opts).catch((e) => {
             if (e.message) {
                 console.log("task error: ", e.message);
             }

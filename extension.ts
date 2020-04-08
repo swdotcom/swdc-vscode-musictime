@@ -12,7 +12,7 @@ import {
     getPluginName,
     codeTimeExtInstalled,
     displayReadmeIfNotExists,
-    isMac
+    isMac,
 } from "./lib/Util";
 import { manageLiveshareSession } from "./lib/LiveshareManager";
 import * as vsls from "vsls/vscode";
@@ -130,13 +130,13 @@ async function initializeLiveshare() {
     if (liveshare) {
         // {access: number, id: string, peerNumber: number, role: number, user: json}
         logIt(`liveshare version - ${liveshare["apiVersion"]}`);
-        liveshare.onDidChangeSession(async event => {
+        liveshare.onDidChangeSession(async (event) => {
             let nowSec = nowInSecs();
             let offsetSec = getOffsetSecends();
             let localNow = nowSec - offsetSec;
             if (!_ls) {
                 _ls = {
-                    ...event.session
+                    ...event.session,
                 };
                 _ls["apiVesion"] = liveshare["apiVersion"];
                 _ls["start"] = nowSec;
