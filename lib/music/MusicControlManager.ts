@@ -7,8 +7,6 @@ import {
     PlayerName,
     Track,
     PlaylistItem,
-    playTrackInContext,
-    playTrack,
     saveToSpotifyLiked,
     addTracksToPlaylist,
     removeFromSpotifyLiked,
@@ -19,7 +17,7 @@ import {
     playSpotifyMacDesktopTrack,
     playSpotifyTrack,
     playSpotifyPlaylist,
-    TrackStatus
+    TrackStatus,
 } from "cody-music";
 import { window, ViewColumn, Uri, commands } from "vscode";
 import { MusicCommandManager } from "./MusicCommandManager";
@@ -30,7 +28,7 @@ import {
     getAppJwt,
     populateLikedSongs,
     populateSpotifyPlaylists,
-    populatePlayerContext
+    populatePlayerContext,
 } from "../DataController";
 import {
     getItem,
@@ -45,7 +43,7 @@ import {
     setItem,
     isMac,
     getCodyErrorMessage,
-    isWindows
+    isWindows,
 } from "../Util";
 import { softwareGet, softwarePut, isResponseOk } from "../HttpClient";
 import {
@@ -57,7 +55,7 @@ import {
     SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
     PERSONAL_TOP_SONGS_PLID,
     YES_LABEL,
-    OK_LABEL
+    OK_LABEL,
 } from "../Constants";
 import { MusicStateManager } from "./MusicStateManager";
 import { SocialShareManager } from "../social/SocialShareManager";
@@ -69,7 +67,7 @@ import {
     sortPlaylists,
     requiresSpotifyAccess,
     getDeviceSet,
-    getDeviceId
+    getDeviceId,
 } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 import { MusicCommandUtil } from "./MusicCommandUtil";
@@ -139,7 +137,7 @@ export class MusicControlManager {
             } else {
                 const playerName = MusicManager.getInstance().getPlayerNameForPlayback();
                 await this.musicCmdUtil.runSpotifyCommand(previous, [
-                    playerName
+                    playerName,
                 ]);
             }
         } else {
@@ -319,7 +317,7 @@ export class MusicControlManager {
             desktop,
             activeDevice,
             activeComputerDevice,
-            activeWebPlayerDevice
+            activeWebPlayerDevice,
         } = getDeviceSet();
 
         const deviceId = activeDevice ? activeDevice.id : "";
@@ -360,7 +358,7 @@ export class MusicControlManager {
         if (track.playerType === PlayerType.MacItunesDesktop) {
             // await so that the stateCheckHandler fetches
             // the latest version of the itunes track
-            await setItunesLoved(liked).catch(err => {
+            await setItunesLoved(liked).catch((err) => {
                 logIt(`Error updating itunes loved state: ${err.message}`);
             });
         } else {
@@ -453,7 +451,7 @@ export class MusicControlManager {
         let serverIsOnline = await serverIsAvailable();
 
         let menuOptions = {
-            items: []
+            items: [],
         };
 
         // check if they need to connect to spotify
@@ -483,7 +481,7 @@ export class MusicControlManager {
                 menuOptions.items.push({
                     label: personalPlaylistLabel,
                     detail: personalPlaylistTooltip,
-                    cb: MusicManager.getInstance().generateUsersWeeklyTopSongs
+                    cb: MusicManager.getInstance().generateUsersWeeklyTopSongs,
                 });
             }
         }
@@ -493,27 +491,27 @@ export class MusicControlManager {
                 label: "Open dashboard",
                 detail:
                     "View your latest music metrics right here in your editor",
-                cb: displayMusicTimeMetricsMarkdownDashboard
+                cb: displayMusicTimeMetricsMarkdownDashboard,
             });
         }
 
         menuOptions.items.push({
             label: "Submit an issue on GitHub",
             detail: "Encounter a bug? Submit an issue on our GitHub page",
-            url: "https://github.com/swdotcom/swdc-vscode/issues"
+            url: "https://github.com/swdotcom/swdc-vscode/issues",
         });
 
         menuOptions.items.push({
             label: "Submit feedback",
             detail: "Send us an email at cody@software.com",
-            url: "mailto:cody@software.com"
+            url: "mailto:cody@software.com",
         });
 
         if (!needsSpotifyAccess) {
             menuOptions.items.push({
                 label: "See web analytics",
                 detail: "See music analytics in the web app",
-                command: "musictime.launchAnalytics"
+                command: "musictime.launchAnalytics",
             });
         }
 
@@ -524,7 +522,7 @@ export class MusicControlManager {
                     "___________________________________________________________________",
                 cb: null,
                 url: null,
-                command: null
+                command: null,
             });
 
             if (needsSpotifyAccess) {
@@ -533,14 +531,14 @@ export class MusicControlManager {
                     detail:
                         "To see your Spotify playlists in Music Time, please connect your account",
                     url: null,
-                    cb: connectSpotify
+                    cb: connectSpotify,
                 });
             } else {
                 menuOptions.items.push({
                     label: "Disconnect Spotify",
                     detail: "Disconnect your Spotify oauth integration",
                     url: null,
-                    command: "musictime.disconnectSpotify"
+                    command: "musictime.disconnectSpotify",
                 });
 
                 if (!slackAccessToken) {
@@ -549,14 +547,14 @@ export class MusicControlManager {
                         detail:
                             "To share a playlist or track on Slack, please connect your account",
                         url: null,
-                        cb: connectSlack
+                        cb: connectSlack,
                     });
                 } else {
                     menuOptions.items.push({
                         label: "Disconnect Slack",
                         detail: "Disconnect your Slack oauth integration",
                         url: null,
-                        command: "musictime.disconnectSlack"
+                        command: "musictime.disconnectSlack",
                     });
                 }
             }
@@ -569,11 +567,11 @@ export class MusicControlManager {
         return await window.showInputBox({
             value: placeHolder,
             placeHolder: "New Playlist",
-            validateInput: text => {
+            validateInput: (text) => {
                 return !text || text.trim().length === 0
                     ? "Please enter a playlist name to continue."
                     : null;
-            }
+            },
         });
     }
 
@@ -617,10 +615,10 @@ export class MusicControlManager {
             items: [
                 {
                     label: "New Playlist",
-                    cb: this.createNewPlaylist
-                }
+                    cb: this.createNewPlaylist,
+                },
             ],
-            placeholder: "Select or Create a playlist"
+            placeholder: "Select or Create a playlist",
         };
         let playlists: PlaylistItem[] = MusicManager.getInstance()
             .currentPlaylists;
@@ -638,7 +636,7 @@ export class MusicControlManager {
         playlists.forEach((item: PlaylistItem) => {
             menuOptions.items.push({
                 label: item.name,
-                cb: null
+                cb: null,
             });
         });
 
@@ -738,7 +736,7 @@ export async function displayMusicTimeMetricsMarkdownDashboard() {
 
     const viewOptions = {
         viewColumn: ViewColumn.One,
-        preserveFocus: false
+        preserveFocus: false,
     };
     const localResourceRoots = [Uri.file(getSoftwareDir()), Uri.file(tmpdir())];
     const panel = window.createWebviewPanel(
@@ -748,7 +746,7 @@ export async function displayMusicTimeMetricsMarkdownDashboard() {
         {
             enableFindWidget: true,
             localResourceRoots,
-            enableScripts: true // enables javascript that may be in the content
+            enableScripts: true, // enables javascript that may be in the content
         }
     );
 
@@ -851,9 +849,7 @@ export async function disconnectOauth(type: string, confirmDisconnect = true) {
 export async function fetchMusicTimeMetricsMarkdownDashboard() {
     let file = getMusicTimeMarkdownFile();
 
-    const dayOfMonth = moment()
-        .startOf("day")
-        .date();
+    const dayOfMonth = moment().startOf("day").date();
     if (!fs.existsSync(file) || lastDayOfMonth !== dayOfMonth) {
         lastDayOfMonth = dayOfMonth;
         await fetchDashboardData(file, true);
@@ -863,9 +859,7 @@ export async function fetchMusicTimeMetricsMarkdownDashboard() {
 export async function fetchMusicTimeMetricsDashboard() {
     let file = getMusicTimeFile();
 
-    const dayOfMonth = moment()
-        .startOf("day")
-        .date();
+    const dayOfMonth = moment().startOf("day").date();
     if (fs.existsSync(file) || lastDayOfMonth !== dayOfMonth) {
         lastDayOfMonth = dayOfMonth;
         await fetchDashboardData(file, false);
@@ -882,7 +876,7 @@ async function fetchDashboardData(fileName: string, isHtml: boolean) {
     let content =
         musicSummary && musicSummary.data ? musicSummary.data : NO_DATA;
 
-    fs.writeFileSync(fileName, content, err => {
+    fs.writeFileSync(fileName, content, (err) => {
         if (err) {
             logIt(
                 `Error writing to the Software dashboard file: ${err.message}`

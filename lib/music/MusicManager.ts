@@ -23,7 +23,7 @@ import {
     playSpotifyPlaylist,
     play,
     getTrack,
-    playTrackInContext
+    playTrackInContext,
 } from "cody-music";
 import {
     PERSONAL_TOP_SONGS_NAME,
@@ -32,7 +32,7 @@ import {
     SOFTWARE_TOP_40_PLAYLIST_ID,
     SHOW_ITUNES_LAUNCH_BUTTON,
     OK_LABEL,
-    YES_LABEL
+    YES_LABEL,
 } from "../Constants";
 import { commands, window } from "vscode";
 import {
@@ -43,7 +43,7 @@ import {
     populateSpotifyPlaylists,
     populateLikedSongs,
     populateSpotifyDevices,
-    populateSpotifyUser
+    populateSpotifyUser,
 } from "../DataController";
 import {
     getItem,
@@ -52,7 +52,7 @@ import {
     logIt,
     getCodyErrorMessage,
     createUriFromTrackId,
-    createUriFromPlaylistId
+    createUriFromPlaylistId,
 } from "../Util";
 import { isResponseOk, softwareGet, softwarePost } from "../HttpClient";
 import { MusicCommandManager } from "./MusicCommandManager";
@@ -63,7 +63,7 @@ import {
     buildTracksForRecommendations,
     requiresSpotifyAccess,
     getDeviceSet,
-    getDeviceId
+    getDeviceId,
 } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 import { MusicCommandUtil } from "./MusicCommandUtil";
@@ -204,7 +204,7 @@ export class MusicManager {
 
         // update each playlist itemType and tag
         if (hasPlaylists) {
-            playlists.forEach(playlist => {
+            playlists.forEach((playlist) => {
                 this.dataMgr.playlistMap[playlist.id] = playlist;
                 playlist.itemType = "playlist";
                 playlist.tag = type;
@@ -245,7 +245,7 @@ export class MusicManager {
                 items.push(this.providerItemMgr.getLineBreakButton());
             }
 
-            playlists.forEach(item => {
+            playlists.forEach((item) => {
                 items.push(item);
             });
 
@@ -333,7 +333,7 @@ export class MusicManager {
     async getSoftwareTop40(playlists): Promise<PlaylistItem> {
         // get the Software Top 40 Playlist
         let softwareTop40: PlaylistItem = playlists.find(
-            n => n.id === SOFTWARE_TOP_40_PLAYLIST_ID
+            (n) => n.id === SOFTWARE_TOP_40_PLAYLIST_ID
         );
         if (!softwareTop40) {
             softwareTop40 = await getSpotifyPlaylist(
@@ -596,7 +596,7 @@ export class MusicManager {
             this.dataMgr.spotifyLikedSongs.length > 0;
         if (currentTrackId && hasLikedSongs) {
             let currTrackIndex = this.dataMgr.spotifyLikedSongs.findIndex(
-                i => i.id === currentTrackId
+                (i) => i.id === currentTrackId
             );
             if (currTrackIndex !== -1) {
                 // if the curr track index is the last element, return zero, else return the next one
@@ -622,7 +622,7 @@ export class MusicManager {
             this.dataMgr.spotifyLikedSongs.length > 0;
         if (currentTrackId && hasLikedSongs) {
             const currTrackIndex = this.dataMgr.spotifyLikedSongs.findIndex(
-                i => i.id === currentTrackId
+                (i) => i.id === currentTrackId
             );
             if (currTrackIndex !== -1) {
                 // if the curr track index is the last element, return zero, else return the next one
@@ -708,7 +708,7 @@ export class MusicManager {
                 playlistId,
                 PERSONAL_TOP_SONGS_PLID,
                 PERSONAL_TOP_SONGS_NAME
-            ).catch(err => {
+            ).catch((err) => {
                 logIt("Error updating music time with generated playlist ID");
             });
         } else {
@@ -728,7 +728,7 @@ export class MusicManager {
                 this.dataMgr.userTopSongs.length > 0
             ) {
                 let tracksToAdd: string[] = this.dataMgr.userTopSongs.map(
-                    item => {
+                    (item) => {
                         if (item.uri) {
                             return item.uri;
                         } else if (item.trackId) {
@@ -746,7 +746,7 @@ export class MusicManager {
                     );
                 } else {
                     await replacePlaylistTracks(playlistId, tracksToAdd).catch(
-                        err => {
+                        (err) => {
                             logIt(`Error replacing tracks: ${err.message}`);
                         }
                     );
@@ -802,7 +802,7 @@ export class MusicManager {
         const payload = {
             playlist_id,
             playlistTypeId,
-            name
+            name,
         };
         let jwt = getItem("jwt");
         let createResult = await softwarePost(
@@ -894,7 +894,7 @@ export class MusicManager {
             desktop,
             activeDevice,
             activeComputerDevice,
-            activeWebPlayerDevice
+            activeWebPlayerDevice,
         } = getDeviceSet();
 
         // if the player name is null, definitely check if there's an active or available device
@@ -949,15 +949,25 @@ export class MusicManager {
                 // since this is part of the check device launch path
                 const deviceId = getDeviceId();
 
-                // transfer to the device
-                await transferSpotifyDevice(deviceId, false);
+                const {
+                    webPlayer,
+                    desktop,
+                    activeDevice,
+                    activeComputerDevice,
+                    activeWebPlayerDevice,
+                } = getDeviceSet();
+
+                if (!activeComputerDevice && !activeWebPlayerDevice) {
+                    // transfer to the device
+                    await transferSpotifyDevice(deviceId, false);
+                }
 
                 commands.executeCommand("musictime.refreshDeviceInfo");
 
                 if (callback) {
                     setTimeout(async () => {
                         callback();
-                    }, 1100);
+                    }, 1000);
                 }
             }
         }, 1500);
@@ -979,7 +989,7 @@ export class MusicManager {
             activeDevice,
             activeComputerDevice,
             activeWebPlayerDevice,
-            activeDesktopPlayerDevice
+            activeDesktopPlayerDevice,
         } = getDeviceSet();
         return isMac() && activeDesktopPlayerDevice ? true : false;
     }
@@ -1126,7 +1136,7 @@ export class MusicManager {
         if (!computerDevice) {
             computerDevice =
                 devices && devices.length > 0
-                    ? devices.find(d => d.type.toLowerCase() === "computer")
+                    ? devices.find((d) => d.type.toLowerCase() === "computer")
                     : null;
         }
         if (computerDevice) {
@@ -1238,7 +1248,7 @@ export class MusicManager {
                 await musicCommandUtil.runSpotifyCommand(playSpotifyPlaylist, [
                     playlistId,
                     trackId,
-                    deviceId
+                    deviceId,
                 ]);
             }
         } else {
@@ -1246,7 +1256,7 @@ export class MusicManager {
                 // else it's not a liked or recommendation play request, just play the selected track
                 await musicCommandUtil.runSpotifyCommand(playSpotifyTrack, [
                     trackId,
-                    deviceId
+                    deviceId,
                 ]);
             } else {
                 // play it using applescript
@@ -1302,8 +1312,8 @@ export class MusicManager {
                 {
                     track_ids,
                     device_id: deviceId,
-                    offset
-                }
+                    offset,
+                },
             ]
         );
 

@@ -10,12 +10,12 @@ import {
     logIt,
     getSongSessionDataFile,
     isMac,
-    getSoftwareDataStoreFile
+    getSoftwareDataStoreFile,
 } from "../Util";
 import {
     sendMusicData,
     populatePlayerContext,
-    serverIsAvailable
+    serverIsAvailable,
 } from "../DataController";
 import {
     Track,
@@ -23,7 +23,7 @@ import {
     getGenre,
     getSpotifyTrackById,
     getTrack,
-    PlayerName
+    PlayerName,
 } from "cody-music";
 import { MusicManager } from "./MusicManager";
 import { KpmController } from "../KpmController";
@@ -45,7 +45,7 @@ export class MusicStateManager {
 
     private lastTrackSentInfo = {
         timestamp: 0,
-        trackId: null
+        trackId: null,
     };
 
     private constructor() {
@@ -123,6 +123,10 @@ export class MusicStateManager {
             if (isMacDesktopEnabled || (!serverIsOnline && isMac)) {
                 // fetch from the desktop
                 playingTrack = await getTrack(PlayerName.SpotifyDesktop);
+                // applescript doesn't always return a name
+                if (!playingTrack || !playingTrack.name) {
+                    playingTrack = await getTrack(PlayerName.SpotifyWeb);
+                }
             } else {
                 playingTrack = await getTrack(PlayerName.SpotifyWeb);
             }
@@ -168,7 +172,7 @@ export class MusicStateManager {
 
                 // copy the existing track to "songSession"
                 const songSession = {
-                    ...this.existingTrack
+                    ...this.existingTrack,
                 };
 
                 // gather coding and send the track
@@ -264,7 +268,7 @@ export class MusicStateManager {
         "linesRemoved",
         "open",
         "close",
-        "keystrokes"
+        "keystrokes",
     ];
 
     public async gatherCodingDataAndSendSongSession(songSession) {
@@ -340,8 +344,8 @@ export class MusicStateManager {
         // add any file payloads we found
         const songSessionSource = {};
         if (payloads && payloads.length) {
-            payloads.forEach(payload => {
-                Object.keys(payload.source).forEach(sourceKey => {
+            payloads.forEach((payload) => {
+                Object.keys(payload.source).forEach((sourceKey) => {
                     let data = {};
                     data[sourceKey] = payload.source[sourceKey];
                     // only add the file payload if the song session's end is after the song session start
@@ -353,7 +357,7 @@ export class MusicStateManager {
                             // aggregate it
                             const existingData = songSessionSource[sourceKey];
                             const fileData = data[sourceKey];
-                            Object.keys(existingData).forEach(key => {
+                            Object.keys(existingData).forEach((key) => {
                                 if (this.numerics.includes(key)) {
                                     existingData[key] += fileData[key];
                                 }
@@ -384,7 +388,7 @@ export class MusicStateManager {
             version: getVersion(),
             source: songSessionSource,
             repoFileCount: 0,
-            repoContributorCount: 0
+            repoContributorCount: 0,
         };
 
         // build the file aggregate data, but only keep the coding data
@@ -423,7 +427,7 @@ export class MusicStateManager {
 
         songSession = {
             ...songSession,
-            ...songData
+            ...songData,
         };
 
         // make sure we've set the "liked" to true if it's coming from the liked songs playlist
@@ -492,11 +496,11 @@ export class MusicStateManager {
                     // initialValue.source = element.source;
                     const keys = Object.keys(element.source);
                     if (keys && keys.length > 0) {
-                        keys.forEach(key => {
+                        keys.forEach((key) => {
                             let sourceObj = element.source[key];
                             const sourceObjKeys = Object.keys(sourceObj);
                             if (sourceObjKeys && sourceObjKeys.length > 0) {
-                                sourceObjKeys.forEach(sourceObjKey => {
+                                sourceObjKeys.forEach((sourceObjKey) => {
                                     const val = sourceObj[sourceObjKey];
                                     if (this.numerics.includes(sourceObjKey)) {
                                         // aggregate
