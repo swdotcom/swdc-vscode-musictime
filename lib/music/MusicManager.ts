@@ -1149,7 +1149,7 @@ export class MusicManager {
         const spotifyContext: PlayerContext = this.dataMgr.spotifyContext;
         // "off", "track", "context", ""
         const repeatState = spotifyContext ? spotifyContext.repeat_state : "";
-
+        console.log("repeat state: ", repeatState);
         return repeatState && repeatState === "track" ? true : false;
     }
 

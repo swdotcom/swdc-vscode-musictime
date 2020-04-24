@@ -4,40 +4,43 @@ import {
     connectSpotify,
     disconnectSpotify,
     disconnectSlack,
-    displayMusicTimeMetricsMarkdownDashboard
+    displayMusicTimeMetricsMarkdownDashboard,
 } from "./music/MusicControlManager";
 import { launchMusicAnalytics, displayReadmeIfNotExists } from "./Util";
 import { KpmController } from "./KpmController";
 import {
     MusicPlaylistProvider,
-    connectPlaylistTreeView
+    connectPlaylistTreeView,
 } from "./music/MusicPlaylistProvider";
 import {
     PlaylistItem,
     PlayerName,
     PlayerDevice,
-    playSpotifyDevice
+    playSpotifyDevice,
 } from "cody-music";
 import { SocialShareManager } from "./social/SocialShareManager";
 import { connectSlack } from "./slack/SlackControlManager";
 import { MusicManager } from "./music/MusicManager";
 import {
     MusicRecommendationProvider,
-    connectRecommendationPlaylistTreeView
+    connectRecommendationPlaylistTreeView,
 } from "./music/MusicRecommendationProvider";
 import {
     showGenreSelections,
-    showCategorySelections
+    showCategorySelections,
 } from "./selector/RecTypeSelectorManager";
-import { showSortPlaylistMenu } from "./selector/SortPlaylistSelectorManager";
+import {
+    showSortPlaylistMenu,
+    showPlaylistOptionsMenu,
+} from "./selector/SortPlaylistSelectorManager";
 import {
     populateSpotifyPlaylists,
-    populateSpotifyDevices
+    populateSpotifyDevices,
 } from "./DataController";
 import { showDeviceSelectorMenu } from "./selector/SpotifyDeviceSelectorManager";
 import {
     updateRecommendations,
-    refreshRecommendations
+    refreshRecommendations,
 } from "./music/MusicRecommendationManager";
 import { MusicCommandUtil } from "./music/MusicCommandUtil";
 import { showSearchInput } from "./selector/SearchSelectorManager";
@@ -59,7 +62,7 @@ export function createCommands(): {
         "my-playlists",
         {
             treeDataProvider: treePlaylistProvider,
-            showCollapseAll: false
+            showCollapseAll: false,
         }
     );
     treePlaylistProvider.bindView(playlistTreeView);
@@ -71,7 +74,7 @@ export function createCommands(): {
         "track-recommendations",
         {
             treeDataProvider: recTreePlaylistProvider,
-            showCollapseAll: false
+            showCollapseAll: false,
         }
     );
     recTreePlaylistProvider.bindView(recPlaylistTreeView);
@@ -177,10 +180,34 @@ export function createCommands(): {
         })
     );
 
+    cmds.push(
+        commands.registerCommand("musictime.shuffleOff", () => {
+            controller.setShuffleOff();
+        })
+    );
+
+    cmds.push(
+        commands.registerCommand("musictime.shuffleOn", () => {
+            controller.setShuffleOn();
+        })
+    );
+
     // REPEAT OFF CMD
     cmds.push(
         commands.registerCommand("musictime.repeatOn", () => {
             controller.setRepeatOnOff(true);
+        })
+    );
+
+    cmds.push(
+        commands.registerCommand("musictime.repeatTrack", () => {
+            controller.setRepeatTrackOn();
+        })
+    );
+
+    cmds.push(
+        commands.registerCommand("musictime.repeatPlaylist", () => {
+            controller.setRepeatPlaylistOn();
         })
     );
 
@@ -289,13 +316,19 @@ export function createCommands(): {
     );
     cmds.push(refreshPlaylistCommand);
 
-    const sortPlaylistCommand = commands.registerCommand(
-        "musictime.sortIcon",
-        async () => {
+    // SORT TITLE COMMAND
+    cmds.push(
+        commands.registerCommand("musictime.sortIcon", () => {
             showSortPlaylistMenu();
-        }
+        })
     );
-    cmds.push(sortPlaylistCommand);
+
+    // OPTIONS TITLE COMMAND
+    cmds.push(
+        commands.registerCommand("musictime.optionsIcon", () => {
+            showPlaylistOptionsMenu();
+        })
+    );
 
     const sortPlaylistAlphabeticallyCommand = commands.registerCommand(
         "musictime.sortAlphabetically",
@@ -433,7 +466,7 @@ export function createCommands(): {
 
     // UPDATE RECOMMENDATIONS CMD
     cmds.push(
-        commands.registerCommand("musictime.updateRecommendations", args => {
+        commands.registerCommand("musictime.updateRecommendations", (args) => {
             // there's always at least 3 args
             const label = args[0];
             const likedSongSeedLimit = args[1];

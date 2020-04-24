@@ -345,7 +345,10 @@ export class MusicStateManager {
         const songSessionSource = {};
         if (payloads && payloads.length) {
             payloads.forEach((payload) => {
-                Object.keys(payload.source).forEach((sourceKey) => {
+                const sourceKeys = payload.source
+                    ? Object.keys(payload.source)
+                    : [];
+                sourceKeys.forEach((sourceKey) => {
                     let data = {};
                     data[sourceKey] = payload.source[sourceKey];
                     // only add the file payload if the song session's end is after the song session start

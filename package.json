@@ -1,7 +1,7 @@
 {
     "name": "music-time",
     "displayName": "Music Time",
-    "version": "1.8.14",
+    "version": "1.8.15",
     "publisher": "softwaredotcom",
     "description": "Music Time is an open source plugin that curates and launches playlists for coding right from your editor.",
     "author": {
@@ -95,6 +95,14 @@
                 "icon": {
                     "light": "resources/light/share.svg",
                     "dark": "resources/dark/share.svg"
+                }
+            },
+            {
+                "command": "musictime.optionsIcon",
+                "title": "Options",
+                "icon": {
+                    "light": "resources/light/options.svg",
+                    "dark": "resources/dark/options.svg"
                 }
             },
             {
@@ -309,18 +317,23 @@
             ],
             "view/title": [
                 {
-                    "command": "musictime.sortIcon",
+                    "command": "musictime.optionsIcon",
                     "group": "navigation@1",
                     "when": "view =~ /.*-playlists/"
                 },
                 {
-                    "command": "musictime.refreshButton",
+                    "command": "musictime.sortIcon",
                     "group": "navigation@2",
                     "when": "view =~ /.*-playlists/"
                 },
                 {
-                    "command": "musictime.searchTracks",
+                    "command": "musictime.refreshButton",
                     "group": "navigation@3",
+                    "when": "view =~ /.*-playlists/"
+                },
+                {
+                    "command": "musictime.searchTracks",
+                    "group": "navigation@4",
                     "when": "view =~ /.*-playlists/"
                 },
                 {
@@ -352,7 +365,7 @@
         "aws-sdk": "^2.470.0",
         "axios": "^0.19.0",
         "clipboardy": "^2.1.0",
-        "cody-music": "2.9.10",
+        "cody-music": "2.9.12",
         "moment-timezone": "^0.5.25",
         "node-cache": "^5.1.0",
         "open": "^6.4.0",

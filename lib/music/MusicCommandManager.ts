@@ -86,19 +86,12 @@ export class MusicCommandManager {
         // 996 buttons (unlike, like)
         this.createButton("♡", "Like", "musictime.like", 996);
         this.createButton("♥", "Unlike", "musictime.unlike", 996);
-        this.createButton("$(sync)", "Repeat Track", "musictime.repeatOn", 995);
-        this.createButton(
-            "$(sync)1",
-            "Don't Repeat",
-            "musictime.repeatOff",
-            995
-        );
         // button area for the current song name
         this.createButton(
             "",
             "Click to view track",
             "musictime.currentSong",
-            994
+            995
         );
 
         // await this.syncControls(MusicDataManager.getInstance().runningTrack);
@@ -123,7 +116,7 @@ export class MusicCommandManager {
 
         const {
             needsSpotifyAccess,
-            foundDevice
+            foundDevice,
         } = await this.getSpotifyState();
 
         let pauseIt = trackStatus === TrackStatus.Playing;
@@ -176,7 +169,7 @@ export class MusicCommandManager {
         let button: Button = {
             id: command,
             statusBarItem,
-            tooltip: tooltip
+            tooltip: tooltip,
         };
 
         this._buttons.push(button);
@@ -190,7 +183,7 @@ export class MusicCommandManager {
         this._isLoading = true;
 
         // hide all except for the launch player button and possibly connect spotify button
-        this._buttons = this._buttons.map(button => {
+        this._buttons = this._buttons.map((button) => {
             const btnCmd = button.statusBarItem.command;
 
             const isMusicTimeMenuButton = btnCmd === "musictime.revealTree";
@@ -219,10 +212,10 @@ export class MusicCommandManager {
         }
         const {
             needsSpotifyAccess,
-            showPremiumRequired
+            showPremiumRequired,
         } = await this.getSpotifyState();
         // hide all except for the launch player button and possibly connect spotify button
-        this._buttons = this._buttons.map(button => {
+        this._buttons = this._buttons.map((button) => {
             const btnCmd = button.statusBarItem.command;
 
             const isMusicTimeMenuButton = btnCmd === "musictime.revealTree";
@@ -253,8 +246,6 @@ export class MusicCommandManager {
             return;
         }
 
-        const trackRepeating = await MusicManager.getInstance().isTrackRepeating();
-
         const songInfo = trackInfo
             ? `${trackInfo.name} (${trackInfo.artist})`
             : null;
@@ -263,14 +254,12 @@ export class MusicCommandManager {
             trackInfo.id
         );
 
-        this._buttons.map(button => {
+        this._buttons.map((button) => {
             const btnCmd = button.statusBarItem.command;
             const isMusicTimeMenuButton = btnCmd === "musictime.revealTree";
             const isPlayButton = btnCmd === "musictime.play";
             const isLikedButton = btnCmd === "musictime.like";
             const isUnLikedButton = btnCmd === "musictime.unlike";
-            const isRepeatOnButton = btnCmd === "musictime.repeatOn";
-            const isRepeatOffButton = btnCmd === "musictime.repeatOff";
             const currentSongButton = btnCmd === "musictime.currentSong";
             const isPrevButton = btnCmd === "musictime.previous";
             const isNextButton = btnCmd === "musictime.next";
@@ -289,20 +278,6 @@ export class MusicCommandManager {
                 }
             } else if (isUnLikedButton) {
                 if (isLiked) {
-                    button.statusBarItem.show();
-                } else {
-                    button.statusBarItem.hide();
-                }
-            } else if (isRepeatOnButton) {
-                if (trackRepeating) {
-                    // it's either not available or it's a track, hide the repeat On button
-                    button.statusBarItem.hide();
-                } else {
-                    button.statusBarItem.show();
-                }
-            } else if (isRepeatOffButton) {
-                if (trackRepeating) {
-                    // it has to be available and a track to show the repeat off button
                     button.statusBarItem.show();
                 } else {
                     button.statusBarItem.hide();
@@ -332,8 +307,6 @@ export class MusicCommandManager {
             return;
         }
 
-        const trackRepeating = await MusicManager.getInstance().isTrackRepeating();
-
         const songInfo = trackInfo
             ? `${trackInfo.name} (${trackInfo.artist})`
             : null;
@@ -342,14 +315,12 @@ export class MusicCommandManager {
             trackInfo.id
         );
 
-        this._buttons.map(button => {
+        this._buttons.map((button) => {
             const btnCmd = button.statusBarItem.command;
             const isMusicTimeMenuButton = btnCmd === "musictime.revealTree";
             const isPauseButton = btnCmd === "musictime.pause";
             const isLikedButton = btnCmd === "musictime.like";
             const isUnLikedButton = btnCmd === "musictime.unlike";
-            const isRepeatOnButton = btnCmd === "musictime.repeatOn";
-            const isRepeatOffButton = btnCmd === "musictime.repeatOff";
             const currentSongButton = btnCmd === "musictime.currentSong";
             const isPrevButton = btnCmd === "musictime.previous";
             const isNextButton = btnCmd === "musictime.next";
@@ -372,20 +343,6 @@ export class MusicCommandManager {
                 } else {
                     button.statusBarItem.hide();
                 }
-            } else if (isRepeatOnButton) {
-                if (trackRepeating) {
-                    // it's either not available or it's a track, hide the repeat On button
-                    button.statusBarItem.hide();
-                } else {
-                    button.statusBarItem.show();
-                }
-            } else if (isRepeatOffButton) {
-                if (trackRepeating) {
-                    // it has to be available and a track to show the repeat off button
-                    button.statusBarItem.show();
-                } else {
-                    button.statusBarItem.hide();
-                }
             } else if (currentSongButton) {
                 button.statusBarItem.tooltip = `(${trackInfo.name}) ${button.tooltip}`;
                 button.statusBarItem.text = getSongDisplayName(trackInfo.name);
@@ -402,7 +359,7 @@ export class MusicCommandManager {
     }
 
     private static showProgress(progressLabel: string) {
-        this._buttons.map(button => {
+        this._buttons.map((button) => {
             const btnCmd = button.statusBarItem.command;
             const isMusicTimeMenuButton = btnCmd === "musictime.revealTree";
             const isMusicTimeProgress = btnCmd === "musictime.progress";
@@ -450,7 +407,7 @@ export class MusicCommandManager {
         return {
             needsSpotifyAccess,
             showPremiumRequired,
-            foundDevice
+            foundDevice,
         };
     }
 }

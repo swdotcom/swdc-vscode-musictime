@@ -3,7 +3,7 @@ import {
     softwareGet,
     softwarePut,
     isResponseOk,
-    softwarePost
+    softwarePost,
 } from "./HttpClient";
 import {
     getItem,
@@ -18,7 +18,7 @@ import {
     logIt,
     getPluginId,
     getOffsetSecends,
-    storeMusicSessionPayload
+    storeMusicSessionPayload,
 } from "./Util";
 import {
     getSpotifyLikedSongs,
@@ -26,10 +26,9 @@ import {
     PlayerName,
     getPlaylists,
     getSpotifyDevices,
-    PlayerDevice,
     PlayerContext,
     getSpotifyPlayerContext,
-    getUserProfile
+    getUserProfile,
 } from "cody-music";
 import { MusicManager } from "./music/MusicManager";
 import { MusicDataManager } from "./music/MusicDataManager";
@@ -75,10 +74,10 @@ export async function serverIsAvailable() {
     let serverAvailable = cacheMgr.get("serverAvailable") || null;
     if (serverAvailable === null) {
         serverAvailable = await softwareGet("/ping", null)
-            .then(result => {
+            .then((result) => {
                 return isResponseOk(result);
             })
-            .catch(e => {
+            .catch((e) => {
                 return false;
             });
     }
@@ -89,7 +88,7 @@ export async function serverIsAvailable() {
 }
 
 export async function sendBatchPayload(batch) {
-    await softwarePost("/data/batch", batch, getItem("jwt")).catch(e => {
+    await softwarePost("/data/batch", batch, getItem("jwt")).catch((e) => {
         logIt(`Unable to send plugin data batch, error: ${e.message}`);
     });
 }
@@ -367,8 +366,8 @@ export async function populateSpotifyPlaylists() {
         [
             PlayerName.SpotifyWeb,
             {
-                all: true
-            }
+                all: true,
+            },
         ]
     );
 
@@ -422,7 +421,7 @@ export function getBootstrapFileMetrics() {
         version: getVersion(),
         source: [],
         repoFileCount: 0,
-        repoContributorCount: 0
+        repoContributorCount: 0,
     };
     return fileMetrics;
 }
@@ -453,7 +452,7 @@ async function seedLikedSongSessions(likedSongs) {
             // add the empty file metrics
             const songSession = {
                 ...track,
-                ...fileMetrics
+                ...fileMetrics,
             };
             batch.push(songSession);
             if (i > 0 && i % 20 === 0) {
@@ -472,13 +471,13 @@ async function seedLikedSongSessions(likedSongs) {
 function sendBatchedLikedSongSessions(tracksToSave) {
     const api = `/music/session/seed`;
     softwarePut(api, { tracks: tracksToSave }, getItem("jwt"))
-        .then(resp => {
+        .then((resp) => {
             if (!isResponseOk(resp)) {
                 return { status: "fail" };
             }
             return { status: "ok" };
         })
-        .catch(e => {
+        .catch((e) => {
             return { status: "fail" };
         });
 }
@@ -486,13 +485,13 @@ function sendBatchedLikedSongSessions(tracksToSave) {
 export async function sendSessionPayload(songSession) {
     let api = `/music/session`;
     return softwarePost(api, songSession, getItem("jwt"))
-        .then(resp => {
+        .then((resp) => {
             if (!isResponseOk(resp)) {
                 return { status: "fail" };
             }
             return { status: "ok" };
         })
-        .catch(e => {
+        .catch((e) => {
             return { status: "fail" };
         });
 }
@@ -510,10 +509,10 @@ export async function sendHeartbeat(reason, serverIsOnline) {
             session_ctime: getSessionFileCreateTime(),
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             trigger_annotation: reason,
-            editor_token: getEditorSessionToken()
+            editor_token: getEditorSessionToken(),
         };
         let api = `/data/heartbeat`;
-        softwarePost(api, heartbeat, jwt).then(async resp => {
+        softwarePost(api, heartbeat, jwt).then(async (resp) => {
             if (!isResponseOk(resp)) {
                 logIt("unable to send heartbeat ping");
             }
