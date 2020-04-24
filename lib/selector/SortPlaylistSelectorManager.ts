@@ -2,6 +2,8 @@ import { showQuickPick } from "../MenuManager";
 import { MusicManager } from "../music/MusicManager";
 import { MusicDataManager } from "../music/MusicDataManager";
 import { Track, PlayerContext, getSpotifyPlayerContext } from "cody-music";
+import { getDeviceSet } from "../music/MusicUtil";
+import { window } from "vscode";
 
 export async function showSortPlaylistMenu() {
     const items = getSortItems();
@@ -18,20 +20,23 @@ export async function showSortPlaylistMenu() {
 }
 
 export async function showPlaylistOptionsMenu() {
-    const items = getOptionItems();
-    let menuOptions = {
-        items,
-        placeholder: "",
-    };
+    const {
+        webPlayer,
+        desktop,
+        activeDevice,
+        activeComputerDevice,
+        activeWebPlayerDevice,
+    } = getDeviceSet();
 
-    const pick = await showQuickPick(menuOptions);
-    if (pick && pick.label) {
-        return pick.label;
+    if (
+        !webPlayer &&
+        !desktop &&
+        !activeComputerDevice &&
+        !activeWebPlayerDevice
+    ) {
+        return MusicManager.getInstance().showPlayerLaunchConfirmation();
     }
-    return null;
-}
 
-async function getOptionItems() {
     /**
     context:null
     currently_playing_type:"track"
@@ -51,15 +56,56 @@ async function getOptionItems() {
     shuffle_state:false
      */
     const spotifyContext: PlayerContext = await getSpotifyPlayerContext();
+    const currentVolume = spotifyContext.device.volume_percent;
 
     // is it currently shuffling?
     const isShuffling = spotifyContext.shuffle_state === true ? true : false;
     // is it currently on playlist repeat, song repeat, no repeat?
+    // context = playlist is repeating, track = track is repeating, off = not repeating
     const isRepeatingTrack =
         spotifyContext.repeat_state === "track" ? true : false;
     const isRepeatingPlaylist =
         spotifyContext.repeat_state === "context" ? true : false;
 
+    let msg = "";
+    if (isRepeatingTrack) {
+        msg += "repeating track; ";
+    } else if (isRepeatingPlaylist) {
+        msg += "repeating playlist; ";
+    } else {
+        msg += "repeat is off; ";
+    }
+
+    if (isShuffling) {
+        msg += "shuffling playlist; ";
+    } else {
+        msg += "shuffle is off; ";
+    }
+
+    msg += `volume ${currentVolume}%`;
+
+    const items = getOptionItems(
+        isShuffling,
+        isRepeatingPlaylist,
+        isRepeatingTrack
+    );
+    let menuOptions = {
+        items,
+        placeholder: msg,
+    };
+
+    const pick = await showQuickPick(menuOptions);
+    if (pick && pick.label) {
+        return pick.label;
+    }
+    return null;
+}
+
+async function getOptionItems(
+    isShuffling: boolean,
+    isRepeatingPlaylist: boolean,
+    isRepeatingTrack: boolean
+) {
     const items = [];
     if (isShuffling) {
         items.push({
@@ -74,6 +120,10 @@ async function getOptionItems() {
     }
     if (isRepeatingPlaylist) {
         items.push({
+            label: "Don't repeat",
+            command: "musictime.repeatOff",
+        });
+        items.push({
             label: "Repeat track",
             command: "musictime.repeatTrack",
         });
@@ -81,6 +131,10 @@ async function getOptionItems() {
         items.push({
             label: "Don't repeat",
             command: "musictime.repeatOff",
+        });
+        items.push({
+            label: "Repeat playlist",
+            command: "musictime.repeatPlaylist",
         });
     } else {
         items.push({

@@ -201,37 +201,21 @@ export class MusicControlManager {
     async setShuffleOn() {
         const deviceId = getDeviceId();
         await setShuffle(PlayerName.SpotifyWeb, true, deviceId);
-        setTimeout(async () => {
-            // get the latest player context (repeat would be part of this data)
-            await populatePlayerContext();
-        }, 1500);
     }
 
     async setShuffleOff() {
         const deviceId = getDeviceId();
         await setShuffle(PlayerName.SpotifyWeb, false, deviceId);
-        setTimeout(async () => {
-            // get the latest player context (repeat would be part of this data)
-            await populatePlayerContext();
-        }, 1500);
     }
 
     async setRepeatTrackOn() {
         const deviceId = getDeviceId();
         await setRepeatTrack(PlayerName.SpotifyWeb, deviceId);
-        setTimeout(async () => {
-            // get the latest player context (repeat would be part of this data)
-            await populatePlayerContext();
-        }, 1500);
     }
 
     async setRepeatPlaylistOn() {
         const deviceId = getDeviceId();
         await setRepeatPlaylist(PlayerName.SpotifyWeb, deviceId);
-        setTimeout(async () => {
-            // get the latest player context (repeat would be part of this data)
-            await populatePlayerContext();
-        }, 1500);
     }
 
     async setRepeatOnOff(setToOn: boolean) {
@@ -241,11 +225,16 @@ export class MusicControlManager {
         } else {
             result = await repeatOff(PlayerName.SpotifyWeb);
         }
+    }
 
-        setTimeout(async () => {
-            // get the latest player context (repeat would be part of this data)
-            await populatePlayerContext();
-        }, 1500);
+    async setMuteOn() {
+        const deviceId = getDeviceId();
+        // todo: implement
+    }
+
+    async setMuteOff() {
+        const deviceId = getDeviceId();
+        // todo: implement
     }
 
     /**

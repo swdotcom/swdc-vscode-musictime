@@ -192,6 +192,18 @@ export function createCommands(): {
         })
     );
 
+    cmds.push(
+        commands.registerCommand("musictime.muteOn", () => {
+            controller.setMuteOn();
+        })
+    );
+
+    cmds.push(
+        commands.registerCommand("musictime.muteOff", () => {
+            controller.setMuteOff();
+        })
+    );
+
     // REPEAT OFF CMD
     cmds.push(
         commands.registerCommand("musictime.repeatOn", () => {

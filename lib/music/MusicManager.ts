@@ -1028,6 +1028,34 @@ export class MusicManager {
         return this.dataMgr.currentPlayerName;
     }
 
+    async showPlayerLaunchConfirmation(callback: any = null) {
+        const hasSpotifyPlaybackAccess = MusicManager.getInstance().hasSpotifyPlaybackAccess();
+        const buttons = hasSpotifyPlaybackAccess
+            ? ["Web Player", "Desktop Player"]
+            : ["Desktop Player"];
+
+        // no devices found at all OR no active devices and a computer device is not found in the list
+        const selectedButton = await window.showInformationMessage(
+            `Music Time requires a running Spotify player. Choose a player to launch.`,
+            ...buttons
+        );
+
+        if (
+            selectedButton === "Desktop Player" ||
+            selectedButton === "Web Player"
+        ) {
+            const playerName: PlayerName =
+                selectedButton === "Desktop Player"
+                    ? PlayerName.SpotifyDesktop
+                    : PlayerName.SpotifyWeb;
+            // start the launch process and pass the callback when complete
+            return this.launchTrackPlayer(playerName, callback);
+        } else {
+            // operation cancelled
+            return;
+        }
+    }
+
     async playInitialization(callback: any = null) {
         const devices: PlayerDevice[] = this.dataMgr.currentDevices;
 
@@ -1040,8 +1068,6 @@ export class MusicManager {
             await populateSpotifyUser();
             hasSpotifyUser = MusicManager.getInstance().hasSpotifyUser();
         }
-        const hasSpotifyPlaybackAccess = MusicManager.getInstance().hasSpotifyPlaybackAccess();
-        // const isWinNonPremium = isMac() && !hasSpotifyUser ? true : false;
 
         if (
             no_devices ||
@@ -1049,30 +1075,7 @@ export class MusicManager {
                 !deviceSet.desktop &&
                 !deviceSet.activeDevice)
         ) {
-            const buttons = hasSpotifyPlaybackAccess
-                ? ["Web Player", "Desktop Player"]
-                : ["Desktop Player"];
-
-            // no devices found at all OR no active devices and a computer device is not found in the list
-            const selectedButton = await window.showInformationMessage(
-                `Music Time requires a running Spotify player. Choose a player to launch.`,
-                ...buttons
-            );
-
-            if (
-                selectedButton === "Desktop Player" ||
-                selectedButton === "Web Player"
-            ) {
-                const playerName: PlayerName =
-                    selectedButton === "Desktop Player"
-                        ? PlayerName.SpotifyDesktop
-                        : PlayerName.SpotifyWeb;
-                // start the launch process and pass the callback when complete
-                return this.launchTrackPlayer(playerName, callback);
-            } else {
-                // operation cancelled
-                return;
-            }
+            return await this.showPlayerLaunchConfirmation(callback);
         }
 
         // we have a device, continue to the callback if we have it
