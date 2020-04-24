@@ -1,7 +1,12 @@
 import { showQuickPick } from "../MenuManager";
 import { MusicManager } from "../music/MusicManager";
 import { MusicDataManager } from "../music/MusicDataManager";
-import { Track, PlayerContext, getSpotifyPlayerContext } from "cody-music";
+import {
+    Track,
+    PlayerContext,
+    getSpotifyPlayerContext,
+    TrackStatus,
+} from "cody-music";
 import { getDeviceSet } from "../music/MusicUtil";
 import { window } from "vscode";
 
@@ -55,6 +60,7 @@ export async function showPlaylistOptionsMenu() {
     repeat_state:"context" | repeat_state:"off" | repeat_state:"track"
     shuffle_state:false
      */
+    const currentTrack: Track = MusicDataManager.getInstance().runningTrack;
     const spotifyContext: PlayerContext = await getSpotifyPlayerContext();
     const currentVolume = spotifyContext.device.volume_percent;
 
@@ -82,12 +88,24 @@ export async function showPlaylistOptionsMenu() {
         msg += "shuffle is off; ";
     }
 
+    let isPlaying = null;
+    if (currentTrack && currentTrack.id) {
+        if (currentTrack.state === TrackStatus.Playing) {
+            msg += `playing ${currentTrack.name}; `;
+            isPlaying = true;
+        } else if (currentTrack.state === TrackStatus.Paused) {
+            msg += `paused ${currentTrack.name}; `;
+            isPlaying = false;
+        }
+    }
+
     msg += `volume ${currentVolume}%`;
 
     const items = getOptionItems(
         isShuffling,
         isRepeatingPlaylist,
-        isRepeatingTrack
+        isRepeatingTrack,
+        isPlaying
     );
     let menuOptions = {
         items,
@@ -104,7 +122,8 @@ export async function showPlaylistOptionsMenu() {
 async function getOptionItems(
     isShuffling: boolean,
     isRepeatingPlaylist: boolean,
-    isRepeatingTrack: boolean
+    isRepeatingTrack: boolean,
+    isPlaying: any
 ) {
     const items = [];
     if (isShuffling) {
@@ -145,6 +164,19 @@ async function getOptionItems(
             label: "Repeat track",
             command: "musictime.repeatTrack",
         });
+    }
+    if (isPlaying !== null) {
+        if (isPlaying === true) {
+            items.push({
+                label: "Pause song",
+                command: "musictime.pause",
+            });
+        } else {
+            items.push({
+                label: "Play song",
+                command: "musictime.play",
+            });
+        }
     }
 
     return items;
