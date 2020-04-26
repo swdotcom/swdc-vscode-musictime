@@ -8,7 +8,6 @@ import {
     TrackStatus,
 } from "cody-music";
 import { getDeviceSet } from "../music/MusicUtil";
-import { window } from "vscode";
 
 export async function showSortPlaylistMenu() {
     const items = getSortItems();
@@ -128,52 +127,52 @@ async function getOptionItems(
     const items = [];
     if (isShuffling) {
         items.push({
-            label: "Don't shuffle",
+            label: "🔀⨯ Don't shuffle",
             command: "musictime.shuffleOff",
         });
     } else {
         items.push({
-            label: "Shuffle",
+            label: "🔀 Shuffle",
             command: "musictime.shuffleOn",
         });
     }
     if (isRepeatingPlaylist) {
         items.push({
-            label: "Don't repeat",
+            label: "🔄️⨯ Don't repeat",
             command: "musictime.repeatOff",
         });
         items.push({
-            label: "Repeat track",
+            label: "🔂 Repeat track",
             command: "musictime.repeatTrack",
         });
     } else if (isRepeatingTrack) {
         items.push({
-            label: "Don't repeat",
+            label: "🔄️⨯ Don't repeat",
             command: "musictime.repeatOff",
         });
         items.push({
-            label: "Repeat playlist",
+            label: "🔄️ Repeat playlist",
             command: "musictime.repeatPlaylist",
         });
     } else {
         items.push({
-            label: "Repeat playlist",
+            label: "🔄️ Repeat playlist",
             command: "musictime.repeatPlaylist",
         });
         items.push({
-            label: "Repeat track",
+            label: "🔂 Repeat track",
             command: "musictime.repeatTrack",
         });
     }
     if (isPlaying !== null) {
         if (isPlaying === true) {
             items.push({
-                label: "Pause song",
+                label: "⏹️ Pause song",
                 command: "musictime.pause",
             });
         } else {
             items.push({
-                label: "Play song",
+                label: "$(debug-start) Play song",
                 command: "musictime.play",
             });
         }
