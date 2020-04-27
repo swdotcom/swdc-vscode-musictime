@@ -17,9 +17,10 @@
         "type": "git",
         "url": "https://github.com/swdotcom/swdc-vscode-musictime"
     },
-    "remote.extensionKind": {
-        "softwaredotcom.swdc-vscode": "ui"
-    },
+    "extensionKind": [
+        "ui",
+        "workspace"
+    ],
     "categories": [
         "Other"
     ],
