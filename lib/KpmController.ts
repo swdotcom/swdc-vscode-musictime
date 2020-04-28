@@ -28,7 +28,7 @@ let _keystrokeMap = {};
 let _staticInfoMap = {};
 
 // batch offline payloads in 50. backend has a 100k body limit
-const batch_limit = 50;
+const batch_limit = 5;
 
 export class KpmController {
     private static instance: KpmController;

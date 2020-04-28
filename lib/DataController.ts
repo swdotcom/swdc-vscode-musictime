@@ -440,6 +440,7 @@ async function seedLikedSongSessions(likedSongs) {
 
      */
     const fileMetrics = getBootstrapFileMetrics();
+    const batch_size = 5;
     if (likedSongs && likedSongs.length > 0) {
         let batch = [];
         // send 20 at a time
@@ -455,7 +456,7 @@ async function seedLikedSongSessions(likedSongs) {
                 ...fileMetrics,
             };
             batch.push(songSession);
-            if (i > 0 && i % 20 === 0) {
+            if (i > 0 && i % batch_size === 0) {
                 await sendBatchedLikedSongSessions(batch);
                 batch = [];
             }
