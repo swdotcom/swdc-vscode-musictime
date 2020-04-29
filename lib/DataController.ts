@@ -437,13 +437,12 @@ async function seedLikedSongSessions(likedSongs) {
     external_ids:Object {isrc: "GBF088590110"}
     external_urls:Object {spotify: "https://open.spotify.com/track/4RvWPyQ5RL0ao9LPZeS…"}
     href:"https://api.spotify.com/v1/tracks/4RvWPyQ5RL0ao9LPZeSouE"
-
      */
     const fileMetrics = getBootstrapFileMetrics();
-    const batch_size = 5;
+    const batch_size = 30;
     if (likedSongs && likedSongs.length > 0) {
         let batch = [];
-        // send 20 at a time
+        // batch send the liked songs
         for (let i = 0; i < likedSongs.length; i++) {
             const track = likedSongs[i];
             track["liked"] = true;
