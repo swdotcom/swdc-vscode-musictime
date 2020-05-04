@@ -81,7 +81,7 @@ function getCategorySelections() {
                 "Danceable",
                 5,
                 [],
-                { min_danceability: 0.7, target_danceability: 1 },
+                { min_danceability: 0.5, target_danceability: 1 },
             ],
         },
         // Low speechiness

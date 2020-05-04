@@ -4,7 +4,7 @@ import {
     PlaylistTrackInfo,
     PlayerDevice,
     PlayerName,
-    Track
+    Track,
 } from "cody-music";
 import {
     SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
@@ -12,7 +12,7 @@ import {
     GENERATE_CUSTOM_PLAYLIST_TITLE,
     REFRESH_CUSTOM_PLAYLIST_TITLE,
     GENERATE_CUSTOM_PLAYLIST_TOOLTIP,
-    REFRESH_CUSTOM_PLAYLIST_TOOLTIP
+    REFRESH_CUSTOM_PLAYLIST_TOOLTIP,
 } from "../Constants";
 import { requiresSpotifyAccess, getDeviceSet } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
@@ -136,7 +136,9 @@ export class ProviderItemManager {
             null,
             PlayerType.NotAssigned,
             "Loading...",
-            "please wait"
+            "please wait",
+            null,
+            "audio.svg"
         );
     }
 
@@ -291,7 +293,7 @@ export class ProviderItemManager {
             desktop,
             activeDevice,
             activeComputerDevice,
-            activeWebPlayerDevice
+            activeWebPlayerDevice,
         } = getDeviceSet();
 
         if (activeDevice && !webPlayer && !desktop) {

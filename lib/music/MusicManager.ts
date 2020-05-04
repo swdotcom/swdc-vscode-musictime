@@ -22,7 +22,6 @@ import {
     transferSpotifyDevice,
     playSpotifyPlaylist,
     play,
-    getTrack,
     playTrackInContext,
 } from "cody-music";
 import {

@@ -31,7 +31,6 @@ import {
     getAppJwt,
     populateLikedSongs,
     populateSpotifyPlaylists,
-    populatePlayerContext,
 } from "../DataController";
 import {
     getItem,
