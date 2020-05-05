@@ -14,7 +14,6 @@
 
 <br />
 
-<!--
 <p align="center">
   <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.music-time">
     <img alt="Marketplace" src="https://vsmarketplacebadge.apphb.com/version-short/softwaredotcom.music-time.svg"></a>
@@ -22,12 +21,9 @@
     <img alt="Installs" src="https://vsmarketplacebadge.apphb.com/installs-short/softwaredotcom.music-time.svg"></a>
   <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.music-time">
     <img alt="Rating" src="https://vsmarketplacebadge.apphb.com/rating-short/softwaredotcom.music-time.svg"></a>
-  <a href="https://aka.ms/vsls">
-    <img alt="Live Share enabled" src="https://aka.ms/vsls-badge"></a>
 </p>
 
 <br />
--->
 
 <p align="center" style="margin: 0 0">
   <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/music-time-diagram.png" alt="Music Time diagram" />
