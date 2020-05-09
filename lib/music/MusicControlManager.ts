@@ -777,7 +777,9 @@ export async function displayMusicTimeMetricsMarkdownDashboard() {
         }
     );
 
-    const content = fs.readFileSync(musicTimeFile).toString();
+    const content = fs
+        .readFileSync(musicTimeFile, { encoding: "utf8" })
+        .toString();
     panel.webview.html = content;
 
     window.showInformationMessage(`Completed building Music Time dashboard.`);

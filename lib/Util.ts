@@ -453,7 +453,9 @@ export function getExtensionDisplayName() {
         extInfoFile += "/extensioninfo.json";
     }
     if (fs.existsSync(extInfoFile)) {
-        const content = fs.readFileSync(extInfoFile).toString();
+        const content = fs
+            .readFileSync(extInfoFile, { encoding: "utf8" })
+            .toString();
         if (content) {
             try {
                 const data = JSON.parse(content);
@@ -482,7 +484,9 @@ export function getExtensionName() {
         extInfoFile += "/extensioninfo.json";
     }
     if (fs.existsSync(extInfoFile)) {
-        const content = fs.readFileSync(extInfoFile).toString();
+        const content = fs
+            .readFileSync(extInfoFile, { encoding: "utf8" })
+            .toString();
         if (content) {
             try {
                 const data = JSON.parse(content);
@@ -516,7 +520,9 @@ export function getSoftwareSessionAsJson() {
 
     const sessionFile = getSoftwareSessionFile();
     if (fs.existsSync(sessionFile)) {
-        const content = fs.readFileSync(sessionFile).toString();
+        const content = fs
+            .readFileSync(sessionFile, { encoding: "utf8" })
+            .toString();
         if (content) {
             try {
                 data = JSON.parse(content);

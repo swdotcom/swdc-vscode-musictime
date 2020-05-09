@@ -110,7 +110,7 @@ export function getSessionSummaryFileAsJson() {
     let data = null;
     let file = getSessionSummaryFile();
     if (fs.existsSync(file)) {
-        const content = fs.readFileSync(file).toString();
+        const content = fs.readFileSync(file, { encoding: "utf8" }).toString();
         if (content) {
             try {
                 data = JSON.parse(content);
@@ -136,7 +136,9 @@ export async function getDataRows(file, deleteAfterRead = true) {
     }
     try {
         if (fs.existsSync(file)) {
-            const content = fs.readFileSync(file).toString();
+            const content = fs
+                .readFileSync(file, { encoding: "utf8" })
+                .toString();
             // we're online so just delete the file
             if (deleteAfterRead) {
                 deleteFile(file);
@@ -183,7 +185,7 @@ export function getCurrentPayload() {
 
     const file = getCurrentPayloadFile();
     if (fs.existsSync(file)) {
-        const content = fs.readFileSync(file).toString();
+        const content = fs.readFileSync(file, { encoding: "utf8" }).toString();
         if (content) {
             try {
                 data = JSON.parse(content);
