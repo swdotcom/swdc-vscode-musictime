@@ -13,6 +13,7 @@ import {
     getFileType,
     getSoftwareDataStoreFile,
     codeTimeExtInstalled,
+    isFileOpen,
 } from "./Util";
 import {
     getRepoContributorInfo,
@@ -39,7 +40,7 @@ export class KpmController {
         let subscriptions: Disposable[] = [];
 
         workspace.onDidOpenTextDocument(this._onOpenHandler, this);
-        workspace.onDidCloseTextDocument(this._onCloseHandler, this);
+        // workspace.onDidCloseTextDocument(this._onCloseHandler, this);
         workspace.onDidChangeTextDocument(this._onEventHandler, this);
         this._disposable = Disposable.from(...subscriptions);
     }
@@ -215,9 +216,7 @@ export class KpmController {
         let text = "";
 
         let hasCotentText =
-            event.contentChanges && event.contentChanges.length === 1
-                ? true
-                : false;
+            event.contentChanges && event.contentChanges.length === 1 ? true : false;
         if (hasCotentText) {
             text = event.contentChanges[0].text || "";
         }
@@ -296,10 +295,7 @@ export class KpmController {
     private updateStaticValues(payload, staticInfo) {
         const sourceObj = payload.source[staticInfo.filename];
         // set the repoContributorCount
-        if (
-            staticInfo.repoContributorCount &&
-            payload.repoContributorCount === 0
-        ) {
+        if (staticInfo.repoContributorCount && payload.repoContributorCount === 0) {
             payload.repoContributorCount = staticInfo.repoContributorCount;
         }
 
@@ -310,8 +306,7 @@ export class KpmController {
 
         // update the repoFileContributorCount
         if (!sourceObj.repoFileContributorCount) {
-            sourceObj.repoFileContributorCount =
-                staticInfo.repoFileContributorCount;
+            sourceObj.repoFileContributorCount = staticInfo.repoFileContributorCount;
         }
 
         // syntax
@@ -367,15 +362,11 @@ export class KpmController {
 
         // get the repo count and repo file count
         const contributorInfo = await getRepoContributorInfo(filename);
-        const repoContributorCount = contributorInfo
-            ? contributorInfo.count
-            : 0;
+        const repoContributorCount = contributorInfo ? contributorInfo.count : 0;
         const repoFileCount = await getRepoFileCount(filename);
 
         // get the file contributor count
-        const repoFileContributorCount = await getFileContributorCount(
-            filename
-        );
+        const repoFileContributorCount = await getFileContributorCount(filename);
 
         // get the age of this file
         const fileAgeDays = getFileAgeInDays(filename);
@@ -419,28 +410,25 @@ export class KpmController {
         let scheme = "";
         if (event.uri && event.uri.scheme) {
             scheme = event.uri.scheme;
-        } else if (
-            event.document &&
-            event.document.uri &&
-            event.document.uri.scheme
-        ) {
+        } else if (event.document && event.document.uri && event.document.uri.scheme) {
             scheme = event.document.uri.scheme;
         }
 
-        // other scheme types I know of "vscode-userdata", "git"
-        if (scheme !== "file" && scheme !== "untitled") {
-            return false;
-        }
+        const isLiveshareTmpFile = filename.match(
+            /.*\.code-workspace.*vsliveshare.*tmp-.*/
+        );
+        const isInternalFile = filename.match(
+            /.*\.software.*(CommitSummary\.txt|CodeTime\.txt|session\.json|ProjectCodeSummary\.txt|data.json)/
+        );
 
+        // if it's not active or a liveshare tmp file or internal file or not the right scheme
+        // then it's not something to track
         if (
-            filename === getDashboardFile() ||
-            (filename &&
-                filename.includes(".code-workspace") &&
-                filename.includes("vsliveshare") &&
-                filename.includes("tmp-"))
+            (scheme !== "file" && scheme !== "untitled") ||
+            isLiveshareTmpFile ||
+            isInternalFile ||
+            !isFileOpen(filename)
         ) {
-            // ../vsliveshare/tmp-.../.../Visual Studio Live Share.code-workspace
-            // don't handle this event (it's a tmp file that may not bring back a real project name)
             return false;
         }
         return true;
@@ -462,11 +450,7 @@ export class KpmController {
         // create the keystroke count if it doesn't exist
         if (!keystrokeCount) {
             // add keystroke count wrapper
-            keystrokeCount = this.createKeystrokeCounter(
-                filename,
-                rootPath,
-                nowTimes
-            );
+            keystrokeCount = this.createKeystrokeCounter(filename, rootPath, nowTimes);
         }
 
         // check if we have this file or not
@@ -523,9 +507,7 @@ export class KpmController {
 
     private createKeystrokeCounter(filename, rootPath, nowTimes) {
         const workspaceFolder = getProjectFolder(filename);
-        const name = workspaceFolder
-            ? workspaceFolder.name
-            : UNTITLED_WORKSPACE;
+        const name = workspaceFolder ? workspaceFolder.name : UNTITLED_WORKSPACE;
         let keystrokeCount = new KpmDataManager({
             // project.directory is used as an object key, must be string
             directory: rootPath,

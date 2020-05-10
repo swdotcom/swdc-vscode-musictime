@@ -1,11 +1,4 @@
-import {
-    storePayload,
-    getOs,
-    getVersion,
-    logIt,
-    getNowTimes,
-    getPluginId,
-} from "./Util";
+import { storePayload, getOs, getVersion, logIt, getNowTimes, getPluginId } from "./Util";
 
 // ? marks that the parameter is optional
 type Project = {
@@ -65,12 +58,7 @@ export class KpmDataManager {
             const hasOpen = data.open > 0;
             const hasClose = data.close > 0;
             // tally the keystrokes for this file
-            data.keystrokes =
-                data.add +
-                data.paste +
-                data.delete +
-                data.linesAdded +
-                data.linesRemoved;
+            data.keystrokes = data.add + data.paste + data.delete;
             const hasKeystrokes = data.keystrokes > 0;
             keystrokesTally += data.keystrokes;
             if (
@@ -128,8 +116,7 @@ export function completePayloadInfo(payload) {
                     // set the end time for this file event
                     let nowTimes = getNowTimes();
                     payload.source[key]["end"] = nowTimes.now_in_sec;
-                    payload.source[key]["local_end"] =
-                        nowTimes.local_now_in_sec;
+                    payload.source[key]["local_end"] = nowTimes.local_now_in_sec;
                 }
             }
         }
