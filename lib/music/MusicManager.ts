@@ -1110,7 +1110,7 @@ export class MusicManager {
             // if it's the liked songs, then send it to the setLiked(false) api
             if (foundPlaylist.id === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME) {
                 const buttonSelection = await window.showInformationMessage(
-                    `Are you sure you would like to remove ${trackItem.name} from your '${SPOTIFY_LIKED_SONGS_PLAYLIST_NAME}' playlist`,
+                    `Are you sure you would like to remove '${trackItem.name}' from your '${SPOTIFY_LIKED_SONGS_PLAYLIST_NAME}' playlist?`,
                     ...[YES_LABEL]
                 );
 
