@@ -45,11 +45,6 @@ export class MusicStateManager {
     private existingTrack: Track = new Track();
     private lastSongSessionStart: number = 0;
 
-    private lastTrackSentInfo = {
-        timestamp: 0,
-        trackId: null,
-    };
-
     private constructor() {
         // private to prevent non-singleton usage
     }
@@ -116,9 +111,15 @@ export class MusicStateManager {
             const deviceId = getDeviceId();
             const requiresAccess = requiresSpotifyAccess();
 
-            if ((!serverIsOnline && !isMac()) || requiresAccess || !deviceId) {
+            if ((!serverIsOnline && !isMac()) || requiresAccess) {
                 // either no device ID, requires spotify connection,
                 // or it's a windows device that is not online
+                return;
+            }
+
+            // check if we've set the existing device id but don't have a device
+            if ((!this.existingTrack || !this.existingTrack.id) && !deviceId) {
+                // no existing track and no device, skip checking
                 return;
             }
 
@@ -444,9 +445,6 @@ export class MusicStateManager {
         ) {
             songSession["liked"] = true;
         }
-
-        this.lastTrackSentInfo.timestamp = moment().unix();
-        this.lastTrackSentInfo.trackId = songSession.id;
 
         // check pluginId, version, and os
         if (!songSession.pluginId) {
