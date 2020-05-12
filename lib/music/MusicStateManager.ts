@@ -64,8 +64,7 @@ export class MusicStateManager {
      * @param track
      */
     private updateTrackPlaylistId(track: Track) {
-        const selectedPlaylist = MusicDataManager.getInstance()
-            .selectedPlaylist;
+        const selectedPlaylist = MusicDataManager.getInstance().selectedPlaylist;
         if (selectedPlaylist) {
             track["playlistId"] = selectedPlaylist.id;
         }
@@ -131,10 +130,7 @@ export class MusicStateManager {
                 playingTrack = await getTrack(PlayerName.SpotifyWeb);
             }
 
-            if (
-                !playingTrack ||
-                (playingTrack && playingTrack.httpStatus >= 400)
-            ) {
+            if (!playingTrack || (playingTrack && playingTrack.httpStatus >= 400)) {
                 // currently unable to fetch the track
                 return;
             }
@@ -154,10 +150,8 @@ export class MusicStateManager {
                 playingTrack.id = createSpotifyIdFromUri(playingTrack.id);
             }
 
-            const isNewTrack =
-                this.existingTrack.id !== playingTrack.id ? true : false;
-            const sendSongSession =
-                isNewTrack && this.existingTrack.id ? true : false;
+            const isNewTrack = this.existingTrack.id !== playingTrack.id ? true : false;
+            const sendSongSession = isNewTrack && this.existingTrack.id ? true : false;
             const trackStateChanged =
                 this.existingTrack.state !== playingTrack.state ? true : false;
 
@@ -186,10 +180,7 @@ export class MusicStateManager {
                 }
             }
 
-            if (
-                !this.existingTrack ||
-                this.existingTrack.id !== playingTrack.id
-            ) {
+            if (!this.existingTrack || this.existingTrack.id !== playingTrack.id) {
                 // update the entire object if the id's don't match
                 this.existingTrack = { ...playingTrack };
             }
@@ -237,9 +228,7 @@ export class MusicStateManager {
         const musicMgr: MusicManager = MusicManager.getInstance();
         // If the current playlist is the Liked Songs,
         // check if we should start the next track
-        const playlistId = dataMgr.selectedPlaylist
-            ? dataMgr.selectedPlaylist.id
-            : "";
+        const playlistId = dataMgr.selectedPlaylist ? dataMgr.selectedPlaylist.id : "";
         if (!playlistId || playlistId !== SPOTIFY_LIKED_SONGS_PLAYLIST_NAME) {
             // no need to go further, it's not the liked songs playlist
             return;
@@ -329,9 +318,7 @@ export class MusicStateManager {
             );
         } else if (!genre) {
             // fetch the genre
-            const artistName = MusicManager.getInstance().getArtist(
-                songSession
-            );
+            const artistName = MusicManager.getInstance().getArtist(songSession);
             const songName = songSession.name;
             const artistId =
                 songSession.artists && songSession.artists.length
@@ -345,17 +332,12 @@ export class MusicStateManager {
         const songSessionSource = {};
         if (payloads && payloads.length) {
             payloads.forEach((payload) => {
-                const sourceKeys = payload.source
-                    ? Object.keys(payload.source)
-                    : [];
+                const sourceKeys = payload.source ? Object.keys(payload.source) : [];
                 sourceKeys.forEach((sourceKey) => {
                     let data = {};
                     data[sourceKey] = payload.source[sourceKey];
                     // only add the file payload if the song session's end is after the song session start
-                    if (
-                        data[sourceKey] &&
-                        data[sourceKey].end > songSession.start
-                    ) {
+                    if (data[sourceKey] && data[sourceKey].end > songSession.start) {
                         if (songSessionSource[sourceKey]) {
                             // aggregate it
                             const existingData = songSessionSource[sourceKey];
@@ -396,11 +378,7 @@ export class MusicStateManager {
 
         // build the file aggregate data, but only keep the coding data
         // that match up to the song session range
-        const songData = this.buildAggregateData(
-            payloads,
-            initialValue,
-            songSession.start
-        );
+        const songData = this.buildAggregateData(songSessionSource, initialValue);
 
         // await for either promise, whichever one is available
         const fullTrack = await fullTrackP;
@@ -472,82 +450,57 @@ export class MusicStateManager {
         repoFileCount: 0,
         repoContributorCount: 0,
      */
-    private buildAggregateData(payloads, initialValue, start) {
+    private buildAggregateData(songSessionSource, initialValue) {
         let totalKeystrokes = 0;
-        if (payloads && payloads.length > 0) {
-            for (let i = 0; i < payloads.length; i++) {
-                const element = payloads[i];
-
-                // if the file's end time is before the song session start, ignore it
-                if (element.end < start) {
-                    // the file's end is before the start, go to the next one
-                    continue;
-                }
-
-                // set repoContributorCount and repoFileCount
-                // if not already set
-                if (initialValue.repoFileCount === 0) {
-                    initialValue.repoFileCount = element.repoFileCount;
-                }
-                if (initialValue.repoContributorCount === 0) {
-                    initialValue.repoContributorCount =
-                        element.repoContributorCount;
-                }
-
-                if (element.source) {
-                    // go through the source object
-                    // initialValue.source = element.source;
-                    const keys = Object.keys(element.source);
-                    if (keys && keys.length > 0) {
-                        keys.forEach((key) => {
-                            let sourceObj = element.source[key];
-                            const sourceObjKeys = Object.keys(sourceObj);
-                            if (sourceObjKeys && sourceObjKeys.length > 0) {
-                                sourceObjKeys.forEach((sourceObjKey) => {
-                                    const val = sourceObj[sourceObjKey];
-                                    if (this.numerics.includes(sourceObjKey)) {
-                                        // aggregate
-                                        initialValue[sourceObjKey] += val;
-                                    }
-                                });
-                            }
-
-                            // set the sourceObj.keystrokes
-                            sourceObj.keystrokes =
-                                sourceObj.paste +
-                                sourceObj.add +
-                                sourceObj.delete +
-                                sourceObj.linesAdded +
-                                sourceObj.linesRemoved;
-                            // sum the keystrokes
-                            totalKeystrokes += sourceObj.keystrokes;
-
-                            if (!initialValue.syntax && sourceObj.syntax) {
-                                initialValue.syntax = sourceObj.syntax;
-                            }
-
-                            if (!sourceObj.timezone) {
-                                sourceObj[
-                                    "timezone"
-                                ] = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                            }
-                            if (!sourceObj.offset) {
-                                sourceObj["offset"] = getOffsetSecends() / 60;
-                            }
-                            if (!sourceObj.pluginId) {
-                                sourceObj["pluginId"] = getPluginId();
-                            }
-                            if (!sourceObj.os) {
-                                sourceObj["os"] = getOs();
-                            }
-                            if (!sourceObj.version) {
-                                sourceObj["version"] = getVersion();
+        if (songSessionSource && Object.keys(songSessionSource).length) {
+            // go through the source object
+            // initialValue.source = element.source;
+            const keys = Object.keys(songSessionSource);
+            if (keys && keys.length > 0) {
+                keys.forEach((key) => {
+                    let sourceObj = songSessionSource[key];
+                    const sourceObjKeys = Object.keys(sourceObj);
+                    if (sourceObjKeys && sourceObjKeys.length > 0) {
+                        sourceObjKeys.forEach((sourceObjKey) => {
+                            const val = sourceObj[sourceObjKey];
+                            if (this.numerics.includes(sourceObjKey)) {
+                                // aggregate
+                                initialValue[sourceObjKey] += val;
                             }
                         });
                     }
-                }
+
+                    // set the sourceObj.keystrokes
+                    sourceObj.keystrokes =
+                        sourceObj.paste + sourceObj.add + sourceObj.delete;
+                    // sum the keystrokes
+                    totalKeystrokes += sourceObj.keystrokes;
+
+                    if (!initialValue.syntax && sourceObj.syntax) {
+                        initialValue.syntax = sourceObj.syntax;
+                    }
+
+                    if (!sourceObj.timezone) {
+                        sourceObj[
+                            "timezone"
+                        ] = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    }
+                    if (!sourceObj.offset) {
+                        sourceObj["offset"] = getOffsetSecends() / 60;
+                    }
+                    if (!sourceObj.pluginId) {
+                        sourceObj["pluginId"] = getPluginId();
+                    }
+                    if (!sourceObj.os) {
+                        sourceObj["os"] = getOs();
+                    }
+                    if (!sourceObj.version) {
+                        sourceObj["version"] = getVersion();
+                    }
+                });
             }
         }
+
         initialValue.keystrokes = totalKeystrokes;
         return initialValue;
     }
