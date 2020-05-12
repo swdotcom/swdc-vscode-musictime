@@ -42,6 +42,7 @@ export class MusicStateManager {
     private static instance: MusicStateManager;
 
     private existingTrack: Track = new Track();
+    private lastSongSessionStart: number = 0;
 
     private lastTrackSentInfo = {
         timestamp: 0,
@@ -258,6 +259,19 @@ export class MusicStateManager {
 
     public async gatherCodingDataAndSendSongSession(songSession) {
         const utcLocalTimes = this.getUtcAndLocal();
+
+        if (!songSession.start) {
+            // arbitrary since song session start wasn't set
+            let secondsBack = 201;
+            // this should have been set but use the song's duration
+            if (!this.lastSongSessionStart) {
+                const diffTime = utcLocalTimes.utc - this.lastSongSessionStart;
+                secondsBack = Math.min(diffTime, secondsBack) - 1;
+            }
+            songSession["start"] = utcLocalTimes.utc - secondsBack;
+            songSession["local_start"] = utcLocalTimes.local - secondsBack;
+        }
+        this.lastSongSessionStart = songSession.start;
 
         if (!songSession["end"]) {
             songSession["end"] = utcLocalTimes.utc;
