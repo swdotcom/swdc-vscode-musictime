@@ -159,10 +159,6 @@ export class MusicStateManager {
             if (sendSongSession) {
                 // just set it to playing
                 this.existingTrack.state = TrackStatus.Playing;
-                if (this.existingTrack["end"] === 0) {
-                    this.existingTrack["end"] = utcLocalTimes.utc;
-                    this.existingTrack["local_end"] = utcLocalTimes.local;
-                }
 
                 // copy the existing track to "songSession"
                 const songSession = {
@@ -261,6 +257,13 @@ export class MusicStateManager {
     ];
 
     public async gatherCodingDataAndSendSongSession(songSession) {
+        const utcLocalTimes = this.getUtcAndLocal();
+
+        if (!songSession["end"]) {
+            songSession["end"] = utcLocalTimes.utc;
+            songSession["local_end"] = utcLocalTimes.local;
+        }
+
         // if this track doesn't have album json data null it out
         if (songSession.album) {
             // check if it's a valid json
@@ -336,11 +339,16 @@ export class MusicStateManager {
                 sourceKeys.forEach((sourceKey) => {
                     let data = {};
                     data[sourceKey] = payload.source[sourceKey];
+                    if (!data[sourceKey]["end"]) {
+                        data[sourceKey]["end"] = utcLocalTimes.utc;
+                        data[sourceKey]["local_end"] = utcLocalTimes.local;
+                    }
                     // only add the file payload if the song session's end is after the song session start
                     if (data[sourceKey] && data[sourceKey].end > songSession.start) {
                         if (songSessionSource[sourceKey]) {
                             // aggregate it
                             const existingData = songSessionSource[sourceKey];
+
                             const fileData = data[sourceKey];
                             Object.keys(existingData).forEach((key) => {
                                 if (this.numerics.includes(key)) {
@@ -422,6 +430,17 @@ export class MusicStateManager {
 
         this.lastTrackSentInfo.timestamp = moment().unix();
         this.lastTrackSentInfo.trackId = songSession.id;
+
+        // check pluginId, version, and os
+        if (!songSession.pluginId) {
+            songSession["pluginId"] = getPluginId();
+        }
+        if (!songSession.os) {
+            songSession["os"] = getOs();
+        }
+        if (!songSession.version) {
+            songSession["version"] = getVersion();
+        }
 
         // send the music data, if we're online
         sendMusicData(songSession);
