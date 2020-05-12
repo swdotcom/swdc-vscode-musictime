@@ -32,6 +32,7 @@ import { MusicCommandManager } from "./MusicCommandManager";
 import { getDataRows } from "../OfflineManager";
 import { MusicDataManager } from "./MusicDataManager";
 import { commands } from "vscode";
+import { getDeviceId, requiresSpotifyAccess } from "./MusicUtil";
 
 const moment = require("moment-timezone");
 
@@ -112,15 +113,17 @@ export class MusicStateManager {
         try {
             const utcLocalTimes = this.getUtcAndLocal();
             const serverIsOnline = await serverIsAvailable();
+            const deviceId = getDeviceId();
+            const requiresAccess = requiresSpotifyAccess();
 
-            if (!serverIsOnline && !isMac) {
+            if ((!serverIsOnline && !isMac()) || requiresAccess || !deviceId) {
+                // either no device ID, requires spotify connection,
+                // or it's a windows device that is not online
                 return;
             }
 
-            const isMacDesktopEnabled = MusicManager.getInstance().isMacDesktopEnabled();
-
             let playingTrack: Track = null;
-            if (isMacDesktopEnabled || (!serverIsOnline && isMac)) {
+            if (isMac()) {
                 // fetch from the desktop
                 playingTrack = await getTrack(PlayerName.SpotifyDesktop);
                 // applescript doesn't always return a name

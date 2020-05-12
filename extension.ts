@@ -105,11 +105,10 @@ export async function intializePlugin(ctx: ExtensionContext) {
         await MusicStateManager.getInstance().processOfflineSongSessions();
     }, 1000 * 3);
 
-    // 5 second interval to check music info
-    const gatherMusicInterval = isMac() ? 1000 * 5 : 1000 * 6;
+    // interval to check music info
     gather_music_interval = setInterval(() => {
         MusicStateManager.getInstance().gatherMusicInfo();
-    }, gatherMusicInterval);
+    }, 6000);
 
     // show the readme if it doesn't exist
     displayReadmeIfNotExists();
