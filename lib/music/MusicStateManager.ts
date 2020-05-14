@@ -42,6 +42,8 @@ export class MusicStateManager {
 
     private existingTrack: Track = new Track();
     private lastSongSessionStart: number = 0;
+    private endCheckThresholdMillis: number = 1000 * 19;
+    private endCheckTimeout: any = null;
 
     private constructor() {
         // private to prevent non-singleton usage
@@ -98,7 +100,52 @@ export class MusicStateManager {
     }
 
     /**
-     * Core logic in gathering tracks. This is called every 5 seconds.
+     * Check if the track is close to ending, if so gather music as soon as
+     * it's determined that it has changed.
+     */
+    public async trackEndCheck() {
+        const dataMgr: MusicDataManager = MusicDataManager.getInstance();
+        if (dataMgr.runningTrack && dataMgr.runningTrack.id) {
+            const currProgress_ms = dataMgr.runningTrack.progress_ms || 0;
+
+            let duration_ms = 0;
+            // applescript doesn't have duration_ms but has duration
+            if (dataMgr.runningTrack.duration) {
+                duration_ms = dataMgr.runningTrack.duration;
+            } else {
+                duration_ms = dataMgr.runningTrack.duration_ms || 0;
+            }
+            const diff = duration_ms - currProgress_ms;
+
+            // if the diff is less than the threshold and the endCheckTimeout
+            // should is null then we'll schedule a gatherMusicInfo fetch
+            if (
+                diff > 0 &&
+                diff <= this.endCheckThresholdMillis &&
+                !this.endCheckTimeout
+            ) {
+                // schedule a call to fetch the next track in 5 seconds
+                this.scheduleGatherMusicInfo(diff);
+            }
+        }
+    }
+
+    private scheduleGatherMusicInfo(timeout = 5000) {
+        timeout = timeout + 1000;
+        const self = this;
+        if (this.endCheckTimeout) {
+            // cancel the current one
+            clearTimeout(this.endCheckTimeout);
+            this.endCheckTimeout = null;
+        }
+        this.endCheckTimeout = setTimeout(() => {
+            self.gatherMusicInfo();
+            self.endCheckTimeout = null;
+        }, timeout);
+    }
+
+    /**
+     * Core logic in gathering tracks. This is called every 20 seconds.
      */
     public async gatherMusicInfo(): Promise<any> {
         const dataMgr: MusicDataManager = MusicDataManager.getInstance();
@@ -198,6 +245,19 @@ export class MusicStateManager {
                 this.existingTrack["start"] = utcLocalTimes.utc;
                 this.existingTrack["local_start"] = utcLocalTimes.local;
                 this.existingTrack["end"] = 0;
+            }
+
+            // make sure we set the current progress and duratio
+            if (isValidTrack) {
+                this.existingTrack.duration = playingTrack.duration;
+                this.existingTrack.duration_ms = playingTrack.duration_ms;
+                if (!playingTrack.progress_ms) {
+                    // there's a version out that has "progress_ms "
+                    this.existingTrack.progress_ms =
+                        parseInt(playingTrack["progress_ms "], 10) || 0;
+                } else {
+                    this.existingTrack.progress_ms = playingTrack.progress_ms;
+                }
             }
 
             // update the running track

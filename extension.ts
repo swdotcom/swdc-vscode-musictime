@@ -26,6 +26,7 @@ let _ls = null;
 
 let liveshare_update_interval = null;
 let gather_music_interval = null;
+let check_track_end_interval = null;
 let offline_data_interval = null;
 let offline_song_data_interval = null;
 
@@ -45,6 +46,7 @@ export function deactivate(ctx: ExtensionContext) {
     clearInterval(liveshare_update_interval);
     clearInterval(offline_data_interval);
     clearInterval(gather_music_interval);
+    clearInterval(check_track_end_interval);
 
     // softwareDelete(`/integrations/${PLUGIN_ID}`, getItem("jwt")).then(resp => {
     //     if (isResponseOk(resp)) {
@@ -93,22 +95,28 @@ export async function intializePlugin(ctx: ExtensionContext) {
         }
     }, half_hour_ms / 2);
 
+    const musicStateMgr: MusicStateManager = MusicStateManager.getInstance();
+
     // send the offline song sessions
     offline_song_data_interval = setInterval(() => {
-        MusicStateManager.getInstance().processOfflineSongSessions();
+        musicStateMgr.processOfflineSongSessions();
     }, ten_min_ms);
 
     // send any offline data in a few seconds, then fire off the
     // track listening timer
     setTimeout(async () => {
         // see if there are offline song sessions to send
-        await MusicStateManager.getInstance().processOfflineSongSessions();
+        await musicStateMgr.processOfflineSongSessions();
     }, 3000);
 
     // interval to check music info
     gather_music_interval = setInterval(() => {
-        MusicStateManager.getInstance().gatherMusicInfo();
+        musicStateMgr.gatherMusicInfo();
     }, 20000);
+
+    check_track_end_interval = setInterval(() => {
+        musicStateMgr.trackEndCheck();
+    }, 5000);
 
     // show the readme if it doesn't exist
     displayReadmeIfNotExists();

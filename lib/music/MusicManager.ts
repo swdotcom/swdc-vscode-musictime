@@ -130,9 +130,6 @@ export class MusicManager {
 
     async refreshPlaylists() {
         if (this.dataMgr.buildingPlaylists) {
-            console.log(
-                "currently building the playlist, waiting on that job to complete"
-            );
             return;
         }
         this.dataMgr.buildingPlaylists = true;
