@@ -133,11 +133,6 @@ export class MusicStateManager {
     private scheduleGatherMusicInfo(timeout = 5000) {
         timeout = timeout + 1000;
         const self = this;
-        if (this.endCheckTimeout) {
-            // cancel the current one
-            clearTimeout(this.endCheckTimeout);
-            this.endCheckTimeout = null;
-        }
         this.endCheckTimeout = setTimeout(() => {
             self.gatherMusicInfo();
             self.endCheckTimeout = null;
