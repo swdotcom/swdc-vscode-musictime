@@ -1,10 +1,5 @@
 import { workspace, window, commands } from "vscode";
-import {
-    softwareGet,
-    softwarePut,
-    isResponseOk,
-    softwarePost,
-} from "./HttpClient";
+import { softwareGet, softwarePut, isResponseOk, softwarePost } from "./HttpClient";
 import {
     getItem,
     setItem,
@@ -35,6 +30,7 @@ import { MusicDataManager } from "./music/MusicDataManager";
 import { CacheManager } from "./cache/CacheManager";
 import { MusicCommandUtil } from "./music/MusicCommandUtil";
 import { MusicCommandManager } from "./music/MusicCommandManager";
+import { MusicStateManager } from "./music/MusicStateManager";
 const moment = require("moment-timezone");
 
 const cacheMgr: CacheManager = CacheManager.getInstance();
@@ -132,10 +128,7 @@ export async function sendMusicData(trackData) {
 export async function getAppJwt(serverIsOnline) {
     if (serverIsOnline) {
         // get the app jwt
-        let resp = await softwareGet(
-            `/data/apptoken?token=${nowInSecs()}`,
-            null
-        );
+        let resp = await softwareGet(`/data/apptoken?token=${nowInSecs()}`, null);
         if (isResponseOk(resp)) {
             return resp.data.jwt;
         }
@@ -151,9 +144,7 @@ export async function getSlackOauth(serverIsOnline) {
             // get the one that is "slack"
             for (let i = 0; i < user.auths.length; i++) {
                 if (user.auths[i].type === "slack") {
-                    await MusicManager.getInstance().updateSlackAccessInfo(
-                        user.auths[i]
-                    );
+                    await MusicManager.getInstance().updateSlackAccessInfo(user.auths[i]);
                     return user.auths[i];
                 }
             }
@@ -338,10 +329,7 @@ export async function populateLikedSongs() {
 export async function populatePlayerContext() {
     const spotifyContext: PlayerContext = await getSpotifyPlayerContext();
     MusicDataManager.getInstance().spotifyContext = spotifyContext;
-    MusicCommandManager.syncControls(
-        MusicDataManager.getInstance().runningTrack,
-        false
-    );
+    MusicCommandManager.syncControls(MusicDataManager.getInstance().runningTrack, false);
 }
 
 export async function populateSpotifyPlaylists() {
@@ -390,7 +378,7 @@ export async function populateSpotifyPlaylists() {
 }
 
 export async function populateSpotifyDevices() {
-    let devices = await MusicCommandUtil.getInstance().runSpotifyCommand(
+    const devices = await MusicCommandUtil.getInstance().runSpotifyCommand(
         getSpotifyDevices
     );
 
@@ -400,6 +388,11 @@ export async function populateSpotifyDevices() {
     }
 
     MusicDataManager.getInstance().currentDevices = devices;
+
+    // gather music to start things off
+    setTimeout(() => {
+        MusicStateManager.getInstance().gatherMusicInfo();
+    }, 1000);
 }
 
 export function getBootstrapFileMetrics() {

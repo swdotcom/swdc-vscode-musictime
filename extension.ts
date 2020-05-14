@@ -103,12 +103,12 @@ export async function intializePlugin(ctx: ExtensionContext) {
     setTimeout(async () => {
         // see if there are offline song sessions to send
         await MusicStateManager.getInstance().processOfflineSongSessions();
-    }, 1000 * 3);
+    }, 3000);
 
     // interval to check music info
     gather_music_interval = setInterval(() => {
         MusicStateManager.getInstance().gatherMusicInfo();
-    }, 6000);
+    }, 20000);
 
     // show the readme if it doesn't exist
     displayReadmeIfNotExists();

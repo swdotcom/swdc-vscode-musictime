@@ -34,8 +34,6 @@ import { MusicDataManager } from "./MusicDataManager";
 import { commands } from "vscode";
 import { getDeviceId, requiresSpotifyAccess } from "./MusicUtil";
 
-const moment = require("moment-timezone");
-
 export class MusicStateManager {
     static readonly WINDOWS_SPOTIFY_TRACK_FIND: string =
         'tasklist /fi "imagename eq Spotify.exe" /fo list /v | find " - "';

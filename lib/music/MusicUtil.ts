@@ -13,7 +13,7 @@ const codyPlaylistNames = [
     "Custom Top 40",
     "My Custom Top 40",
     "AI-generated Custom Top 40",
-    "Software Top 40"
+    "Software Top 40",
 ];
 
 let completedDupCheck: boolean = false;
@@ -50,9 +50,7 @@ export async function checkForDups(playlists: PlaylistItem[]) {
     }
 }
 
-export async function deleteDuplicateSpotifyPlaylists(
-    playlists: PlaylistItem[]
-) {
+export async function deleteDuplicateSpotifyPlaylists(playlists: PlaylistItem[]) {
     if (playlists && playlists.length > 0) {
         for (let i = 0; i < playlists.length; i++) {
             const playlist: PlaylistItem = playlists[i];
@@ -150,12 +148,10 @@ export async function buildTracksForRecommendations(playlists) {
 
     dataMgr.trackIdsForRecommendations = trackIds;
 
-    if (foundTracksForRec) {
-        // refresh the recommendations
-        setTimeout(() => {
-            commands.executeCommand("musictime.refreshRecommendations");
-        }, 1000);
-    }
+    // if (refreshTree) {
+    //     // refresh the rec tree
+    //     commands.executeCommand("musictime.refreshRecommendationsTree");
+    // }
 }
 
 export function requiresSpotifyAccess() {
@@ -169,8 +165,7 @@ export function requiresSpotifyAccess() {
  * Either of these values can be null
  */
 export function getDeviceSet() {
-    const devices: PlayerDevice[] =
-        MusicDataManager.getInstance().currentDevices || [];
+    const devices: PlayerDevice[] = MusicDataManager.getInstance().currentDevices || [];
     const webPlayer = devices.find((d: PlayerDevice) =>
         d.name.toLowerCase().includes("web player")
     );
@@ -207,7 +202,7 @@ export function getDeviceSet() {
         activeDevice,
         activeComputerDevice,
         activeWebPlayerDevice,
-        activeDesktopPlayerDevice
+        activeDesktopPlayerDevice,
     };
 }
 

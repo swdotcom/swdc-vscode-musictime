@@ -7,7 +7,7 @@ import {
     Event,
     Disposable,
     TreeView,
-    commands
+    commands,
 } from "vscode";
 import { PlaylistItem } from "cody-music";
 import { MusicManager } from "./MusicManager";
@@ -15,6 +15,7 @@ import { logIt, getPlaylistIcon } from "../Util";
 import { ProviderItemManager } from "./ProviderItemManager";
 import { MusicDataManager } from "./MusicDataManager";
 import { populateSpotifyUser } from "../DataController";
+import { MusicStateManager } from "./MusicStateManager";
 
 const dataMgr: MusicDataManager = MusicDataManager.getInstance();
 
@@ -23,10 +24,7 @@ const dataMgr: MusicDataManager = MusicDataManager.getInstance();
  * @param p
  * @param cstate
  */
-const createPlaylistTreeItem = (
-    p: PlaylistItem,
-    cstate: TreeItemCollapsibleState
-) => {
+const createPlaylistTreeItem = (p: PlaylistItem, cstate: TreeItemCollapsibleState) => {
     return new PlaylistTreeItem(p, cstate);
 };
 
@@ -44,7 +42,7 @@ export const connectPlaylistTreeView = (view: TreeView<PlaylistItem>) => {
     // view is {selection: Array[n], visible, message}
     return Disposable.from(
         // e is {selection: Array[n]}
-        view.onDidChangeSelection(async e => {
+        view.onDidChangeSelection(async (e) => {
             if (!e.selection || e.selection.length === 0) {
                 return;
             }
@@ -71,15 +69,13 @@ export const connectPlaylistTreeView = (view: TreeView<PlaylistItem>) => {
 
             // set the selected playlist
             const currentPlaylistId = playlistItem["playlist_id"];
-            const selectedPlaylist = await musicMgr.getPlaylistById(
-                currentPlaylistId
-            );
+            const selectedPlaylist = await musicMgr.getPlaylistById(currentPlaylistId);
             dataMgr.selectedPlaylist = selectedPlaylist;
 
             // play it
             musicMgr.playSelectedItem(playlistItem);
         }),
-        view.onDidChangeVisibility(e => {
+        view.onDidChangeVisibility((e) => {
             if (e.visible) {
                 refreshPlaylistViewIfRequired();
             }
@@ -122,7 +118,7 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
             // don't "select" it though. that will invoke the pause/play action
             this.view.reveal(p, {
                 focus: true,
-                select
+                select,
             });
         } catch (err) {
             logIt(`Unable to select track: ${err.message}`);
@@ -130,12 +126,13 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
     }
 
     async revealTree() {
-        if (
-            !dataMgr.spotifyPlaylists ||
-            dataMgr.spotifyPlaylists.length === 0
-        ) {
+        if (!dataMgr.spotifyPlaylists || dataMgr.spotifyPlaylists.length === 0) {
             await MusicManager.getInstance().refreshPlaylists();
         }
+
+        setTimeout(() => {
+            MusicStateManager.getInstance().gatherMusicInfo();
+        }, 1000);
 
         this.refresh();
 
@@ -144,7 +141,7 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
             // select the readme item
             this.view.reveal(item, {
                 focus: true,
-                select: false
+                select: false,
             });
         } catch (err) {
             logIt(`Unable to select track: ${err.message}`);
@@ -160,10 +157,7 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
                 // if we have a clean way of check that a track is playing when the
                 // playlist folders are loaded, but currently the tracks load after you
                 // open the playlist so we don't know if it's playing or not
-                return createPlaylistTreeItem(
-                    p,
-                    TreeItemCollapsibleState.Collapsed
-                );
+                return createPlaylistTreeItem(p, TreeItemCollapsibleState.Collapsed);
             }
             treeItem = createPlaylistTreeItem(p, TreeItemCollapsibleState.None);
         } else {
@@ -242,7 +236,7 @@ export class PlaylistTreeItem extends TreeItem {
 
     iconPath = {
         light: "",
-        dark: ""
+        dark: "",
     };
 
     contextValue = "playlistItem";

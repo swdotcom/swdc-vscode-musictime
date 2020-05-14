@@ -66,6 +66,11 @@ import {
 } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 import { MusicCommandUtil } from "./MusicCommandUtil";
+import {
+    updateRecommendations,
+    refreshRecommendations,
+} from "./MusicRecommendationManager";
+import { MusicStateManager } from "./MusicStateManager";
 
 export class MusicManager {
     private static instance: MusicManager;
@@ -88,10 +93,7 @@ export class MusicManager {
     get currentPlaylists(): PlaylistItem[] {
         if (this.dataMgr.currentPlayerName === PlayerName.ItunesDesktop) {
             // go through each playlist and find out it's state
-            if (
-                this.dataMgr.itunesPlaylists &&
-                this.dataMgr.itunesPlaylists.length
-            ) {
+            if (this.dataMgr.itunesPlaylists && this.dataMgr.itunesPlaylists.length) {
                 this.dataMgr.itunesPlaylists.forEach((item: PlaylistItem) => {
                     if (item.type === "playlist") {
                         this.dataMgr.playlistMap[item.id] = item;
@@ -100,10 +102,7 @@ export class MusicManager {
             }
             return this.dataMgr.itunesPlaylists;
         }
-        if (
-            this.dataMgr.spotifyPlaylists &&
-            this.dataMgr.spotifyPlaylists.length
-        ) {
+        if (this.dataMgr.spotifyPlaylists && this.dataMgr.spotifyPlaylists.length) {
             this.dataMgr.spotifyPlaylists.forEach((item: PlaylistItem) => {
                 if (item.type === "playlist") {
                     this.dataMgr.playlistMap[item.id] = item;
@@ -166,8 +165,7 @@ export class MusicManager {
         const IS_PREMIUM = this.isSpotifyPremium() ? true : false;
         let HAS_SPOTIFY_USER = this.hasSpotifyUser() ? true : false;
 
-        const type =
-            playerName === PlayerName.ItunesDesktop ? "itunes" : "spotify";
+        const type = playerName === PlayerName.ItunesDesktop ? "itunes" : "spotify";
 
         // ! very important !
         // We need the spotify user if we're connected
@@ -180,8 +178,7 @@ export class MusicManager {
         let playlists: PlaylistItem[] = this.dataMgr.rawPlaylists || [];
         let hasPlaylists = playlists.length ? true : false;
         let hasLikedSongs: boolean =
-            this.dataMgr.spotifyLikedSongs &&
-            this.dataMgr.spotifyLikedSongs.length
+            this.dataMgr.spotifyLikedSongs && this.dataMgr.spotifyLikedSongs.length
                 ? true
                 : false;
 
@@ -218,9 +215,7 @@ export class MusicManager {
         // show the spotify connect premium button if they're connected and a non-premium account
         if (CONNECTED && !IS_PREMIUM) {
             // show the spotify premium account required button
-            items.push(
-                this.providerItemMgr.getSpotifyPremiumAccountRequiredButton()
-            );
+            items.push(this.providerItemMgr.getSpotifyPremiumAccountRequiredButton());
         }
 
         // add the connect to spotify if they still need to connect
@@ -297,13 +292,18 @@ export class MusicManager {
                 // LIKED SONGS folder
                 // get the folder
                 const likedSongsPlaylist = this.providerItemMgr.getSpotifyLikedPlaylistFolder();
-                this.dataMgr.playlistMap[
-                    likedSongsPlaylist.id
-                ] = likedSongsPlaylist;
+                this.dataMgr.playlistMap[likedSongsPlaylist.id] = likedSongsPlaylist;
                 items.push(likedSongsPlaylist);
 
-                // build tracks for recommendations (async)
-                buildTracksForRecommendations(playlists);
+                // build tracks for recommendations if none found
+                if (
+                    this.dataMgr.trackIdsForRecommendations ||
+                    this.dataMgr.trackIdsForRecommendations.length === 0
+                ) {
+                    await buildTracksForRecommendations(playlists);
+                }
+                // refresh recommendations async
+                refreshRecommendations();
 
                 // line break between software playlist section and normal playlists
                 if (playlists.length > 0) {
@@ -335,9 +335,7 @@ export class MusicManager {
             (n) => n.id === SOFTWARE_TOP_40_PLAYLIST_ID
         );
         if (!softwareTop40) {
-            softwareTop40 = await getSpotifyPlaylist(
-                SOFTWARE_TOP_40_PLAYLIST_ID
-            );
+            softwareTop40 = await getSpotifyPlaylist(SOFTWARE_TOP_40_PLAYLIST_ID);
         }
         if (softwareTop40 && softwareTop40.id) {
             softwareTop40.loved = false;
@@ -393,9 +391,7 @@ export class MusicManager {
                     PlayerName.ItunesDesktop,
                     playlist_id
                 );
-                playlistItemTracks = this.getPlaylistItemTracksFromCodyResponse(
-                    codyResp
-                );
+                playlistItemTracks = this.getPlaylistItemTracksFromCodyResponse(codyResp);
             } else {
                 // fetch from spotify web
                 if (playlist_id === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME) {
@@ -423,9 +419,7 @@ export class MusicManager {
                 const track: PlaylistItem = playlistItemTracks[i];
                 // check to see if this track is the current track
                 if (this.dataMgr.runningTrack.id === track.id) {
-                    playlistItemTracks[
-                        i
-                    ].state = this.dataMgr.runningTrack.state;
+                    playlistItemTracks[i].state = this.dataMgr.runningTrack.state;
                 } else {
                     playlistItemTracks[i].state = TrackStatus.NotAssigned;
                 }
@@ -455,25 +449,21 @@ export class MusicManager {
         return playlistItems;
     }
 
-    getPlaylistItemTracksFromCodyResponse(
-        codyResponse: CodyResponse
-    ): PlaylistItem[] {
+    getPlaylistItemTracksFromCodyResponse(codyResponse: CodyResponse): PlaylistItem[] {
         let playlistItems: PlaylistItem[] = [];
         if (codyResponse && codyResponse.state === CodyResponseType.Success) {
             let paginationItem: PaginationItem = codyResponse.data;
 
             if (paginationItem && paginationItem.items) {
-                playlistItems = paginationItem.items.map(
-                    (track: Track, idx: number) => {
-                        const position = idx + 1;
-                        let playlistItem: PlaylistItem = this.createPlaylistItemFromTrack(
-                            track,
-                            position
-                        );
+                playlistItems = paginationItem.items.map((track: Track, idx: number) => {
+                    const position = idx + 1;
+                    let playlistItem: PlaylistItem = this.createPlaylistItemFromTrack(
+                        track,
+                        position
+                    );
 
-                        return playlistItem;
-                    }
-                );
+                    return playlistItem;
+                });
             }
         }
 
@@ -544,10 +534,10 @@ export class MusicManager {
             this.dataMgr.selectedTrackItem = playlistItem;
             if (hasSpotifyPlaybackAccess) {
                 // play the next track
-                await MusicCommandUtil.getInstance().runSpotifyCommand(
-                    playSpotifyTrack,
-                    [playlistItem.id, deviceId]
-                );
+                await MusicCommandUtil.getInstance().runSpotifyCommand(playSpotifyTrack, [
+                    playlistItem.id,
+                    deviceId,
+                ]);
             } else {
                 // play it using the track id
                 const trackUri = createUriFromTrackId(playlistItem.id);
@@ -570,10 +560,10 @@ export class MusicManager {
             this.dataMgr.selectedTrackItem = playlistItem;
             if (hasSpotifyPlaybackAccess) {
                 // launch and play the next track
-                await MusicCommandUtil.getInstance().runSpotifyCommand(
-                    playSpotifyTrack,
-                    [playlistItem.id, deviceId]
-                );
+                await MusicCommandUtil.getInstance().runSpotifyCommand(playSpotifyTrack, [
+                    playlistItem.id,
+                    deviceId,
+                ]);
             } else {
                 // play it using the track id
                 const trackUri = createUriFromTrackId(playlistItem.id);
@@ -591,18 +581,14 @@ export class MusicManager {
     getNextSpotifyLikedSong(): Track {
         const currentTrackId = this.dataMgr.selectedTrackItem.id;
         const hasLikedSongs =
-            this.dataMgr.spotifyLikedSongs &&
-            this.dataMgr.spotifyLikedSongs.length > 0;
+            this.dataMgr.spotifyLikedSongs && this.dataMgr.spotifyLikedSongs.length > 0;
         if (currentTrackId && hasLikedSongs) {
             let currTrackIndex = this.dataMgr.spotifyLikedSongs.findIndex(
                 (i) => i.id === currentTrackId
             );
             if (currTrackIndex !== -1) {
                 // if the curr track index is the last element, return zero, else return the next one
-                if (
-                    currTrackIndex + 1 <
-                    this.dataMgr.spotifyLikedSongs.length
-                ) {
+                if (currTrackIndex + 1 < this.dataMgr.spotifyLikedSongs.length) {
                     return this.dataMgr.spotifyLikedSongs[currTrackIndex + 1];
                 } else {
                     return this.dataMgr.spotifyLikedSongs[0];
@@ -617,8 +603,7 @@ export class MusicManager {
     getPreviousSpotifyLikedSong(): Track {
         const currentTrackId = this.dataMgr.selectedTrackItem.id;
         const hasLikedSongs =
-            this.dataMgr.spotifyLikedSongs &&
-            this.dataMgr.spotifyLikedSongs.length > 0;
+            this.dataMgr.spotifyLikedSongs && this.dataMgr.spotifyLikedSongs.length > 0;
         if (currentTrackId && hasLikedSongs) {
             const currTrackIndex = this.dataMgr.spotifyLikedSongs.findIndex(
                 (i) => i.id === currentTrackId
@@ -722,20 +707,15 @@ export class MusicManager {
 
             // add the tracks
             // list of [{trackId, artist, name}...]
-            if (
-                this.dataMgr.userTopSongs &&
-                this.dataMgr.userTopSongs.length > 0
-            ) {
-                let tracksToAdd: string[] = this.dataMgr.userTopSongs.map(
-                    (item) => {
-                        if (item.uri) {
-                            return item.uri;
-                        } else if (item.trackId) {
-                            return item.trackId;
-                        }
-                        return item.id;
+            if (this.dataMgr.userTopSongs && this.dataMgr.userTopSongs.length > 0) {
+                let tracksToAdd: string[] = this.dataMgr.userTopSongs.map((item) => {
+                    if (item.uri) {
+                        return item.uri;
+                    } else if (item.trackId) {
+                        return item.trackId;
                     }
-                );
+                    return item.id;
+                });
 
                 if (!customPlaylist) {
                     await this.addTracks(
@@ -744,11 +724,9 @@ export class MusicManager {
                         tracksToAdd
                     );
                 } else {
-                    await replacePlaylistTracks(playlistId, tracksToAdd).catch(
-                        (err) => {
-                            logIt(`Error replacing tracks: ${err.message}`);
-                        }
-                    );
+                    await replacePlaylistTracks(playlistId, tracksToAdd).catch((err) => {
+                        logIt(`Error replacing tracks: ${err.message}`);
+                    });
 
                     window.showInformationMessage(
                         `Successfully refreshed ${PERSONAL_TOP_SONGS_NAME}.`
@@ -804,11 +782,7 @@ export class MusicManager {
             name,
         };
         let jwt = getItem("jwt");
-        let createResult = await softwarePost(
-            "/music/playlist/generated",
-            payload,
-            jwt
-        );
+        let createResult = await softwarePost("/music/playlist/generated", payload, jwt);
 
         return createResult;
     }
@@ -880,14 +854,17 @@ export class MusicManager {
         // update the user info
         await getMusicTimeUserStatus(serverIsOnline);
 
+        if (!requiresSpotifyAccess()) {
+            // initialize the user and devices
+            await populateSpotifyUser();
+            await populateSpotifyDevices();
+        }
+
         // initialize the status bar music controls
         MusicCommandManager.initialize();
     }
 
-    async launchTrackPlayer(
-        playerName: PlayerName = null,
-        callback: any = null
-    ) {
+    async launchTrackPlayer(playerName: PlayerName = null, callback: any = null) {
         const {
             webPlayer,
             desktop,
@@ -994,8 +971,7 @@ export class MusicManager {
     }
 
     hasSpotifyPlaybackAccess() {
-        return this.dataMgr.spotifyUser &&
-            this.dataMgr.spotifyUser.product === "premium"
+        return this.dataMgr.spotifyUser && this.dataMgr.spotifyUser.product === "premium"
             ? true
             : false;
     }
@@ -1007,8 +983,7 @@ export class MusicManager {
     }
 
     async isSpotifyPremium() {
-        return this.hasSpotifyUser() &&
-            this.dataMgr.spotifyUser.product === "premium"
+        return this.hasSpotifyUser() && this.dataMgr.spotifyUser.product === "premium"
             ? true
             : false;
     }
@@ -1039,10 +1014,7 @@ export class MusicManager {
             ...buttons
         );
 
-        if (
-            selectedButton === "Desktop Player" ||
-            selectedButton === "Web Player"
-        ) {
+        if (selectedButton === "Desktop Player" || selectedButton === "Web Player") {
             const playerName: PlayerName =
                 selectedButton === "Desktop Player"
                     ? PlayerName.SpotifyDesktop
@@ -1070,9 +1042,7 @@ export class MusicManager {
 
         if (
             no_devices ||
-            (!deviceSet.webPlayer &&
-                !deviceSet.desktop &&
-                !deviceSet.activeDevice)
+            (!deviceSet.webPlayer && !deviceSet.desktop && !deviceSet.activeDevice)
         ) {
             return await this.showPlayerLaunchConfirmation(callback);
         }
@@ -1119,10 +1089,7 @@ export class MusicManager {
                     track.id = trackItem.id;
                     track.playerType = PlayerType.WebSpotify;
                     track.state = TrackStatus.NotAssigned;
-                    await MusicControlManager.getInstance().setLiked(
-                        false,
-                        track
-                    );
+                    await MusicControlManager.getInstance().setLiked(false, track);
                     commands.executeCommand("musictime.refreshPlaylist");
                 }
             }
@@ -1182,9 +1149,7 @@ export class MusicManager {
         if (playlistItem.type !== "playlist") {
             this.dataMgr.selectedTrackItem = playlistItem;
             const currentPlaylistId = playlistItem["playlist_id"];
-            const playlist: PlaylistItem = await this.getPlaylistById(
-                currentPlaylistId
-            );
+            const playlist: PlaylistItem = await this.getPlaylistById(currentPlaylistId);
             this.dataMgr.selectedPlaylist = playlist;
         } else {
             // set the selected playlist
@@ -1209,14 +1174,11 @@ export class MusicManager {
 
         const isLikedSong =
             this.dataMgr.selectedPlaylist &&
-            this.dataMgr.selectedPlaylist.name ===
-                SPOTIFY_LIKED_SONGS_PLAYLIST_NAME
+            this.dataMgr.selectedPlaylist.name === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME
                 ? true
                 : false;
         const isRecommendationTrack =
-            this.dataMgr.selectedTrackItem.type === "recommendation"
-                ? true
-                : false;
+            this.dataMgr.selectedTrackItem.type === "recommendation" ? true : false;
 
         const musicMgr: MusicManager = MusicManager.getInstance();
         const hasSpotifyPlaybackAccess = musicMgr.hasSpotifyPlaybackAccess();
@@ -1231,9 +1193,7 @@ export class MusicManager {
                 );
             } else {
                 // play it using applescript
-                const trackUri = createUriFromTrackId(
-                    this.dataMgr.selectedTrackItem.id
-                );
+                const trackUri = createUriFromTrackId(this.dataMgr.selectedTrackItem.id);
                 const params = [trackUri];
                 await playTrackInContext(PlayerName.SpotifyDesktop, params);
             }
@@ -1267,6 +1227,10 @@ export class MusicManager {
                 await playTrackInContext(PlayerName.SpotifyDesktop, params);
             }
         }
+
+        setTimeout(() => {
+            MusicStateManager.getInstance().gatherMusicInfo();
+        }, 1000);
     };
 
     playRecommendationsOrLikedSongsByPlaylist = async (
@@ -1286,9 +1250,7 @@ export class MusicManager {
                 (t: Track) => trackId === t.id
             );
             // play the list of recommendation tracks
-            track_ids = this.dataMgr.recommendationTracks.map(
-                (t: Track) => t.id
-            );
+            track_ids = this.dataMgr.recommendationTracks.map((t: Track) => t.id);
 
             // make it a list of 50, so get the rest from trackIdsForRecommendations
             const otherTrackIds = this.dataMgr.trackIdsForRecommendations.filter(
@@ -1307,17 +1269,14 @@ export class MusicManager {
             track_ids = track_ids.splice(0, 50);
         }
 
-        const result: any = MusicCommandUtil.getInstance().runSpotifyCommand(
-            play,
-            [
-                PlayerName.SpotifyWeb,
-                {
-                    track_ids,
-                    device_id: deviceId,
-                    offset,
-                },
-            ]
-        );
+        const result: any = MusicCommandUtil.getInstance().runSpotifyCommand(play, [
+            PlayerName.SpotifyWeb,
+            {
+                track_ids,
+                device_id: deviceId,
+                offset,
+            },
+        ]);
 
         return result;
     };
