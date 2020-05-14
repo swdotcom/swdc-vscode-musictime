@@ -249,15 +249,9 @@ export class MusicStateManager {
 
             // make sure we set the current progress and duratio
             if (isValidTrack) {
-                this.existingTrack.duration = playingTrack.duration;
-                this.existingTrack.duration_ms = playingTrack.duration_ms;
-                if (!playingTrack.progress_ms) {
-                    // there's a version out that has "progress_ms "
-                    this.existingTrack.progress_ms =
-                        parseInt(playingTrack["progress_ms "], 10) || 0;
-                } else {
-                    this.existingTrack.progress_ms = playingTrack.progress_ms;
-                }
+                this.existingTrack.duration = playingTrack.duration || 0;
+                this.existingTrack.duration_ms = playingTrack.duration_ms || 0;
+                this.existingTrack.progress_ms = playingTrack.progress_ms || 0;
             }
 
             // update the running track
