@@ -67,11 +67,15 @@ export async function updateRecommendations(
         offset,
     };
 
-    const trackIds = await this.getTrackIdsForRecommendations(likedSongSeedLimit, offset);
+    const trackIds = await this.getTrackIdsForRecommendations(
+        likedSongSeedLimit,
+        offset
+    );
 
     // fetch the recommendations from spotify
     const tracks: Track[] =
-        (await this.getRecommendedTracks(trackIds, seed_genres, features)) || [];
+        (await this.getRecommendedTracks(trackIds, seed_genres, features)) ||
+        [];
 
     // get the tracks that have already been recommended
     let existingTrackIds = dataMgr.prevRecTrackMap[label]

@@ -24,7 +24,10 @@ const dataMgr: MusicDataManager = MusicDataManager.getInstance();
  * @param p
  * @param cstate
  */
-const createPlaylistTreeItem = (p: PlaylistItem, cstate: TreeItemCollapsibleState) => {
+const createPlaylistTreeItem = (
+    p: PlaylistItem,
+    cstate: TreeItemCollapsibleState
+) => {
     return new PlaylistTreeItem(p, cstate);
 };
 
@@ -69,7 +72,9 @@ export const connectPlaylistTreeView = (view: TreeView<PlaylistItem>) => {
 
             // set the selected playlist
             const currentPlaylistId = playlistItem["playlist_id"];
-            const selectedPlaylist = await musicMgr.getPlaylistById(currentPlaylistId);
+            const selectedPlaylist = await musicMgr.getPlaylistById(
+                currentPlaylistId
+            );
             dataMgr.selectedPlaylist = selectedPlaylist;
 
             // play it
@@ -126,12 +131,15 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
     }
 
     async revealTree() {
-        if (!dataMgr.spotifyPlaylists || dataMgr.spotifyPlaylists.length === 0) {
+        if (
+            !dataMgr.spotifyPlaylists ||
+            dataMgr.spotifyPlaylists.length === 0
+        ) {
             await MusicManager.getInstance().refreshPlaylists();
         }
 
         setTimeout(() => {
-            MusicStateManager.getInstance().gatherMusicInfo();
+            MusicStateManager.getInstance().gatherMusicInfoRequest();
         }, 1000);
 
         this.refresh();
@@ -157,7 +165,10 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
                 // if we have a clean way of check that a track is playing when the
                 // playlist folders are loaded, but currently the tracks load after you
                 // open the playlist so we don't know if it's playing or not
-                return createPlaylistTreeItem(p, TreeItemCollapsibleState.Collapsed);
+                return createPlaylistTreeItem(
+                    p,
+                    TreeItemCollapsibleState.Collapsed
+                );
             }
             treeItem = createPlaylistTreeItem(p, TreeItemCollapsibleState.None);
         } else {

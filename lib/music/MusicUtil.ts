@@ -50,7 +50,9 @@ export async function checkForDups(playlists: PlaylistItem[]) {
     }
 }
 
-export async function deleteDuplicateSpotifyPlaylists(playlists: PlaylistItem[]) {
+export async function deleteDuplicateSpotifyPlaylists(
+    playlists: PlaylistItem[]
+) {
     if (playlists && playlists.length > 0) {
         for (let i = 0; i < playlists.length; i++) {
             const playlist: PlaylistItem = playlists[i];
@@ -126,8 +128,10 @@ export async function buildTracksForRecommendations(playlists) {
             return track.id;
         });
         foundTracksForRec = true;
-    } else {
-        // go through the found playlists and the first one that returns 3 or more wins
+    }
+    let hasEnoughTrackIds = trackIds && trackIds.length > 1 ? true : false;
+    if (!hasEnoughTrackIds) {
+        // go through the found playlists and the first one that has enough wins
         if (playlists && playlists.length > 0) {
             for (let i = 0; i < playlists.length; i++) {
                 const playlist = playlists[i];
@@ -135,7 +139,7 @@ export async function buildTracksForRecommendations(playlists) {
                 const playlistItems: PlaylistItem[] = await musicMgr.getPlaylistItemTracksForPlaylistId(
                     playlist.id
                 );
-                if (playlistItems && playlistItems.length >= 3) {
+                if (playlistItems && playlistItems.length > 1) {
                     foundTracksForRec = true;
                     trackIds = playlistItems.map((item: PlaylistItem) => {
                         return item.id;
@@ -146,12 +150,8 @@ export async function buildTracksForRecommendations(playlists) {
         }
     }
 
+    // set the tracks for the recommendations
     dataMgr.trackIdsForRecommendations = trackIds;
-
-    // if (refreshTree) {
-    //     // refresh the rec tree
-    //     commands.executeCommand("musictime.refreshRecommendationsTree");
-    // }
 }
 
 export function requiresSpotifyAccess() {
@@ -165,7 +165,8 @@ export function requiresSpotifyAccess() {
  * Either of these values can be null
  */
 export function getDeviceSet() {
-    const devices: PlayerDevice[] = MusicDataManager.getInstance().currentDevices || [];
+    const devices: PlayerDevice[] =
+        MusicDataManager.getInstance().currentDevices || [];
     const webPlayer = devices.find((d: PlayerDevice) =>
         d.name.toLowerCase().includes("web player")
     );

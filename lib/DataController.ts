@@ -1,5 +1,10 @@
 import { workspace, window, commands } from "vscode";
-import { softwareGet, softwarePut, isResponseOk, softwarePost } from "./HttpClient";
+import {
+    softwareGet,
+    softwarePut,
+    isResponseOk,
+    softwarePost,
+} from "./HttpClient";
 import {
     getItem,
     setItem,
@@ -93,8 +98,6 @@ export async function sendBatchPayload(batch) {
  * send any music tracks
  */
 export async function sendMusicData(trackData) {
-    const serverIsOnline = await serverIsAvailable();
-
     if (trackData.available_markets) {
         delete trackData.available_markets;
     }
@@ -108,18 +111,13 @@ export async function sendMusicData(trackData) {
         delete trackData.href;
     }
 
-    if (serverIsOnline) {
-        logIt(
-            `sending song session {song: ${trackData.name}, start: ${trackData.start}, end: ${trackData.end}}`
-        );
+    logIt(
+        `sending song session {song: ${trackData.name}, start: ${trackData.start}, end: ${trackData.end}}`
+    );
 
-        // add the "local_start", "start", and "end"
-        // POST the kpm to the PluginManager
-        sendSessionPayload(trackData);
-    } else {
-        // store it
-        storeMusicSessionPayload(trackData);
-    }
+    // add the "local_start", "start", and "end"
+    // POST the kpm to the PluginManager
+    sendSessionPayload(trackData);
 }
 
 /**
@@ -128,7 +126,10 @@ export async function sendMusicData(trackData) {
 export async function getAppJwt(serverIsOnline) {
     if (serverIsOnline) {
         // get the app jwt
-        let resp = await softwareGet(`/data/apptoken?token=${nowInSecs()}`, null);
+        let resp = await softwareGet(
+            `/data/apptoken?token=${nowInSecs()}`,
+            null
+        );
         if (isResponseOk(resp)) {
             return resp.data.jwt;
         }
@@ -144,7 +145,9 @@ export async function getSlackOauth(serverIsOnline) {
             // get the one that is "slack"
             for (let i = 0; i < user.auths.length; i++) {
                 if (user.auths[i].type === "slack") {
-                    await MusicManager.getInstance().updateSlackAccessInfo(user.auths[i]);
+                    await MusicManager.getInstance().updateSlackAccessInfo(
+                        user.auths[i]
+                    );
                     return user.auths[i];
                 }
             }
@@ -329,7 +332,10 @@ export async function populateLikedSongs() {
 export async function populatePlayerContext() {
     const spotifyContext: PlayerContext = await getSpotifyPlayerContext();
     MusicDataManager.getInstance().spotifyContext = spotifyContext;
-    MusicCommandManager.syncControls(MusicDataManager.getInstance().runningTrack, false);
+    MusicCommandManager.syncControls(
+        MusicDataManager.getInstance().runningTrack,
+        false
+    );
 }
 
 export async function populateSpotifyPlaylists() {
@@ -391,7 +397,7 @@ export async function populateSpotifyDevices() {
 
     // gather music to start things off
     setTimeout(() => {
-        MusicStateManager.getInstance().gatherMusicInfo();
+        MusicStateManager.getInstance().gatherMusicInfoRequest();
     }, 1000);
 }
 

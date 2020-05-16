@@ -12,7 +12,6 @@ import {
     getPluginName,
     codeTimeExtInstalled,
     displayReadmeIfNotExists,
-    isMac,
 } from "./lib/Util";
 import { manageLiveshareSession } from "./lib/LiveshareManager";
 import * as vsls from "vsls/vscode";
@@ -21,6 +20,7 @@ import { createCommands } from "./lib/command-helper";
 import { setSessionSummaryLiveshareMinutes } from "./lib/OfflineManager";
 import { MusicManager } from "./lib/music/MusicManager";
 import { KpmController } from "./lib/KpmController";
+import { DEFAULT_CURRENTLY_PLAYING_TRACK_CHECK_SECONDS } from "./lib/Constants";
 
 let _ls = null;
 
@@ -28,7 +28,6 @@ let liveshare_update_interval = null;
 let gather_music_interval = null;
 let check_track_end_interval = null;
 let offline_data_interval = null;
-let offline_song_data_interval = null;
 
 export function deactivate(ctx: ExtensionContext) {
     if (_ls && _ls.id) {
@@ -87,7 +86,6 @@ export async function intializePlugin(ctx: ExtensionContext) {
     // every half hour, send offline data
     const hourly_interval_ms = 1000 * 60 * 60;
     const half_hour_ms = hourly_interval_ms / 2;
-    const ten_min_ms = 1000 * 60 * 10;
     offline_data_interval = setInterval(() => {
         if (!codeTimeExtInstalled()) {
             // send the offline code time data
@@ -97,22 +95,10 @@ export async function intializePlugin(ctx: ExtensionContext) {
 
     const musicStateMgr: MusicStateManager = MusicStateManager.getInstance();
 
-    // send the offline song sessions
-    offline_song_data_interval = setInterval(() => {
-        musicStateMgr.processOfflineSongSessions();
-    }, ten_min_ms);
-
-    // send any offline data in a few seconds, then fire off the
-    // track listening timer
-    setTimeout(async () => {
-        // see if there are offline song sessions to send
-        await musicStateMgr.processOfflineSongSessions();
-    }, 3000);
-
     // interval to check music info
     gather_music_interval = setInterval(() => {
         musicStateMgr.gatherMusicInfo();
-    }, 20000);
+    }, 1000 * DEFAULT_CURRENTLY_PLAYING_TRACK_CHECK_SECONDS);
 
     check_track_end_interval = setInterval(() => {
         musicStateMgr.trackEndCheck();

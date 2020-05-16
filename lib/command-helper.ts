@@ -44,6 +44,7 @@ import {
 } from "./music/MusicRecommendationManager";
 import { MusicCommandUtil } from "./music/MusicCommandUtil";
 import { showSearchInput } from "./selector/SearchSelectorManager";
+import { requiresSpotifyAccess } from "./music/MusicUtil";
 
 /**
  * add the commands to vscode....
@@ -312,8 +313,10 @@ export function createCommands(): {
     const refreshDeviceInfoCommand = commands.registerCommand(
         "musictime.refreshDeviceInfo",
         async () => {
-            await populateSpotifyDevices();
-            commands.executeCommand("musictime.refreshPlaylist");
+            if (!requiresSpotifyAccess()) {
+                await populateSpotifyDevices();
+                commands.executeCommand("musictime.refreshPlaylist");
+            }
         }
     );
     cmds.push(refreshDeviceInfoCommand);
@@ -458,15 +461,14 @@ export function createCommands(): {
     );
     cmds.push(deviceSelectorCmd);
 
-    const refreshRecommendationsCommand = commands.registerCommand(
-        "musictime.refreshRecommendations",
-        async () => {
-            setTimeout(() => {
+    cmds.push(
+        commands.registerCommand(
+            "musictime.refreshRecommendations",
+            async () => {
                 refreshRecommendations();
-            }, 100);
-        }
+            }
+        )
     );
-    cmds.push(refreshRecommendationsCommand);
 
     const refreshRecPlaylistCommand = commands.registerCommand(
         "musictime.refreshRecommendationsTree",

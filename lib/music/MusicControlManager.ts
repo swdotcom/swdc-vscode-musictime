@@ -129,7 +129,7 @@ export class MusicControlManager {
         }
 
         setTimeout(() => {
-            this.stateMgr.gatherMusicInfo();
+            this.stateMgr.gatherMusicInfoRequest();
         }, 500);
     }
 
@@ -141,7 +141,9 @@ export class MusicControlManager {
                 await MusicManager.getInstance().playPreviousLikedSong();
             } else {
                 const playerName = MusicManager.getInstance().getPlayerNameForPlayback();
-                await this.musicCmdUtil.runSpotifyCommand(previous, [playerName]);
+                await this.musicCmdUtil.runSpotifyCommand(previous, [
+                    playerName,
+                ]);
             }
         } else {
             if (this.isLikedSongPlaylist()) {
@@ -152,7 +154,7 @@ export class MusicControlManager {
         }
 
         setTimeout(() => {
-            this.stateMgr.gatherMusicInfo();
+            this.stateMgr.gatherMusicInfoRequest();
         }, 500);
     }
 
@@ -181,7 +183,7 @@ export class MusicControlManager {
         }
 
         setTimeout(() => {
-            this.stateMgr.gatherMusicInfo();
+            this.stateMgr.gatherMusicInfoRequest();
         }, 500);
     }
 
@@ -206,7 +208,7 @@ export class MusicControlManager {
         }
 
         setTimeout(() => {
-            this.stateMgr.gatherMusicInfo();
+            this.stateMgr.gatherMusicInfoRequest();
         }, 500);
     }
 
@@ -215,7 +217,7 @@ export class MusicControlManager {
         await setShuffle(PlayerName.SpotifyWeb, true, deviceId);
 
         setTimeout(() => {
-            this.stateMgr.gatherMusicInfo();
+            this.stateMgr.gatherMusicInfoRequest();
         }, 500);
     }
 
@@ -224,7 +226,7 @@ export class MusicControlManager {
         await setShuffle(PlayerName.SpotifyWeb, false, deviceId);
 
         setTimeout(() => {
-            this.stateMgr.gatherMusicInfo();
+            this.stateMgr.gatherMusicInfoRequest();
         }, 500);
     }
 
@@ -233,7 +235,7 @@ export class MusicControlManager {
         await setRepeatTrack(PlayerName.SpotifyWeb, deviceId);
 
         setTimeout(() => {
-            this.stateMgr.gatherMusicInfo();
+            this.stateMgr.gatherMusicInfoRequest();
         }, 500);
     }
 
@@ -242,7 +244,7 @@ export class MusicControlManager {
         await setRepeatPlaylist(PlayerName.SpotifyWeb, deviceId);
 
         setTimeout(() => {
-            this.stateMgr.gatherMusicInfo();
+            this.stateMgr.gatherMusicInfoRequest();
         }, 500);
     }
 
@@ -255,7 +257,7 @@ export class MusicControlManager {
         }
 
         setTimeout(() => {
-            this.stateMgr.gatherMusicInfo();
+            this.stateMgr.gatherMusicInfoRequest();
         }, 500);
     }
 
@@ -273,7 +275,10 @@ export class MusicControlManager {
      * Launch and play a spotify track via the web player.
      * @param isTrack boolean
      */
-    async playSpotifyWebPlaylistTrack(isTrack: boolean, devices: PlayerDevice[]) {
+    async playSpotifyWebPlaylistTrack(
+        isTrack: boolean,
+        devices: PlayerDevice[]
+    ) {
         const trackRepeating = await MusicManager.getInstance().isTrackRepeating();
 
         // get the selected playlist
@@ -288,13 +293,16 @@ export class MusicControlManager {
         if (isLikedSongsPlaylist) {
             await this.playSpotifyByTrack(selectedTrack, devices);
         } else if (isTrack) {
-            await this.playSpotifyByTrackAndPlaylist(playlistId, selectedTrack.id);
+            await this.playSpotifyByTrackAndPlaylist(
+                playlistId,
+                selectedTrack.id
+            );
         } else {
             // play the playlist
             await this.playSpotifyByTrackAndPlaylist(playlistId, "");
         }
 
-        setTimeout(() => {
+        setTimeout(async () => {
             if (trackRepeating) {
                 // make sure it set to repeat
                 commands.executeCommand("musictime.repeatOn");
@@ -304,8 +312,8 @@ export class MusicControlManager {
             }
 
             setTimeout(() => {
-                this.stateMgr.gatherMusicInfo();
-            }, 500);
+                this.stateMgr.gatherMusicInfoRequest();
+            }, 1500);
         }, 2000);
     }
 
@@ -340,13 +348,19 @@ export class MusicControlManager {
             if (!isWin) {
                 // ex: ["spotify:track:0R8P9KfGJCDULmlEoBagcO", "spotify:playlist:6ZG5lRT77aJ3btmArcykra"]
                 // make sure the track has spotify:track and the playlist has spotify:playlist
-                playSpotifyMacDesktopTrack(selectedTrack.id, selectedPlaylist.id);
+                playSpotifyMacDesktopTrack(
+                    selectedTrack.id,
+                    selectedPlaylist.id
+                );
             } else {
-                this.playSpotifyByTrackAndPlaylist(selectedPlaylist.id, selectedTrack.id);
+                this.playSpotifyByTrackAndPlaylist(
+                    selectedPlaylist.id,
+                    selectedTrack.id
+                );
             }
         }
 
-        setTimeout(() => {
+        setTimeout(async () => {
             if (trackRepeating) {
                 // make sure it set to repeat
                 commands.executeCommand("musictime.repeatOn");
@@ -356,8 +370,8 @@ export class MusicControlManager {
             }
 
             setTimeout(() => {
-                this.stateMgr.gatherMusicInfo();
-            }, 500);
+                this.stateMgr.gatherMusicInfoRequest();
+            }, 1500);
         }, 2000);
     }
 
@@ -375,7 +389,10 @@ export class MusicControlManager {
         await playSpotifyPlaylist(playlistId, trackId, deviceId);
     }
 
-    async playSpotifyByTrack(track: PlaylistItem, devices: PlayerDevice[] = []) {
+    async playSpotifyByTrack(
+        track: PlaylistItem,
+        devices: PlayerDevice[] = []
+    ) {
         const deviceId = getDeviceId();
 
         if (deviceId) {
@@ -449,7 +466,7 @@ export class MusicControlManager {
         commands.executeCommand("musictime.refreshPlaylist");
 
         setTimeout(() => {
-            this.stateMgr.gatherMusicInfo();
+            this.stateMgr.gatherMusicInfoRequest();
         }, 1000);
     }
 
@@ -540,7 +557,8 @@ export class MusicControlManager {
         if (!needsSpotifyAccess) {
             menuOptions.items.push({
                 label: "Open dashboard",
-                detail: "View your latest music metrics right here in your editor",
+                detail:
+                    "View your latest music metrics right here in your editor",
                 cb: displayMusicTimeMetricsMarkdownDashboard,
             });
         }
@@ -629,7 +647,9 @@ export class MusicControlManager {
         const musicControlMgr: MusicControlManager = MusicControlManager.getInstance();
         // !!! important, need to use the get instance as this
         // method may be called within a callback and "this" will be undefined !!!
-        const hasPlaylistItemToAdd = musicControlMgr.currentTrackToAdd ? true : false;
+        const hasPlaylistItemToAdd = musicControlMgr.currentTrackToAdd
+            ? true
+            : false;
         const placeholder: string = hasPlaylistItemToAdd
             ? `${musicControlMgr.currentTrackToAdd.artist} - ${musicControlMgr.currentTrackToAdd.name}`
             : "New Playlist";
@@ -638,7 +658,9 @@ export class MusicControlManager {
         );
 
         if (playlistName && playlistName.trim().length === 0) {
-            window.showInformationMessage("Please enter a playlist name to continue.");
+            window.showInformationMessage(
+                "Please enter a playlist name to continue."
+            );
             return;
         }
 
@@ -649,7 +671,10 @@ export class MusicControlManager {
         const playlistItems = hasPlaylistItemToAdd
             ? [musicControlMgr.currentTrackToAdd]
             : [];
-        MusicPlaylistManager.getInstance().createPlaylist(playlistName, playlistItems);
+        MusicPlaylistManager.getInstance().createPlaylist(
+            playlistName,
+            playlistItems
+        );
     }
 
     async addToPlaylistMenu(playlistItem: PlaylistItem) {
@@ -663,7 +688,8 @@ export class MusicControlManager {
             ],
             placeholder: "Select or Create a playlist",
         };
-        let playlists: PlaylistItem[] = MusicManager.getInstance().currentPlaylists;
+        let playlists: PlaylistItem[] = MusicManager.getInstance()
+            .currentPlaylists;
 
         // filter out the ones with itemType = playlist
         playlists = playlists
@@ -695,7 +721,8 @@ export class MusicControlManager {
                     let errMsg = null;
 
                     const trackUri =
-                        playlistItem.uri || createUriFromTrackId(playlistItem.id);
+                        playlistItem.uri ||
+                        createUriFromTrackId(playlistItem.id);
                     const trackId = playlistItem.id;
 
                     if (matchingPlaylist.name !== "Liked Songs") {
@@ -730,7 +757,9 @@ export class MusicControlManager {
                         // refresh the playlist and clear the current recommendation metadata
                         dataMgr.removeTrackFromRecommendations(trackId);
                         commands.executeCommand("musictime.refreshPlaylist");
-                        commands.executeCommand("musictime.refreshRecommendationsTree");
+                        commands.executeCommand(
+                            "musictime.refreshRecommendationsTree"
+                        );
                     } else {
                         if (errMsg) {
                             window.showErrorMessage(
@@ -766,7 +795,9 @@ export async function displayMusicTimeMetricsMarkdownDashboard() {
     }
     fetchingMusicTimeMetrics = true;
 
-    window.showInformationMessage(`Generating Music Time dashboard, please wait...`);
+    window.showInformationMessage(
+        `Generating Music Time dashboard, please wait...`
+    );
 
     const musicTimeFile = getMusicTimeMarkdownFile();
     await fetchMusicTimeMetricsMarkdownDashboard();
@@ -787,7 +818,9 @@ export async function displayMusicTimeMetricsMarkdownDashboard() {
         }
     );
 
-    const content = fs.readFileSync(musicTimeFile, { encoding: "utf8" }).toString();
+    const content = fs
+        .readFileSync(musicTimeFile, { encoding: "utf8" })
+        .toString();
     panel.webview.html = content;
 
     window.showInformationMessage(`Completed building Music Time dashboard.`);
@@ -910,11 +943,14 @@ async function fetchDashboardData(fileName: string, isHtml: boolean) {
     );
 
     // get the content
-    let content = musicSummary && musicSummary.data ? musicSummary.data : NO_DATA;
+    let content =
+        musicSummary && musicSummary.data ? musicSummary.data : NO_DATA;
 
     fs.writeFileSync(fileName, content, (err) => {
         if (err) {
-            logIt(`Error writing to the Software dashboard file: ${err.message}`);
+            logIt(
+                `Error writing to the Software dashboard file: ${err.message}`
+            );
         }
     });
 }

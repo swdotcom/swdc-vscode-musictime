@@ -21,16 +21,16 @@ export async function connectSlack() {
 export async function showSlackChannelMenu() {
     let menuOptions = {
         items: [],
-        placeholder: "Select a channel"
+        placeholder: "Select a channel",
     };
 
     // get the available channels
     const channelNames = await getChannelNames();
     channelNames.sort();
 
-    channelNames.forEach(channelName => {
+    channelNames.forEach((channelName) => {
         menuOptions.items.push({
-            label: channelName
+            label: channelName,
         });
     });
 
@@ -46,7 +46,7 @@ async function getChannels() {
     const web = new WebClient(slackAccessToken);
     const result = await web.channels
         .list({ exclude_archived: true, exclude_members: true })
-        .catch(err => {
+        .catch((err) => {
             console.log("Unable to retrieve slack channels: ", err.message);
             return [];
         });
@@ -59,7 +59,7 @@ async function getChannels() {
 async function getChannelNames() {
     const channels = await getChannels();
     if (channels && channels.length > 0) {
-        return channels.map(channel => {
+        return channels.map((channel) => {
             return channel.name;
         });
     }

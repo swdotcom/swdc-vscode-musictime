@@ -5,7 +5,7 @@ import {
     PlayerDevice,
     CodyConfig,
     setConfig,
-    PlayerContext
+    PlayerContext,
 } from "cody-music";
 import { SpotifyUser } from "cody-music/dist/lib/profile";
 import { isMac, getItem } from "../Util";
@@ -15,7 +15,7 @@ import {
     softwareGet,
     isResponseOk,
     softwareDelete,
-    softwarePut
+    softwarePut,
 } from "../HttpClient";
 
 export class MusicDataManager {
@@ -243,7 +243,7 @@ export class MusicDataManager {
                 } else if (foundPlaylist.name !== savedPlaylist.name) {
                     // update the name on the music time app
                     const payload = {
-                        name: foundPlaylist.name
+                        name: foundPlaylist.name,
                     };
                     await softwarePut(
                         `/music/playlist/generated/${savedPlaylist.id}`,

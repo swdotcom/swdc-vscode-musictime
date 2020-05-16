@@ -27,7 +27,10 @@ import {
 } from "cody-music";
 import { MusicManager } from "./MusicManager";
 import { KpmController } from "../KpmController";
-import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
+import {
+    SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
+    DEFAULT_CURRENTLY_PLAYING_TRACK_CHECK_SECONDS,
+} from "../Constants";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { getDataRows } from "../OfflineManager";
 import { MusicDataManager } from "./MusicDataManager";
@@ -44,6 +47,8 @@ export class MusicStateManager {
     private lastSongSessionStart: number = 0;
     private endCheckThresholdMillis: number = 1000 * 19;
     private endCheckTimeout: any = null;
+    private lastIntervalSongCheck: number = 0;
+    private lastSongCheck: number = 0;
 
     private constructor() {
         // private to prevent non-singleton usage
@@ -61,7 +66,8 @@ export class MusicStateManager {
      * @param track
      */
     private updateTrackPlaylistId(track: Track) {
-        const selectedPlaylist = MusicDataManager.getInstance().selectedPlaylist;
+        const selectedPlaylist = MusicDataManager.getInstance()
+            .selectedPlaylist;
         if (selectedPlaylist) {
             track["playlistId"] = selectedPlaylist.id;
         }
@@ -139,14 +145,41 @@ export class MusicStateManager {
         }, timeout);
     }
 
+    public async gatherMusicInfoRequest() {
+        const utcLocalTimes = this.getUtcAndLocal();
+        const diff = utcLocalTimes.utc - this.lastIntervalSongCheck;
+
+        // i.e. if the check seconds is 20, we'll subtract 2 and get 18 seconds
+        // which means it would be at least 2 more seconds until the gather music
+        // check will happen and is allowable to perform this intermediate check
+        const threshold = DEFAULT_CURRENTLY_PLAYING_TRACK_CHECK_SECONDS - 2;
+        if (
+            diff < threshold ||
+            diff > DEFAULT_CURRENTLY_PLAYING_TRACK_CHECK_SECONDS
+        ) {
+            // make the call
+            this.gatherMusicInfo(false /*updateIntervalSongCheckTime*/);
+        }
+        // otherwise we'll just wait until the interval call is made
+    }
+
     /**
      * Core logic in gathering tracks. This is called every 20 seconds.
      */
-    public async gatherMusicInfo(): Promise<any> {
+    public async gatherMusicInfo(
+        updateIntervalSongCheckTime = true
+    ): Promise<any> {
         const dataMgr: MusicDataManager = MusicDataManager.getInstance();
 
         try {
             const utcLocalTimes = this.getUtcAndLocal();
+
+            const diff = utcLocalTimes.utc - this.lastSongCheck;
+            if (diff > 0 && diff < 1) {
+                // it's getting called too quickly, bail out
+                return;
+            }
+
             const serverIsOnline = await serverIsAvailable();
             const deviceId = getDeviceId();
             const requiresAccess = requiresSpotifyAccess();
@@ -175,7 +208,17 @@ export class MusicStateManager {
                 playingTrack = await getTrack(PlayerName.SpotifyWeb);
             }
 
-            if (!playingTrack || (playingTrack && playingTrack.httpStatus >= 400)) {
+            // set the last time we checked
+            if (updateIntervalSongCheckTime) {
+                this.lastIntervalSongCheck = utcLocalTimes.utc;
+            }
+            // this one is always set
+            this.lastSongCheck = utcLocalTimes.utc;
+
+            if (
+                !playingTrack ||
+                (playingTrack && playingTrack.httpStatus >= 400)
+            ) {
                 // currently unable to fetch the track
                 return;
             }
@@ -195,8 +238,10 @@ export class MusicStateManager {
                 playingTrack.id = createSpotifyIdFromUri(playingTrack.id);
             }
 
-            const isNewTrack = this.existingTrack.id !== playingTrack.id ? true : false;
-            const sendSongSession = isNewTrack && this.existingTrack.id ? true : false;
+            const isNewTrack =
+                this.existingTrack.id !== playingTrack.id ? true : false;
+            const sendSongSession =
+                isNewTrack && this.existingTrack.id ? true : false;
             const trackStateChanged =
                 this.existingTrack.state !== playingTrack.state ? true : false;
 
@@ -221,7 +266,10 @@ export class MusicStateManager {
                 }
             }
 
-            if (!this.existingTrack || this.existingTrack.id !== playingTrack.id) {
+            if (
+                !this.existingTrack ||
+                this.existingTrack.id !== playingTrack.id
+            ) {
                 // update the entire object if the id's don't match
                 this.existingTrack = { ...playingTrack };
             }
@@ -276,7 +324,9 @@ export class MusicStateManager {
         const musicMgr: MusicManager = MusicManager.getInstance();
         // If the current playlist is the Liked Songs,
         // check if we should start the next track
-        const playlistId = dataMgr.selectedPlaylist ? dataMgr.selectedPlaylist.id : "";
+        const playlistId = dataMgr.selectedPlaylist
+            ? dataMgr.selectedPlaylist.id
+            : "";
         if (!playlistId || playlistId !== SPOTIFY_LIKED_SONGS_PLAYLIST_NAME) {
             // no need to go further, it's not the liked songs playlist
             return;
@@ -386,7 +436,9 @@ export class MusicStateManager {
             );
         } else if (!genre) {
             // fetch the genre
-            const artistName = MusicManager.getInstance().getArtist(songSession);
+            const artistName = MusicManager.getInstance().getArtist(
+                songSession
+            );
             const songName = songSession.name;
             const artistId =
                 songSession.artists && songSession.artists.length
@@ -400,7 +452,9 @@ export class MusicStateManager {
         const songSessionSource = {};
         if (payloads && payloads.length) {
             payloads.forEach((payload) => {
-                const sourceKeys = payload.source ? Object.keys(payload.source) : [];
+                const sourceKeys = payload.source
+                    ? Object.keys(payload.source)
+                    : [];
                 sourceKeys.forEach((sourceKey) => {
                     let data = {};
                     data[sourceKey] = payload.source[sourceKey];
@@ -409,7 +463,10 @@ export class MusicStateManager {
                         data[sourceKey]["local_end"] = utcLocalTimes.local;
                     }
                     // only add the file payload if the song session's end is after the song session start
-                    if (data[sourceKey] && data[sourceKey].end > songSession.start) {
+                    if (
+                        data[sourceKey] &&
+                        data[sourceKey].end > songSession.start
+                    ) {
                         if (songSessionSource[sourceKey]) {
                             // aggregate it
                             const existingData = songSessionSource[sourceKey];
@@ -451,7 +508,10 @@ export class MusicStateManager {
 
         // build the file aggregate data, but only keep the coding data
         // that match up to the song session range
-        const songData = this.buildAggregateData(songSessionSource, initialValue);
+        const songData = this.buildAggregateData(
+            songSessionSource,
+            initialValue
+        );
 
         // await for either promise, whichever one is available
         const fullTrack = await fullTrackP;

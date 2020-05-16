@@ -138,6 +138,7 @@ export class ProviderItemManager {
             "Loading...",
             "please wait",
             null,
+            "action",
             "audio.svg"
         );
     }

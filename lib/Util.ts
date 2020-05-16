@@ -17,7 +17,12 @@ import {
     SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
 } from "./Constants";
 import { getToggleFileEventLoggingState } from "./DataController";
-import { PlaylistItem, TrackStatus, CodyResponse, CodyResponseType } from "cody-music";
+import {
+    PlaylistItem,
+    TrackStatus,
+    CodyResponse,
+    CodyResponseType,
+} from "cody-music";
 const moment = require("moment-timezone");
 
 const open = require("open");
@@ -168,7 +173,8 @@ export function getProjectFolder(fileName) {
         for (let i = 0; i < workspace.workspaceFolders.length; i++) {
             let workspaceFolder = workspace.workspaceFolders[i];
             if (workspaceFolder.uri) {
-                let isVslsScheme = workspaceFolder.uri.scheme === "vsls" ? true : false;
+                let isVslsScheme =
+                    workspaceFolder.uri.scheme === "vsls" ? true : false;
                 if (isVslsScheme) {
                     liveshareFolder = workspaceFolder;
                 }
@@ -207,7 +213,8 @@ export function setItem(key, value) {
 
     const sessionFile = getSoftwareSessionFile();
     fs.writeFileSync(sessionFile, content, (err) => {
-        if (err) logIt(`Error writing to the Software session file: ${err.message}`);
+        if (err)
+            logIt(`Error writing to the Software session file: ${err.message}`);
     });
 }
 
@@ -271,10 +278,15 @@ export async function getCommandResult(cmd, maxLines: any = -1) {
     if (!result) {
         return "";
     }
-    let contentList = result.replace(/\r\n/g, "\r").replace(/\n/g, "\r").split(/\r/);
+    let contentList = result
+        .replace(/\r\n/g, "\r")
+        .replace(/\n/g, "\r")
+        .split(/\r/);
     if (contentList && contentList.length > 0) {
         let len =
-            maxLines !== -1 ? Math.min(contentList.length, maxLines) : contentList.length;
+            maxLines !== -1
+                ? Math.min(contentList.length, maxLines)
+                : contentList.length;
         for (let i = 0; i < len; i++) {
             let line = contentList[i];
             if (line && line.trim().length > 0) {
@@ -421,7 +433,11 @@ export function displayReadmeIfNotExists(override = false) {
 
         const readmeUri = Uri.file(getLocalREADMEFile());
 
-        commands.executeCommand("markdown.showPreview", readmeUri, ViewColumn.One);
+        commands.executeCommand(
+            "markdown.showPreview",
+            readmeUri,
+            ViewColumn.One
+        );
         setItem("displayedMtReadme", true);
     }
 }
@@ -437,7 +453,9 @@ export function getExtensionDisplayName() {
         extInfoFile += "/extensioninfo.json";
     }
     if (fs.existsSync(extInfoFile)) {
-        const content = fs.readFileSync(extInfoFile, { encoding: "utf8" }).toString();
+        const content = fs
+            .readFileSync(extInfoFile, { encoding: "utf8" })
+            .toString();
         if (content) {
             try {
                 const data = JSON.parse(content);
@@ -466,7 +484,9 @@ export function getExtensionName() {
         extInfoFile += "/extensioninfo.json";
     }
     if (fs.existsSync(extInfoFile)) {
-        const content = fs.readFileSync(extInfoFile, { encoding: "utf8" }).toString();
+        const content = fs
+            .readFileSync(extInfoFile, { encoding: "utf8" })
+            .toString();
         if (content) {
             try {
                 const data = JSON.parse(content);
@@ -500,7 +520,9 @@ export function getSoftwareSessionAsJson() {
 
     const sessionFile = getSoftwareSessionFile();
     if (fs.existsSync(sessionFile)) {
-        const content = fs.readFileSync(sessionFile, { encoding: "utf8" }).toString();
+        const content = fs
+            .readFileSync(sessionFile, { encoding: "utf8" })
+            .toString();
         if (content) {
             try {
                 data = JSON.parse(content);
@@ -561,7 +583,9 @@ export function storePayload(payload) {
     try {
         fs.appendFileSync(file, JSON.stringify(payload) + os.EOL);
     } catch (err) {
-        logIt(`Error appending to the code time data store file: ${err.message}`);
+        logIt(
+            `Error appending to the code time data store file: ${err.message}`
+        );
     }
 }
 
@@ -573,14 +597,18 @@ export function storeMusicSessionPayload(songSession) {
     try {
         fs.appendFileSync(file, JSON.stringify(songSession) + os.EOL);
     } catch (err) {
-        logIt(`Error appending to the music session data store file: ${err.message}`);
+        logIt(
+            `Error appending to the music session data store file: ${err.message}`
+        );
     }
 }
 
 export function randomCode() {
     return crypto
         .randomBytes(16)
-        .map((value) => alpha.charCodeAt(Math.floor((value * alpha.length) / 256)))
+        .map((value) =>
+            alpha.charCodeAt(Math.floor((value * alpha.length) / 256))
+        )
         .toString();
 }
 
@@ -682,7 +710,9 @@ export async function wrapExecPromise(cmd, projectDir = null) {
     let result = null;
     try {
         let opts =
-            projectDir !== undefined && projectDir !== null ? { cwd: projectDir } : {};
+            projectDir !== undefined && projectDir !== null
+                ? { cwd: projectDir }
+                : {};
         result = await execPromise(cmd, opts).catch((e) => {
             if (e.message) {
                 console.log("task error: ", e.message);
@@ -855,7 +885,8 @@ export function getFileType(fileName: string) {
 const resourcePath: string = path.join(__filename, "..", "..", "resources");
 
 export function getPlaylistIcon(treeItem: PlaylistItem) {
-    const stateVal = treeItem.state !== TrackStatus.Playing ? "notplaying" : "playing";
+    const stateVal =
+        treeItem.state !== TrackStatus.Playing ? "notplaying" : "playing";
     let contextValue = "";
 
     // itemType will be either: track | playlist
@@ -870,7 +901,10 @@ export function getPlaylistIcon(treeItem: PlaylistItem) {
 
     if (treeItem.tag === "action") {
         this.contextValue = "treeitem-action";
-    } else if (treeItem["itemType"] === "track" || treeItem["itemType"] === "playlist") {
+    } else if (
+        treeItem["itemType"] === "track" ||
+        treeItem["itemType"] === "playlist"
+    ) {
         if (treeItem.tag === "paw") {
             // we use the paw to show as the music time playlist, but
             // make sure the contextValue has spotify in it
@@ -901,7 +935,9 @@ export function getPlaylistIcon(treeItem: PlaylistItem) {
         (treeItem.tag.includes("spotify") && treeItem.itemType !== "playlist")
     ) {
         const spotifySvg =
-            treeItem.tag === "disabled" ? "spotify-disconnected.svg" : "spotify-logo.svg";
+            treeItem.tag === "disabled"
+                ? "spotify-disconnected.svg"
+                : "spotify-logo.svg";
         lightPath = path.join(resourcePath, "light", spotifySvg);
         darkPath = path.join(resourcePath, "dark", spotifySvg);
     } else if (treeItem.itemType === "playlist" && treeItem.tag !== "paw") {
