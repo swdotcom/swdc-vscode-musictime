@@ -25,7 +25,7 @@ export const api_endpoint = "https://api.software.com";
 // "http://localhost:3000", "https://qa.software.com", "https://staging.software.com", "https://app.software.com"
 export const launch_url = "https://app.software.com";
 
-export const DEFAULT_CURRENTLY_PLAYING_TRACK_CHECK_SECONDS = 20;
+export const DEFAULT_CURRENTLY_PLAYING_TRACK_CHECK_SECONDS = 22;
 export const DEFAULT_SESSION_THRESHOLD_SECONDS = 60 * 15;
 
 export const CODE_TIME_EXT_ID = "softwaredotcom.swdc-vscode";

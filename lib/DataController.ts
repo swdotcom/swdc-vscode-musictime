@@ -188,6 +188,8 @@ export async function getMusicTimeUserStatus(serverIsOnline) {
                 const user = resp.data.user;
                 let foundSpotifyAuth = false;
 
+                const musicMgr: MusicManager = MusicManager.getInstance();
+
                 if (user.auths && user.auths.length > 0) {
                     for (let i = 0; i < user.auths.length; i++) {
                         const auth = user.auths[i];
@@ -196,10 +198,10 @@ export async function getMusicTimeUserStatus(serverIsOnline) {
                         if (auth.type === "spotify" && auth.access_token) {
                             foundSpotifyAuth = true;
                             // update spotify access info
-                            await MusicManager.getInstance().updateSpotifyAccessInfo(
-                                auth
-                            );
-                            break;
+                            await musicMgr.updateSpotifyAccessInfo(auth);
+                        } else if (user.auths[i].type === "slack") {
+                            // update slack connection
+                            await musicMgr.updateSlackAccessInfo(auth);
                         }
                     }
                 }

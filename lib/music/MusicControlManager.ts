@@ -886,7 +886,7 @@ export async function disconnectOauth(type: string, confirmDisconnect = true) {
         let serverIsOnline = await serverIsAvailable();
         if (serverIsOnline) {
             const type_lc = type.toLowerCase();
-            let result = await softwarePut(
+            await softwarePut(
                 `/auth/${type_lc}/disconnect`,
                 {},
                 getItem("jwt")
