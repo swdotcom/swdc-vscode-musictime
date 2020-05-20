@@ -33,7 +33,7 @@
 
 -   **Integrated player controls**: Control your music right from the status bar of your editor.
 
--   **Embedded playlists**: Browse and play your Spotify and iTunes playlists and songs from your editor.
+-   **Embedded playlists**: Browse and play your Spotify playlists and songs from your editor.
 
 -   **AI playlists**: Get a personalized AI playlist generated using deep learning to help you focus.
 
