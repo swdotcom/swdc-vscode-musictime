@@ -79,7 +79,8 @@ const clipboardy = require("clipboardy");
 const fs = require("fs");
 const dataMgr: MusicDataManager = MusicDataManager.getInstance();
 
-const NO_DATA = "MUSIC TIME\n\nNo data available\n";
+const NO_DATA =
+    "MUSIC TIME\n\nListen to Spotify while coding to generate this playlist\n";
 
 let lastDayOfMonth = -1;
 let fetchingMusicTimeMetrics = false;
