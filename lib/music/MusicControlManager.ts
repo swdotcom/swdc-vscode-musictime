@@ -788,18 +788,6 @@ export function buildSpotifyLink(id: string, isPlaylist: boolean) {
 }
 
 export async function displayMusicTimeMetricsMarkdownDashboard() {
-    if (fetchingMusicTimeMetrics) {
-        window.showInformationMessage(
-            `Still generating Music Time dashboard, please wait...`
-        );
-        return;
-    }
-    fetchingMusicTimeMetrics = true;
-
-    window.showInformationMessage(
-        `Generating Music Time dashboard, please wait...`
-    );
-
     const musicTimeFile = getMusicTimeMarkdownFile();
     await fetchMusicTimeMetricsMarkdownDashboard();
 
@@ -823,9 +811,6 @@ export async function displayMusicTimeMetricsMarkdownDashboard() {
         .readFileSync(musicTimeFile, { encoding: "utf8" })
         .toString();
     panel.webview.html = content;
-
-    window.showInformationMessage(`Completed building Music Time dashboard.`);
-    fetchingMusicTimeMetrics = false;
 }
 
 export async function connectSpotify() {
