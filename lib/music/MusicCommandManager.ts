@@ -2,7 +2,11 @@ import { window, StatusBarAlignment, StatusBarItem } from "vscode";
 import { getSongDisplayName, isMac, getItem } from "../Util";
 import { TrackStatus, Track } from "cody-music";
 import { MusicManager } from "./MusicManager";
-import { requiresSpotifyAccess, getDeviceId } from "./MusicUtil";
+import {
+    requiresSpotifyAccess,
+    getDeviceId,
+    requiresSpotifyReAuthentication,
+} from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 
 export interface Button {
@@ -47,7 +51,7 @@ export class MusicCommandManager {
     public static async initialize() {
         const musictimeMenuTooltip = this.getMusicMenuTooltip();
 
-        const requiresReAuth = getItem("vscode_requiesSpotifyReAuth");
+        const requiresReAuth = requiresSpotifyReAuthentication();
         const action = requiresReAuth ? "Reconnect" : "Connect";
 
         // start with 100 0and go down in sequence
@@ -189,7 +193,7 @@ export class MusicCommandManager {
             needsSpotifyAccess,
             showPremiumRequired,
         } = await this.getSpotifyState();
-        const requiresReAuth = getItem("vscode_requiesSpotifyReAuth");
+        const requiresReAuth = requiresSpotifyReAuthentication();
         const action = requiresReAuth ? "Reconnect" : "Connect";
 
         // hide all except for the launch player button and possibly connect spotify button
@@ -362,7 +366,7 @@ export class MusicCommandManager {
         const name = getItem("name");
         const needsSpotifyAccess = requiresSpotifyAccess();
         if (needsSpotifyAccess) {
-            const requiresReAuth = getItem("vscode_requiesSpotifyReAuth");
+            const requiresReAuth = requiresSpotifyReAuthentication();
             const action = requiresReAuth ? "Reconnect" : "Connect";
             return `${action} Spotify`;
         }

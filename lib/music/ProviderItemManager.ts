@@ -14,7 +14,11 @@ import {
     GENERATE_CUSTOM_PLAYLIST_TOOLTIP,
     REFRESH_CUSTOM_PLAYLIST_TOOLTIP,
 } from "../Constants";
-import { requiresSpotifyAccess, getDeviceSet } from "./MusicUtil";
+import {
+    requiresSpotifyAccess,
+    getDeviceSet,
+    requiresSpotifyReAuthentication,
+} from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 import { MusicManager } from "./MusicManager";
 import { getItem } from "../Util";
@@ -128,7 +132,7 @@ export class ProviderItemManager {
     }
 
     getConnectToSpotifyButton() {
-        const requiresReAuth = getItem("vscode_requiesSpotifyReAuth");
+        const requiresReAuth = requiresSpotifyReAuthentication();
         const action = requiresReAuth ? "Reconnect" : "Connect";
         return this.buildActionItem(
             "connectspotify",
@@ -142,7 +146,7 @@ export class ProviderItemManager {
 
     getRecommendationConnectToSpotifyButton() {
         // Connect Spotify to see recommendations
-        const requiresReAuth = getItem("vscode_requiesSpotifyReAuth");
+        const requiresReAuth = requiresSpotifyReAuthentication();
         const action = requiresReAuth ? "Reconnect" : "Connect";
         return this.buildActionItem(
             "connectspotify",

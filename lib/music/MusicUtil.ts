@@ -160,6 +160,11 @@ export function requiresSpotifyAccess() {
     return !spotifyAccessToken ? true : false;
 }
 
+export function requiresSpotifyReAuthentication() {
+    const requiresSpotifyReAuth = getItem("requiresSpotifyReAuth");
+    return requiresSpotifyReAuth ? true : false;
+}
+
 /**
  * returns { webPlayer, desktop, activeDevice, activeComputerDevice, activeWebPlayerDevice }
  * Either of these values can be null

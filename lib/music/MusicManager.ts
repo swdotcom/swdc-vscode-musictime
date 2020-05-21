@@ -836,11 +836,13 @@ export class MusicManager {
             // update the CodyMusic credentials
             setItem("spotify_access_token", spotifyOauth.access_token);
             setItem("spotify_refresh_token", spotifyOauth.refresh_token);
+            setItem("requiresSpotifyReAuth", null);
             // update cody config
             this.dataMgr.updateCodyConfig();
         } else {
             setItem("spotify_access_token", null);
             setItem("spotify_refresh_token", null);
+            setItem("requiresSpotifyReAuth", true);
             // update cody config
             this.dataMgr.updateCodyConfig();
             // update the spotify user to null
@@ -906,7 +908,7 @@ export class MusicManager {
         const hasAccessToken = getItem("spotify_access_token");
         if (!checkedSpotifyAccess && hasAccessToken) {
             setItem("vscode_checkedSpotifyAccess", true);
-            setItem("vscode_requiesSpotifyReAuth", true);
+            setItem("requiresSpotifyReAuth", true);
             return await accessExpired();
         }
         return false;
