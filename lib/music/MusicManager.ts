@@ -211,11 +211,6 @@ export class MusicManager {
             });
         }
 
-        // add the no music time connection button if we're not online
-        if (CONNECTED) {
-            items.push(this.providerItemMgr.getNoMusicTimeConnectionButton());
-        }
-
         // show the spotify connect premium button if they're connected and a non-premium account
         if (CONNECTED && !IS_PREMIUM) {
             // show the spotify premium account required button

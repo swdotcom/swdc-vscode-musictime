@@ -48,17 +48,6 @@ export class ProviderItemManager {
         return item;
     }
 
-    getNoMusicTimeConnectionButton() {
-        return this.buildActionItem(
-            "offline",
-            "offline",
-            null,
-            PlayerType.NotAssigned,
-            "Music Time Offline",
-            "Unable to connect to Music Time"
-        );
-    }
-
     async getActiveSpotifyDevicesButton() {
         const dataMgr: MusicDataManager = MusicDataManager.getInstance();
 
