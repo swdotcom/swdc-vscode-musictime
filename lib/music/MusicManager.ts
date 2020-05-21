@@ -36,7 +36,6 @@ import {
 } from "../Constants";
 import { commands, window } from "vscode";
 import {
-    serverIsAvailable,
     getSlackOauth,
     getAppJwt,
     getMusicTimeUserStatus,
@@ -142,12 +141,10 @@ export class MusicManager {
         }
         this.dataMgr.buildingPlaylists = true;
 
-        let serverIsOnline = await serverIsAvailable();
-
         if (this.dataMgr.currentPlayerName === PlayerName.ItunesDesktop) {
-            await this.refreshPlaylistForPlayer(serverIsOnline);
+            await this.refreshPlaylistForPlayer();
         } else {
-            await this.refreshPlaylistForPlayer(serverIsOnline);
+            await this.refreshPlaylistForPlayer();
         }
         await MusicCommandManager.syncControls(this.dataMgr.runningTrack);
 
@@ -161,7 +158,7 @@ export class MusicManager {
     //
     // Fetch the playlist names for a specific player
     //
-    private async refreshPlaylistForPlayer(serverIsOnline: boolean) {
+    private async refreshPlaylistForPlayer() {
         const playerName = this.dataMgr.currentPlayerName;
         let items: PlaylistItem[] = [];
 
@@ -215,7 +212,7 @@ export class MusicManager {
         }
 
         // add the no music time connection button if we're not online
-        if (!serverIsOnline && CONNECTED) {
+        if (CONNECTED) {
             items.push(this.providerItemMgr.getNoMusicTimeConnectionButton());
         }
 
@@ -273,7 +270,7 @@ export class MusicManager {
             }
 
             // add the rest only if they don't need spotify access
-            if ((serverIsOnline && CONNECTED) || hasPlaylists) {
+            if (CONNECTED || hasPlaylists) {
                 // line break between actions and software playlist section
                 items.push(this.providerItemMgr.getLineBreakButton());
 
@@ -671,14 +668,6 @@ export class MusicManager {
         if (this.dataMgr.buildingCustomPlaylist) {
             return;
         }
-        const serverIsOnline = await serverIsAvailable();
-
-        if (!serverIsOnline) {
-            window.showInformationMessage(
-                "Our service is temporarily unavailable, please try again later."
-            );
-            return;
-        }
 
         if (requiresSpotifyAccess()) {
             // don't create or refresh, no spotify access provided
@@ -827,15 +816,12 @@ export class MusicManager {
     }
 
     async initializeSlack() {
-        const serverIsOnline = await serverIsAvailable();
-        if (serverIsOnline) {
-            const slackOauth = await getSlackOauth(serverIsOnline);
-            if (slackOauth) {
-                // update the CodyMusic credentials
-                this.updateSlackAccessInfo(slackOauth);
-            } else {
-                setItem("slack_access_token", null);
-            }
+        const slackOauth = await getSlackOauth();
+        if (slackOauth) {
+            // update the CodyMusic credentials
+            this.updateSlackAccessInfo(slackOauth);
+        } else {
+            setItem("slack_access_token", null);
         }
     }
 
@@ -868,22 +854,19 @@ export class MusicManager {
     }
 
     async initializeSpotify() {
-        const serverIsOnline = await serverIsAvailable();
-
         // get the client id and secret
-        let clientId;
-        let clientSecret;
-        if (serverIsOnline) {
-            let jwt = getItem("jwt");
-            if (!jwt) {
-                jwt = await getAppJwt(serverIsOnline);
-            }
-            const resp = await softwareGet("/auth/spotify/clientInfo", jwt);
-            if (isResponseOk(resp)) {
-                // get the clientId and clientSecret
-                clientId = resp.data.clientId;
-                clientSecret = resp.data.clientSecret;
-            }
+        let clientId = "";
+        let clientSecret = "";
+
+        let jwt = getItem("jwt");
+        if (!jwt) {
+            jwt = await getAppJwt();
+        }
+        const resp = await softwareGet("/auth/spotify/clientInfo", jwt);
+        if (isResponseOk(resp)) {
+            // get the clientId and clientSecret
+            clientId = resp.data.clientId;
+            clientSecret = resp.data.clientSecret;
         }
 
         this.dataMgr.spotifyClientId = clientId;
@@ -892,7 +875,7 @@ export class MusicManager {
 
         // update the user info
         if (requiresSpotifyAccess()) {
-            await getMusicTimeUserStatus(serverIsOnline);
+            await getMusicTimeUserStatus();
         } else {
             // this should only be done after we've updated the cody config
             const requiresReAuth = await this.requiresReAuthentication();
@@ -901,13 +884,14 @@ export class MusicManager {
                 await disconnectSpotify(false /*confirmDisconnect*/);
 
                 const email = getItem("name");
+                const reconnectButtonLabel = "Reconnect";
                 const msg = `To continue using Music Time, please reconnect your Spotify account (${email}).`;
                 const selection = await window.showInformationMessage(
                     msg,
-                    ...[YES_LABEL]
+                    ...[reconnectButtonLabel]
                 );
 
-                if (selection === YES_LABEL) {
+                if (selection === reconnectButtonLabel) {
                     // now launch re-auth
                     await connectSpotify();
                 }
@@ -1271,9 +1255,10 @@ export class MusicManager {
         const isMacDesktopEnabled = musicMgr.isMacDesktopEnabled();
 
         if (isRecommendationTrack || isLikedSong) {
+            let result = null;
             if (hasSpotifyPlaybackAccess || !isMac()) {
                 // it's a liked song or recommendation track play request
-                await this.playRecommendationsOrLikedSongsByPlaylist(
+                result = await this.playRecommendationsOrLikedSongsByPlaylist(
                     this.dataMgr.selectedTrackItem,
                     deviceId
                 );
@@ -1283,8 +1268,12 @@ export class MusicManager {
                     this.dataMgr.selectedTrackItem.id
                 );
                 const params = [trackUri];
-                await playTrackInContext(PlayerName.SpotifyDesktop, params);
+                result = await playTrackInContext(
+                    PlayerName.SpotifyDesktop,
+                    params
+                );
             }
+            await musicCommandUtil.checkIfAccessExpired(result);
         } else if (playlistId) {
             if (isMacDesktopEnabled || !hasSpotifyPlaybackAccess) {
                 // play it using applescript

@@ -123,24 +123,20 @@ export async function sendMusicData(trackData) {
 /**
  * get the app jwt
  */
-export async function getAppJwt(serverIsOnline) {
-    if (serverIsOnline) {
-        // get the app jwt
-        let resp = await softwareGet(
-            `/data/apptoken?token=${nowInSecs()}`,
-            null
-        );
-        if (isResponseOk(resp)) {
-            return resp.data.jwt;
-        }
+export async function getAppJwt() {
+    // get the app jwt
+    let resp = await softwareGet(`/data/apptoken?token=${nowInSecs()}`, null);
+    if (isResponseOk(resp)) {
+        return resp.data.jwt;
     }
+
     return null;
 }
 
-export async function getSlackOauth(serverIsOnline) {
+export async function getSlackOauth() {
     let jwt = getItem("jwt");
-    if (serverIsOnline && jwt) {
-        let user = await getUser(serverIsOnline, jwt);
+    if (jwt) {
+        let user = await getUser(jwt);
         if (user && user.auths) {
             // get the one that is "slack"
             for (let i = 0; i < user.auths.length; i++) {
@@ -155,12 +151,12 @@ export async function getSlackOauth(serverIsOnline) {
     }
 }
 
-export async function getMusicTimeUserStatus(serverIsOnline) {
+export async function getMusicTimeUserStatus() {
     // We don't have a user yet, check the users via the plugin/state
     const jwt = getItem("jwt");
     const spotify_refresh_token = getItem("spotify_refresh_token");
 
-    if (serverIsOnline && (jwt || spotify_refresh_token)) {
+    if (jwt || spotify_refresh_token) {
         const api = "/users/plugin/state";
         const additionalHeaders = spotify_refresh_token
             ? { spotify_refresh_token }
@@ -215,8 +211,8 @@ export async function getMusicTimeUserStatus(serverIsOnline) {
     return { loggedOn: false, state: "UNKNOWN" };
 }
 
-export async function getUser(serverIsOnline, jwt) {
-    if (jwt && serverIsOnline) {
+export async function getUser(jwt) {
+    if (jwt) {
         let api = `/users/me`;
         let resp = await softwareGet(api, jwt);
         if (isResponseOk(resp)) {
@@ -240,8 +236,7 @@ export function refetchSlackConnectStatusLazily(tryCountUntilFound = 40) {
 }
 
 async function slackConnectStatusHandler(tryCountUntilFound) {
-    let serverIsOnline = await serverIsAvailable();
-    let oauth = await getSlackOauth(serverIsOnline);
+    let oauth = await getSlackOauth();
     if (!oauth) {
         // try again if the count is not zero
         if (tryCountUntilFound > 0) {
@@ -264,8 +259,7 @@ export function refetchSpotifyConnectStatusLazily(tryCountUntilFound = 40) {
 }
 
 async function spotifyConnectStatusHandler(tryCountUntilFound) {
-    let serverIsOnline = await serverIsAvailable();
-    let oauthResult = await getMusicTimeUserStatus(serverIsOnline);
+    let oauthResult = await getMusicTimeUserStatus();
     if (!oauthResult.loggedOn) {
         // try again if the count is not zero
         if (tryCountUntilFound > 0) {

@@ -42,7 +42,6 @@ const NUMBER_IN_EMAIL_REGEX = new RegExp("^\\d+\\+");
 // start off as focused as the editor may have
 // had that file in the tabs. any close or tab
 // switch will set this to false if the file isn't CodeTime
-let cachedSessionKeys = {};
 let editorSessiontoken = null;
 let extensionName = null;
 let extensionDisplayName = null; // Code Time or Music Time
@@ -203,9 +202,6 @@ export function validateEmail(email) {
 }
 
 export function setItem(key, value) {
-    // update the cached session key map
-    cachedSessionKeys[key] = value;
-
     const jsonObj = getSoftwareSessionAsJson();
     jsonObj[key] = value;
 
@@ -219,14 +215,8 @@ export function setItem(key, value) {
 }
 
 export function getItem(key) {
-    let cachedVal = cachedSessionKeys[key];
-    if (cachedVal) {
-        return cachedVal;
-    }
     const jsonObj = getSoftwareSessionAsJson();
     let val = jsonObj[key] || null;
-    // update the cache map
-    cachedSessionKeys[key] = val;
     return val;
 }
 

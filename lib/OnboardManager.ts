@@ -55,7 +55,7 @@ export async function onboardPlugin(
                 }, check_online_interval_ms);
             } else {
                 // create the anon user
-                const result = await createAnonymousUser(serverIsOnline);
+                const result = await createAnonymousUser();
                 if (!result) {
                     if (retry_counter === 0) {
                         showOfflinePrompt(true);
@@ -82,9 +82,9 @@ export async function onboardPlugin(
 /**
  * create an anonymous user
  */
-export async function createAnonymousUser(serverIsOnline) {
-    let appJwt = await getAppJwt(serverIsOnline);
-    if (appJwt && serverIsOnline) {
+export async function createAnonymousUser() {
+    let appJwt = await getAppJwt();
+    if (appJwt) {
         const jwt = getItem("jwt");
         // check one more time before creating the anon user
         if (!jwt) {

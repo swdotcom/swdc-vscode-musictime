@@ -26,7 +26,6 @@ import { window, ViewColumn, Uri, commands } from "vscode";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { showQuickPick } from "../MenuManager";
 import {
-    serverIsAvailable,
     refetchSpotifyConnectStatusLazily,
     getAppJwt,
     populateLikedSongs,
@@ -408,12 +407,11 @@ export class MusicControlManager {
     }
 
     async setLiked(liked: boolean, overrideTrack: Track = null) {
-        const serverIsOnline = await serverIsAvailable();
         const runningTrack: Track = dataMgr.runningTrack;
 
         const track: Track = !overrideTrack ? runningTrack : overrideTrack;
 
-        if (!serverIsOnline || !track || !track.id) {
+        if (!track || !track.id) {
             window.showInformationMessage(
                 `Our service is temporarily unavailable.\n\nPlease try again later.\n`
             );
@@ -517,8 +515,6 @@ export class MusicControlManager {
     }
 
     async showMenu() {
-        let serverIsOnline = await serverIsAvailable();
-
         let menuOptions = {
             items: [],
         };
@@ -584,48 +580,46 @@ export class MusicControlManager {
             });
         }
 
-        if (serverIsOnline) {
-            // show divider
+        // show divider
+        menuOptions.items.push({
+            label:
+                "___________________________________________________________________",
+            cb: null,
+            url: null,
+            command: null,
+        });
+
+        if (needsSpotifyAccess) {
             menuOptions.items.push({
-                label:
-                    "___________________________________________________________________",
-                cb: null,
+                label: "Connect Spotify",
+                detail:
+                    "To see your Spotify playlists in Music Time, please connect your account",
                 url: null,
-                command: null,
+                cb: connectSpotify,
+            });
+        } else {
+            menuOptions.items.push({
+                label: "Disconnect Spotify",
+                detail: "Disconnect your Spotify oauth integration",
+                url: null,
+                command: "musictime.disconnectSpotify",
             });
 
-            if (needsSpotifyAccess) {
+            if (!slackAccessToken) {
                 menuOptions.items.push({
-                    label: "Connect Spotify",
+                    label: "Connect Slack",
                     detail:
-                        "To see your Spotify playlists in Music Time, please connect your account",
+                        "To share a playlist or track on Slack, please connect your account",
                     url: null,
-                    cb: connectSpotify,
+                    cb: connectSlack,
                 });
             } else {
                 menuOptions.items.push({
-                    label: "Disconnect Spotify",
-                    detail: "Disconnect your Spotify oauth integration",
+                    label: "Disconnect Slack",
+                    detail: "Disconnect your Slack oauth integration",
                     url: null,
-                    command: "musictime.disconnectSpotify",
+                    command: "musictime.disconnectSlack",
                 });
-
-                if (!slackAccessToken) {
-                    menuOptions.items.push({
-                        label: "Connect Slack",
-                        detail:
-                            "To share a playlist or track on Slack, please connect your account",
-                        url: null,
-                        cb: connectSlack,
-                    });
-                } else {
-                    menuOptions.items.push({
-                        label: "Disconnect Slack",
-                        detail: "Disconnect your Slack oauth integration",
-                        url: null,
-                        command: "musictime.disconnectSlack",
-                    });
-                }
             }
         }
 
@@ -814,17 +808,10 @@ export async function displayMusicTimeMetricsMarkdownDashboard() {
 }
 
 export async function connectSpotify() {
-    let serverIsOnline = await serverIsAvailable();
-    if (!serverIsOnline) {
-        window.showInformationMessage(
-            `Our service is temporarily unavailable.\n\nPlease try again later.\n`
-        );
-        return;
-    }
     let jwt = getItem("jwt");
     if (!jwt) {
         // no jwt, get the app jwt
-        jwt = await getAppJwt(true);
+        jwt = await getAppJwt();
         await setItem("jwt", jwt);
     }
 
@@ -869,36 +856,25 @@ export async function disconnectOauth(type: string, confirmDisconnect = true) {
         : YES_LABEL;
 
     if (selection === YES_LABEL) {
-        let serverIsOnline = await serverIsAvailable();
-        if (serverIsOnline) {
-            const type_lc = type.toLowerCase();
-            await softwarePut(
-                `/auth/${type_lc}/disconnect`,
-                {},
-                getItem("jwt")
-            );
+        const type_lc = type.toLowerCase();
+        await softwarePut(`/auth/${type_lc}/disconnect`, {}, getItem("jwt"));
 
-            // oauth is not null, initialize spotify
-            if (type_lc === "slack") {
-                await MusicManager.getInstance().updateSlackAccessInfo(null);
-            } else if (type_lc === "spotify") {
-                await MusicManager.getInstance().updateSpotifyAccessInfo(null);
-                // clear the spotify playlists
-                dataMgr.spotifyPlaylists = [];
-                dataMgr.spotifyLikedSongs = [];
+        // oauth is not null, initialize spotify
+        if (type_lc === "slack") {
+            await MusicManager.getInstance().updateSlackAccessInfo(null);
+        } else if (type_lc === "spotify") {
+            await MusicManager.getInstance().updateSpotifyAccessInfo(null);
+            // clear the spotify playlists
+            dataMgr.spotifyPlaylists = [];
+            dataMgr.spotifyLikedSongs = [];
 
-                commands.executeCommand("musictime.refreshPlaylist");
-                commands.executeCommand("musictime.refreshRecommendations");
-            }
+            commands.executeCommand("musictime.refreshPlaylist");
+            commands.executeCommand("musictime.refreshRecommendations");
+        }
 
-            if (confirmDisconnect) {
-                window.showInformationMessage(
-                    `Successfully disconnected your ${type} connection.`
-                );
-            }
-        } else {
+        if (confirmDisconnect) {
             window.showInformationMessage(
-                `Our service is temporarily unavailable.\n\nPlease try again later.\n`
+                `Successfully disconnected your ${type} connection.`
             );
         }
     }

@@ -12,11 +12,7 @@ import {
     isMac,
     getSoftwareDataStoreFile,
 } from "../Util";
-import {
-    sendMusicData,
-    populatePlayerContext,
-    serverIsAvailable,
-} from "../DataController";
+import { sendMusicData, populatePlayerContext } from "../DataController";
 import {
     Track,
     TrackStatus,
@@ -180,11 +176,10 @@ export class MusicStateManager {
                 return;
             }
 
-            const serverIsOnline = await serverIsAvailable();
             const deviceId = getDeviceId();
             const requiresAccess = requiresSpotifyAccess();
 
-            if ((!serverIsOnline && !isMac()) || requiresAccess) {
+            if (!isMac() || requiresAccess) {
                 // either no device ID, requires spotify connection,
                 // or it's a windows device that is not online
                 return;
