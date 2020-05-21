@@ -46,28 +46,58 @@ export class MusicCommandManager {
      */
     public static async initialize() {
         const musictimeMenuTooltip = this.getMusicMenuTooltip();
+
+        const requiresReAuth = getItem("vscode_requiesSpotifyReAuth");
+        const action = requiresReAuth ? "Reconnect" : "Connect";
+
         // start with 100 0and go down in sequence
-        this.createButton("🎧", musictimeMenuTooltip, "musictime.revealTree", 1000);
-        this.createButton("$(settings) Loading", "updating", "musictime.progress", 999);
         this.createButton(
-            "Connect Spotify",
-            "Connect Spotify to add your top productivity tracks.",
+            "🎧",
+            musictimeMenuTooltip,
+            "musictime.revealTree",
+            1000
+        );
+        this.createButton(
+            "$(settings) Loading",
+            "updating",
+            "musictime.progress",
+            999
+        );
+        this.createButton(
+            `${action} Spotify`,
+            `${action} Spotify to add your top productivity tracks.`,
             "musictime.connectSpotify",
             999
         );
         // play previous or unicode ⏪
-        this.createButton("$(chevron-left)", "Previous", "musictime.previous", 999);
+        this.createButton(
+            "$(chevron-left)",
+            "Previous",
+            "musictime.previous",
+            999
+        );
         // 998 buttons (play, pause)
         this.createButton("$(play)", "Play", "musictime.play", 998);
         // pause unicode ⏸
-        this.createButton("$(primitive-square)", "Stop", "musictime.pause", 998);
+        this.createButton(
+            "$(primitive-square)",
+            "Stop",
+            "musictime.pause",
+            998
+        );
         // play next ⏩
         this.createButton("$(chevron-right)", "Next", "musictime.next", 997);
         // 996 buttons (unlike, like)
         this.createButton("♡", "Like", "musictime.like", 996);
         this.createButton("♥", "Unlike", "musictime.unlike", 996);
         // button area for the current song name
-        this.createButton("", "Click to view track", "musictime.currentSong", 995);
+        this.createButton(
+            "",
+            "Click to view track",
+            "musictime.currentSong",
+            995
+        );
+        this.syncControls(null);
     }
 
     public static initiateProgress(progressLabel: string) {
@@ -83,9 +113,14 @@ export class MusicCommandManager {
             clearTimeout(this._hideSongTimeout);
         }
 
-        const trackStatus: TrackStatus = track ? track.state : TrackStatus.NotAssigned;
+        const trackStatus: TrackStatus = track
+            ? track.state
+            : TrackStatus.NotAssigned;
 
-        const { needsSpotifyAccess, foundDevice } = await this.getSpotifyState();
+        const {
+            needsSpotifyAccess,
+            foundDevice,
+        } = await this.getSpotifyState();
 
         let pauseIt = trackStatus === TrackStatus.Playing;
         let playIt = trackStatus === TrackStatus.Paused;
@@ -126,7 +161,10 @@ export class MusicCommandManager {
         command: string,
         priority: number
     ) {
-        let statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, priority);
+        let statusBarItem = window.createStatusBarItem(
+            StatusBarAlignment.Left,
+            priority
+        );
         statusBarItem.text = text;
         statusBarItem.command = command;
         statusBarItem.tooltip = tooltip;
@@ -140,34 +178,6 @@ export class MusicCommandManager {
         this._buttons.push(button);
     }
 
-    private static async showLoadingTrack() {
-        if (!this._buttons || this._buttons.length === 0) {
-            return;
-        }
-
-        this._isLoading = true;
-
-        // hide all except for the launch player button and possibly connect spotify button
-        this._buttons = this._buttons.map((button) => {
-            const btnCmd = button.statusBarItem.command;
-
-            const isMusicTimeMenuButton = btnCmd === "musictime.revealTree";
-            const isProgressButton = btnCmd === "musictime.progress";
-
-            if (isMusicTimeMenuButton || isProgressButton) {
-                if (isMusicTimeMenuButton) {
-                    button.tooltip = this.getMusicMenuTooltip();
-                }
-                // always show the headphones button for the launch controls function
-                button.statusBarItem.show();
-            } else {
-                // hide the rest
-                button.statusBarItem.hide();
-            }
-            return button;
-        });
-    }
-
     /**
      * Show launch is when the user needs to connect to spotify
      */
@@ -175,14 +185,20 @@ export class MusicCommandManager {
         if (!this._buttons || this._buttons.length === 0) {
             return;
         }
-        const { needsSpotifyAccess, showPremiumRequired } = await this.getSpotifyState();
+        const {
+            needsSpotifyAccess,
+            showPremiumRequired,
+        } = await this.getSpotifyState();
+        const requiresReAuth = getItem("vscode_requiesSpotifyReAuth");
+        const action = requiresReAuth ? "Reconnect" : "Connect";
+
         // hide all except for the launch player button and possibly connect spotify button
         this._buttons = this._buttons.map((button) => {
             const btnCmd = button.statusBarItem.command;
 
             const isMusicTimeMenuButton = btnCmd === "musictime.revealTree";
             const isConnectSpotifyButton =
-                button.statusBarItem.text === "Connect Spotify";
+                button.statusBarItem.text === `${action} Spotify`;
 
             if (isMusicTimeMenuButton) {
                 button.tooltip = this.getMusicMenuTooltip();
@@ -208,9 +224,13 @@ export class MusicCommandManager {
             return;
         }
 
-        const songInfo = trackInfo ? `${trackInfo.name} (${trackInfo.artist})` : null;
+        const songInfo = trackInfo
+            ? `${trackInfo.name} (${trackInfo.artist})`
+            : null;
 
-        const isLiked = MusicDataManager.getInstance().isLikedTrack(trackInfo.id);
+        const isLiked = MusicDataManager.getInstance().isLikedTrack(
+            trackInfo.id
+        );
 
         this._buttons.map((button) => {
             const btnCmd = button.statusBarItem.command;
@@ -265,9 +285,13 @@ export class MusicCommandManager {
             return;
         }
 
-        const songInfo = trackInfo ? `${trackInfo.name} (${trackInfo.artist})` : null;
+        const songInfo = trackInfo
+            ? `${trackInfo.name} (${trackInfo.artist})`
+            : null;
 
-        const isLiked = MusicDataManager.getInstance().isLikedTrack(trackInfo.id);
+        const isLiked = MusicDataManager.getInstance().isLikedTrack(
+            trackInfo.id
+        );
 
         this._buttons.map((button) => {
             const btnCmd = button.statusBarItem.command;
@@ -338,7 +362,9 @@ export class MusicCommandManager {
         const name = getItem("name");
         const needsSpotifyAccess = requiresSpotifyAccess();
         if (needsSpotifyAccess) {
-            return "Connect Spotify";
+            const requiresReAuth = getItem("vscode_requiesSpotifyReAuth");
+            const action = requiresReAuth ? "Reconnect" : "Connect";
+            return `${action} Spotify`;
         }
 
         let musicTimeTooltip = "Click to see more from Music Time";

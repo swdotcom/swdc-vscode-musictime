@@ -17,6 +17,7 @@ import {
 import { requiresSpotifyAccess, getDeviceSet } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 import { MusicManager } from "./MusicManager";
+import { getItem } from "../Util";
 
 export class ProviderItemManager {
     private static instance: ProviderItemManager;
@@ -61,33 +62,27 @@ export class ProviderItemManager {
     async getActiveSpotifyDevicesButton() {
         const dataMgr: MusicDataManager = MusicDataManager.getInstance();
 
+        const {
+            webPlayer,
+            desktop,
+            activeDevice,
+            activeComputerDevice,
+            activeWebPlayerDevice,
+        } = getDeviceSet();
+
         const devices: PlayerDevice[] = dataMgr.currentDevices;
-
-        const activeDevice: PlayerDevice = devices.find(
-            (d: PlayerDevice) => d.is_active
-        );
-
-        const webPlayerDevice: PlayerDevice = devices.find(
-            (d: PlayerDevice) =>
-                d.type.toLowerCase() === "computer" &&
-                d.name.toLowerCase().includes("web player")
-        );
-
-        const desktopDevice: PlayerDevice = devices.find(
-            (d: PlayerDevice) => d.type.toLowerCase() === "computer"
-        );
 
         let msg = "";
         let tooltip = "Listening on a Spotify device";
         if (activeDevice) {
             // found an active device
             msg = `Listening on ${activeDevice.name}`;
-        } else if (webPlayerDevice) {
+        } else if (webPlayer) {
             // show that the web player is an active device
-            msg = `Listening on ${webPlayerDevice.name}`;
-        } else if (desktopDevice) {
+            msg = `Listening on ${webPlayer.name}`;
+        } else if (desktop) {
             // show that the desktop player is an active device
-            msg = `Listening on ${desktopDevice.name}`;
+            msg = `Listening on ${desktop.name}`;
         } else if (devices.length) {
             // no active device but found devices
             const names = devices.map((d: PlayerDevice) => d.name);
@@ -144,24 +139,28 @@ export class ProviderItemManager {
     }
 
     getConnectToSpotifyButton() {
+        const requiresReAuth = getItem("vscode_requiesSpotifyReAuth");
+        const action = requiresReAuth ? "Reconnect" : "Connect";
         return this.buildActionItem(
             "connectspotify",
             "spotify",
             "musictime.connectSpotify",
             PlayerType.WebSpotify,
-            "Connect Spotify",
+            `${action} Spotify`,
             "Connect Spotify to view your playlists"
         );
     }
 
     getRecommendationConnectToSpotifyButton() {
         // Connect Spotify to see recommendations
+        const requiresReAuth = getItem("vscode_requiesSpotifyReAuth");
+        const action = requiresReAuth ? "Reconnect" : "Connect";
         return this.buildActionItem(
             "connectspotify",
             "spotify",
             "musictime.connectSpotify",
             PlayerType.WebSpotify,
-            "Connect Spotify to see recommendations",
+            `${action} Spotify to see recommendations`,
             "Connect Spotify to see your playlist and track recommendations"
         );
     }

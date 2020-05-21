@@ -891,9 +891,11 @@ export async function disconnectOauth(type: string, confirmDisconnect = true) {
                 commands.executeCommand("musictime.refreshRecommendations");
             }
 
-            window.showInformationMessage(
-                `Successfully disconnected your ${type} connection.`
-            );
+            if (confirmDisconnect) {
+                window.showInformationMessage(
+                    `Successfully disconnected your ${type} connection.`
+                );
+            }
         } else {
             window.showInformationMessage(
                 `Our service is temporarily unavailable.\n\nPlease try again later.\n`

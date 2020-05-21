@@ -23,6 +23,7 @@ import {
     playSpotifyPlaylist,
     play,
     playTrackInContext,
+    accessExpired,
 } from "cody-music";
 import {
     PERSONAL_TOP_SONGS_NAME,
@@ -55,7 +56,11 @@ import {
 } from "../Util";
 import { isResponseOk, softwareGet, softwarePost } from "../HttpClient";
 import { MusicCommandManager } from "./MusicCommandManager";
-import { MusicControlManager } from "./MusicControlManager";
+import {
+    MusicControlManager,
+    disconnectSpotify,
+    connectSpotify,
+} from "./MusicControlManager";
 import { ProviderItemManager } from "./ProviderItemManager";
 import {
     sortPlaylists,
@@ -886,16 +891,46 @@ export class MusicManager {
         this.dataMgr.updateCodyConfig();
 
         // update the user info
-        await getMusicTimeUserStatus(serverIsOnline);
+        if (requiresSpotifyAccess()) {
+            await getMusicTimeUserStatus(serverIsOnline);
+        } else {
+            // this should only be done after we've updated the cody config
+            const requiresReAuth = await this.requiresReAuthentication();
+            if (requiresReAuth) {
+                // remove their current spotify info and initiate the auth flow
+                await disconnectSpotify(false /*confirmDisconnect*/);
 
-        if (!requiresSpotifyAccess()) {
-            // initialize the user and devices
-            await populateSpotifyUser();
-            await populateSpotifyDevices();
+                const email = getItem("name");
+                const msg = `To continue using Music Time, please reconnect your Spotify account (${email}).`;
+                const selection = await window.showInformationMessage(
+                    msg,
+                    ...[YES_LABEL]
+                );
+
+                if (selection === YES_LABEL) {
+                    // now launch re-auth
+                    await connectSpotify();
+                }
+            } else {
+                // initialize the user and devices
+                await populateSpotifyUser();
+                await populateSpotifyDevices();
+            }
         }
 
         // initialize the status bar music controls
         MusicCommandManager.initialize();
+    }
+
+    async requiresReAuthentication(): Promise<boolean> {
+        const checkedSpotifyAccess = getItem("vscode_checkedSpotifyAccess");
+        const hasAccessToken = getItem("spotify_access_token");
+        if (!checkedSpotifyAccess && hasAccessToken) {
+            setItem("vscode_checkedSpotifyAccess", true);
+            setItem("vscode_requiesSpotifyReAuth", true);
+            return await accessExpired();
+        }
+        return false;
     }
 
     async launchTrackPlayer(

@@ -3,7 +3,7 @@ import {
     serverIsAvailable,
     getAppJwt,
     getBootstrapFileMetrics,
-    sendSessionPayload
+    sendSessionPayload,
 } from "./DataController";
 import {
     softwareSessionFileExists,
@@ -13,7 +13,7 @@ import {
     getOsUsername,
     getHostname,
     setItem,
-    getNowTimes
+    getNowTimes,
 } from "./Util";
 import { softwarePost, isResponseOk } from "./HttpClient";
 import { Track } from "cody-music";
@@ -98,7 +98,7 @@ export async function createAnonymousUser(serverIsOnline) {
                     timezone,
                     username,
                     creation_annotation,
-                    hostname
+                    hostname,
                 },
                 appJwt
             );
@@ -130,7 +130,7 @@ export async function sendBootstrapSongSession() {
 
     const songSession = {
         ...track,
-        ...fileMetrics
+        ...fileMetrics,
     };
 
     sendSessionPayload(songSession);
