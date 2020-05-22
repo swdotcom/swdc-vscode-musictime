@@ -29,6 +29,7 @@ import {
     PlayerContext,
     getSpotifyPlayerContext,
     getUserProfile,
+    requiresSpotifyAccessInfo,
 } from "cody-music";
 import { MusicManager } from "./music/MusicManager";
 import { MusicDataManager } from "./music/MusicDataManager";
@@ -36,6 +37,7 @@ import { CacheManager } from "./cache/CacheManager";
 import { MusicCommandUtil } from "./music/MusicCommandUtil";
 import { MusicCommandManager } from "./music/MusicCommandManager";
 import { MusicStateManager } from "./music/MusicStateManager";
+import { requiresSpotifyAccess } from "./music/MusicUtil";
 const moment = require("moment-timezone");
 
 const cacheMgr: CacheManager = CacheManager.getInstance();
@@ -315,9 +317,15 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
 
 export async function populateSpotifyUser() {
     const dataMgr: MusicDataManager = MusicDataManager.getInstance();
-    if (!dataMgr.spotifyUser || !dataMgr.spotifyUser.id) {
+    if (
+        !requiresSpotifyAccess() &&
+        (!dataMgr.spotifyUser || !dataMgr.spotifyUser.id)
+    ) {
         // get the user
         dataMgr.spotifyUser = await getUserProfile();
+        await MusicCommandUtil.getInstance().checkIfAccessExpired(
+            dataMgr.spotifyUser
+        );
     }
 }
 

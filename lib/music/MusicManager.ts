@@ -175,6 +175,9 @@ export class MusicManager {
         if (CONNECTED && !HAS_SPOTIFY_USER) {
             // get it
             this.dataMgr.spotifyUser = await getUserProfile();
+            await MusicCommandUtil.getInstance().checkIfAccessExpired(
+                this.dataMgr.spotifyUser
+            );
         }
 
         // ! most important part !
