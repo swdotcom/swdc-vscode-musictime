@@ -868,8 +868,10 @@ export async function disconnectOauth(type: string, confirmDisconnect = true) {
             dataMgr.spotifyPlaylists = [];
             dataMgr.spotifyLikedSongs = [];
 
-            commands.executeCommand("musictime.refreshPlaylist");
-            commands.executeCommand("musictime.refreshRecommendations");
+            setTimeout(() => {
+                commands.executeCommand("musictime.refreshPlaylist");
+                commands.executeCommand("musictime.refreshRecommendations");
+            }, 2000);
         }
 
         if (confirmDisconnect) {
