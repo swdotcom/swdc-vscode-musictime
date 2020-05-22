@@ -145,15 +145,17 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
         this.refresh();
 
         const item: PlaylistItem = ProviderItemManager.getInstance().getReadmeButton();
-        try {
-            // select the readme item
-            this.view.reveal(item, {
-                focus: true,
-                select: false,
-            });
-        } catch (err) {
-            logIt(`Unable to select track: ${err.message}`);
-        }
+        setTimeout(() => {
+            try {
+                // select the readme item
+                this.view.reveal(item, {
+                    focus: true,
+                    select: false,
+                });
+            } catch (err) {
+                logIt(`Unable to select track: ${err.message}`);
+            }
+        }, 1000);
     }
 
     getTreeItem(p: PlaylistItem): PlaylistTreeItem {

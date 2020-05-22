@@ -910,9 +910,14 @@ export class MusicManager {
         const checkedSpotifyAccess = getItem("vscode_checkedSpotifyAccess");
         const hasAccessToken = getItem("spotify_access_token");
         if (!checkedSpotifyAccess && hasAccessToken) {
+            const expired = await accessExpired();
+
+            if (expired) {
+                setItem("requiresSpotifyReAuth", true);
+            }
+
             setItem("vscode_checkedSpotifyAccess", true);
-            setItem("requiresSpotifyReAuth", true);
-            return await accessExpired();
+            return expired;
         }
         return false;
     }
