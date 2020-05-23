@@ -216,8 +216,11 @@ export function setItem(key, value) {
 
 export function getItem(key) {
     const jsonObj = getSoftwareSessionAsJson();
-    let val = jsonObj[key] || null;
-    return val;
+    const val = jsonObj[key];
+    if (val !== undefined && val !== null) {
+        return val;
+    }
+    return null;
 }
 
 export function isEmptyObj(obj) {

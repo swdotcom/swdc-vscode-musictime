@@ -3,7 +3,6 @@ import {
     getSoftwareDir,
     isWindows,
     deleteFile,
-    humanizeMinutes,
     getNowTimes,
     getItem,
 } from "./Util";
