@@ -64,6 +64,19 @@ export class MusicDataManager {
         return MusicDataManager.instance;
     }
 
+    disconnect() {
+        this.spotifyPlaylists = [];
+        this.spotifyLikedSongs = [];
+        this.origRawPlaylistOrder = [];
+        this.rawPlaylists = [];
+        this.spotifyUser = null;
+        this.selectedTrackItem = null;
+        this.selectedPlaylist = null;
+        this.spotifyClientId = "";
+        this.currentDevices = [];
+        this.runningTrack = new Track();
+    }
+
     /**
      * Get the current player: spotify-web or itunes
      */

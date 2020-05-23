@@ -865,13 +865,12 @@ export async function disconnectOauth(type: string, confirmDisconnect = true) {
         } else if (type_lc === "spotify") {
             await MusicManager.getInstance().updateSpotifyAccessInfo(null);
             // clear the spotify playlists
-            dataMgr.spotifyPlaylists = [];
-            dataMgr.spotifyLikedSongs = [];
+            dataMgr.disconnect();
 
             setTimeout(() => {
                 commands.executeCommand("musictime.refreshPlaylist");
                 commands.executeCommand("musictime.refreshRecommendations");
-            }, 2000);
+            }, 1000);
         }
 
         if (confirmDisconnect) {

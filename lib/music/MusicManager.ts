@@ -11,7 +11,6 @@ import {
     createPlaylist,
     addTracksToPlaylist,
     replacePlaylistTracks,
-    getUserProfile,
     launchPlayer,
     PlayerDevice,
     getSpotifyPlaylist,
@@ -174,7 +173,7 @@ export class MusicManager {
         // We need the spotify user if we're connected
         if (CONNECTED && !HAS_SPOTIFY_USER) {
             // get it
-            this.dataMgr.spotifyUser = await getUserProfile();
+            await populateSpotifyUser();
             await MusicCommandUtil.getInstance().checkIfAccessExpired(
                 this.dataMgr.spotifyUser
             );
