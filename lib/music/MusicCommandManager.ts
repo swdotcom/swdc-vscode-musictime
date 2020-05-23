@@ -121,10 +121,7 @@ export class MusicCommandManager {
             ? track.state
             : TrackStatus.NotAssigned;
 
-        const {
-            needsSpotifyAccess,
-            foundDevice,
-        } = await this.getSpotifyState();
+        const { requiresAccess, foundDevice } = await this.getSpotifyState();
 
         let pauseIt = trackStatus === TrackStatus.Playing;
         let playIt = trackStatus === TrackStatus.Paused;
@@ -141,7 +138,7 @@ export class MusicCommandManager {
 
         this._isLoading = showLoading;
 
-        if (!needsSpotifyAccess && foundDevice && (pauseIt || playIt)) {
+        if (!requiresAccess && foundDevice && (pauseIt || playIt)) {
             if (pauseIt) {
                 this.showPauseControls(track);
             } else {
@@ -190,7 +187,7 @@ export class MusicCommandManager {
             return;
         }
         const {
-            needsSpotifyAccess,
+            requiresAccess,
             showPremiumRequired,
         } = await this.getSpotifyState();
         const requiresReAuth = requiresSpotifyReAuthentication();
@@ -208,7 +205,7 @@ export class MusicCommandManager {
                 button.tooltip = this.getMusicMenuTooltip();
                 // always show the headphones button for the launch controls function
                 button.statusBarItem.show();
-            } else if (isConnectSpotifyButton && needsSpotifyAccess) {
+            } else if (isConnectSpotifyButton && requiresAccess) {
                 // show the connect button
                 button.statusBarItem.show();
             } else {
@@ -380,16 +377,20 @@ export class MusicCommandManager {
 
     private static async getSpotifyState() {
         const musicMgr: MusicManager = MusicManager.getInstance();
+        const requiresReAuth = requiresSpotifyReAuthentication();
         const needsSpotifyAccess = requiresSpotifyAccess();
         const hasSpotifyPlaybackAccess = musicMgr.hasSpotifyPlaybackAccess();
         const hasSpotifyUser = musicMgr.hasSpotifyUser();
 
         const foundDevice = getDeviceId() ? true : false;
 
+        const requiresAccess =
+            requiresReAuth || needsSpotifyAccess ? true : false;
+
         const showPremiumRequired =
             isMac() && !hasSpotifyPlaybackAccess && hasSpotifyUser;
         return {
-            needsSpotifyAccess,
+            requiresAccess,
             showPremiumRequired,
             foundDevice,
         };
