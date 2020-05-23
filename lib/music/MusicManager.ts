@@ -66,6 +66,7 @@ import {
     requiresSpotifyAccess,
     getDeviceSet,
     getDeviceId,
+    showReconnectPrompt,
 } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 import { MusicCommandUtil } from "./MusicCommandUtil";
@@ -174,9 +175,6 @@ export class MusicManager {
         if (CONNECTED && !HAS_SPOTIFY_USER) {
             // get it
             await populateSpotifyUser();
-            await MusicCommandUtil.getInstance().checkIfAccessExpired(
-                this.dataMgr.spotifyUser
-            );
         }
 
         // ! most important part !
@@ -879,21 +877,12 @@ export class MusicManager {
             // this should only be done after we've updated the cody config
             const requiresReAuth = await this.requiresReAuthentication();
             if (requiresReAuth) {
+                const email = getItem("name");
+
                 // remove their current spotify info and initiate the auth flow
                 await disconnectSpotify(false /*confirmDisconnect*/);
 
-                const email = getItem("name");
-                const reconnectButtonLabel = "Reconnect";
-                const msg = `To continue using Music Time, please reconnect your Spotify account (${email}).`;
-                const selection = await window.showInformationMessage(
-                    msg,
-                    ...[reconnectButtonLabel]
-                );
-
-                if (selection === reconnectButtonLabel) {
-                    // now launch re-auth
-                    await connectSpotify();
-                }
+                showReconnectPrompt(email);
             } else {
                 // initialize the user and devices
                 await populateSpotifyUser();

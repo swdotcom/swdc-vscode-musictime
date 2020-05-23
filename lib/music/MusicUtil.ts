@@ -5,6 +5,7 @@ import { MusicManager } from "./MusicManager";
 import { getItem } from "../Util";
 import { populateSpotifyPlaylists } from "../DataController";
 import { MusicDataManager } from "./MusicDataManager";
+import { connectSpotify } from "./MusicControlManager";
 
 // duplicate music time playlists names:
 // "My AI Top 40", "My Custom Top 40", "Custom Top 40", "AI-generated Custom Top 40", "Software Top 40"
@@ -163,6 +164,20 @@ export function requiresSpotifyAccess() {
 export function requiresSpotifyReAuthentication() {
     const requiresSpotifyReAuth = getItem("requiresSpotifyReAuth");
     return requiresSpotifyReAuth ? true : false;
+}
+
+export async function showReconnectPrompt(email) {
+    const reconnectButtonLabel = "Reconnect";
+    const msg = `To continue using Music Time, please reconnect your Spotify account (${email}).`;
+    const selection = await window.showInformationMessage(
+        msg,
+        ...[reconnectButtonLabel]
+    );
+
+    if (selection === reconnectButtonLabel) {
+        // now launch re-auth
+        await connectSpotify();
+    }
 }
 
 /**

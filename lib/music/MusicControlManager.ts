@@ -871,6 +871,9 @@ export async function disconnectOauth(type: string, confirmDisconnect = true) {
                 commands.executeCommand("musictime.refreshPlaylist");
                 commands.executeCommand("musictime.refreshRecommendations");
             }, 1000);
+
+            // update the status bar
+            MusicCommandManager.syncControls(dataMgr.runningTrack, false);
         }
 
         if (confirmDisconnect) {

@@ -1,8 +1,9 @@
 import { window } from "vscode";
 import { accessExpired } from "cody-music";
-import { disconnectSpotify } from "./MusicControlManager";
+import { disconnectSpotify, connectSpotify } from "./MusicControlManager";
 import { getItem } from "../Util";
 import { access } from "fs";
+import { showReconnectPrompt } from "./MusicUtil";
 
 export class MusicCommandUtil {
     private static instance: MusicCommandUtil;
@@ -49,8 +50,12 @@ export class MusicCommandUtil {
             // check to see if they still have their access token
             const spotifyAccessToken = getItem("spotify_access_token");
             if (spotifyAccessToken && accessExpired()) {
+                const email = getItem("name");
+
                 // remove their current spotify info and initiate the auth flow
                 await disconnectSpotify(false /*confirmDisconnect*/);
+
+                showReconnectPrompt(email);
             }
         }
     }

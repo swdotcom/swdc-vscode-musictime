@@ -314,33 +314,6 @@ export class MusicStateManager {
         }
     }
 
-    private async playNextLikedSpotifyCheck() {
-        const dataMgr: MusicDataManager = MusicDataManager.getInstance();
-        const musicMgr: MusicManager = MusicManager.getInstance();
-        // If the current playlist is the Liked Songs,
-        // check if we should start the next track
-        const playlistId = dataMgr.selectedPlaylist
-            ? dataMgr.selectedPlaylist.id
-            : "";
-        if (!playlistId || playlistId !== SPOTIFY_LIKED_SONGS_PLAYLIST_NAME) {
-            // no need to go further, it's not the liked songs playlist
-            return;
-        }
-
-        // check if we're loading, if so, bail out
-        if (MusicCommandManager.isLoading()) {
-            return;
-        }
-
-        if (!dataMgr.currentDevices || dataMgr.currentDevices.length === 0) {
-            // they've closed the player, don't try to play again
-            return;
-        }
-
-        // play the next song
-        await musicMgr.playNextLikedSong();
-    }
-
     numerics = [
         "add",
         "paste",
