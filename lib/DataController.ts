@@ -271,6 +271,8 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
     } else {
         const dataMgr = MusicDataManager.getInstance();
 
+        setItem("requiresSpotifyReAuth", false);
+
         // update the login status
         // await getUserStatus(serverIsOnline, true /*ignoreCache*/);
         window.showInformationMessage(

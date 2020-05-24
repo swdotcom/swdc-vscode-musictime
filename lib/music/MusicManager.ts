@@ -836,7 +836,7 @@ export class MusicManager {
             // update the CodyMusic credentials
             setItem("spotify_access_token", spotifyOauth.access_token);
             setItem("spotify_refresh_token", spotifyOauth.refresh_token);
-            setItem("requiresSpotifyReAuth", null);
+            setItem("requiresSpotifyReAuth", false);
             // update cody config
             this.dataMgr.updateCodyConfig();
         } else {

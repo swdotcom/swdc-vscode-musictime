@@ -82,7 +82,6 @@ const NO_DATA =
     "MUSIC TIME\n\nListen to Spotify while coding to generate this playlist\n";
 
 let lastDayOfMonth = -1;
-let fetchingMusicTimeMetrics = false;
 
 export class MusicControlManager {
     private currentTrackToAdd: PlaylistItem = null;
@@ -163,12 +162,8 @@ export class MusicControlManager {
      */
 
     async playSong() {
-        const musicMgr: MusicManager = MusicManager.getInstance();
-        const hasSpotifyPlaybackAccess = musicMgr.hasSpotifyPlaybackAccess();
-        const isMacDesktopEnabled = musicMgr.isMacDesktopEnabled();
-
         let result: any = null;
-        if (isMacDesktopEnabled || !hasSpotifyPlaybackAccess) {
+        if (this.useSpotifyDesktop()) {
             result = await play(PlayerName.SpotifyDesktop);
         } else {
             result = await play(PlayerName.SpotifyWeb);
@@ -188,12 +183,8 @@ export class MusicControlManager {
     }
 
     async pauseSong() {
-        const musicMgr: MusicManager = MusicManager.getInstance();
-        const hasSpotifyPlaybackAccess = musicMgr.hasSpotifyPlaybackAccess();
-        const isMacDesktopEnabled = musicMgr.isMacDesktopEnabled();
-
         let result: any = null;
-        if (isMacDesktopEnabled || !hasSpotifyPlaybackAccess) {
+        if (this.useSpotifyDesktop()) {
             result = await pause(PlayerName.SpotifyDesktop);
         } else {
             result = await pause(PlayerName.SpotifyWeb);
@@ -269,6 +260,31 @@ export class MusicControlManager {
     async setMuteOff() {
         const deviceId = getDeviceId();
         // todo: implement
+    }
+
+    useSpotifyDesktop() {
+        const musicMgr: MusicManager = MusicManager.getInstance();
+        const hasSpotifyPlaybackAccess = musicMgr.hasSpotifyPlaybackAccess();
+        const isMacDesktopEnabled = musicMgr.isMacDesktopEnabled();
+
+        const {
+            webPlayer,
+            desktop,
+            activeDevice,
+            activeComputerDevice,
+            activeWebPlayerDevice,
+        } = getDeviceSet();
+
+        let result: any = null;
+        if (
+            isMacDesktopEnabled ||
+            !hasSpotifyPlaybackAccess ||
+            activeComputerDevice ||
+            desktop
+        ) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -864,6 +880,7 @@ export async function disconnectOauth(type: string, confirmDisconnect = true) {
             await MusicManager.getInstance().updateSlackAccessInfo(null);
         } else if (type_lc === "spotify") {
             await MusicManager.getInstance().updateSpotifyAccessInfo(null);
+
             // clear the spotify playlists
             dataMgr.disconnect();
 

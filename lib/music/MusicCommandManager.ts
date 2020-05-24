@@ -62,12 +62,6 @@ export class MusicCommandManager {
             1000
         );
         this.createButton(
-            "$(settings) Loading",
-            "updating",
-            "musictime.progress",
-            999
-        );
-        this.createButton(
             `${action} Spotify`,
             `${action} Spotify to add your top productivity tracks.`,
             "musictime.connectSpotify",
@@ -138,7 +132,7 @@ export class MusicCommandManager {
 
         this._isLoading = showLoading;
 
-        if (!requiresAccess && foundDevice && (pauseIt || playIt)) {
+        if (!requiresAccess && (pauseIt || playIt || foundDevice)) {
             if (pauseIt) {
                 this.showPauseControls(track);
             } else {
@@ -198,16 +192,16 @@ export class MusicCommandManager {
             const btnCmd = button.statusBarItem.command;
 
             const isMusicTimeMenuButton = btnCmd === "musictime.revealTree";
-            const isConnectSpotifyButton =
-                button.statusBarItem.text === `${action} Spotify`;
+            const isConnectButton = btnCmd === "musictime.connectSpotify";
 
             if (isMusicTimeMenuButton) {
                 button.tooltip = this.getMusicMenuTooltip();
                 // always show the headphones button for the launch controls function
                 button.statusBarItem.show();
-            } else if (isConnectSpotifyButton && requiresAccess) {
+            } else if (isConnectButton && (requiresAccess || requiresReAuth)) {
                 // show the connect button
                 button.statusBarItem.show();
+                button.statusBarItem.text = `${action} Spotify`;
             } else {
                 // hide the rest
                 button.statusBarItem.hide();
@@ -221,6 +215,12 @@ export class MusicCommandManager {
      * @param trackInfo
      */
     private static async showPlayControls(trackInfo: Track) {
+        if (!trackInfo && !getDeviceId()) {
+            this.showLaunchPlayerControls();
+        } else if (!trackInfo) {
+            trackInfo = new Track();
+        }
+
         if (!this._buttons || this._buttons.length === 0) {
             return;
         }
@@ -282,6 +282,12 @@ export class MusicCommandManager {
      * @param trackInfo
      */
     private static async showPauseControls(trackInfo: Track) {
+        if (!trackInfo && !getDeviceId()) {
+            this.showLaunchPlayerControls();
+        } else if (!trackInfo) {
+            trackInfo = new Track();
+        }
+
         if (!this._buttons || this._buttons.length === 0) {
             return;
         }
@@ -347,9 +353,6 @@ export class MusicCommandManager {
                 if (isMusicTimeMenuButton) {
                     button.tooltip = this.getMusicMenuTooltip();
                 }
-                // if (isMusicTimeProgress) {
-                //     button.statusBarItem.text = progressLabel;
-                // }
                 // show progress and headphones menu buttons
                 button.statusBarItem.show();
             } else {
