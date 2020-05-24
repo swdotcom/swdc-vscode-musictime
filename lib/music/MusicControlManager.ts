@@ -21,6 +21,8 @@ import {
     setShuffle,
     setRepeatPlaylist,
     setRepeatTrack,
+    mute,
+    unmute,
 } from "cody-music";
 import { window, ViewColumn, Uri, commands } from "vscode";
 import { MusicCommandManager } from "./MusicCommandManager";
@@ -253,13 +255,15 @@ export class MusicControlManager {
     }
 
     async setMuteOn() {
-        const deviceId = getDeviceId();
-        // todo: implement
+        await this.musicCmdUtil.runSpotifyCommand(mute, [
+            PlayerName.SpotifyWeb,
+        ]);
     }
 
     async setMuteOff() {
-        const deviceId = getDeviceId();
-        // todo: implement
+        await this.musicCmdUtil.runSpotifyCommand(unmute, [
+            PlayerName.SpotifyWeb,
+        ]);
     }
 
     useSpotifyDesktop() {

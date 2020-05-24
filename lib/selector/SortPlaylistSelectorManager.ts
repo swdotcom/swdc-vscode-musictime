@@ -71,6 +71,10 @@ export async function showPlaylistOptionsMenu() {
         spotifyContext.repeat_state === "track" ? true : false;
     const isRepeatingPlaylist =
         spotifyContext.repeat_state === "context" ? true : false;
+    const isMuted =
+        spotifyContext.device && spotifyContext.device.volume_percent === 0
+            ? true
+            : false;
 
     let msg = "";
     if (isRepeatingTrack) {
@@ -104,7 +108,8 @@ export async function showPlaylistOptionsMenu() {
         isShuffling,
         isRepeatingPlaylist,
         isRepeatingTrack,
-        isPlaying
+        isPlaying,
+        isMuted
     );
     let menuOptions = {
         items,
@@ -122,7 +127,8 @@ async function getOptionItems(
     isShuffling: boolean,
     isRepeatingPlaylist: boolean,
     isRepeatingTrack: boolean,
-    isPlaying: any
+    isPlaying: any,
+    isMuted: boolean
 ) {
     const items = [];
     if (isShuffling) {
@@ -176,6 +182,17 @@ async function getOptionItems(
                 command: "musictime.play",
             });
         }
+    }
+    if (isMuted) {
+        items.push({
+            label: "🔈 Unmute song",
+            command: "musictime.unMute",
+        });
+    } else {
+        items.push({
+            label: "🔇 Mute song",
+            command: "musictime.mute",
+        });
     }
 
     return items;

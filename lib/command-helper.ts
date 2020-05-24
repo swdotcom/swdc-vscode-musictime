@@ -128,6 +128,20 @@ export function createCommands(): {
         })
     );
 
+    // MUTE CMD
+    cmds.push(
+        commands.registerCommand("musictime.mute", async () => {
+            controller.setMuteOn();
+        })
+    );
+
+    // UNMUTE CMD
+    cmds.push(
+        commands.registerCommand("musictime.unMute", async () => {
+            controller.setMuteOff();
+        })
+    );
+
     // REMOVE TRACK CMD
     cmds.push(
         commands.registerCommand(
@@ -259,34 +273,31 @@ export function createCommands(): {
         })
     );
 
-    const slackConnectCommand = commands.registerCommand(
-        "musictime.connectSlack",
-        () => {
+    // CONNECT SLACK
+    cmds.push(
+        commands.registerCommand("musictime.connectSlack", () => {
             connectSlack();
-        }
+        })
     );
-    cmds.push(slackConnectCommand);
 
-    const disconnectSpotifyCommand = commands.registerCommand(
-        "musictime.disconnectSpotify",
-        () => {
+    // DISCONNECT SPOTIFY
+    cmds.push(
+        commands.registerCommand("musictime.disconnectSpotify", () => {
             disconnectSpotify();
-        }
+        })
     );
-    cmds.push(disconnectSpotifyCommand);
 
-    const disconnectSlackCommand = commands.registerCommand(
-        "musictime.disconnectSlack",
-        () => {
+    // DISCONNECT SLACK
+    cmds.push(
+        commands.registerCommand("musictime.disconnectSlack", () => {
             disconnectSlack();
-        }
+        })
     );
-    cmds.push(disconnectSlackCommand);
 
+    // RECONCILE PLAYLIST
     // this should only be attached to the refresh button
-    const reconcilePlaylistCommand = commands.registerCommand(
-        "musictime.refreshButton",
-        async () => {
+    cmds.push(
+        commands.registerCommand("musictime.refreshButton", async () => {
             // no devices found at all OR no active devices and a computer device is not found in the list
             const selectedButton = await window.showInformationMessage(
                 `Reload your playlists?`,
@@ -295,19 +306,17 @@ export function createCommands(): {
             if (selectedButton && selectedButton === "Yes") {
                 commands.executeCommand("musictime.hardRefreshPlaylist");
             }
-        }
+        })
     );
-    cmds.push(reconcilePlaylistCommand);
 
+    // HARD REFRESH PLAYLIST
     // this should only be attached to the refresh button
-    const hardRefreshPlaylistCommand = commands.registerCommand(
-        "musictime.hardRefreshPlaylist",
-        async () => {
+    cmds.push(
+        commands.registerCommand("musictime.hardRefreshPlaylist", async () => {
             await populateSpotifyPlaylists();
             commands.executeCommand("musictime.refreshPlaylist");
-        }
+        })
     );
-    cmds.push(hardRefreshPlaylistCommand);
 
     // this should only be attached to the refresh button
     const refreshDeviceInfoCommand = commands.registerCommand(
