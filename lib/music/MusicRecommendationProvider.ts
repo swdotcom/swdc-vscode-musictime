@@ -7,7 +7,7 @@ import {
     Event,
     Disposable,
     TreeView,
-    commands
+    commands,
 } from "vscode";
 import { PlaylistItem } from "cody-music";
 import { getPlaylistIcon } from "../Util";
@@ -41,7 +41,7 @@ export const connectRecommendationPlaylistTreeView = (
     // view is {selection: Array[n], visible, message}
     return Disposable.from(
         // e is {selection: Array[n]}
-        view.onDidChangeSelection(async e => {
+        view.onDidChangeSelection(async (e) => {
             if (!e.selection || e.selection.length === 0) {
                 return;
             }
@@ -59,7 +59,7 @@ export const connectRecommendationPlaylistTreeView = (
 
             await playRecommendationTrack(playlistItem);
         }),
-        view.onDidChangeVisibility(e => {
+        view.onDidChangeVisibility((e) => {
             if (e.visible) {
                 //
             }
@@ -156,7 +156,7 @@ export class PlaylistTreeItem extends TreeItem {
 
     iconPath = {
         light: "",
-        dark: ""
+        dark: "",
     };
 
     contextValue = "playlistItem";

@@ -963,17 +963,10 @@ export function getPlaylistIcon(treeItem: PlaylistItem) {
 }
 
 export function getCodyErrorMessage(response: CodyResponse) {
-    let errMsg = null;
-    if (response.state === CodyResponseType.Failed) {
-        // format the message
-        errMsg = "";
-        if (response.message) {
-            errMsg = response.message;
-            var hasEndingPeriod = errMsg.lastIndexOf(".") === errMsg.length - 1;
-            if (!hasEndingPeriod) {
-                errMsg = `${errMsg}.`;
-            }
-        }
+    if (response && response.error && response.error.response) {
+        return response.error.response.data.error.message;
+    } else if (response.state === CodyResponseType.Failed) {
+        return response.message;
     }
-    return errMsg;
+    return "";
 }

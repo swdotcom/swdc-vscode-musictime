@@ -23,6 +23,7 @@ import {
     play,
     playTrackInContext,
     accessExpired,
+    removeTracksFromPlaylist,
 } from "cody-music";
 import {
     PERSONAL_TOP_SONGS_NAME,
@@ -1149,6 +1150,23 @@ export class MusicManager {
                         false,
                         track
                     );
+                    commands.executeCommand("musictime.refreshPlaylist");
+                }
+            } else {
+                // remove it from a playlist
+                const tracks = [trackItem.id];
+                const result = await removeTracksFromPlaylist(
+                    currentPlaylistId,
+                    tracks
+                );
+
+                const errMsg = getCodyErrorMessage(result);
+                if (errMsg) {
+                    window.showInformationMessage(
+                        `Error removing the selected track. ${errMsg}`
+                    );
+                } else {
+                    window.showInformationMessage("Song removed successfully");
                     commands.executeCommand("musictime.refreshPlaylist");
                 }
             }
