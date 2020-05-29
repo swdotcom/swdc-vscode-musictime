@@ -2,15 +2,17 @@
 
 <h1 align="center">
   <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/software-headphones.png" height="30px" />&nbsp
-  Music Time
+  Music Time for Spotify
   <br />
   &nbsp
 </h1>
 
 <br />
 
-<p align="center"><a href="https://www.software.com">Music Time</a> is a VS Code extension that discovers the most productive music to listen to as you code.
+<p align="center"><a href="https://www.software.com">Music Time for Spotify</a> is a VS Code extension that discovers the most productive music to listen to as you code.
 </p>
+
+<i>Music Time requires a Spotify account. We currently do not support Apple Music, Google Play, or any other players, but may in a future plugin.</i>
 
 <br />
 
@@ -47,7 +49,7 @@
 
 -   **Slack integration**: Connect Slack to share songs and playlists in channels in your workspace.
 
-Music Time currently supports Spotify. We will support iTunes and other players in a future release. You can also check out the [cody-music](https://www.npmjs.com/package/cody-music) npm package for more information about how this extension works.
+You can also check out the [cody-music](https://www.npmjs.com/package/cody-music) npm package for more information about how this extension works.
 
 <br />
 
