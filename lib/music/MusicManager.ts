@@ -537,7 +537,7 @@ export class MusicManager {
     }
 
     async playNextLikedSong() {
-        const hasSpotifyPlaybackAccess = MusicManager.getInstance().hasSpotifyPlaybackAccess();
+        const isPremiumUser = MusicManager.getInstance().isSpotifyPremium();
         const deviceId = getDeviceId();
 
         // play the next song
@@ -548,7 +548,7 @@ export class MusicManager {
                 0
             );
             this.dataMgr.selectedTrackItem = playlistItem;
-            if (hasSpotifyPlaybackAccess) {
+            if (isPremiumUser) {
                 // play the next track
                 await MusicCommandUtil.getInstance().runSpotifyCommand(
                     playSpotifyTrack,
@@ -564,7 +564,7 @@ export class MusicManager {
     }
 
     async playPreviousLikedSong() {
-        const hasSpotifyPlaybackAccess = MusicManager.getInstance().hasSpotifyPlaybackAccess();
+        const isPremiumUser = MusicManager.getInstance().isSpotifyPremium();
         const deviceId = getDeviceId();
         // play the next song
         const prevTrack: Track = this.getPreviousSpotifyLikedSong();
@@ -574,7 +574,7 @@ export class MusicManager {
                 0
             );
             this.dataMgr.selectedTrackItem = playlistItem;
-            if (hasSpotifyPlaybackAccess) {
+            if (isPremiumUser) {
                 // launch and play the next track
                 await MusicCommandUtil.getInstance().runSpotifyCommand(
                     playSpotifyTrack,
@@ -1017,14 +1017,7 @@ export class MusicManager {
             activeWebPlayerDevice,
             activeDesktopPlayerDevice,
         } = getDeviceSet();
-        return isMac() && activeDesktopPlayerDevice ? true : false;
-    }
-
-    hasSpotifyPlaybackAccess() {
-        return this.dataMgr.spotifyUser &&
-            this.dataMgr.spotifyUser.product === "premium"
-            ? true
-            : false;
+        return isMac() && (desktop || activeDesktopPlayerDevice) ? true : false;
     }
 
     hasSpotifyUser() {
@@ -1033,7 +1026,7 @@ export class MusicManager {
             : false;
     }
 
-    async isSpotifyPremium() {
+    isSpotifyPremium() {
         return this.hasSpotifyUser() &&
             this.dataMgr.spotifyUser.product === "premium"
             ? true
@@ -1047,7 +1040,7 @@ export class MusicManager {
         if (
             this.dataMgr.currentPlayerName !== PlayerName.ItunesDesktop &&
             isMac() &&
-            !this.hasSpotifyPlaybackAccess()
+            !this.isSpotifyPremium()
         ) {
             return PlayerName.SpotifyDesktop;
         }
@@ -1055,39 +1048,48 @@ export class MusicManager {
     }
 
     async showPlayerLaunchConfirmation(callback: any = null) {
-        const hasSpotifyPlaybackAccess = MusicManager.getInstance().hasSpotifyPlaybackAccess();
-        const buttons = hasSpotifyPlaybackAccess
-            ? ["Web Player", "Desktop Player"]
-            : ["Desktop Player"];
-
-        // no devices found at all OR no active devices and a computer device is not found in the list
-        const selectedButton = await window.showInformationMessage(
-            `Music Time requires a running Spotify player. Choose a player to launch.`,
-            ...buttons
-        );
-
-        if (
-            selectedButton === "Desktop Player" ||
-            selectedButton === "Web Player"
-        ) {
-            const playerName: PlayerName =
-                selectedButton === "Desktop Player"
-                    ? PlayerName.SpotifyDesktop
-                    : PlayerName.SpotifyWeb;
-            // start the launch process and pass the callback when complete
-            return this.launchTrackPlayer(playerName, callback);
+        // if they're a mac non-premium user, just launch the desktop player
+        const isPremiumUser = MusicManager.getInstance().isSpotifyPremium();
+        if (isMac() && !isPremiumUser) {
+            return this.launchTrackPlayer(PlayerName.SpotifyDesktop, callback);
         } else {
-            // operation cancelled
-            return;
+            const buttons = ["Web Player", "Desktop Player"];
+
+            // no devices found at all OR no active devices and a computer device is not found in the list
+            const selectedButton = await window.showInformationMessage(
+                `Music Time requires a running Spotify player. Choose a player to launch.`,
+                ...buttons
+            );
+
+            if (
+                selectedButton === "Desktop Player" ||
+                selectedButton === "Web Player"
+            ) {
+                const playerName: PlayerName =
+                    selectedButton === "Desktop Player"
+                        ? PlayerName.SpotifyDesktop
+                        : PlayerName.SpotifyWeb;
+                // start the launch process and pass the callback when complete
+                return this.launchTrackPlayer(playerName, callback);
+            } else {
+                // operation cancelled
+                return;
+            }
         }
     }
 
     async playInitialization(callback: any = null) {
         const devices: PlayerDevice[] = this.dataMgr.currentDevices;
 
-        const deviceSet = getDeviceSet();
+        const {
+            webPlayer,
+            desktop,
+            activeDevice,
+            activeComputerDevice,
+            activeWebPlayerDevice,
+            activeDesktopPlayerDevice,
+        } = getDeviceSet();
 
-        const no_devices = !devices || devices.length === 0 ? true : false;
         let hasSpotifyUser = MusicManager.getInstance().hasSpotifyUser();
         if (!hasSpotifyUser) {
             // try again
@@ -1095,12 +1097,19 @@ export class MusicManager {
             hasSpotifyUser = MusicManager.getInstance().hasSpotifyUser();
         }
 
-        if (
-            no_devices ||
-            (!deviceSet.webPlayer &&
-                !deviceSet.desktop &&
-                !deviceSet.activeDevice)
-        ) {
+        const hasDesktopLaunched =
+            desktop || activeDesktopPlayerDevice ? true : false;
+
+        const hasDesktopOrWebLaunched =
+            hasDesktopLaunched || webPlayer || activeWebPlayerDevice
+                ? true
+                : false;
+        const isPremiumUser = MusicManager.getInstance().isSpotifyPremium();
+
+        const requiresDesktopLaunch =
+            !isPremiumUser && isMac() && !hasDesktopLaunched ? true : false;
+
+        if (!hasDesktopOrWebLaunched || requiresDesktopLaunch) {
             return await this.showPlayerLaunchConfirmation(callback);
         }
 
@@ -1261,13 +1270,12 @@ export class MusicManager {
                 ? true
                 : false;
 
-        const musicMgr: MusicManager = MusicManager.getInstance();
-        const hasSpotifyPlaybackAccess = musicMgr.hasSpotifyPlaybackAccess();
-        const isMacDesktopEnabled = musicMgr.isMacDesktopEnabled();
+        const isPremiumUser = MusicManager.getInstance().isSpotifyPremium();
+        const useSpotifyWeb = isPremiumUser || !isMac() ? true : false;
 
         if (isRecommendationTrack || isLikedSong) {
             let result = null;
-            if (hasSpotifyPlaybackAccess || !isMac()) {
+            if (useSpotifyWeb) {
                 // it's a liked song or recommendation track play request
                 result = await this.playRecommendationsOrLikedSongsByPlaylist(
                     this.dataMgr.selectedTrackItem,
@@ -1286,13 +1294,7 @@ export class MusicManager {
             }
             await musicCommandUtil.checkIfAccessExpired(result);
         } else if (playlistId) {
-            if (isMacDesktopEnabled || !hasSpotifyPlaybackAccess) {
-                // play it using applescript
-                const trackUri = createUriFromTrackId(trackId);
-                const playlistUri = createUriFromPlaylistId(playlistId);
-                const params = [trackUri, playlistUri];
-                await playTrackInContext(PlayerName.SpotifyDesktop, params);
-            } else {
+            if (useSpotifyWeb) {
                 // NORMAL playlist request
                 // play a playlist
                 await musicCommandUtil.runSpotifyCommand(playSpotifyPlaylist, [
@@ -1300,9 +1302,15 @@ export class MusicManager {
                     trackId,
                     deviceId,
                 ]);
+            } else {
+                // play it using applescript
+                const trackUri = createUriFromTrackId(trackId);
+                const playlistUri = createUriFromPlaylistId(playlistId);
+                const params = [trackUri, playlistUri];
+                await playTrackInContext(PlayerName.SpotifyDesktop, params);
             }
         } else {
-            if (hasSpotifyPlaybackAccess || !isMac()) {
+            if (useSpotifyWeb) {
                 // else it's not a liked or recommendation play request, just play the selected track
                 await musicCommandUtil.runSpotifyCommand(playSpotifyTrack, [
                     trackId,

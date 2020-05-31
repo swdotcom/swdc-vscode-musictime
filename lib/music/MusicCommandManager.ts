@@ -1,13 +1,13 @@
 import { window, StatusBarAlignment, StatusBarItem } from "vscode";
 import { getSongDisplayName, isMac, getItem } from "../Util";
 import { TrackStatus, Track } from "cody-music";
-import { MusicManager } from "./MusicManager";
 import {
     requiresSpotifyAccess,
     getDeviceId,
     requiresSpotifyReAuthentication,
 } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
+import { MusicManager } from "./MusicManager";
 
 export interface Button {
     /**
@@ -115,8 +115,6 @@ export class MusicCommandManager {
             ? track.state
             : TrackStatus.NotAssigned;
 
-        const { requiresAccess, foundDevice } = await this.getSpotifyState();
-
         let pauseIt = trackStatus === TrackStatus.Playing;
         let playIt = trackStatus === TrackStatus.Paused;
 
@@ -131,15 +129,26 @@ export class MusicCommandManager {
         }
 
         this._isLoading = showLoading;
+        const foundDevice = getDeviceId() ? true : false;
 
-        if (!requiresAccess && (pauseIt || playIt || foundDevice)) {
+        const requiresAccessToken = requiresSpotifyAccess();
+        const requiresReAuth = requiresSpotifyReAuthentication();
+        const isPremiumUser = MusicManager.getInstance().isSpotifyPremium();
+
+        const isNonPremiumNonMacUser =
+            !isMac() && !isPremiumUser ? true : false;
+        const requiresAuth =
+            requiresAccessToken || requiresReAuth ? true : false;
+        const hasDeviceOrSong = pauseIt || playIt || foundDevice ? true : false;
+
+        if (isNonPremiumNonMacUser || requiresAuth || !hasDeviceOrSong) {
+            this.showLaunchPlayerControls();
+        } else {
             if (pauseIt) {
                 this.showPauseControls(track);
             } else {
                 this.showPlayControls(track);
             }
-        } else {
-            this.showLaunchPlayerControls();
         }
     }
 
@@ -180,10 +189,8 @@ export class MusicCommandManager {
         if (!this._buttons || this._buttons.length === 0) {
             return;
         }
-        const {
-            requiresAccess,
-            showPremiumRequired,
-        } = await this.getSpotifyState();
+
+        const requiresAccessToken = requiresSpotifyAccess();
         const requiresReAuth = requiresSpotifyReAuthentication();
         const action = requiresReAuth ? "Reconnect" : "Connect";
 
@@ -198,7 +205,10 @@ export class MusicCommandManager {
                 button.tooltip = this.getMusicMenuTooltip();
                 // always show the headphones button for the launch controls function
                 button.statusBarItem.show();
-            } else if (isConnectButton && (requiresAccess || requiresReAuth)) {
+            } else if (
+                isConnectButton &&
+                (requiresAccessToken || requiresReAuth)
+            ) {
                 // show the connect button
                 button.statusBarItem.show();
                 button.statusBarItem.text = `${action} Spotify`;
@@ -364,9 +374,10 @@ export class MusicCommandManager {
 
     private static getMusicMenuTooltip() {
         const name = getItem("name");
-        const needsSpotifyAccess = requiresSpotifyAccess();
-        if (needsSpotifyAccess) {
-            const requiresReAuth = requiresSpotifyReAuthentication();
+
+        const requiresAccessToken = requiresSpotifyAccess();
+        const requiresReAuth = requiresSpotifyReAuthentication();
+        if (requiresAccessToken || requiresReAuth) {
             const action = requiresReAuth ? "Reconnect" : "Connect";
             return `${action} Spotify`;
         }
@@ -376,26 +387,5 @@ export class MusicCommandManager {
             musicTimeTooltip = `${musicTimeTooltip} (${name})`;
         }
         return musicTimeTooltip;
-    }
-
-    private static async getSpotifyState() {
-        const musicMgr: MusicManager = MusicManager.getInstance();
-        const requiresReAuth = requiresSpotifyReAuthentication();
-        const needsSpotifyAccess = requiresSpotifyAccess();
-        const hasSpotifyPlaybackAccess = musicMgr.hasSpotifyPlaybackAccess();
-        const hasSpotifyUser = musicMgr.hasSpotifyUser();
-
-        const foundDevice = getDeviceId() ? true : false;
-
-        const requiresAccess =
-            requiresReAuth || needsSpotifyAccess ? true : false;
-
-        const showPremiumRequired =
-            isMac() && !hasSpotifyPlaybackAccess && hasSpotifyUser;
-        return {
-            requiresAccess,
-            showPremiumRequired,
-            foundDevice,
-        };
     }
 }

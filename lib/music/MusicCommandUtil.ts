@@ -28,15 +28,19 @@ export class MusicCommandUtil {
             result = await fnc();
         }
 
+        // check to see if the access token is still valid
+        await this.checkIfAccessExpired(result);
+        const error = this.getResponseError(result);
+
         if (this.isTooManyRequestsError(result)) {
-            window.showErrorMessage(
+            console.log(
                 "Currently experiencing frequent spotify requests, please try again soon."
             );
             return { status: 429 };
+        } else if (error !== null) {
+            window.showErrorMessage(error.message);
+            return error;
         }
-
-        // check to see if the access token is still valid
-        await this.checkIfAccessExpired(result);
 
         return result;
     }
@@ -57,7 +61,28 @@ export class MusicCommandUtil {
 
                 showReconnectPrompt(email);
             }
+        } else {
+            const error = this.getResponseError(result);
+            if (error) {
+                window.showErrorMessage(error.message);
+                return error;
+            }
         }
+    }
+
+    // error.response.data.error has...
+    // {message, reason, status}
+    getResponseError(resp) {
+        if (
+            resp &&
+            resp.error &&
+            resp.error.response &&
+            resp.error.response.data &&
+            resp.error.response.data.error
+        ) {
+            return resp.error.response.data.error;
+        }
+        return null;
     }
 
     getResponseStatus(resp) {

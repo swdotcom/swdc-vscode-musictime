@@ -112,21 +112,14 @@ export class MusicControlManager {
     }
 
     async nextSong() {
-        const hasSpotifyPlaybackAccess = MusicManager.getInstance().hasSpotifyPlaybackAccess();
-
-        if (hasSpotifyPlaybackAccess) {
-            if (this.isLikedSongPlaylist()) {
-                await MusicManager.getInstance().playNextLikedSong();
-            } else {
-                const playerName = MusicManager.getInstance().getPlayerNameForPlayback();
-                await next(playerName);
-            }
+        if (this.isLikedSongPlaylist()) {
+            await MusicManager.getInstance().playNextLikedSong();
+        } else if (this.useSpotifyDesktop()) {
+            await next(PlayerName.SpotifyDesktop);
         } else {
-            if (this.isLikedSongPlaylist()) {
-                await MusicManager.getInstance().playNextLikedSong();
-            } else {
-                await next(PlayerName.SpotifyDesktop);
-            }
+            await this.musicCmdUtil.runSpotifyCommand(next, [
+                PlayerName.SpotifyWeb,
+            ]);
         }
 
         setTimeout(() => {
@@ -135,23 +128,14 @@ export class MusicControlManager {
     }
 
     async previousSong() {
-        const hasSpotifyPlaybackAccess = MusicManager.getInstance().hasSpotifyPlaybackAccess();
-
-        if (hasSpotifyPlaybackAccess) {
-            if (this.isLikedSongPlaylist()) {
-                await MusicManager.getInstance().playPreviousLikedSong();
-            } else {
-                const playerName = MusicManager.getInstance().getPlayerNameForPlayback();
-                await this.musicCmdUtil.runSpotifyCommand(previous, [
-                    playerName,
-                ]);
-            }
+        if (this.isLikedSongPlaylist()) {
+            await MusicManager.getInstance().playPreviousLikedSong();
+        } else if (this.useSpotifyDesktop()) {
+            await previous(PlayerName.SpotifyDesktop);
         } else {
-            if (this.isLikedSongPlaylist()) {
-                await MusicManager.getInstance().playPreviousLikedSong();
-            } else {
-                await previous(PlayerName.SpotifyDesktop);
-            }
+            await this.musicCmdUtil.runSpotifyCommand(previous, [
+                PlayerName.SpotifyWeb,
+            ]);
         }
 
         setTimeout(() => {
@@ -168,7 +152,9 @@ export class MusicControlManager {
         if (this.useSpotifyDesktop()) {
             result = await play(PlayerName.SpotifyDesktop);
         } else {
-            result = await play(PlayerName.SpotifyWeb);
+            result = await this.musicCmdUtil.runSpotifyCommand(play, [
+                PlayerName.SpotifyWeb,
+            ]);
         }
 
         if (result && (result.status < 300 || result === "ok")) {
@@ -189,7 +175,9 @@ export class MusicControlManager {
         if (this.useSpotifyDesktop()) {
             result = await pause(PlayerName.SpotifyDesktop);
         } else {
-            result = await pause(PlayerName.SpotifyWeb);
+            result = await this.musicCmdUtil.runSpotifyCommand(pause, [
+                PlayerName.SpotifyWeb,
+            ]);
         }
 
         if (result && (result.status < 300 || result === "ok")) {
@@ -267,25 +255,16 @@ export class MusicControlManager {
     }
 
     useSpotifyDesktop() {
-        const musicMgr: MusicManager = MusicManager.getInstance();
-        const hasSpotifyPlaybackAccess = musicMgr.hasSpotifyPlaybackAccess();
-        const isMacDesktopEnabled = musicMgr.isMacDesktopEnabled();
-
         const {
             webPlayer,
             desktop,
             activeDevice,
             activeComputerDevice,
             activeWebPlayerDevice,
+            activeDesktopPlayerDevice,
         } = getDeviceSet();
 
-        let result: any = null;
-        if (
-            isMacDesktopEnabled ||
-            !hasSpotifyPlaybackAccess ||
-            activeComputerDevice ||
-            desktop
-        ) {
+        if (isMac() && (desktop || activeDesktopPlayerDevice)) {
             return true;
         }
         return false;
@@ -346,7 +325,7 @@ export class MusicControlManager {
 
         // get the selected playlist
         const selectedPlaylist = dataMgr.selectedPlaylist;
-        const isPrem = await MusicManager.getInstance().isSpotifyPremium();
+        const isPrem = MusicManager.getInstance().isSpotifyPremium();
         const isWin = isWindows();
         // get the selected track
         const selectedTrack = dataMgr.selectedTrackItem;
