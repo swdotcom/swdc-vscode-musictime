@@ -106,7 +106,7 @@ export class MusicControlManager {
 
     isLikedSongPlaylist() {
         return dataMgr.selectedPlaylist &&
-            dataMgr.selectedPlaylist.id == SPOTIFY_LIKED_SONGS_PLAYLIST_NAME
+            dataMgr.selectedPlaylist.id === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME
             ? true
             : false;
     }

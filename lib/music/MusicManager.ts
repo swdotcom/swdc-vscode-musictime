@@ -938,9 +938,34 @@ export class MusicManager {
             playerName = PlayerName.SpotifyDesktop;
         }
 
+        // {playlist_id | album_id | track_id, quietly }
+        const options = {
+            quietly: false,
+        };
+
+        const isPremiumUser = MusicManager.getInstance().isSpotifyPremium();
+        if (!isPremiumUser) {
+            // show the track or playlist
+            const isRecommendationTrack =
+                this.dataMgr.selectedTrackItem.type === "recommendation"
+                    ? true
+                    : false;
+            const isLikedSong =
+                this.dataMgr.selectedPlaylist &&
+                this.dataMgr.selectedPlaylist.name ===
+                    SPOTIFY_LIKED_SONGS_PLAYLIST_NAME
+                    ? true
+                    : false;
+            if (isRecommendationTrack || isLikedSong) {
+                options["track_id"] = this.dataMgr.selectedTrackItem.id;
+            } else {
+                options["playlist_id"] = this.dataMgr.selectedPlaylist.id;
+            }
+        }
+
         // spotify device launch error would look like this...
         // error:"Command failed: open -a spotify\nUnable to find application named 'spotify'\n"
-        let result = await launchPlayer(playerName, { quietly: false });
+        let result = await launchPlayer(playerName, options);
 
         // test if there was an error, fallback to the web player
         if (
@@ -951,7 +976,7 @@ export class MusicManager {
         ) {
             // start the process of launching the web player
             playerName = PlayerName.SpotifyWeb;
-            await launchPlayer(playerName, { quietly: false });
+            await launchPlayer(playerName, options);
         }
 
         setTimeout(() => {
@@ -1071,11 +1096,9 @@ export class MusicManager {
                         : PlayerName.SpotifyWeb;
                 // start the launch process and pass the callback when complete
                 return this.launchTrackPlayer(playerName, callback);
-            } else {
-                // operation cancelled
-                return;
             }
         }
+        return;
     }
 
     async playInitialization(callback: any = null) {
