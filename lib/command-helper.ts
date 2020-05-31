@@ -4,6 +4,7 @@ import {
     connectSpotify,
     disconnectSpotify,
     disconnectSlack,
+    switchSpotifyAccount,
     displayMusicTimeMetricsMarkdownDashboard,
 } from "./music/MusicControlManager";
 import { launchMusicAnalytics, displayReadmeIfNotExists } from "./Util";
@@ -266,9 +267,16 @@ export function createCommands(): {
         })
     );
 
+    // SWITCH SPOTIFY
+    cmds.push(
+        commands.registerCommand("musictime.switchSpotifyAccount", async () => {
+            switchSpotifyAccount();
+        })
+    );
+
     // CONNECT SPOTIFY CMD
     cmds.push(
-        commands.registerCommand("musictime.connectSpotify", () => {
+        commands.registerCommand("musictime.connectSpotify", async () => {
             connectSpotify();
         })
     );
@@ -315,6 +323,9 @@ export function createCommands(): {
         commands.registerCommand("musictime.hardRefreshPlaylist", async () => {
             await populateSpotifyPlaylists();
             commands.executeCommand("musictime.refreshPlaylist");
+            setTimeout(() => {
+                refreshRecommendations();
+            }, 3000);
         })
     );
 

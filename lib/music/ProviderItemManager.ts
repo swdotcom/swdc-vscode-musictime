@@ -99,10 +99,10 @@ export class ProviderItemManager {
         return this.buildActionItem(
             "spotifypremium",
             "action",
-            "musictime.connectSpotify",
+            "musictime.switchSpotifyAccount",
             PlayerType.NotAssigned,
-            "Spotify Premium Required",
-            "Connect to your premium Spotify account to use the play, pause, next, and previous controls"
+            "Spotify Free",
+            "Connect to your premium Spotify account to enable web playback controls"
         );
     }
 

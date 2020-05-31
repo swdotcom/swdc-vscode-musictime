@@ -80,8 +80,8 @@ const clipboardy = require("clipboardy");
 const fs = require("fs");
 const dataMgr: MusicDataManager = MusicDataManager.getInstance();
 
-const NO_DATA =
-    "MUSIC TIME\n\nListen to Spotify while coding to generate this playlist\n";
+const NO_DATA = `MUSIC TIME
+    Listen to Spotify while coding to generate this playlist`;
 
 let lastDayOfMonth = -1;
 
@@ -836,6 +836,17 @@ export async function connectSpotify() {
     const endpoint = `${api_endpoint}/auth/spotify?${qryStr}`;
     launchWebUrl(endpoint);
     refetchSpotifyConnectStatusLazily();
+}
+
+export async function switchSpotifyAccount() {
+    const selection = await window.showInformationMessage(
+        `Are you sure you would like to connect to a different Spotify account?`,
+        ...[YES_LABEL]
+    );
+    if (selection === YES_LABEL) {
+        await disconnectSpotify(false);
+        connectSpotify();
+    }
 }
 
 export async function disconnectSpotify(confirmDisconnect = true) {
