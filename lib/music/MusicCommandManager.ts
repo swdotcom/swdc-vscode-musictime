@@ -1,5 +1,5 @@
 import { window, StatusBarAlignment, StatusBarItem } from "vscode";
-import { getSongDisplayName, isMac, getItem } from "../Util";
+import { getSongDisplayName, isMac, getItem, setItem } from "../Util";
 import { TrackStatus, Track } from "cody-music";
 import {
     requiresSpotifyAccess,
@@ -51,7 +51,14 @@ export class MusicCommandManager {
     public static async initialize() {
         const musictimeMenuTooltip = this.getMusicMenuTooltip();
 
-        const requiresReAuth = requiresSpotifyReAuthentication();
+        let requiresReAuth = requiresSpotifyReAuthentication();
+        const requiresAccessToken = requiresSpotifyAccess();
+
+        if (!requiresAccessToken && requiresReAuth) {
+            setItem("requiresSpotifyReAuth", false);
+            requiresReAuth = false;
+        }
+
         const action = requiresReAuth ? "Reconnect" : "Connect";
 
         // start with 100 0and go down in sequence
@@ -191,7 +198,13 @@ export class MusicCommandManager {
         }
 
         const requiresAccessToken = requiresSpotifyAccess();
-        const requiresReAuth = requiresSpotifyReAuthentication();
+        let requiresReAuth = requiresSpotifyReAuthentication();
+
+        if (!requiresAccessToken && requiresReAuth) {
+            setItem("requiresSpotifyReAuth", false);
+            requiresReAuth = false;
+        }
+
         const action = requiresReAuth ? "Reconnect" : "Connect";
 
         // hide all except for the launch player button and possibly connect spotify button
