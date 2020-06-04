@@ -547,7 +547,7 @@ export function nowInSecs() {
     return Math.round(Date.now() / 1000);
 }
 
-export function getOffsetSecends() {
+export function getOffsetSeconds() {
     let d = new Date();
     return d.getTimezoneOffset() * 60;
 }

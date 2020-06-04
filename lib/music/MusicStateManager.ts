@@ -2,7 +2,7 @@ import {
     createSpotifyIdFromUri,
     createUriFromTrackId,
     nowInSecs,
-    getOffsetSecends,
+    getOffsetSeconds,
     getOs,
     getVersion,
     getPluginId,
@@ -465,7 +465,7 @@ export class MusicStateManager {
             keystrokes: 0,
             syntax: "",
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            offset: getOffsetSecends() / 60,
+            offset: getOffsetSeconds() / 60,
             pluginId: getPluginId(),
             os: getOs(),
             version: getVersion(),
@@ -551,7 +551,7 @@ export class MusicStateManager {
         keystrokes: 0,
         syntax: "",
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        offset: getOffsetSecends() / 60,
+        offset: getOffsetSeconds() / 60,
         pluginId: getPluginId(),
         os: getOs(),
         version: getVersion(),
@@ -595,7 +595,7 @@ export class MusicStateManager {
                         ] = Intl.DateTimeFormat().resolvedOptions().timeZone;
                     }
                     if (!sourceObj.offset) {
-                        sourceObj["offset"] = getOffsetSecends() / 60;
+                        sourceObj["offset"] = getOffsetSeconds() / 60;
                     }
                     if (!sourceObj.pluginId) {
                         sourceObj["pluginId"] = getPluginId();

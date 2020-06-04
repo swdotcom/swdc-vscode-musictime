@@ -1,28 +1,20 @@
 import { workspace, window, commands } from "vscode";
-import {
-    softwareGet,
-    softwarePut,
-    isResponseOk,
-    softwarePost,
-} from "./HttpClient";
+import { softwareGet, isResponseOk, softwarePost } from "./HttpClient";
 import {
     getItem,
     setItem,
     nowInSecs,
     getSessionFileCreateTime,
     getOs,
-    getNowTimes,
     getVersion,
     getHostname,
     getEditorSessionToken,
     logIt,
     getPluginId,
-    getOffsetSecends,
-    storeMusicSessionPayload,
+    getOffsetSeconds,
 } from "./Util";
 import {
     getSpotifyLikedSongs,
-    Track,
     PlayerName,
     getPlaylists,
     getSpotifyDevices,
@@ -284,31 +276,8 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
         // only add the "Liked Songs" playlist if there are tracks found in that playlist
         await populateLikedSongs();
 
-        if (dataMgr.spotifyLikedSongs) {
-            let nowTime = getNowTimes();
-            let startingTime = moment().unix();
-            dataMgr.spotifyLikedSongs.forEach((track: Track) => {
-                track["playlistId"] = "Liked Songs";
-                track.loved = true;
-                track["start"] = startingTime;
-                startingTime -= 60;
-                track["end"] = startingTime;
-                track["duration"] = 60;
-
-                track["local_start"] = track["start"] - nowTime.offset_sec;
-                track["local_end"] = track["end"] - nowTime.offset_sec;
-                // set a convenience "spotifyTrackId" attribute based on the URI
-                if (track.uri) {
-                    track["spotifyTrackId"] = track.uri;
-                    // make sure the trackId is the URI if it's a spotify track
-                    track.id = track.uri;
-                }
-                startingTime -= 1;
-            });
-        }
-
-        // send the top spotify songs from the users playlists to help seed song sessions
-        seedLikedSongSessions(dataMgr.spotifyLikedSongs);
+        // --async-- send the top spotify songs from the users playlists to help seed song sessions
+        seedLikedSongSessions();
 
         // initiate the playlist build
         setTimeout(() => {
@@ -420,7 +389,7 @@ export function getBootstrapFileMetrics() {
         keystrokes: 0,
         syntax: "",
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        offset: getOffsetSecends() / 60,
+        offset: getOffsetSeconds() / 60,
         pluginId: getPluginId(),
         os: getOs(),
         version: getVersion(),
@@ -431,60 +400,17 @@ export function getBootstrapFileMetrics() {
     return fileMetrics;
 }
 
-async function seedLikedSongSessions(likedSongs) {
-    /**
-     * album:Object {album_type: "ALBUM", artists: Array(1), available_markets: Array(79), …}
-    artists:Array(1) [Object]
-    available_markets:Array(79) ["AD", "AE", "AR", …]
-    disc_number:1
-    duration_ms:251488
-    explicit:false
-    external_ids:Object {isrc: "GBF088590110"}
-    external_urls:Object {spotify: "https://open.spotify.com/track/4RvWPyQ5RL0ao9LPZeS…"}
-    href:"https://api.spotify.com/v1/tracks/4RvWPyQ5RL0ao9LPZeSouE"
-     */
-    const fileMetrics = getBootstrapFileMetrics();
-    const batch_size = 30;
-    if (likedSongs && likedSongs.length > 0) {
-        let batch = [];
-        // batch send the liked songs
-        for (let i = 0; i < likedSongs.length; i++) {
-            const track = likedSongs[i];
-            track["liked"] = true;
-            if (!track.playlistId) {
-                track["playlistId"] = "Liked Songs";
-            }
-            // add the empty file metrics
-            const songSession = {
-                ...track,
-                ...fileMetrics,
-            };
-            batch.push(songSession);
-            if (i > 0 && i % batch_size === 0) {
-                await sendBatchedLikedSongSessions(batch);
-                batch = [];
-            }
-        }
+async function seedLikedSongSessions() {
+    const pluginInfo = {
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        offset_minutes: getOffsetSeconds() / 60,
+        pluginId: getPluginId(),
+        os: getOs(),
+        version: getVersion(),
+    };
 
-        // send the remaining
-        if (batch.length > 0) {
-            await sendBatchedLikedSongSessions(batch);
-        }
-    }
-}
-
-function sendBatchedLikedSongSessions(tracksToSave) {
-    const api = `/music/session/seed`;
-    softwarePut(api, { tracks: tracksToSave }, getItem("jwt"))
-        .then((resp) => {
-            if (!isResponseOk(resp)) {
-                return { status: "fail" };
-            }
-            return { status: "ok" };
-        })
-        .catch((e) => {
-            return { status: "fail" };
-        });
+    const api = `/music/onboard`;
+    softwarePost(api, pluginInfo, getItem("jwt"));
 }
 
 export async function sendSessionPayload(songSession) {

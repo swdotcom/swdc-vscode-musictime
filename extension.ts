@@ -6,7 +6,7 @@ import { ExtensionContext } from "vscode";
 import { onboardPlugin } from "./lib/OnboardManager";
 import {
     nowInSecs,
-    getOffsetSecends,
+    getOffsetSeconds,
     getVersion,
     logIt,
     getPluginName,
@@ -33,7 +33,7 @@ export function deactivate(ctx: ExtensionContext) {
     if (_ls && _ls.id) {
         // the IDE is closing, send this off
         let nowSec = nowInSecs();
-        let offsetSec = getOffsetSecends();
+        let offsetSec = getOffsetSeconds();
         let localNow = nowSec - offsetSec;
         // close the session on our end
         _ls["end"] = nowSec;
@@ -125,7 +125,7 @@ async function initializeLiveshare() {
         logIt(`liveshare version - ${liveshare["apiVersion"]}`);
         liveshare.onDidChangeSession(async (event) => {
             let nowSec = nowInSecs();
-            let offsetSec = getOffsetSecends();
+            let offsetSec = getOffsetSeconds();
             let localNow = nowSec - offsetSec;
             if (!_ls) {
                 _ls = {
