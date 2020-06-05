@@ -139,7 +139,13 @@ export class MusicCommandManager {
         const foundDevice = getDeviceId() ? true : false;
 
         const requiresAccessToken = requiresSpotifyAccess();
-        const requiresReAuth = requiresSpotifyReAuthentication();
+        let requiresReAuth = requiresSpotifyReAuthentication();
+
+        if (!requiresAccessToken && requiresReAuth) {
+            setItem("requiresSpotifyReAuth", false);
+            requiresReAuth = false;
+        }
+
         const isPremiumUser = MusicManager.getInstance().isSpotifyPremium();
 
         const isNonPremiumNonMacUser =
@@ -389,7 +395,13 @@ export class MusicCommandManager {
         const name = getItem("name");
 
         const requiresAccessToken = requiresSpotifyAccess();
-        const requiresReAuth = requiresSpotifyReAuthentication();
+        let requiresReAuth = requiresSpotifyReAuthentication();
+
+        if (!requiresAccessToken && requiresReAuth) {
+            setItem("requiresSpotifyReAuth", false);
+            requiresReAuth = false;
+        }
+
         if (requiresAccessToken || requiresReAuth) {
             const action = requiresReAuth ? "Reconnect" : "Connect";
             return `${action} Spotify`;
