@@ -37,7 +37,7 @@ export async function onboardPlugin(
         setTimeout(() => {
             secondary_window_activate_counter++;
             onboardPlugin(ctx, successFunction);
-        }, 1000 * 5);
+        }, 1000 * 10);
     } else {
         // check session.json existence
         const serverIsOnline = await serverIsAvailable();

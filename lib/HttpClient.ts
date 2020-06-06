@@ -2,12 +2,28 @@ import axios from "axios";
 
 import { api_endpoint } from "./Constants";
 
-import { logIt } from "./Util";
+import {
+    logIt,
+    getPluginId,
+    getPluginName,
+    getVersion,
+    getOs,
+    getOffsetSeconds,
+} from "./Util";
 
 // build the axios api base url
 const beApi = axios.create({
     baseURL: `${api_endpoint}`,
 });
+
+beApi.defaults.headers.common["X-SWDC-Plugin-Id"] = getPluginId();
+beApi.defaults.headers.common["X-SWDC-Plugin-Name"] = getPluginName();
+beApi.defaults.headers.common["X-SWDC-Plugin-Version"] = getVersion();
+beApi.defaults.headers.common["X-SWDC-Plugin-OS"] = getOs();
+beApi.defaults.headers.common[
+    "X-SWDC-Plugin-TZ"
+] = Intl.DateTimeFormat().resolvedOptions().timeZone;
+beApi.defaults.headers.common["X-SWDC-Plugin-Offset"] = getOffsetSeconds() / 60;
 
 /**
  * Response returns a paylod with the following
@@ -65,6 +81,7 @@ export async function softwarePut(api, payload, jwt) {
 export async function softwarePost(api, payload, jwt) {
     // POST the kpm to the PluginManager
     beApi.defaults.headers.common["Authorization"] = jwt;
+
     return beApi
         .post(api, payload)
         .then((resp) => {
