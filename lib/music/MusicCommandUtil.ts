@@ -54,7 +54,7 @@ export class MusicCommandUtil {
         if (this.getResponseStatus(result) === 401) {
             // check to see if they still have their access token
             const spotifyAccessToken = getItem("spotify_access_token");
-            if (spotifyAccessToken && accessExpired()) {
+            if (spotifyAccessToken && (await accessExpired())) {
                 // populate the user information in case then check accessExpired again
                 let oauthResult = await getMusicTimeUserStatus();
                 let expired = true;
