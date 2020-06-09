@@ -375,15 +375,7 @@ export class MusicControlManager {
     }
 
     async playSpotifyByTrackAndPlaylist(playlistId: string, trackId: string) {
-        const {
-            webPlayer,
-            desktop,
-            activeDevice,
-            activeComputerDevice,
-            activeWebPlayerDevice,
-        } = getDeviceSet();
-
-        const deviceId = activeDevice ? activeDevice.id : "";
+        const deviceId = getDeviceId();
         // just play the 1st track
         await playSpotifyPlaylist(playlistId, trackId, deviceId);
     }

@@ -32,12 +32,7 @@ export async function showPlaylistOptionsMenu() {
         activeWebPlayerDevice,
     } = getDeviceSet();
 
-    if (
-        !webPlayer &&
-        !desktop &&
-        !activeComputerDevice &&
-        !activeWebPlayerDevice
-    ) {
+    if (!webPlayer && !desktop) {
         return MusicManager.getInstance().showPlayerLaunchConfirmation();
     }
 

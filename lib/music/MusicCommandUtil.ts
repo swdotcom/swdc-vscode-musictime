@@ -4,6 +4,7 @@ import { disconnectSpotify, connectSpotify } from "./MusicControlManager";
 import { getItem } from "../Util";
 import { access } from "fs";
 import { showReconnectPrompt } from "./MusicUtil";
+import { getMusicTimeUserStatus } from "../DataController";
 
 export class MusicCommandUtil {
     private static instance: MusicCommandUtil;
@@ -54,12 +55,22 @@ export class MusicCommandUtil {
             // check to see if they still have their access token
             const spotifyAccessToken = getItem("spotify_access_token");
             if (spotifyAccessToken && accessExpired()) {
-                const email = getItem("name");
+                // populate the user information in case then check accessExpired again
+                let oauthResult = await getMusicTimeUserStatus();
+                let expired = true;
+                if (oauthResult.loggedOn) {
+                    // try one last time
+                    expired = await accessExpired();
+                }
 
-                // remove their current spotify info and initiate the auth flow
-                await disconnectSpotify(false /*confirmDisconnect*/);
+                if (expired) {
+                    const email = getItem("name");
 
-                showReconnectPrompt(email);
+                    // remove their current spotify info and initiate the auth flow
+                    await disconnectSpotify(false /*confirmDisconnect*/);
+
+                    showReconnectPrompt(email);
+                }
             }
         } else {
             const error = this.getResponseError(result);

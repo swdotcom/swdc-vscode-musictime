@@ -921,21 +921,13 @@ export class MusicManager {
             activeDevice,
             activeComputerDevice,
             activeWebPlayerDevice,
+            activeDesktopPlayerDevice,
         } = getDeviceSet();
 
-        // if the player name is null, definitely check if there's an active or available device
-        if (!playerName) {
-            if (!activeDevice) {
-                if (webPlayer) {
-                    playerName = PlayerName.SpotifyWeb;
-                }
-            } else if (activeDevice && activeWebPlayerDevice) {
-                // it's an active web player device
-                playerName = PlayerName.SpotifyWeb;
-            }
-        }
-        if (!playerName) {
+        if (activeDesktopPlayerDevice || desktop) {
             playerName = PlayerName.SpotifyDesktop;
+        } else {
+            playerName = PlayerName.SpotifyWeb;
         }
 
         // {playlist_id | album_id | track_id, quietly }
@@ -998,20 +990,11 @@ export class MusicManager {
             } else {
                 // it should only have either the desktop or web device available
                 // since this is part of the check device launch path
-                const deviceId = getDeviceId();
-
-                const {
-                    webPlayer,
-                    desktop,
-                    activeDevice,
-                    activeComputerDevice,
-                    activeWebPlayerDevice,
-                } = getDeviceSet();
-
-                if (!activeComputerDevice && !activeWebPlayerDevice) {
-                    // transfer to the device
-                    await transferSpotifyDevice(deviceId, false);
-                }
+                // const deviceId = getDeviceId();
+                // if (!activeComputerDevice && !activeWebPlayerDevice) {
+                //     // transfer to the device
+                //     await transferSpotifyDevice(deviceId, false);
+                // }
 
                 commands.executeCommand("musictime.refreshDeviceInfo");
 

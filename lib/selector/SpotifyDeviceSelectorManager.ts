@@ -19,7 +19,7 @@ export async function showDeviceSelectorMenu() {
                 command: "musictime.transferToDevice",
                 args: d,
                 type: d.type,
-                detail
+                detail,
             });
         });
     }
@@ -30,7 +30,7 @@ export async function showDeviceSelectorMenu() {
         desktop,
         activeDevice,
         activeComputerDevice,
-        activeWebPlayerDevice
+        activeWebPlayerDevice,
     } = getDeviceSet();
 
     // show the launch desktop option if it's not already in the list
@@ -38,18 +38,18 @@ export async function showDeviceSelectorMenu() {
     if (!desktop) {
         items.push({
             label: "Launch Spotify desktop",
-            command: "musictime.launchSpotifyDesktop"
+            command: "musictime.launchSpotifyDesktop",
         });
     }
     if (!webPlayer) {
         items.push({
             label: "Launch Spotify web player",
-            command: "musictime.launchSpotify"
+            command: "musictime.launchSpotify",
         });
     }
     let menuOptions = {
         items,
-        placeholder: "Launch a Spotify device"
+        placeholder: "Launch a Spotify device",
     };
 
     const pick = await showQuickPick(menuOptions);

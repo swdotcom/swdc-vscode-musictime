@@ -150,12 +150,9 @@ export async function getMusicTimeUserStatus() {
     const jwt = getItem("jwt");
     const spotify_refresh_token = getItem("spotify_refresh_token");
 
-    if (jwt || spotify_refresh_token) {
+    if (jwt) {
         const api = "/users/plugin/state";
-        const additionalHeaders = spotify_refresh_token
-            ? { spotify_refresh_token }
-            : null;
-        const resp = await softwareGet(api, jwt, additionalHeaders);
+        const resp = await softwareGet(api, jwt);
         if (isResponseOk(resp) && resp.data) {
             // NOT_FOUND, ANONYMOUS, OK, UNKNOWN
             const state = resp.data.state ? resp.data.state : "UNKNOWN";
@@ -358,13 +355,20 @@ export async function populateSpotifyPlaylists() {
     await populatePlayerContext();
 }
 
-export async function populateSpotifyDevices() {
+export async function populateSpotifyDevices(tries = 2) {
     const devices = await MusicCommandUtil.getInstance().runSpotifyCommand(
         getSpotifyDevices
     );
 
     if (devices && devices.status && devices.status === 429) {
         // leave the current device set alone
+        // but try this function again in 7 seconds
+        if (tries > 0) {
+            tries--;
+            setTimeout(() => {
+                populateSpotifyDevices();
+            }, 7000);
+        }
         return;
     }
 
@@ -373,6 +377,8 @@ export async function populateSpotifyDevices() {
     // gather music to start things off
     setTimeout(() => {
         MusicStateManager.getInstance().gatherMusicInfoRequest();
+        // refresh the playlist to show the device button update
+        commands.executeCommand("musictime.refreshPlaylist");
     }, 1000);
 }
 

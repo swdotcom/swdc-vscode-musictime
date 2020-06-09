@@ -21,7 +21,7 @@ import {
 } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 import { MusicManager } from "./MusicManager";
-import { getItem } from "../Util";
+import { getItem, isMac } from "../Util";
 
 export class ProviderItemManager {
     private static instance: ProviderItemManager;
@@ -70,6 +70,9 @@ export class ProviderItemManager {
         if (activeDevice) {
             // found an active device
             msg = `Listening on ${activeDevice.name}`;
+        } else if (isMac() && desktop) {
+            // show that the desktop player is an active device
+            msg = `Listening on ${desktop.name}`;
         } else if (webPlayer) {
             // show that the web player is an active device
             msg = `Listening on ${webPlayer.name}`;

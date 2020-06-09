@@ -335,7 +335,6 @@ export function createCommands(): {
         async () => {
             if (!requiresSpotifyAccess()) {
                 await populateSpotifyDevices();
-                commands.executeCommand("musictime.refreshPlaylist");
             }
         }
     );
