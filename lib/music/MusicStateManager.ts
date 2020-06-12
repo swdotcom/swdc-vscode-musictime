@@ -23,10 +23,7 @@ import {
 } from "cody-music";
 import { MusicManager } from "./MusicManager";
 import { KpmController } from "../KpmController";
-import {
-    SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
-    DEFAULT_CURRENTLY_PLAYING_TRACK_CHECK_SECONDS,
-} from "../Constants";
+import { DEFAULT_CURRENTLY_PLAYING_TRACK_CHECK_SECONDS } from "../Constants";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { getDataRows } from "../OfflineManager";
 import { MusicDataManager } from "./MusicDataManager";
@@ -179,7 +176,7 @@ export class MusicStateManager {
             const deviceId = getDeviceId();
             const requiresAccess = requiresSpotifyAccess();
 
-            if (!isMac() || requiresAccess) {
+            if (requiresAccess) {
                 // either no device ID, requires spotify connection,
                 // or it's a windows device that is not online
                 return;
