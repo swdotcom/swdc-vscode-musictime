@@ -154,7 +154,7 @@ export class MusicCommandManager {
             requiresAccessToken || requiresReAuth ? true : false;
         const hasDeviceOrSong = pauseIt || playIt || foundDevice ? true : false;
 
-        if (isNonPremiumNonMacUser || requiresAuth || !hasDeviceOrSong) {
+        if (requiresAuth) {
             this.showLaunchPlayerControls();
         } else {
             if (pauseIt) {
@@ -254,13 +254,15 @@ export class MusicCommandManager {
             return;
         }
 
+        const trackName = trackInfo ? trackInfo.name : "";
         const songInfo = trackInfo
             ? `${trackInfo.name} (${trackInfo.artist})`
-            : null;
+            : "";
 
-        const isLiked = MusicDataManager.getInstance().isLikedTrack(
-            trackInfo.id
-        );
+        const isLiked =
+            trackInfo && trackInfo.id
+                ? MusicDataManager.getInstance().isLikedTrack(trackInfo.id)
+                : false;
 
         this._buttons.map((button) => {
             const btnCmd = button.statusBarItem.command;
@@ -291,8 +293,8 @@ export class MusicCommandManager {
                     button.statusBarItem.hide();
                 }
             } else if (currentSongButton) {
-                button.statusBarItem.tooltip = `(${trackInfo.name}) ${button.tooltip}`;
-                button.statusBarItem.text = getSongDisplayName(trackInfo.name);
+                button.statusBarItem.tooltip = `(${songInfo})`;
+                button.statusBarItem.text = getSongDisplayName(trackName);
                 button.statusBarItem.show();
             } else if (isPlayButton) {
                 if (songInfo) {
@@ -321,13 +323,15 @@ export class MusicCommandManager {
             return;
         }
 
+        const trackName = trackInfo ? trackInfo.name : "";
         const songInfo = trackInfo
             ? `${trackInfo.name} (${trackInfo.artist})`
-            : null;
+            : "";
 
-        const isLiked = MusicDataManager.getInstance().isLikedTrack(
-            trackInfo.id
-        );
+        const isLiked =
+            trackInfo && trackInfo.id
+                ? MusicDataManager.getInstance().isLikedTrack(trackInfo.id)
+                : false;
 
         this._buttons.map((button) => {
             const btnCmd = button.statusBarItem.command;
@@ -358,8 +362,8 @@ export class MusicCommandManager {
                     button.statusBarItem.hide();
                 }
             } else if (currentSongButton) {
-                button.statusBarItem.tooltip = `(${trackInfo.name}) ${button.tooltip}`;
-                button.statusBarItem.text = getSongDisplayName(trackInfo.name);
+                button.statusBarItem.tooltip = `(${songInfo})`;
+                button.statusBarItem.text = getSongDisplayName(trackName);
                 button.statusBarItem.show();
             } else if (isPauseButton) {
                 if (songInfo) {

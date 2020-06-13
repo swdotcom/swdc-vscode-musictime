@@ -23,6 +23,7 @@ import {
     setRepeatTrack,
     mute,
     unmute,
+    getTrack,
 } from "cody-music";
 import { window, ViewColumn, Uri, commands } from "vscode";
 import { MusicCommandManager } from "./MusicCommandManager";
@@ -79,6 +80,8 @@ const moment = require("moment-timezone");
 const clipboardy = require("clipboardy");
 const fs = require("fs");
 const dataMgr: MusicDataManager = MusicDataManager.getInstance();
+const musicCmdUtil: MusicCommandUtil = MusicCommandUtil.getInstance();
+const stateMgr: MusicStateManager = MusicStateManager.getInstance();
 
 const NO_DATA = `MUSIC TIME
     Listen to Spotify while coding to generate this playlist`;
@@ -89,8 +92,6 @@ export class MusicControlManager {
     private currentTrackToAdd: PlaylistItem = null;
 
     private static instance: MusicControlManager;
-    private musicCmdUtil: MusicCommandUtil = MusicCommandUtil.getInstance();
-    private stateMgr: MusicStateManager = MusicStateManager.getInstance();
 
     private constructor() {
         //
@@ -117,13 +118,11 @@ export class MusicControlManager {
         } else if (this.useSpotifyDesktop()) {
             await next(PlayerName.SpotifyDesktop);
         } else {
-            await this.musicCmdUtil.runSpotifyCommand(next, [
-                PlayerName.SpotifyWeb,
-            ]);
+            await musicCmdUtil.runSpotifyCommand(next, [PlayerName.SpotifyWeb]);
         }
 
         setTimeout(() => {
-            this.stateMgr.gatherMusicInfoRequest();
+            stateMgr.gatherMusicInfoRequest();
         }, 500);
     }
 
@@ -133,41 +132,70 @@ export class MusicControlManager {
         } else if (this.useSpotifyDesktop()) {
             await previous(PlayerName.SpotifyDesktop);
         } else {
-            await this.musicCmdUtil.runSpotifyCommand(previous, [
+            await musicCmdUtil.runSpotifyCommand(previous, [
                 PlayerName.SpotifyWeb,
             ]);
         }
 
         setTimeout(() => {
-            this.stateMgr.gatherMusicInfoRequest();
+            stateMgr.gatherMusicInfoRequest();
         }, 500);
     }
 
     /**
      * {status, state, statusText, message, data.status, error}
      */
-
-    async playSong() {
+    async playSong(tries = 0) {
         let result: any = null;
-        if (this.useSpotifyDesktop()) {
-            result = await play(PlayerName.SpotifyDesktop);
-        } else {
-            result = await this.musicCmdUtil.runSpotifyCommand(play, [
-                PlayerName.SpotifyWeb,
-            ]);
-        }
-
-        if (result && (result.status < 300 || result === "ok")) {
-            MusicCommandManager.syncControls(
-                dataMgr.runningTrack,
-                true,
-                TrackStatus.Playing
+        const deviceId = getDeviceId();
+        const controlMgr: MusicControlManager = MusicControlManager.getInstance();
+        if (!deviceId && tries === 1) {
+            // initiate the device selection prompt
+            await MusicManager.getInstance().playInitialization(
+                controlMgr.playSong
             );
-        }
+        } else {
+            if (!dataMgr.runningTrack || !dataMgr.runningTrack.id) {
+                dataMgr.runningTrack = await getTrack(PlayerName.SpotifyWeb);
+                if (!dataMgr.runningTrack || !dataMgr.runningTrack.id) {
+                    await stateMgr.updateRunningTrackToMostRecentlyPlayed();
+                    const result: any = await MusicCommandUtil.getInstance().runSpotifyCommand(
+                        play,
+                        [
+                            PlayerName.SpotifyWeb,
+                            {
+                                track_ids: [dataMgr.runningTrack.id],
+                                device_id: getDeviceId(),
+                                offset: 0,
+                            },
+                        ]
+                    );
+                    setTimeout(() => {
+                        stateMgr.gatherMusicInfoRequest();
+                    }, 3000);
+                }
+            } else {
+                if (controlMgr.useSpotifyDesktop()) {
+                    result = await play(PlayerName.SpotifyDesktop);
+                } else {
+                    result = await musicCmdUtil.runSpotifyCommand(play, [
+                        PlayerName.SpotifyWeb,
+                    ]);
+                }
 
-        setTimeout(() => {
-            this.stateMgr.gatherMusicInfoRequest();
-        }, 500);
+                if (result && (result.status < 300 || result === "ok")) {
+                    MusicCommandManager.syncControls(
+                        dataMgr.runningTrack,
+                        true,
+                        TrackStatus.Playing
+                    );
+                }
+
+                setTimeout(() => {
+                    stateMgr.gatherMusicInfoRequest();
+                }, 500);
+            }
+        }
     }
 
     async pauseSong() {
@@ -175,7 +203,7 @@ export class MusicControlManager {
         if (this.useSpotifyDesktop()) {
             result = await pause(PlayerName.SpotifyDesktop);
         } else {
-            result = await this.musicCmdUtil.runSpotifyCommand(pause, [
+            result = await musicCmdUtil.runSpotifyCommand(pause, [
                 PlayerName.SpotifyWeb,
             ]);
         }
@@ -189,7 +217,7 @@ export class MusicControlManager {
         }
 
         setTimeout(() => {
-            this.stateMgr.gatherMusicInfoRequest();
+            stateMgr.gatherMusicInfoRequest();
         }, 500);
     }
 
@@ -198,7 +226,7 @@ export class MusicControlManager {
         await setShuffle(PlayerName.SpotifyWeb, true, deviceId);
 
         setTimeout(() => {
-            this.stateMgr.gatherMusicInfoRequest();
+            stateMgr.gatherMusicInfoRequest();
         }, 500);
     }
 
@@ -207,7 +235,7 @@ export class MusicControlManager {
         await setShuffle(PlayerName.SpotifyWeb, false, deviceId);
 
         setTimeout(() => {
-            this.stateMgr.gatherMusicInfoRequest();
+            stateMgr.gatherMusicInfoRequest();
         }, 500);
     }
 
@@ -216,7 +244,7 @@ export class MusicControlManager {
         await setRepeatTrack(PlayerName.SpotifyWeb, deviceId);
 
         setTimeout(() => {
-            this.stateMgr.gatherMusicInfoRequest();
+            stateMgr.gatherMusicInfoRequest();
         }, 500);
     }
 
@@ -225,7 +253,7 @@ export class MusicControlManager {
         await setRepeatPlaylist(PlayerName.SpotifyWeb, deviceId);
 
         setTimeout(() => {
-            this.stateMgr.gatherMusicInfoRequest();
+            stateMgr.gatherMusicInfoRequest();
         }, 500);
     }
 
@@ -238,20 +266,16 @@ export class MusicControlManager {
         }
 
         setTimeout(() => {
-            this.stateMgr.gatherMusicInfoRequest();
+            stateMgr.gatherMusicInfoRequest();
         }, 500);
     }
 
     async setMuteOn() {
-        await this.musicCmdUtil.runSpotifyCommand(mute, [
-            PlayerName.SpotifyWeb,
-        ]);
+        await musicCmdUtil.runSpotifyCommand(mute, [PlayerName.SpotifyWeb]);
     }
 
     async setMuteOff() {
-        await this.musicCmdUtil.runSpotifyCommand(unmute, [
-            PlayerName.SpotifyWeb,
-        ]);
+        await musicCmdUtil.runSpotifyCommand(unmute, [PlayerName.SpotifyWeb]);
     }
 
     useSpotifyDesktop() {
@@ -311,7 +335,7 @@ export class MusicControlManager {
             }
 
             setTimeout(() => {
-                this.stateMgr.gatherMusicInfoRequest();
+                stateMgr.gatherMusicInfoRequest();
             }, 1500);
         }, 2000);
     }
@@ -369,7 +393,7 @@ export class MusicControlManager {
             }
 
             setTimeout(() => {
-                this.stateMgr.gatherMusicInfoRequest();
+                stateMgr.gatherMusicInfoRequest();
             }, 1500);
         }, 2000);
     }
@@ -456,7 +480,7 @@ export class MusicControlManager {
         commands.executeCommand("musictime.refreshPlaylist");
 
         setTimeout(() => {
-            this.stateMgr.gatherMusicInfoRequest();
+            stateMgr.gatherMusicInfoRequest();
         }, 1000);
     }
 

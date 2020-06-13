@@ -125,7 +125,7 @@ export function createCommands(): {
     // PLAY CMD
     cmds.push(
         commands.registerCommand("musictime.play", async () => {
-            controller.playSong();
+            controller.playSong(1);
         })
     );
 

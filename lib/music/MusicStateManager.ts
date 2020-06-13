@@ -20,6 +20,8 @@ import {
     getSpotifyTrackById,
     getTrack,
     PlayerName,
+    CodyResponse,
+    getSpotifyRecentlyPlayedBefore,
 } from "cody-music";
 import { MusicManager } from "./MusicManager";
 import { KpmController } from "../KpmController";
@@ -29,6 +31,8 @@ import { getDataRows } from "../OfflineManager";
 import { MusicDataManager } from "./MusicDataManager";
 import { commands } from "vscode";
 import { getDeviceId, requiresSpotifyAccess } from "./MusicUtil";
+
+const moment = require("moment-timezone");
 
 export class MusicStateManager {
     static readonly WINDOWS_SPOTIFY_TRACK_FIND: string =
@@ -632,5 +636,17 @@ export class MusicStateManager {
             return true;
         }
         return false;
+    }
+
+    public async updateRunningTrackToMostRecentlyPlayed() {
+        // get the most recently played track
+        const before = moment().utc().valueOf();
+        const resp: CodyResponse = await getSpotifyRecentlyPlayedBefore(
+            1,
+            before
+        );
+        if (resp && resp.data && resp.data.tracks && resp.data.tracks.length) {
+            MusicDataManager.getInstance().runningTrack = resp.data.tracks[0];
+        }
     }
 }
