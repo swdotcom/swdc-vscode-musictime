@@ -935,8 +935,20 @@ export class MusicManager {
             quietly: false,
         };
 
+        const hasSelectedTrackItem =
+            this.dataMgr.selectedTrackItem && this.dataMgr.selectedTrackItem.id
+                ? true
+                : false;
+        const hasSelectedPlaylistItem =
+            this.dataMgr.selectedPlaylist && this.dataMgr.selectedPlaylist.id
+                ? true
+                : false;
+
         const isPremiumUser = MusicManager.getInstance().isSpotifyPremium();
-        if (!isPremiumUser) {
+        if (
+            !isPremiumUser &&
+            (hasSelectedTrackItem || hasSelectedPlaylistItem)
+        ) {
             // show the track or playlist
             const isRecommendationTrack =
                 this.dataMgr.selectedTrackItem.type === "recommendation"
@@ -948,7 +960,10 @@ export class MusicManager {
                     SPOTIFY_LIKED_SONGS_PLAYLIST_NAME
                     ? true
                     : false;
-            if (isRecommendationTrack || isLikedSong) {
+            if (
+                hasSelectedTrackItem &&
+                (isRecommendationTrack || isLikedSong)
+            ) {
                 options["track_id"] = this.dataMgr.selectedTrackItem.id;
             } else {
                 options["playlist_id"] = this.dataMgr.selectedPlaylist.id;
@@ -995,6 +1010,13 @@ export class MusicManager {
                 //     // transfer to the device
                 //     await transferSpotifyDevice(deviceId, false);
                 // }
+
+                const deviceId = getDeviceId();
+                if (!deviceId) {
+                    window.showInformationMessage(
+                        "Unable to detect a connected Spotify device. Please make sure you are logged into your account."
+                    );
+                }
 
                 commands.executeCommand("musictime.refreshDeviceInfo");
 

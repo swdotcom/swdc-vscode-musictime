@@ -92,11 +92,6 @@ export class MusicCommandUtil {
             resp.error.response.data.error
         ) {
             const err = resp.error.response.data.error;
-            if (err.status === 403) {
-                // "Command failed: Restriction violated"
-                // just return null
-                return null;
-            }
             return err;
         }
         return null;
