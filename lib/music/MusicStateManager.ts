@@ -187,7 +187,11 @@ export class MusicStateManager {
             }
 
             // check if we've set the existing device id but don't have a device
-            if ((!this.existingTrack || !this.existingTrack.id) && !deviceId) {
+            if (
+                (!this.existingTrack || !this.existingTrack.id) &&
+                !deviceId &&
+                !isMac()
+            ) {
                 // no existing track and no device, skip checking
                 return;
             }
@@ -197,7 +201,7 @@ export class MusicStateManager {
                 // fetch from the desktop
                 playingTrack = await getTrack(PlayerName.SpotifyDesktop);
                 // applescript doesn't always return a name
-                if (!playingTrack || !playingTrack.name) {
+                if (deviceId && (!playingTrack || !playingTrack.name)) {
                     playingTrack = await getTrack(PlayerName.SpotifyWeb);
                 }
             } else {

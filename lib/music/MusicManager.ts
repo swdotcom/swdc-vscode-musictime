@@ -18,7 +18,6 @@ import {
     playSpotifyDevice,
     playSpotifyTrack,
     PlayerContext,
-    transferSpotifyDevice,
     playSpotifyPlaylist,
     play,
     playTrackInContext,
@@ -55,11 +54,7 @@ import {
 } from "../Util";
 import { isResponseOk, softwareGet, softwarePost } from "../HttpClient";
 import { MusicCommandManager } from "./MusicCommandManager";
-import {
-    MusicControlManager,
-    disconnectSpotify,
-    connectSpotify,
-} from "./MusicControlManager";
+import { MusicControlManager, disconnectSpotify } from "./MusicControlManager";
 import { ProviderItemManager } from "./ProviderItemManager";
 import {
     sortPlaylists,
@@ -924,7 +919,22 @@ export class MusicManager {
             activeDesktopPlayerDevice,
         } = getDeviceSet();
 
-        if (activeDesktopPlayerDevice || desktop) {
+        const isPremiumUser = MusicManager.getInstance().isSpotifyPremium();
+        const isMacUser = isMac();
+
+        const hasDesktopDevice =
+            activeDesktopPlayerDevice || desktop ? true : false;
+
+        const requiresDesktopLaunch =
+            !isPremiumUser && isMac() && !hasDesktopDevice ? true : false;
+
+        if (requiresDesktopLaunch && playerName !== PlayerName.SpotifyDesktop) {
+            window.showInformationMessage(
+                "Launching Spotify desktop instead of the web player to allow playback as a non-premium account"
+            );
+        }
+
+        if (requiresDesktopLaunch || playerName === PlayerName.SpotifyWeb) {
             playerName = PlayerName.SpotifyDesktop;
         } else {
             playerName = PlayerName.SpotifyWeb;
@@ -944,7 +954,6 @@ export class MusicManager {
                 ? true
                 : false;
 
-        const isPremiumUser = MusicManager.getInstance().isSpotifyPremium();
         if (
             !isPremiumUser &&
             (hasSelectedTrackItem || hasSelectedPlaylistItem)
@@ -972,7 +981,7 @@ export class MusicManager {
 
         // spotify device launch error would look like this...
         // error:"Command failed: open -a spotify\nUnable to find application named 'spotify'\n"
-        let result = await launchPlayer(playerName, options);
+        const result = await launchPlayer(playerName, options);
 
         // test if there was an error, fallback to the web player
         if (
@@ -1012,7 +1021,7 @@ export class MusicManager {
                 // }
 
                 const deviceId = getDeviceId();
-                if (!deviceId) {
+                if (!deviceId && !isMac()) {
                     window.showInformationMessage(
                         "Unable to detect a connected Spotify device. Please make sure you are logged into your account."
                     );

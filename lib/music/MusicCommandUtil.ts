@@ -1,10 +1,11 @@
 import { window } from "vscode";
 import { accessExpired } from "cody-music";
-import { disconnectSpotify, connectSpotify } from "./MusicControlManager";
+import { disconnectSpotify } from "./MusicControlManager";
 import { getItem } from "../Util";
-import { access } from "fs";
 import { showReconnectPrompt } from "./MusicUtil";
 import { getMusicTimeUserStatus } from "../DataController";
+import { MusicManager } from "./MusicManager";
+import { MusicDataManager } from "./MusicDataManager";
 
 export class MusicCommandUtil {
     private static instance: MusicCommandUtil;
@@ -92,7 +93,13 @@ export class MusicCommandUtil {
             resp.error.response.data.error
         ) {
             const err = resp.error.response.data.error;
-            return err;
+            const dataMgr: MusicDataManager = MusicDataManager.getInstance();
+            if (
+                !dataMgr.spotifyUser ||
+                dataMgr.spotifyUser.product !== "premium"
+            ) {
+                return err;
+            }
         }
         return null;
     }
