@@ -934,7 +934,7 @@ export class MusicManager {
             );
         }
 
-        if (requiresDesktopLaunch || playerName === PlayerName.SpotifyWeb) {
+        if (requiresDesktopLaunch || playerName === PlayerName.SpotifyDesktop) {
             playerName = PlayerName.SpotifyDesktop;
         } else {
             playerName = PlayerName.SpotifyWeb;
