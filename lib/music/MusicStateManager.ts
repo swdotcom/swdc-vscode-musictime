@@ -397,8 +397,6 @@ export class MusicStateManager {
             return;
         }
 
-        let genre = songSession.genre;
-
         const trackCacheId = `cached_track_info_${songSession.id}`;
         const cachedTrack: Track = cacheMgr.get(`cached_track_info_${songSession.id}`);
         let fullTrackP: Promise<Track> = null;
@@ -408,9 +406,7 @@ export class MusicStateManager {
             songSession["album"] = cachedTrack.album;
             songSession["features"] = cachedTrack.features;
             songSession["artists"] = cachedTrack.artists;
-            if (!genre) {
-                songSession["genre"] = cachedTrack.genre;
-            }
+            songSession["genre"] = cachedTrack.genre;
         } else {
             // fetch the full track or genre
             // just fetch the entire track
@@ -495,9 +491,7 @@ export class MusicStateManager {
                 songSession["album"] = fullTrack.album;
                 songSession["features"] = fullTrack.features;
                 songSession["artists"] = fullTrack.artists;
-                if (!genre) {
-                    songSession["genre"] = fullTrack.genre;
-                }
+                songSession["genre"] = fullTrack.genre;
 
                 // cache the full track in case its played again within 8 hours
                 cacheMgr.set(trackCacheId, fullTrack, 60 * 60 * 8);
