@@ -356,7 +356,8 @@ export async function populateSpotifyDevices(isDeviceLaunch = false) {
         // try one more time in lazily since its not a device launch request.
         // the device launch requests retries a few times every couple seconds.
         setTimeout(() => {
-            populateSpotifyDevices();
+            // use true to specify its a device launch so this doens't try continuously
+            populateSpotifyDevices(true);
         }, 8000);
         return;
     }
