@@ -31,6 +31,9 @@ import { getDataRows } from "../OfflineManager";
 import { MusicDataManager } from "./MusicDataManager";
 import { commands } from "vscode";
 import { getDeviceId, requiresSpotifyAccess } from "./MusicUtil";
+import { CacheManager } from "../cache/CacheManager";
+
+const cacheMgr: CacheManager = CacheManager.getInstance();
 
 const moment = require("moment-timezone");
 
@@ -394,12 +397,18 @@ export class MusicStateManager {
             return;
         }
 
-        let genre = songSession.genre;
-        let genreP: Promise<string> = null;
+        const trackCacheId = `cached_track_info_${songSession.id}`;
+        const cachedTrack: Track = cacheMgr.get(`cached_track_info_${songSession.id}`);
         let fullTrackP: Promise<Track> = null;
 
-        // fetch the full track or genre
-        if (songSession.type === "spotify") {
+        if (cachedTrack) {
+            // use what is in the cache
+            songSession["album"] = cachedTrack.album;
+            songSession["features"] = cachedTrack.features;
+            songSession["artists"] = cachedTrack.artists;
+            songSession["genre"] = cachedTrack.genre;
+        } else {
+            // fetch the full track or genre
             // just fetch the entire track
             fullTrackP = getSpotifyTrackById(
                 songSession.id,
@@ -407,18 +416,6 @@ export class MusicStateManager {
                 true /*includeAudioFeatures*/,
                 true /*includeGenre*/
             );
-        } else if (!genre) {
-            // fetch the genre
-            const artistName = MusicManager.getInstance().getArtist(
-                songSession
-            );
-            const songName = songSession.name;
-            const artistId =
-                songSession.artists && songSession.artists.length
-                    ? songSession.artists[0].id
-                    : "";
-            // async
-            genreP = getGenre(artistName, songName, artistId);
         }
 
         // add any file payloads we found
@@ -487,21 +484,17 @@ export class MusicStateManager {
         );
 
         // await for either promise, whichever one is available
-        const fullTrack = await fullTrackP;
-        if (fullTrack && fullTrack.album) {
-            // update the tracks with the result
-            songSession["album"] = fullTrack.album;
-            songSession["features"] = fullTrack.features;
-            songSession["artists"] = fullTrack.artists;
-            if (!genre) {
+        if (fullTrackP) {
+            const fullTrack = await fullTrackP;
+            if (fullTrack && fullTrack.album) {
+                // update the tracks with the result
+                songSession["album"] = fullTrack.album;
+                songSession["features"] = fullTrack.features;
+                songSession["artists"] = fullTrack.artists;
                 songSession["genre"] = fullTrack.genre;
-            }
-        }
 
-        if (!songSession.genre) {
-            genre = await genreP;
-            if (genre) {
-                songSession["genre"] = genre;
+                // cache the full track in case its played again within 8 hours
+                cacheMgr.set(trackCacheId, fullTrack, 60 * 60 * 8);
             }
         }
 

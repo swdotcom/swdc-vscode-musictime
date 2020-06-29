@@ -21,18 +21,16 @@ import {
     PlayerContext,
     getSpotifyPlayerContext,
     getUserProfile,
-    requiresSpotifyAccessInfo,
 } from "cody-music";
 import { MusicManager } from "./music/MusicManager";
 import { MusicDataManager } from "./music/MusicDataManager";
-import { CacheManager } from "./cache/CacheManager";
 import { MusicCommandUtil } from "./music/MusicCommandUtil";
 import { MusicCommandManager } from "./music/MusicCommandManager";
 import { MusicStateManager } from "./music/MusicStateManager";
 import { requiresSpotifyAccess } from "./music/MusicUtil";
+
 const moment = require("moment-timezone");
 
-const cacheMgr: CacheManager = CacheManager.getInstance();
 
 let loggedInCacheState = null;
 let toggleFileEventLogging = null;
@@ -66,19 +64,13 @@ export function getToggleFileEventLoggingState() {
 }
 
 export async function serverIsAvailable() {
-    let serverAvailable = cacheMgr.get("serverAvailable") || null;
-    if (serverAvailable === null) {
-        serverAvailable = await softwareGet("/ping", null)
-            .then((result) => {
-                return isResponseOk(result);
-            })
-            .catch((e) => {
-                return false;
-            });
-    }
-    if (serverAvailable !== null) {
-        cacheMgr.set("serverAvailable", serverAvailable);
-    }
+    let serverAvailable = await softwareGet("/ping", null)
+        .then((result) => {
+            return isResponseOk(result);
+        })
+        .catch((e) => {
+            return false;
+        });
     return serverAvailable;
 }
 
@@ -320,9 +312,6 @@ export async function populateSpotifyPlaylists() {
     dataMgr.origRawPlaylistOrder = [];
     dataMgr.rawPlaylists = [];
 
-    // fire off the populate spotify devices
-    await populateSpotifyDevices();
-
     // fetch music time app saved playlists
     await dataMgr.fetchSavedPlaylists();
 
@@ -355,20 +344,18 @@ export async function populateSpotifyPlaylists() {
     await populatePlayerContext();
 }
 
-export async function populateSpotifyDevices(tries = 2) {
+export async function populateSpotifyDevices(isDeviceLaunch = false) {
     const devices = await MusicCommandUtil.getInstance().runSpotifyCommand(
         getSpotifyDevices
     );
 
-    if (devices && devices.status && devices.status === 429) {
-        // leave the current device set alone
-        // but try this function again in 7 seconds
-        if (tries > 0) {
-            tries--;
-            setTimeout(() => {
-                populateSpotifyDevices();
-            }, 7000);
-        }
+    if (devices.status && devices.status === 429 && !isDeviceLaunch) {
+        // try one more time in lazily since its not a device launch request.
+        // the device launch requests retries a few times every couple seconds.
+        setTimeout(() => {
+            // use true to specify its a device launch so this doens't try continuously
+            populateSpotifyDevices(true);
+        }, 8000);
         return;
     }
 

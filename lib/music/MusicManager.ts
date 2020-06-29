@@ -178,7 +178,7 @@ export class MusicManager {
         let hasPlaylists = playlists.length ? true : false;
         let hasLikedSongs: boolean =
             this.dataMgr.spotifyLikedSongs &&
-            this.dataMgr.spotifyLikedSongs.length
+                this.dataMgr.spotifyLikedSongs.length
                 ? true
                 : false;
 
@@ -297,7 +297,7 @@ export class MusicManager {
                 // build tracks for recommendations if none found
                 const hasTracksForRecs =
                     this.dataMgr.trackIdsForRecommendations &&
-                    this.dataMgr.trackIdsForRecommendations.length
+                        this.dataMgr.trackIdsForRecommendations.length
                         ? true
                         : false;
                 if (!hasTracksForRecs) {
@@ -882,7 +882,10 @@ export class MusicManager {
             } else {
                 // initialize the user and devices
                 await populateSpotifyUser();
-                await populateSpotifyDevices();
+                setTimeout(() => {
+                    // populate spotify devices lazily
+                    populateSpotifyDevices();
+                }, 2000);
             }
         }
 
@@ -965,7 +968,7 @@ export class MusicManager {
                     : false;
             const isLikedSong =
                 this.dataMgr.selectedPlaylist &&
-                this.dataMgr.selectedPlaylist.name ===
+                    this.dataMgr.selectedPlaylist.name ===
                     SPOTIFY_LIKED_SONGS_PLAYLIST_NAME
                     ? true
                     : false;
@@ -1006,19 +1009,12 @@ export class MusicManager {
         callback: any = null
     ) {
         setTimeout(async () => {
-            await populateSpotifyDevices();
+            await populateSpotifyDevices(true);
             const devices = this.dataMgr.currentDevices;
             if ((!devices || devices.length == 0) && tries > 0) {
                 tries--;
                 this.checkDeviceLaunch(playerName, tries, callback);
             } else {
-                // it should only have either the desktop or web device available
-                // since this is part of the check device launch path
-                // const deviceId = getDeviceId();
-                // if (!activeComputerDevice && !activeWebPlayerDevice) {
-                //     // transfer to the device
-                //     await transferSpotifyDevice(deviceId, false);
-                // }
 
                 const deviceId = getDeviceId();
                 if (!deviceId && !isMac()) {
@@ -1035,7 +1031,7 @@ export class MusicManager {
                     }, 1000);
                 }
             }
-        }, 1500);
+        }, 2000);
     }
 
     async isLikedSong() {
@@ -1298,7 +1294,7 @@ export class MusicManager {
 
         const isLikedSong =
             this.dataMgr.selectedPlaylist &&
-            this.dataMgr.selectedPlaylist.name ===
+                this.dataMgr.selectedPlaylist.name ===
                 SPOTIFY_LIKED_SONGS_PLAYLIST_NAME
                 ? true
                 : false;
