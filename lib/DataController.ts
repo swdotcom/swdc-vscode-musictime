@@ -312,9 +312,6 @@ export async function populateSpotifyPlaylists() {
     dataMgr.origRawPlaylistOrder = [];
     dataMgr.rawPlaylists = [];
 
-    // fire off the populate spotify devices
-    // await populateSpotifyDevices();
-
     // fetch music time app saved playlists
     await dataMgr.fetchSavedPlaylists();
 
