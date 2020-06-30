@@ -23,8 +23,9 @@ import {
     CodyResponse,
     CodyResponseType,
 } from "cody-music";
-const moment = require("moment-timezone");
 
+const fileIt = require("file-it");
+const moment = require("moment-timezone");
 const open = require("open");
 const { exec } = require("child_process");
 const fs = require("fs");
@@ -202,25 +203,11 @@ export function validateEmail(email) {
 }
 
 export function setItem(key, value) {
-    const jsonObj = getSoftwareSessionAsJson();
-    jsonObj[key] = value;
-
-    const content = JSON.stringify(jsonObj);
-
-    const sessionFile = getSoftwareSessionFile();
-    fs.writeFileSync(sessionFile, content, (err) => {
-        if (err)
-            logIt(`Error writing to the Software session file: ${err.message}`);
-    });
+    fileIt.setJsonValue(getSoftwareSessionFile(), key, value);
 }
 
 export function getItem(key) {
-    const jsonObj = getSoftwareSessionAsJson();
-    const val = jsonObj[key];
-    if (val !== undefined && val !== null) {
-        return val;
-    }
-    return null;
+    return fileIt.getJsonValue(getSoftwareSessionFile(), key);
 }
 
 export function isEmptyObj(obj) {
@@ -445,21 +432,11 @@ export function getExtensionDisplayName() {
     } else {
         extInfoFile += "/extensioninfo.json";
     }
-    if (fs.existsSync(extInfoFile)) {
-        const content = fs
-            .readFileSync(extInfoFile, { encoding: "utf8" })
-            .toString();
-        if (content) {
-            try {
-                const data = JSON.parse(content);
-                if (data) {
-                    extensionDisplayName = data.displayName;
-                }
-            } catch (e) {
-                logIt(`unable to read ext info name: ${e.message}`);
-            }
-        }
+    const data = fileIt.readJsonFileSync(extInfoFile);
+    if (data) {
+        extensionDisplayName = data.displayName;
     }
+
     if (!extensionDisplayName) {
         extensionDisplayName = "Music Time";
     }
@@ -476,20 +453,10 @@ export function getExtensionName() {
     } else {
         extInfoFile += "/extensioninfo.json";
     }
-    if (fs.existsSync(extInfoFile)) {
-        const content = fs
-            .readFileSync(extInfoFile, { encoding: "utf8" })
-            .toString();
-        if (content) {
-            try {
-                const data = JSON.parse(content);
-                if (data) {
-                    extensionName = data.name;
-                }
-            } catch (e) {
-                logIt(`unable to read ext info name: ${e.message}`);
-            }
-        }
+
+    const data = fileIt.readJsonFileSync(extInfoFile);
+    if (data) {
+        extensionName = data.name;
     }
     if (!extensionName) {
         extensionName = "music-time";
@@ -509,24 +476,7 @@ export function logIt(message) {
 }
 
 export function getSoftwareSessionAsJson() {
-    let data = null;
-
-    const sessionFile = getSoftwareSessionFile();
-    if (fs.existsSync(sessionFile)) {
-        const content = fs
-            .readFileSync(sessionFile, { encoding: "utf8" })
-            .toString();
-        if (content) {
-            try {
-                data = JSON.parse(content);
-            } catch (e) {
-                logIt(`unable to read session info: ${e.message}`);
-                // error trying to read the session file, delete it
-                deleteFile(sessionFile);
-                data = {};
-            }
-        }
-    }
+    let data = fileIt.readJsonFileSync(getSoftwareSessionFile());
     return data ? data : {};
 }
 
@@ -569,31 +519,7 @@ export function getNowTimes() {
 }
 
 export function storePayload(payload) {
-    // store the payload into the data.json file
-    const file = getSoftwareDataStoreFile();
-
-    // also store the payload into the data.json file
-    try {
-        fs.appendFileSync(file, JSON.stringify(payload) + os.EOL);
-    } catch (err) {
-        logIt(
-            `Error appending to the code time data store file: ${err.message}`
-        );
-    }
-}
-
-export function storeMusicSessionPayload(songSession) {
-    // store the payload into the data.json file
-    const file = getSongSessionDataFile();
-
-    // also store the payload into the songSessionData.json file
-    try {
-        fs.appendFileSync(file, JSON.stringify(songSession) + os.EOL);
-    } catch (err) {
-        logIt(
-            `Error appending to the music session data store file: ${err.message}`
-        );
-    }
+    fileIt.appendJsonFileSync(getSoftwareDataStoreFile(), payload);
 }
 
 export function randomCode() {

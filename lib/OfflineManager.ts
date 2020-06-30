@@ -1,5 +1,4 @@
 import {
-    logIt,
     getSoftwareDir,
     isWindows,
     deleteFile,
@@ -7,8 +6,8 @@ import {
     getItem,
 } from "./Util";
 import { DEFAULT_SESSION_THRESHOLD_SECONDS } from "./Constants";
-import { serverIsAvailable } from "./DataController";
-const fs = require("fs");
+
+const fileIt = require("file-it");
 
 /**
  * {
@@ -18,7 +17,7 @@ const fs = require("fs");
     "currentDayKeystrokes": 49,
     "liveshareMinutes": null
     }
-    */
+*/
 let sessionSummaryData = {
     currentDayMinutes: 0,
     averageDailyMinutes: 0,
@@ -91,36 +90,11 @@ export function getSessionSummaryFile() {
 }
 
 export function saveSessionSummaryToDisk(sessionSummaryData) {
-    try {
-        // JSON.stringify(data, replacer, number of spaces)
-        const content = JSON.stringify(sessionSummaryData, null, 4);
-        fs.writeFileSync(getSessionSummaryFile(), content, (err) => {
-            if (err)
-                logIt(
-                    `Deployer: Error writing session summary data: ${err.message}`
-                );
-        });
-    } catch (e) {
-        //
-    }
+    fileIt.writeJsonFileSync(getSessionSummaryFile(), sessionSummaryData, { spaces: 4 });
 }
 
 export function getSessionSummaryFileAsJson() {
-    let data = null;
-    let file = getSessionSummaryFile();
-    if (fs.existsSync(file)) {
-        const content = fs.readFileSync(file, { encoding: "utf8" }).toString();
-        if (content) {
-            try {
-                data = JSON.parse(content);
-            } catch (e) {
-                logIt(`unable to read session info: ${e.message}`);
-                // error trying to read the session file, delete it
-                deleteFile(file);
-                data = {};
-            }
-        }
-    }
+    let data = fileIt.readJsonFileSync(getSessionSummaryFile());
     return data ? data : {};
 }
 
@@ -129,44 +103,11 @@ export function getSessionSummaryFileAsJson() {
  * @param file
  */
 export async function getDataRows(file, deleteAfterRead = true) {
-    const isonline = await serverIsAvailable();
-    if (!isonline) {
-        return [];
+    const payloads = fileIt.readJsonLinesSync(file);
+    if (payloads && payloads.length && deleteAfterRead) {
+        deleteFile(file);
     }
-    try {
-        if (fs.existsSync(file)) {
-            const content = fs
-                .readFileSync(file, { encoding: "utf8" })
-                .toString();
-            // we're online so just delete the file
-            if (deleteAfterRead) {
-                deleteFile(file);
-            }
-            if (content) {
-                const payloads = content
-                    .split(/\r?\n/)
-                    .map((item) => {
-                        let obj = null;
-                        if (item) {
-                            try {
-                                obj = JSON.parse(item);
-                            } catch (e) {
-                                //
-                            }
-                        }
-                        if (obj) {
-                            return obj;
-                        }
-                    })
-                    .filter((item) => item)
-                    .map((item) => item);
-                return payloads;
-            }
-        }
-    } catch (e) {
-        logIt(`Unable to read data file ${file}: ${e.message}`);
-    }
-    return [];
+    return payloads;
 }
 
 export function getCurrentPayloadFile() {
@@ -180,19 +121,6 @@ export function getCurrentPayloadFile() {
 }
 
 export function getCurrentPayload() {
-    let data = null;
-
-    const file = getCurrentPayloadFile();
-    if (fs.existsSync(file)) {
-        const content = fs.readFileSync(file, { encoding: "utf8" }).toString();
-        if (content) {
-            try {
-                data = JSON.parse(content);
-            } catch (e) {
-                logIt(`unable to read file info: ${e.message}`);
-                data = {};
-            }
-        }
-    }
+    let data = fileIt.readJsonFileSync(getCurrentPayloadFile());
     return data ? data : {};
 }

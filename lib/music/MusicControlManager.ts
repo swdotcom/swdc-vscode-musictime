@@ -76,6 +76,7 @@ import {
 import { MusicDataManager } from "./MusicDataManager";
 import { MusicCommandUtil } from "./MusicCommandUtil";
 
+const fileIt = require("file-it");
 const moment = require("moment-timezone");
 const clipboardy = require("clipboardy");
 const fs = require("fs");
@@ -816,9 +817,7 @@ export async function displayMusicTimeMetricsMarkdownDashboard() {
         }
     );
 
-    const content = fs
-        .readFileSync(musicTimeFile, { encoding: "utf8" })
-        .toString();
+    const content = fileIt.readContentFileSync(musicTimeFile);
     panel.webview.html = content;
 }
 
@@ -876,9 +875,9 @@ export async function disconnectSlack(confirmDisconnect = true) {
 export async function disconnectOauth(type: string, confirmDisconnect = true) {
     const selection = confirmDisconnect
         ? await window.showInformationMessage(
-              `Are you sure you would like to disconnect ${type}?`,
-              ...[YES_LABEL]
-          )
+            `Are you sure you would like to disconnect ${type}?`,
+            ...[YES_LABEL]
+        )
         : YES_LABEL;
 
     if (selection === YES_LABEL) {
@@ -941,11 +940,5 @@ async function fetchDashboardData(fileName: string, isHtml: boolean) {
     let content =
         musicSummary && musicSummary.data ? musicSummary.data : NO_DATA;
 
-    fs.writeFileSync(fileName, content, (err) => {
-        if (err) {
-            logIt(
-                `Error writing to the Software dashboard file: ${err.message}`
-            );
-        }
-    });
+    fileIt.writeContentFileSync(fileName, content);
 }
