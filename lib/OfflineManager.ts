@@ -102,11 +102,8 @@ export function getSessionSummaryFileAsJson() {
  * Fetch the data rows of a given file
  * @param file
  */
-export async function getDataRows(file, deleteAfterRead = true) {
+export async function getDataRows(file) {
     const payloads = fileIt.readJsonLinesSync(file);
-    if (payloads && payloads.length && deleteAfterRead) {
-        deleteFile(file);
-    }
     return payloads;
 }
 

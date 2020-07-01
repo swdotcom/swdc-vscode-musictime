@@ -377,10 +377,7 @@ export class MusicStateManager {
         const latestPayload = await KpmController.getInstance().sendKeystrokeDataIntervalHandler();
 
         // get the rows from the music data file
-        let payloads = await getDataRows(
-            getSoftwareDataStoreFile(),
-            false /*deleteAfterRead*/
-        );
+        let payloads = await getDataRows(getSoftwareDataStoreFile());
         if (!payloads) {
             payloads = [];
         }

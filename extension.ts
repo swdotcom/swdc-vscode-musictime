@@ -104,6 +104,13 @@ export async function intializePlugin(ctx: ExtensionContext) {
         musicStateMgr.trackEndCheck();
     }, 5000);
 
+    setTimeout(() => {
+        if (!codeTimeExtInstalled()) {
+            // send the offline code time data
+            KpmController.getInstance().processOfflineKeystrokes();
+        }
+    }, 5000);
+
     // show the readme if it doesn't exist
     displayReadmeIfNotExists();
 

@@ -14,13 +14,14 @@ import {
     getSoftwareDataStoreFile,
     codeTimeExtInstalled,
     isFileOpen,
+    deleteFile,
 } from "./Util";
 import {
     getRepoContributorInfo,
     getRepoFileCount,
     getFileContributorCount,
 } from "./KpmRepoManager";
-import { sendBatchPayload } from "./DataController";
+import { sendBatchPayload, serverIsAvailable } from "./DataController";
 import { getDataRows, getCurrentPayload } from "./OfflineManager";
 
 const NO_PROJ_NAME = "Unnamed";
@@ -29,7 +30,7 @@ let _keystrokeMap = {};
 let _staticInfoMap = {};
 
 // batch offline payloads in 50. backend has a 100k body limit
-const batch_limit = 5;
+const batch_limit = 50;
 
 export class KpmController {
     private static instance: KpmController;
@@ -532,20 +533,25 @@ export class KpmController {
      * Processes code time payloads if code time is not installed
      */
     public async processOfflineKeystrokes() {
-        const payloads = await getDataRows(getSoftwareDataStoreFile());
-        if (payloads && payloads.length > 0) {
-            // build the aggregated payload
-            // send 50 at a time
-            let batch = [];
-            for (let i = 0; i < payloads.length; i++) {
-                if (batch.length >= batch_limit) {
-                    await sendBatchPayload(batch);
-                    batch = [];
+        const isOnline = await serverIsAvailable();
+        if (isOnline) {
+            const payloads = await getDataRows(getSoftwareDataStoreFile());
+            if (payloads && payloads.length > 0) {
+                // build the aggregated payload
+                // send 50 at a time
+                let batch = [];
+                for (let i = 0; i < payloads.length; i++) {
+                    if (batch.length >= batch_limit) {
+                        await sendBatchPayload(batch);
+                        batch = [];
+                    }
+                    batch.push(payloads[i]);
                 }
-                batch.push(payloads[i]);
-            }
-            if (batch.length > 0) {
-                await sendBatchPayload(batch);
+                if (batch.length > 0) {
+                    await sendBatchPayload(batch);
+                }
+
+                deleteFile(getSoftwareDataStoreFile());
             }
         }
     }
