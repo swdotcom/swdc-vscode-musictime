@@ -387,7 +387,7 @@ export class MusicStateManager {
         }
 
         // 10 second minimum threshold
-        const isValidSession = songSession.end - songSession.start > 10;
+        const isValidSession = songSession.end - songSession.start > 20;
 
         if (!isValidSession) {
             // the song did not play long enough to constitute as a valid session
@@ -396,6 +396,19 @@ export class MusicStateManager {
 
         const trackCacheId = `cached_track_info_${songSession.id}`;
         const cachedTrack: Track = cacheMgr.get(`cached_track_info_${songSession.id}`);
+
+        if (cachedTrack) {
+            if (cachedTrack.played_at_utc_seconds && songSession.start - cachedTrack.played_at_utc_seconds < 60) {
+                // it's less than a minute since the last time this song has played
+                return;
+            }
+            // update the start
+            cachedTrack.played_at_utc_seconds = songSession.start;
+
+            // update the full track in case its played again within 8 hours
+            cacheMgr.set(trackCacheId, cachedTrack, 60 * 60 * 8);
+        }
+
         let fullTrackP: Promise<Track> = null;
 
         if (cachedTrack) {
@@ -489,6 +502,8 @@ export class MusicStateManager {
                 songSession["features"] = fullTrack.features;
                 songSession["artists"] = fullTrack.artists;
                 songSession["genre"] = fullTrack.genre;
+
+                fullTrack.played_at_utc_seconds = songSession.start;
 
                 // cache the full track in case its played again within 8 hours
                 cacheMgr.set(trackCacheId, fullTrack, 60 * 60 * 8);
