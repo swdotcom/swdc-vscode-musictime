@@ -1,7 +1,7 @@
 {
     "name": "music-time",
     "displayName": "Music Time for Spotify",
-    "version": "2.0.14",
+    "version": "2.0.15",
     "publisher": "softwaredotcom",
     "description": "Music Time for Spotify is a VS Code extension that discovers the most productive music to listen to as you code.",
     "author": {
@@ -41,12 +41,15 @@
     "engines": {
         "vscode": "^1.35.0"
     },
-    "main": "./out/extension",
+    "main": "./dist/extension",
     "scripts": {
-        "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
         "lint": "tslint -p ./",
-        "watch": "tsc -watch -p ./"
+        "watch": "tsc -watch -p ./",
+        "vscode:prepublish": "webpack --mode production",
+        "webpack": "webpack --mode development",
+        "webpack-dev": "webpack --mode development --watch",
+        "test-compile": "tsc -p ./"
     },
     "contributes": {
         "commands": [
@@ -359,7 +362,12 @@
         "@types/mocha": "5.2.6",
         "@types/node": "12.0.4",
         "@types/vscode": "^1.35.0",
-        "typescript": "^3.5.1"
+        "copy-webpack-plugin": "^6.0.1",
+        "file-loader": "^6.0.0",
+        "ts-loader": "^6.2.1",
+        "typescript": "^3.5.1",
+        "webpack": "^4.41.5",
+        "webpack-cli": "^3.3.10"
     },
     "dependencies": {
         "@slack/web-api": "^5.0.1",
