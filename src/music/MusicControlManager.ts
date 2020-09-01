@@ -429,7 +429,7 @@ export class MusicControlManager {
 
         if (!track || !track.id) {
             window.showInformationMessage(
-                `Our service is temporarily unavailable.\n\nPlease try again later.\n`
+                `No track currently playing. Please play a track to use this feature.`
             );
             return;
         }
