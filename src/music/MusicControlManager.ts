@@ -30,7 +30,6 @@ import { MusicCommandManager } from "./MusicCommandManager";
 import { showQuickPick } from "../MenuManager";
 import {
   refetchSpotifyConnectStatusLazily,
-  getAppJwt,
   populateLikedSongs,
   populateSpotifyPlaylists,
 } from "../DataController";
@@ -41,7 +40,6 @@ import {
   launchWebUrl,
   createSpotifyIdFromUri,
   createUriFromTrackId,
-  setItem,
   isMac,
   getCodyErrorMessage,
   isWindows,
@@ -750,11 +748,6 @@ export async function displayMusicTimeMetricsMarkdownDashboard() {
 
 export async function connectSpotify() {
   let jwt = getItem("jwt");
-  if (!jwt) {
-    // no jwt, get the app jwt
-    jwt = await getAppJwt();
-    await setItem("jwt", jwt);
-  }
 
   // check if they're already connected, if so then ask if they would
   // like to continue as we'll need to disconnect the current connection
