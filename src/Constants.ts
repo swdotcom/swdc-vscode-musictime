@@ -6,6 +6,7 @@ export const SIGNUP_LABEL = "Sign up";
 export const LOGOUT_LABEL = "Log out";
 export const UNTITLED = "Untitled";
 export const UNTITLED_WORKSPACE = "UntitledWorkspace";
+export const NO_PROJ_NAME = "Unnamed";
 export const DEFAULT_DURATION = 60;
 export const DEFAULT_DURATION_MILLIS = DEFAULT_DURATION * 1000;
 export const MILLIS_PER_HOUR = 1000 * 60 * 60;
