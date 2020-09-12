@@ -55,18 +55,6 @@ export function deactivate(ctx: ExtensionContext) {
   clearInterval(offline_data_interval);
   clearInterval(gather_music_interval);
   clearInterval(check_track_end_interval);
-
-  // softwareDelete(`/integrations/${PLUGIN_ID}`, getItem("jwt")).then(resp => {
-  //     if (isResponseOk(resp)) {
-  //         if (resp.data) {
-  //             console.log(`Uninstalled plugin`);
-  //         } else {
-  //             console.log(
-  //                 "Failed to update Code Time about the uninstall event"
-  //             );
-  //         }
-  //     }
-  // });
 }
 
 export async function activate(ctx: ExtensionContext) {

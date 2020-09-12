@@ -13,16 +13,10 @@ import { MusicCommandManager } from "./MusicCommandManager";
 import { MusicDataManager } from "./MusicDataManager";
 import { commands } from "vscode";
 import { getDeviceId, requiresSpotifyAccess } from "./MusicUtil";
-import { CacheManager } from "../cache/CacheManager";
-
-const cacheMgr: CacheManager = CacheManager.getInstance();
 
 const moment = require("moment-timezone");
 
 export class MusicStateManager {
-  static readonly WINDOWS_SPOTIFY_TRACK_FIND: string =
-    'tasklist /fi "imagename eq Spotify.exe" /fo list /v | find " - "';
-
   private static instance: MusicStateManager;
 
   private existingTrack: Track = new Track();
@@ -66,15 +60,6 @@ export class MusicStateManager {
     // offset is the minutes from GMT. it's positive if it's before, and negative after
     const offset = d.getTimezoneOffset();
     return offset * 60;
-  }
-
-  private isEndInRange(playingTrack: Track): boolean {
-    if (!playingTrack || !playingTrack.id) {
-      return false;
-    }
-
-    const buffer = playingTrack.duration_ms * 0.07;
-    return playingTrack.progress_ms >= playingTrack.duration_ms - buffer;
   }
 
   public isExistingTrackPlaying(): boolean {
@@ -146,7 +131,8 @@ export class MusicStateManager {
       const utcLocalTimes = this.getUtcAndLocal();
 
       const diff = utcLocalTimes.utc - this.lastSongCheck;
-      if (diff > 0 && diff < 1) {
+      // 3 second threshold
+      if (diff > 0 && diff < 3) {
         // it's getting called too quickly, bail out
         return;
       }
