@@ -1,5 +1,10 @@
 import { CommitChangeStats } from "../model/models";
-import { wrapExecPromise, isGitProject } from "../Util";
+import {
+  wrapExecPromise,
+  isGitProject,
+  getCommandResultAsList,
+  getCommandResultString,
+} from "../Util";
 import { CacheManager } from "../cache/CacheManager";
 import { getResourceInfo } from "../KpmRepoManager";
 
@@ -12,34 +17,6 @@ const ONE_WEEK_SEC = ONE_DAY_SEC * 7;
 
 const cacheMgr: CacheManager = CacheManager.getInstance();
 const cacheTimeoutSeconds = 60 * 10;
-
-export async function getCommandResult(cmd, projectDir) {
-  let result = await wrapExecPromise(cmd, projectDir);
-  if (!result) {
-    // something went wrong, but don't try to parse a null or undefined str
-    return null;
-  }
-  result = result.trim();
-  let resultList = result
-    .replace(/\r\n/g, "\r")
-    .replace(/\n/g, "\r")
-    .replace(/^\s+/g, " ")
-    .replace(/</g, "")
-    .replace(/>/g, "")
-    .split(/\r/);
-  return resultList;
-}
-
-export async function getCommandResultString(cmd, projectDir) {
-  let result = await wrapExecPromise(cmd, projectDir);
-  if (!result) {
-    // something went wrong, but don't try to parse a null or undefined str
-    return null;
-  }
-  result = result.trim();
-  result = result.replace(/\r\n/g, "\r").replace(/\n/g, "\r").replace(/^\s+/g, " ");
-  return result;
-}
 
 /**
  * Looks through all of the lines for
@@ -97,7 +74,7 @@ async function getChangeStats(projectDir: string, cmd: string): Promise<CommitCh
         for multiple files it will look like this...
         7 files changed, 137 insertions(+), 55 deletions(-)
      */
-  const resultList = await getCommandResult(cmd, projectDir);
+  const resultList = await getCommandResultAsList(cmd, projectDir);
 
   if (!resultList) {
     // something went wrong, but don't try to parse a null or undefined str
@@ -245,7 +222,7 @@ export async function getSlackReportCommits(projectDir) {
   }
   const authorOption = ` --author=${resourceInfo.email}`;
   const cmd = `git log --pretty="%s" --since=${startEnd.start} --until=${startEnd.end}${authorOption}`;
-  const resultList = await getCommandResult(cmd, projectDir);
+  const resultList = await getCommandResultAsList(cmd, projectDir);
   return resultList;
 }
 
@@ -268,7 +245,7 @@ export async function getLastCommitId(projectDir, email) {
 
   const authorOption = email ? ` --author=${email}` : "";
   const cmd = `git log --pretty="%H,%s"${authorOption} --max-count=1`;
-  const list = await getCommandResult(cmd, projectDir);
+  const list = await getCommandResultAsList(cmd, projectDir);
   if (list && list.length) {
     const parts = list[0].split(",");
     if (parts && parts.length === 2) {

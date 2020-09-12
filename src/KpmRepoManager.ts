@@ -4,6 +4,9 @@ import {
   getRootPaths,
   normalizeGithubEmail,
   getFileType,
+  getCommandResultAsList,
+  getCommandResult,
+  countUniqueStrings,
 } from "./Util";
 
 function getProjectDir(fileName = null) {
@@ -31,23 +34,6 @@ function getProjectDir(fileName = null) {
   return null;
 }
 
-async function getCommandResult(cmd, projectDir) {
-  let result = await wrapExecPromise(cmd, projectDir);
-  if (!result) {
-    // something went wrong, but don't try to parse a null or undefined str
-    return null;
-  }
-  result = result.trim();
-  let resultList = result
-    .replace(/\r\n/g, "\r")
-    .replace(/\n/g, "\r")
-    .replace(/^\s+/g, " ")
-    .replace(/</g, "")
-    .replace(/>/g, "")
-    .split(/\r/);
-  return resultList;
-}
-
 export async function getFileContributorCount(fileName) {
   let fileType = getFileType(fileName);
 
@@ -66,23 +52,17 @@ export async function getFileContributorCount(fileName) {
   const cmd = `git log --pretty="%an" ${fileName}`;
 
   // get the list of users that modified this file
-  let resultList = await getCommandResult(cmd, projectDir);
+  let resultList = await getCommandResultAsList(cmd, projectDir);
   if (!resultList) {
     // something went wrong, but don't try to parse a null or undefined str
     return 0;
   }
 
-  if (resultList.length > 0) {
-    let map = {};
-    for (let i = 0; i < resultList.length; i++) {
-      const name = resultList[i];
-      if (!map[name]) {
-        map[name] = name;
-      }
-    }
-    return Object.keys(map).length;
+  let uniqueStrings = 0;
+  if (resultList.length) {
+    uniqueStrings = countUniqueStrings(resultList);
   }
-  return 0;
+  return uniqueStrings;
 }
 
 export async function getRepoFileCount(fileName) {

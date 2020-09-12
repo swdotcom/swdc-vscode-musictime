@@ -587,6 +587,37 @@ export async function getGitEmail() {
   return null;
 }
 
+// replace all newlines, additional spaces, < or > chars with empty and split by the \r
+// the < and > surround the github email address
+export async function getCommandResultAsList(cmd, projectDir) {
+  let result = await wrapExecPromise(cmd, projectDir);
+  if (!result) {
+    return [];
+  }
+  result = result.trim();
+  // replace newlines with \r, remove the < and > around the email string and split by \n
+  // to return an array of values
+  const resultList = result
+    .replace(/\r\n/g, "\r")
+    .replace(/\n/g, "\r")
+    .replace(/^\s+/g, " ")
+    .replace(/</g, "")
+    .replace(/>/g, "")
+    .split(/\r/);
+  return resultList;
+}
+
+export async function getCommandResultString(cmd, projectDir) {
+  let result = await wrapExecPromise(cmd, projectDir);
+  if (!result) {
+    // something went wrong, but don't try to parse a null or undefined str
+    return null;
+  }
+  result = result.trim();
+  result = result.replace(/\r\n/g, "\r").replace(/\n/g, "\r").replace(/^\s+/g, " ");
+  return result;
+}
+
 export async function wrapExecPromise(cmd, projectDir = null) {
   let result = null;
   try {
@@ -604,6 +635,10 @@ export async function wrapExecPromise(cmd, projectDir = null) {
     result = null;
   }
   return result;
+}
+
+export function countUniqueStrings(list: Array<string>) {
+  return new Set(list).size;
 }
 
 export function launchWebUrl(url) {
