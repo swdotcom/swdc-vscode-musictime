@@ -49,8 +49,7 @@
     "vscode:prepublish": "webpack --mode production",
     "webpack": "webpack --mode development",
     "webpack-dev": "webpack --mode development --watch",
-    "test-compile": "tsc -p ./",
-    "vscode:uninstall": "node ./out/src/Lifecycle"
+    "test-compile": "tsc -p ./"
   },
   "contributes": {
     "commands": [
