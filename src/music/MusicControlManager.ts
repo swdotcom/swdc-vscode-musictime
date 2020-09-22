@@ -118,8 +118,8 @@ export class MusicControlManager {
     }
 
     setTimeout(() => {
-      stateMgr.gatherMusicInfoRequest();
-    }, 500);
+      stateMgr.fetchTrack();
+    }, 1000);
   }
 
   async previousSong() {
@@ -132,8 +132,8 @@ export class MusicControlManager {
     }
 
     setTimeout(() => {
-      stateMgr.gatherMusicInfoRequest();
-    }, 500);
+      stateMgr.fetchTrack();
+    }, 1000);
   }
 
   /**
@@ -159,9 +159,6 @@ export class MusicControlManager {
               offset: 0,
             },
           ]);
-          setTimeout(() => {
-            stateMgr.gatherMusicInfoRequest();
-          }, 3000);
         }
       } else {
         if (controlMgr.useSpotifyDesktop()) {
@@ -173,11 +170,11 @@ export class MusicControlManager {
         if (result && (result.status < 300 || result === "ok")) {
           MusicCommandManager.syncControls(dataMgr.runningTrack, true, TrackStatus.Playing);
         }
-
-        setTimeout(() => {
-          stateMgr.gatherMusicInfoRequest();
-        }, 500);
       }
+
+      setTimeout(() => {
+        stateMgr.fetchTrack();
+      }, 1000);
     }
   }
 
@@ -194,8 +191,8 @@ export class MusicControlManager {
     }
 
     setTimeout(() => {
-      stateMgr.gatherMusicInfoRequest();
-    }, 500);
+      stateMgr.fetchTrack();
+    }, 1000);
   }
 
   async setShuffleOn() {
@@ -203,8 +200,8 @@ export class MusicControlManager {
     await setShuffle(PlayerName.SpotifyWeb, true, deviceId);
 
     setTimeout(() => {
-      stateMgr.gatherMusicInfoRequest();
-    }, 500);
+      stateMgr.fetchTrack();
+    }, 1000);
   }
 
   async setShuffleOff() {
@@ -212,8 +209,8 @@ export class MusicControlManager {
     await setShuffle(PlayerName.SpotifyWeb, false, deviceId);
 
     setTimeout(() => {
-      stateMgr.gatherMusicInfoRequest();
-    }, 500);
+      stateMgr.fetchTrack();
+    }, 1000);
   }
 
   async setRepeatTrackOn() {
@@ -221,8 +218,8 @@ export class MusicControlManager {
     await setRepeatTrack(PlayerName.SpotifyWeb, deviceId);
 
     setTimeout(() => {
-      stateMgr.gatherMusicInfoRequest();
-    }, 500);
+      stateMgr.fetchTrack();
+    }, 1000);
   }
 
   async setRepeatPlaylistOn() {
@@ -230,8 +227,8 @@ export class MusicControlManager {
     await setRepeatPlaylist(PlayerName.SpotifyWeb, deviceId);
 
     setTimeout(() => {
-      stateMgr.gatherMusicInfoRequest();
-    }, 500);
+      stateMgr.fetchTrack();
+    }, 1000);
   }
 
   async setRepeatOnOff(setToOn: boolean) {
@@ -243,8 +240,8 @@ export class MusicControlManager {
     }
 
     setTimeout(() => {
-      stateMgr.gatherMusicInfoRequest();
-    }, 500);
+      stateMgr.fetchTrack();
+    }, 1000);
   }
 
   async setMuteOn() {
@@ -305,8 +302,8 @@ export class MusicControlManager {
       }
 
       setTimeout(() => {
-        stateMgr.gatherMusicInfoRequest();
-      }, 1500);
+        stateMgr.fetchTrack();
+      }, 1000);
     }, 2000);
   }
 
@@ -356,8 +353,8 @@ export class MusicControlManager {
       }
 
       setTimeout(() => {
-        stateMgr.gatherMusicInfoRequest();
-      }, 1500);
+        stateMgr.fetchTrack();
+      }, 1000);
     }, 2000);
   }
 
@@ -438,7 +435,7 @@ export class MusicControlManager {
     commands.executeCommand("musictime.refreshPlaylist");
 
     setTimeout(() => {
-      stateMgr.gatherMusicInfoRequest();
+      stateMgr.fetchTrack();
     }, 1000);
   }
 
@@ -795,9 +792,9 @@ export async function disconnectSlack(confirmDisconnect = true) {
 export async function disconnectOauth(type: string, confirmDisconnect = true) {
   const selection = confirmDisconnect
     ? await window.showInformationMessage(
-        `Are you sure you would like to disconnect ${type}?`,
-        ...[YES_LABEL]
-      )
+      `Are you sure you would like to disconnect ${type}?`,
+      ...[YES_LABEL]
+    )
     : YES_LABEL;
 
   if (selection === YES_LABEL) {

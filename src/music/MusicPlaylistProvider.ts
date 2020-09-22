@@ -15,7 +15,6 @@ import { logIt, getPlaylistIcon } from "../Util";
 import { ProviderItemManager } from "./ProviderItemManager";
 import { MusicDataManager } from "./MusicDataManager";
 import { populateSpotifyUser } from "../DataController";
-import { MusicStateManager } from "./MusicStateManager";
 
 const dataMgr: MusicDataManager = MusicDataManager.getInstance();
 
@@ -138,10 +137,6 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
             await MusicManager.getInstance().refreshPlaylists();
         }
 
-        setTimeout(() => {
-            MusicStateManager.getInstance().gatherMusicInfoRequest();
-        }, 1000);
-
         this.refresh();
 
         const item: PlaylistItem = ProviderItemManager.getInstance().getReadmeButton();
@@ -234,17 +229,6 @@ export class PlaylistTreeItem extends TreeItem {
             delete this.iconPath;
         }
         this.contextValue = contextValue;
-    }
-
-    get tooltip(): string {
-        if (!this.treeItem) {
-            return "";
-        }
-        if (this.treeItem.tooltip) {
-            return `${this.treeItem.tooltip}`;
-        } else {
-            return `${this.treeItem.name}`;
-        }
     }
 
     iconPath = {
