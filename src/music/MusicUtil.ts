@@ -187,6 +187,10 @@ export async function showReconnectPrompt(email) {
 export function getDeviceSet() {
     const devices: PlayerDevice[] =
         MusicDataManager.getInstance().currentDevices || [];
+    return getDeviceSetForDevices(devices);
+}
+
+export function getDeviceSetForDevices(devices: PlayerDevice[]) {
     const webPlayer = devices.find((d: PlayerDevice) =>
         d.name.toLowerCase().includes("web player")
     );
@@ -233,9 +237,9 @@ export function getDeviceId() {
     const deviceId = activeDevice
         ? activeDevice.id
         : desktop
-        ? desktop.id
-        : webPlayer
-        ? webPlayer.id
-        : "";
+            ? desktop.id
+            : webPlayer
+                ? webPlayer.id
+                : "";
     return deviceId;
 }

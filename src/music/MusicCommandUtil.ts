@@ -1,10 +1,9 @@
 import { window } from "vscode";
-import { accessExpired } from "cody-music";
+import { accessExpired, getSpotifyDevices } from "cody-music";
 import { disconnectSpotify } from "./MusicControlManager";
 import { getItem } from "../Util";
-import { showReconnectPrompt } from "./MusicUtil";
+import { getDeviceSetForDevices, showReconnectPrompt } from "./MusicUtil";
 import { getMusicTimeUserStatus } from "../DataController";
-import { MusicManager } from "./MusicManager";
 import { MusicDataManager } from "./MusicDataManager";
 
 export class MusicCommandUtil {
@@ -49,6 +48,24 @@ export class MusicCommandUtil {
 
     isTooManyRequestsError(result) {
         return this.getResponseStatus(result) === 429 ? true : false;
+    }
+
+    async isDeviceError(result) {
+        if (result && this.getResponseStatus(result) === 404) {
+            // check to see if there's an active device
+            const devices = await getSpotifyDevices();
+            const {
+                webPlayer,
+                desktop,
+                activeDevice,
+                activeComputerDevice,
+                activeWebPlayerDevice,
+            } = getDeviceSetForDevices(devices);
+            if (!webPlayer && !desktop) {
+                return true;
+            }
+        }
+        return false;
     }
 
     async checkIfAccessExpired(result) {

@@ -27,8 +27,9 @@ import { showDeviceSelectorMenu } from "./selector/SpotifyDeviceSelectorManager"
 import { updateRecommendations, refreshRecommendations } from "./music/MusicRecommendationManager";
 import { MusicCommandUtil } from "./music/MusicCommandUtil";
 import { showSearchInput } from "./selector/SearchSelectorManager";
-import { requiresSpotifyAccess } from "./music/MusicUtil";
+import { getDeviceId, requiresSpotifyAccess } from "./music/MusicUtil";
 import { KpmManager } from "./managers/KpmManager";
+import { MusicStateManager } from "./music/MusicStateManager";
 
 /**
  * add the commands to vscode....
@@ -234,6 +235,16 @@ export function createCommands(): {
   cmds.push(
     commands.registerCommand("musictime.currentSong", () => {
       musicMgr.launchTrackPlayer();
+    })
+  );
+
+  cmds.push(
+    commands.registerCommand("musictime.songTitleRefresh", async () => {
+      const deviceId = getDeviceId();
+      if (!deviceId) {
+        await populateSpotifyDevices();
+      }
+      MusicStateManager.getInstance().fetchTrack();
     })
   );
 

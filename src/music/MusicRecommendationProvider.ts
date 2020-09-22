@@ -143,17 +143,6 @@ export class PlaylistTreeItem extends TreeItem {
         this.contextValue = contextValue;
     }
 
-    get tooltip(): string {
-        if (!this.treeItem) {
-            return "";
-        }
-        if (this.treeItem.tooltip) {
-            return `${this.treeItem.tooltip}`;
-        } else {
-            return `${this.treeItem.name}`;
-        }
-    }
-
     iconPath = {
         light: "",
         dark: "",

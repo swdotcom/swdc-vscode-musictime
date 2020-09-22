@@ -8,7 +8,6 @@ import {
   CodyResponse,
   getSpotifyRecentlyPlayedBefore,
 } from "cody-music";
-import { DEFAULT_CURRENTLY_PLAYING_TRACK_CHECK_SECONDS } from "../Constants";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { MusicDataManager } from "./MusicDataManager";
 import { commands } from "vscode";
@@ -20,10 +19,6 @@ export class MusicStateManager {
   private static instance: MusicStateManager;
 
   private existingTrack: Track = new Track();
-  private endCheckThresholdMillis: number = 1000 * 19;
-  private endCheckTimeout: any = null;
-  private lastIntervalSongCheck: number = 0;
-  private lastSongCheck: number = 0;
 
   private constructor() {
     // private to prevent non-singleton usage
@@ -71,71 +66,13 @@ export class MusicStateManager {
   }
 
   /**
-   * Check if the track is close to ending, if so gather music as soon as
-   * it's determined that it has changed.
-   */
-  public async trackEndCheck() {
-    const dataMgr: MusicDataManager = MusicDataManager.getInstance();
-    if (dataMgr.runningTrack && dataMgr.runningTrack.id) {
-      const currProgress_ms = dataMgr.runningTrack.progress_ms || 0;
-
-      let duration_ms = 0;
-      // applescript doesn't have duration_ms but has duration
-      if (dataMgr.runningTrack.duration) {
-        duration_ms = dataMgr.runningTrack.duration;
-      } else {
-        duration_ms = dataMgr.runningTrack.duration_ms || 0;
-      }
-      const diff = duration_ms - currProgress_ms;
-
-      // if the diff is less than the threshold and the endCheckTimeout
-      // should is null then we'll schedule a gatherMusicInfo fetch
-      if (diff > 0 && diff <= this.endCheckThresholdMillis && !this.endCheckTimeout) {
-        // schedule a call to fetch the next track in 5 seconds
-        this.scheduleGatherMusicInfo(diff);
-      }
-    }
-  }
-
-  private scheduleGatherMusicInfo(timeout = 5000) {
-    timeout = timeout + 1000;
-    const self = this;
-    this.endCheckTimeout = setTimeout(() => {
-      self.gatherMusicInfo();
-      self.endCheckTimeout = null;
-    }, timeout);
-  }
-
-  public async gatherMusicInfoRequest() {
-    const utcLocalTimes = this.getUtcAndLocal();
-    const diff = utcLocalTimes.utc - this.lastIntervalSongCheck;
-
-    // i.e. if the check seconds is 20, we'll subtract 2 and get 18 seconds
-    // which means it would be at least 2 more seconds until the gather music
-    // check will happen and is allowable to perform this intermediate check
-    const threshold = DEFAULT_CURRENTLY_PLAYING_TRACK_CHECK_SECONDS - 2;
-    if (diff < threshold || diff > DEFAULT_CURRENTLY_PLAYING_TRACK_CHECK_SECONDS) {
-      // make the call
-      this.gatherMusicInfo(false /*updateIntervalSongCheckTime*/);
-    }
-    // otherwise we'll just wait until the interval call is made
-  }
-
-  /**
    * Core logic in gathering tracks. This is called every 20 seconds.
    */
-  public async gatherMusicInfo(updateIntervalSongCheckTime = true): Promise<any> {
+  public async fetchTrack(): Promise<any> {
     const dataMgr: MusicDataManager = MusicDataManager.getInstance();
 
     try {
       const utcLocalTimes = this.getUtcAndLocal();
-
-      const diff = utcLocalTimes.utc - this.lastSongCheck;
-      // 3 second threshold
-      if (diff > 0 && diff < 3) {
-        // it's getting called too quickly, bail out
-        return;
-      }
 
       const requiresAccess = requiresSpotifyAccess();
 
@@ -165,18 +102,6 @@ export class MusicStateManager {
         playingTrack = await getTrack(PlayerName.SpotifyWeb);
       }
 
-      // set the last time we checked
-      if (updateIntervalSongCheckTime) {
-        this.lastIntervalSongCheck = utcLocalTimes.utc;
-      }
-      // this one is always set
-      this.lastSongCheck = utcLocalTimes.utc;
-
-      if (!playingTrack || (playingTrack && playingTrack.httpStatus >= 400)) {
-        // currently unable to fetch the track
-        return;
-      }
-
       if (!playingTrack) {
         // make an empty track
         playingTrack = new Track();
@@ -200,11 +125,6 @@ export class MusicStateManager {
       if (sendSongSession) {
         // just set it to playing
         this.existingTrack.state = TrackStatus.Playing;
-
-        // copy the existing track to "songSession"
-        const songSession = {
-          ...this.existingTrack,
-        };
 
         // clear the track.
         this.existingTrack = null;

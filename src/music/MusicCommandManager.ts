@@ -95,12 +95,13 @@ export class MusicCommandManager {
         // 996 buttons (unlike, like)
         this.createButton("♡", "Like", "musictime.like", 996);
         this.createButton("♥", "Unlike", "musictime.unlike", 996);
+        this.createButton("$(refresh)", "Refresh song status", "musictime.songTitleRefresh", 995);
         // button area for the current song name
         this.createButton(
             "",
             "Click to view track",
             "musictime.currentSong",
-            995
+            994
         );
         this.syncControls(null);
     }
@@ -270,6 +271,7 @@ export class MusicCommandManager {
             const isPlayButton = btnCmd === "musictime.play";
             const isLikedButton = btnCmd === "musictime.like";
             const isUnLikedButton = btnCmd === "musictime.unlike";
+            const refreshSongStatusButton = btnCmd === "musictime.songTitleRefresh";
             const currentSongButton = btnCmd === "musictime.currentSong";
             const isPrevButton = btnCmd === "musictime.previous";
             const isNextButton = btnCmd === "musictime.next";
@@ -280,13 +282,13 @@ export class MusicCommandManager {
                 }
                 // always show the headphones menu icon
                 button.statusBarItem.show();
-            } else if (isLikedButton) {
+            } else if (isLikedButton && trackName) {
                 if (isLiked) {
                     button.statusBarItem.hide();
                 } else {
                     button.statusBarItem.show();
                 }
-            } else if (isUnLikedButton) {
+            } else if (isUnLikedButton && trackName) {
                 if (isLiked) {
                     button.statusBarItem.show();
                 } else {
@@ -301,6 +303,8 @@ export class MusicCommandManager {
                     // show the song info over the play button
                     button.statusBarItem.tooltip = `${button.tooltip} - ${songInfo}`;
                 }
+                button.statusBarItem.show();
+            } else if (refreshSongStatusButton) {
                 button.statusBarItem.show();
             } else {
                 button.statusBarItem.hide();
@@ -339,6 +343,7 @@ export class MusicCommandManager {
             const isPauseButton = btnCmd === "musictime.pause";
             const isLikedButton = btnCmd === "musictime.like";
             const isUnLikedButton = btnCmd === "musictime.unlike";
+            const refreshSongStatusButton = btnCmd === "musictime.songTitleRefresh";
             const currentSongButton = btnCmd === "musictime.currentSong";
             const isPrevButton = btnCmd === "musictime.previous";
             const isNextButton = btnCmd === "musictime.next";
@@ -349,13 +354,13 @@ export class MusicCommandManager {
                 }
                 // always show the headphones menu icon
                 button.statusBarItem.show();
-            } else if (isLikedButton) {
+            } else if (isLikedButton && trackName) {
                 if (isLiked) {
                     button.statusBarItem.hide();
                 } else {
                     button.statusBarItem.show();
                 }
-            } else if (isUnLikedButton) {
+            } else if (isUnLikedButton && trackName) {
                 if (isLiked) {
                     button.statusBarItem.show();
                 } else {
@@ -369,6 +374,8 @@ export class MusicCommandManager {
                 if (songInfo) {
                     button.statusBarItem.tooltip = `${button.tooltip} - ${songInfo}`;
                 }
+                button.statusBarItem.show();
+            } else if (refreshSongStatusButton) {
                 button.statusBarItem.show();
             } else {
                 button.statusBarItem.hide();

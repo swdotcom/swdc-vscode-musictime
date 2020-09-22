@@ -1306,8 +1306,8 @@ export class MusicManager {
         const isPremiumUser = MusicManager.getInstance().isSpotifyPremium();
         const useSpotifyWeb = isPremiumUser || !isMac() ? true : false;
 
+        let result = null;
         if (isRecommendationTrack || isLikedSong) {
-            let result = null;
             if (useSpotifyWeb) {
                 // it's a liked song or recommendation track play request
                 result = await this.playRecommendationsOrLikedSongsByPlaylist(
@@ -1330,7 +1330,7 @@ export class MusicManager {
             if (useSpotifyWeb) {
                 // NORMAL playlist request
                 // play a playlist
-                await musicCommandUtil.runSpotifyCommand(playSpotifyPlaylist, [
+                result = await musicCommandUtil.runSpotifyCommand(playSpotifyPlaylist, [
                     playlistId,
                     trackId,
                     deviceId,
@@ -1340,12 +1340,12 @@ export class MusicManager {
                 const trackUri = createUriFromTrackId(trackId);
                 const playlistUri = createUriFromPlaylistId(playlistId);
                 const params = [trackUri, playlistUri];
-                await playTrackInContext(PlayerName.SpotifyDesktop, params);
+                result = await playTrackInContext(PlayerName.SpotifyDesktop, params);
             }
         } else {
             if (useSpotifyWeb) {
                 // else it's not a liked or recommendation play request, just play the selected track
-                await musicCommandUtil.runSpotifyCommand(playSpotifyTrack, [
+                result = await musicCommandUtil.runSpotifyCommand(playSpotifyTrack, [
                     trackId,
                     deviceId,
                 ]);
@@ -1353,13 +1353,17 @@ export class MusicManager {
                 // play it using applescript
                 const trackUri = createUriFromTrackId(trackId);
                 const params = [trackUri];
-                await playTrackInContext(PlayerName.SpotifyDesktop, params);
+                result = await playTrackInContext(PlayerName.SpotifyDesktop, params);
             }
         }
 
-        setTimeout(() => {
-            MusicStateManager.getInstance().gatherMusicInfoRequest();
-        }, 1000);
+        if (await musicCommandUtil.isDeviceError(result)) {
+            this.showPlayerLaunchConfirmation(this.playMusicSelection);
+        } else {
+            setTimeout(() => {
+                MusicStateManager.getInstance().fetchTrack();
+            }, 1000);
+        }
     };
 
     playRecommendationsOrLikedSongsByPlaylist = async (

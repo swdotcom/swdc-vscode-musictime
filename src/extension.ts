@@ -15,11 +15,9 @@ import {
 } from "./Util";
 import { manageLiveshareSession } from "./LiveshareManager";
 import * as vsls from "vsls/vscode";
-import { MusicStateManager } from "./music/MusicStateManager";
 import { createCommands } from "./command-helper";
 import { setSessionSummaryLiveshareMinutes } from "./OfflineManager";
 import { MusicManager } from "./music/MusicManager";
-import { DEFAULT_CURRENTLY_PLAYING_TRACK_CHECK_SECONDS } from "./Constants";
 import { sendOfflineData } from "./managers/FileManager";
 import { TrackerManager } from "./managers/TrackerManager";
 
@@ -87,17 +85,6 @@ export async function intializePlugin(ctx: ExtensionContext) {
       sendOfflineData();
     }
   }, 1000 * 60 * 10);
-
-  const musicStateMgr: MusicStateManager = MusicStateManager.getInstance();
-
-  // interval to check music info
-  gather_music_interval = setInterval(() => {
-    musicStateMgr.gatherMusicInfo();
-  }, 1000 * DEFAULT_CURRENTLY_PLAYING_TRACK_CHECK_SECONDS);
-
-  check_track_end_interval = setInterval(() => {
-    musicStateMgr.trackEndCheck();
-  }, 5000);
 
   // show the readme if it doesn't exist
   displayReadmeIfNotExists();

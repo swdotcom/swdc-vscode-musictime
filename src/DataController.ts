@@ -21,6 +21,7 @@ import {
     PlayerContext,
     getSpotifyPlayerContext,
     getUserProfile,
+    PlayerDevice
 } from "cody-music";
 import { MusicManager } from "./music/MusicManager";
 import { MusicDataManager } from "./music/MusicDataManager";
@@ -359,14 +360,39 @@ export async function populateSpotifyDevices(isDeviceLaunch = false) {
         return;
     }
 
-    MusicDataManager.getInstance().currentDevices = devices;
+    const currDevices = MusicDataManager.getInstance().currentDevices;
 
-    // gather music to start things off
-    setTimeout(() => {
-        MusicStateManager.getInstance().gatherMusicInfoRequest();
-        // refresh the playlist to show the device button update
-        commands.executeCommand("musictime.refreshPlaylist");
-    }, 1000);
+    const fetchedDeviceIds = [];
+    if (devices.length) {
+        devices.forEach((el: PlayerDevice) => {
+            fetchedDeviceIds.push(el.id);
+        });
+    }
+
+    let diffDevices = [];
+    if (currDevices.length) {
+        // get any differences from the fetched devices if any
+        diffDevices = currDevices.filter((n: PlayerDevice) => !fetchedDeviceIds.includes(n.id));
+    } else if (fetchedDeviceIds.length) {
+        // no current devices, set diff to whatever we fetched
+        diffDevices = [
+            ...devices
+        ]
+    }
+
+    if (diffDevices.length || currDevices.length !== diffDevices.length) {
+        // new devices available or setting to empty
+        MusicDataManager.getInstance().currentDevices = devices;
+
+        setTimeout(() => {
+            // refresh the playlist to show the device button update
+            commands.executeCommand("musictime.refreshPlaylist");
+        }, 1000);
+
+        setTimeout(() => {
+            MusicStateManager.getInstance().fetchTrack();
+        }, 3000);
+    }
 }
 
 export function getBootstrapFileMetrics() {
