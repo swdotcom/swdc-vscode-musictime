@@ -273,6 +273,10 @@
           "light": "resources/light/search.svg",
           "dark": "resources/dark/search.svg"
         }
+      },
+      {
+        "command": "musictime.songTitleRefresh",
+        "title": "Music Time: Display song info"
       }
     ],
     "viewsContainers": {
