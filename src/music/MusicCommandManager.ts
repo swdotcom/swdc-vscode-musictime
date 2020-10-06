@@ -35,6 +35,9 @@ export class MusicCommandManager {
     private static _buttons: Button[] = [];
     private static _hideSongTimeout = null;
     private static _isLoading: boolean = false;
+    private static _songButton: Button = null;
+    private static _displaySongButton: Button = null;
+    private static _hideCurrentSongTimeout: any = null;
 
     private constructor() {
         // private to prevent non-singleton usage
@@ -95,7 +98,7 @@ export class MusicCommandManager {
         // 996 buttons (unlike, like)
         this.createButton("♡", "Like", "musictime.like", 996);
         this.createButton("♥", "Unlike", "musictime.unlike", 996);
-        this.createButton("$(refresh)", "Refresh song status", "musictime.songTitleRefresh", 995);
+        this.createButton("$(pulse)", "Display song info", "musictime.songTitleRefresh", 995);
         // button area for the current song name
         this.createButton(
             "",
@@ -298,6 +301,7 @@ export class MusicCommandManager {
                 button.statusBarItem.tooltip = `(${songInfo})`;
                 button.statusBarItem.text = getSongDisplayName(trackName);
                 button.statusBarItem.show();
+                this._songButton = button;
             } else if (isPlayButton) {
                 if (songInfo) {
                     // show the song info over the play button
@@ -305,11 +309,18 @@ export class MusicCommandManager {
                 }
                 button.statusBarItem.show();
             } else if (refreshSongStatusButton) {
-                button.statusBarItem.show();
+                this._displaySongButton = button;
+                if (trackName) {
+                    button.statusBarItem.hide();
+                } else {
+                    button.statusBarItem.show();
+                }
             } else {
                 button.statusBarItem.hide();
             }
         });
+
+        this.hideCurrentSong();
     }
 
     /**
@@ -370,17 +381,25 @@ export class MusicCommandManager {
                 button.statusBarItem.tooltip = `(${songInfo})`;
                 button.statusBarItem.text = getSongDisplayName(trackName);
                 button.statusBarItem.show();
+                this._songButton = button;
             } else if (isPauseButton) {
                 if (songInfo) {
                     button.statusBarItem.tooltip = `${button.tooltip} - ${songInfo}`;
                 }
                 button.statusBarItem.show();
             } else if (refreshSongStatusButton) {
-                button.statusBarItem.show();
+                this._displaySongButton = button;
+                if (trackName) {
+                    button.statusBarItem.hide();
+                } else {
+                    button.statusBarItem.show();
+                }
             } else {
                 button.statusBarItem.hide();
             }
         });
+
+        this.hideCurrentSong();
     }
 
     private static showProgress(progressLabel: string) {
@@ -423,5 +442,22 @@ export class MusicCommandManager {
             musicTimeTooltip = `${musicTimeTooltip} (${name})`;
         }
         return musicTimeTooltip;
+    }
+
+    private static hideCurrentSong() {
+        if (this._hideCurrentSongTimeout) {
+            // cancel the current timeout
+            clearTimeout(this._hideCurrentSongTimeout);
+            this._hideCurrentSongTimeout = null;
+        }
+
+        this._hideCurrentSongTimeout = setTimeout(() => {
+            if (this._displaySongButton) {
+                this._displaySongButton.statusBarItem.show();
+            }
+            if (this._songButton) {
+                this._songButton.statusBarItem.hide();
+            }
+        }, 5000);
     }
 }
