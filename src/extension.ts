@@ -10,7 +10,6 @@ import {
   getVersion,
   logIt,
   getPluginName,
-  codeTimeExtInstalled,
   displayReadmeIfNotExists,
 } from "./Util";
 import { manageLiveshareSession } from "./LiveshareManager";
@@ -18,7 +17,6 @@ import * as vsls from "vsls/vscode";
 import { createCommands } from "./command-helper";
 import { setSessionSummaryLiveshareMinutes } from "./OfflineManager";
 import { MusicManager } from "./music/MusicManager";
-import { sendOfflineData } from "./managers/FileManager";
 import { TrackerManager } from "./managers/TrackerManager";
 
 let _ls = null;
@@ -26,7 +24,6 @@ let _ls = null;
 let liveshare_update_interval = null;
 let gather_music_interval = null;
 let check_track_end_interval = null;
-let offline_data_interval = null;
 
 const tracker: TrackerManager = TrackerManager.getInstance();
 
@@ -50,7 +47,6 @@ export function deactivate(ctx: ExtensionContext) {
   }
 
   clearInterval(liveshare_update_interval);
-  clearInterval(offline_data_interval);
   clearInterval(gather_music_interval);
   clearInterval(check_track_end_interval);
 }
@@ -77,14 +73,6 @@ export async function intializePlugin(ctx: ExtensionContext) {
 
   // check if the user has a slack integration already connected
   await musicMgr.initializeSlack();
-
-  // every 10 minutes send offline data
-  offline_data_interval = setInterval(() => {
-    if (!codeTimeExtInstalled()) {
-      // send the offline code time data
-      sendOfflineData();
-    }
-  }, 1000 * 60 * 10);
 
   // show the readme if it doesn't exist
   displayReadmeIfNotExists();
