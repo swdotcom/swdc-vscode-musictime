@@ -479,10 +479,6 @@ export function coalesceNumber(val, defaultVal = 0) {
   return val;
 }
 
-export function storePayload(payload) {
-  fileIt.appendJsonFileSync(getSoftwareDataStoreFile(), payload);
-}
-
 export function randomCode() {
   return crypto
     .randomBytes(16)

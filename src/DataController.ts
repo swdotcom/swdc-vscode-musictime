@@ -4,12 +4,8 @@ import {
     getItem,
     setItem,
     nowInSecs,
-    getSessionFileCreateTime,
     getOs,
     getVersion,
-    getHostname,
-    getEditorSessionToken,
-    logIt,
     getPluginId,
     getOffsetSeconds,
 } from "./Util";
@@ -73,38 +69,6 @@ export async function serverIsAvailable() {
             return false;
         });
     return serverAvailable;
-}
-
-export async function sendBatchPayload(batch) {
-    await softwarePost("/data/batch", batch, getItem("jwt")).catch((e) => {
-        logIt(`Unable to send plugin data batch, error: ${e.message}`);
-    });
-}
-
-/**
- * send any music tracks
- */
-export async function sendMusicData(trackData) {
-    if (trackData.available_markets) {
-        delete trackData.available_markets;
-    }
-    if (trackData.images) {
-        delete trackData.images;
-    }
-    if (trackData.external_urls) {
-        delete trackData.external_urls;
-    }
-    if (trackData.href) {
-        delete trackData.href;
-    }
-
-    logIt(
-        `sending song session {song: ${trackData.name}, start: ${trackData.start}, end: ${trackData.end}}`
-    );
-
-    // add the "local_start", "start", and "end"
-    // POST the kpm to the PluginManager
-    sendSessionPayload(trackData);
 }
 
 /**
@@ -395,30 +359,6 @@ export async function populateSpotifyDevices(isDeviceLaunch = false) {
     }
 }
 
-export function getBootstrapFileMetrics() {
-    const fileMetrics = {
-        add: 0,
-        paste: 0,
-        delete: 0,
-        netkeys: 0,
-        linesAdded: 0,
-        linesRemoved: 0,
-        open: 0,
-        close: 0,
-        keystrokes: 0,
-        syntax: "",
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        offset: getOffsetSeconds() / 60,
-        pluginId: getPluginId(),
-        os: getOs(),
-        version: getVersion(),
-        source: [],
-        repoFileCount: 0,
-        repoContributorCount: 0,
-    };
-    return fileMetrics;
-}
-
 async function seedLikedSongSessions() {
     const pluginInfo = {
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -430,42 +370,4 @@ async function seedLikedSongSessions() {
 
     const api = `/music/onboard`;
     softwarePost(api, pluginInfo, getItem("jwt"));
-}
-
-export async function sendSessionPayload(songSession) {
-    let api = `/music/session`;
-    return softwarePost(api, songSession, getItem("jwt"))
-        .then((resp) => {
-            if (!isResponseOk(resp)) {
-                return { status: "fail" };
-            }
-            return { status: "ok" };
-        })
-        .catch((e) => {
-            return { status: "fail" };
-        });
-}
-
-export async function sendHeartbeat(reason, serverIsOnline) {
-    const jwt = getItem("jwt");
-    const hostname = await getHostname();
-    if (serverIsOnline && jwt) {
-        let heartbeat = {
-            pluginId: getPluginId(),
-            os: getOs(),
-            start: nowInSecs(),
-            version: getVersion(),
-            hostname,
-            session_ctime: getSessionFileCreateTime(),
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            trigger_annotation: reason,
-            editor_token: getEditorSessionToken(),
-        };
-        let api = `/data/heartbeat`;
-        softwarePost(api, heartbeat, jwt).then(async (resp) => {
-            if (!isResponseOk(resp)) {
-                logIt("unable to send heartbeat ping");
-            }
-        });
-    }
 }

@@ -1,4 +1,4 @@
-import { storePayload, getOs, getVersion, logIt, getNowTimes, getPluginId } from "./Util";
+import { getOs, getVersion, getNowTimes, getPluginId } from "./Util";
 
 // ? marks that the parameter is optional
 type Project = {
@@ -89,14 +89,6 @@ export class KpmDataManager {
             //
         }
         return payload;
-    }
-
-    /**
-     * send the payload
-     */
-    postData(payload: any) {
-        logIt(`storing kpm metrics`);
-        storePayload(payload);
     }
 }
 

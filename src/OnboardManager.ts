@@ -1,9 +1,7 @@
 import { window, ExtensionContext } from "vscode";
 import {
   serverIsAvailable,
-  getAppJwt,
-  getBootstrapFileMetrics,
-  sendSessionPayload,
+  getAppJwt
 } from "./DataController";
 import {
   softwareSessionFileExists,
@@ -12,11 +10,9 @@ import {
   getItem,
   getOsUsername,
   getHostname,
-  setItem,
-  getNowTimes,
+  setItem
 } from "./Util";
 import { softwarePost, isResponseOk } from "./HttpClient";
-import { Track } from "cody-music";
 import jwt_decode = require("jwt-decode");
 
 let secondary_window_activate_counter = 0;
@@ -67,8 +63,6 @@ export async function onboardPlugin(ctx: ExtensionContext, successFunction: any)
             onboardPlugin(ctx, successFunction);
           }, check_online_interval_ms);
         } else {
-          // send the song session init payload
-          await sendBootstrapSongSession();
           // initialize the rest of the plugin
           successFunction(ctx);
         }
@@ -124,29 +118,4 @@ export async function createAnonymousUser() {
     }
   }
   return null;
-}
-
-export async function sendBootstrapSongSession() {
-  const fileMetrics = getBootstrapFileMetrics();
-
-  const nowTimes = getNowTimes();
-
-  const track: Track = new Track();
-  track.id = "music-time-init";
-  track.type = "music-time-init";
-  track.uri = "music-time-init";
-  track.name = "music-time-init";
-  track.artist = "music-time-init";
-  track["playlistId"] = "music-time-init";
-  track["start"] = nowTimes.now_in_sec - 60;
-  track["local_start"] = nowTimes.local_now_in_sec - 60;
-  track["start"] = nowTimes.now_in_sec;
-  track["local_start"] = nowTimes.local_now_in_sec;
-
-  const songSession = {
-    ...track,
-    ...fileMetrics,
-  };
-
-  sendSessionPayload(songSession);
 }
