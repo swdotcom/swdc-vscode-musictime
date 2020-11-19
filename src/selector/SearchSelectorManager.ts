@@ -3,8 +3,7 @@ import { searchTracks } from "cody-music";
 import { MusicDataManager } from "../music/MusicDataManager";
 import { requiresSpotifyAccess } from "../music/MusicUtil";
 
-// lkjlkjlkjlkjlkjlkjljk lksjdf lkj lkj lkj lkj lkj
-// lkjsdflkjsdlfk
+
 export async function showSearchInput() {
     if (requiresSpotifyAccess()) {
         window.showInformationMessage("Spotify connection required");

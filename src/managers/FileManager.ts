@@ -1,12 +1,5 @@
-import { softwarePost, isResponseOk } from "../HttpClient";
 import {
-  deleteFile,
-  logIt,
-  getFileDataPayloadsAsJson,
-  getFileDataArray,
-  getItem,
   isWindows,
-  isBatchSizeUnderThreshold,
 } from "../Util";
 import KeystrokeStats from "../model/KeystrokeStats";
 import TimeData from "../model/TimeData";
@@ -14,11 +7,6 @@ import TimeData from "../model/TimeData";
 const fileIt = require("file-it");
 const fs = require("fs");
 const os = require("os");
-
-// each file within the plugin data is about 1 to 2kb. the queue
-// size limit is 256k. we should be able to safely send 50
-// at a time, but the batch logic should check the size as well
-const batch_limit = 50;
 
 let extensionName = null;
 let extensionDisplayName = null; // Code Time or Music Time
