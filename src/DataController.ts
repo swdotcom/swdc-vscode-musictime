@@ -1,13 +1,9 @@
 import { workspace, window, commands } from "vscode";
-import { softwareGet, isResponseOk, softwarePost } from "./HttpClient";
+import { softwareGet, isResponseOk } from "./HttpClient";
 import {
     getItem,
     setItem,
     nowInSecs,
-    getOs,
-    getVersion,
-    getPluginId,
-    getOffsetSeconds,
 } from "./Util";
 import {
     getSpotifyLikedSongs,
@@ -27,7 +23,6 @@ import { MusicStateManager } from "./music/MusicStateManager";
 import { requiresSpotifyAccess } from "./music/MusicUtil";
 
 const moment = require("moment-timezone");
-
 
 let loggedInCacheState = null;
 let toggleFileEventLogging = null;
@@ -105,7 +100,6 @@ export async function getSlackOauth() {
 export async function getMusicTimeUserStatus() {
     // We don't have a user yet, check the users via the plugin/state
     const jwt = getItem("jwt");
-    const spotify_refresh_token = getItem("spotify_refresh_token");
 
     if (jwt) {
         const api = "/users/plugin/state";
@@ -229,9 +223,6 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
 
         // only add the "Liked Songs" playlist if there are tracks found in that playlist
         await populateLikedSongs();
-
-        // --async-- send the top spotify songs from the users playlists to help seed song sessions
-        seedLikedSongSessions();
 
         // initiate the playlist build
         setTimeout(() => {
@@ -357,17 +348,4 @@ export async function populateSpotifyDevices(isDeviceLaunch = false) {
             MusicStateManager.getInstance().fetchTrack();
         }, 3000);
     }
-}
-
-async function seedLikedSongSessions() {
-    const pluginInfo = {
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        offset_minutes: getOffsetSeconds() / 60,
-        pluginId: getPluginId(),
-        os: getOs(),
-        version: getVersion(),
-    };
-
-    const api = `/music/onboard`;
-    softwarePost(api, pluginInfo, getItem("jwt"));
 }

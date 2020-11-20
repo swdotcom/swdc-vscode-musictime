@@ -22,7 +22,6 @@ import { PlaylistItem, TrackStatus, CodyResponse, CodyResponseType } from "cody-
 import * as path from "path";
 import {
   getExtensionName,
-  getSoftwareDataStoreFile,
   getSoftwareSessionFile,
 } from "./managers/FileManager";
 
