@@ -36,7 +36,6 @@ import {
 import { commands, window } from "vscode";
 import {
     getSlackOauth,
-    getAppJwt,
     getMusicTimeUserStatus,
     populateSpotifyPlaylists,
     populateLikedSongs,
@@ -852,9 +851,6 @@ export class MusicManager {
         let clientSecret = "";
 
         let jwt = getItem("jwt");
-        if (!jwt) {
-            jwt = await getAppJwt();
-        }
         const resp = await softwareGet("/auth/spotify/clientInfo", jwt);
         if (isResponseOk(resp)) {
             // get the clientId and clientSecret

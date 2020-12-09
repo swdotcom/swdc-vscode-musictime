@@ -20,6 +20,10 @@ export function getSoftwareSessionFile() {
   return getFile("session.json");
 }
 
+export function getDeviceFile() {
+  return getFile("device.json");
+}
+
 export function getSoftwareDataStoreFile() {
   return getFile("data.json");
 }

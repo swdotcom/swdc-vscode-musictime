@@ -4,6 +4,8 @@ import {
     getItem,
     setItem,
     nowInSecs,
+    setAuthCallbackState,
+    getAuthCallbackState,
 } from "./Util";
 import {
     getSpotifyLikedSongs,
@@ -66,19 +68,6 @@ export async function serverIsAvailable() {
     return serverAvailable;
 }
 
-/**
- * get the app jwt
- */
-export async function getAppJwt() {
-    // get the app jwt
-    let resp = await softwareGet(`/data/apptoken?token=${nowInSecs()}`, null);
-    if (isResponseOk(resp)) {
-        return resp.data.jwt;
-    }
-
-    return null;
-}
-
 export async function getSlackOauth() {
     let jwt = getItem("jwt");
     if (jwt) {
@@ -100,14 +89,20 @@ export async function getSlackOauth() {
 export async function getMusicTimeUserStatus() {
     // We don't have a user yet, check the users via the plugin/state
     const jwt = getItem("jwt");
+    const auth_callback_state = getAuthCallbackState();
+    const token = (auth_callback_state) ? auth_callback_state : jwt;
 
-    if (jwt) {
+    if (token) {
         const api = "/users/plugin/state";
-        const resp = await softwareGet(api, jwt);
+        const resp = await softwareGet(api, token);
         if (isResponseOk(resp) && resp.data) {
             // NOT_FOUND, ANONYMOUS, OK, UNKNOWN
             const state = resp.data.state ? resp.data.state : "UNKNOWN";
             if (state === "OK") {
+                // clear the auth callback state
+                setItem("switching_account", false);
+                setAuthCallbackState(null);
+
                 /**
                  * stateData only contains:
                  * {email, jwt, state}
@@ -207,9 +202,15 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
         if (tryCountUntilFound > 0) {
             tryCountUntilFound -= 1;
             refetchSpotifyConnectStatusLazily(tryCountUntilFound);
+        } else {
+            // clear the auth callback state
+            setItem("switching_account", false);
+            setAuthCallbackState(null);
         }
     } else {
-        const dataMgr = MusicDataManager.getInstance();
+        // clear the auth callback state
+        setItem("switching_account", false);
+        setAuthCallbackState(null);
 
         setItem("requiresSpotifyReAuth", false);
 

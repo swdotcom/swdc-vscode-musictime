@@ -5,25 +5,14 @@
 import { commands, ExtensionContext } from "vscode";
 import { onboardPlugin } from "./OnboardManager";
 import {
-  nowInSecs,
-  getOffsetSeconds,
   getVersion,
   logIt,
   getPluginName,
   displayReadmeIfNotExists,
 } from "./Util";
-import { manageLiveshareSession } from "./LiveshareManager";
-import * as vsls from "vsls/vscode";
 import { createCommands } from "./command-helper";
-import { setSessionSummaryLiveshareMinutes } from "./OfflineManager";
 import { MusicManager } from "./music/MusicManager";
 import { TrackerManager } from "./managers/TrackerManager";
-
-let _ls = null;
-
-let liveshare_update_interval = null;
-let gather_music_interval = null;
-let check_track_end_interval = null;
 
 const tracker: TrackerManager = TrackerManager.getInstance();
 
@@ -33,22 +22,6 @@ export function deactivate(ctx: ExtensionContext) {
 
   // store the deactivate event
   tracker.trackEditorAction("editor", "deactivate");
-
-  if (_ls && _ls.id) {
-    // the IDE is closing, send this off
-    let nowSec = nowInSecs();
-    let offsetSec = getOffsetSeconds();
-    let localNow = nowSec - offsetSec;
-    // close the session on our end
-    _ls["end"] = nowSec;
-    _ls["local_end"] = localNow;
-    manageLiveshareSession(_ls);
-    _ls = null;
-  }
-
-  clearInterval(liveshare_update_interval);
-  clearInterval(gather_music_interval);
-  clearInterval(check_track_end_interval);
 }
 
 export async function activate(ctx: ExtensionContext) {
@@ -77,47 +50,6 @@ export async function intializePlugin(ctx: ExtensionContext) {
   // show the readme if it doesn't exist
   displayReadmeIfNotExists();
 
-  initializeLiveshare();
-
   // store the activate event
   tracker.init();
-}
-
-function updateLiveshareTime() {
-  if (_ls) {
-    let nowSec = nowInSecs();
-    let diffSeconds = nowSec - parseInt(_ls["start"], 10);
-    setSessionSummaryLiveshareMinutes(diffSeconds * 60);
-  }
-}
-
-async function initializeLiveshare() {
-  const liveshare = await vsls.getApi();
-  if (liveshare) {
-    // {access: number, id: string, peerNumber: number, role: number, user: json}
-    logIt(`liveshare version - ${liveshare["apiVersion"]}`);
-    liveshare.onDidChangeSession(async (event) => {
-      let nowSec = nowInSecs();
-      let offsetSec = getOffsetSeconds();
-      let localNow = nowSec - offsetSec;
-      if (!_ls) {
-        _ls = {
-          ...event.session,
-        };
-        _ls["apiVesion"] = liveshare["apiVersion"];
-        _ls["start"] = nowSec;
-        _ls["local_start"] = localNow;
-        _ls["end"] = 0;
-
-        await manageLiveshareSession(_ls);
-      } else if (_ls && (!event || !event["id"])) {
-        updateLiveshareTime();
-        // close the session on our end
-        _ls["end"] = nowSec;
-        _ls["local_end"] = localNow;
-        await manageLiveshareSession(_ls);
-        _ls = null;
-      }
-    });
-  }
 }
