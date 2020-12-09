@@ -43,8 +43,13 @@ import {
   isMac,
   getCodyErrorMessage,
   isWindows,
+  setAuthCallbackState,
+  getPluginType,
+  getVersion,
+  getPluginUuid,
+  getPluginId
 } from "../Util";
-import { softwareGet, softwarePut, isResponseOk } from "../HttpClient";
+import { softwareGet, softwarePut } from "../HttpClient";
 import {
   api_endpoint,
   REFRESH_CUSTOM_PLAYLIST_TITLE,
@@ -70,6 +75,9 @@ import {
   getMusicTimeMarkdownFile,
   getSoftwareDir,
 } from "../managers/FileManager";
+import { v4 as uuidv4 } from "uuid";
+
+const queryString = require('query-string');
 
 const fileIt = require("file-it");
 const moment = require("moment-timezone");
@@ -757,11 +765,21 @@ export async function connectSpotify() {
     await disconnectSpotify(false /*confirmDisconnect*/);
   }
 
-  const encodedJwt = encodeURIComponent(jwt);
-  const mac = isMac() ? "true" : "false";
-  const qryStr = `token=${encodedJwt}&mac=${mac}`;
-  const endpoint = `${api_endpoint}/auth/spotify?${qryStr}`;
+  const auth_callback_state = uuidv4();
+  setAuthCallbackState(auth_callback_state);
+
+  let queryStr = queryString.stringify({
+      plugin: getPluginType(),
+      plugin_uuid: getPluginUuid(),
+      pluginVersion: getVersion(),
+      plugin_id: getPluginId(),
+      mac: isMac(),
+      auth_callback_state
+  });
+
+  const endpoint = `${api_endpoint}/auth/spotify?${queryStr}`;
   launchWebUrl(endpoint);
+  
   refetchSpotifyConnectStatusLazily();
 }
 

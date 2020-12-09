@@ -21,9 +21,11 @@ import { getToggleFileEventLoggingState } from "./DataController";
 import { PlaylistItem, TrackStatus, CodyResponse, CodyResponseType } from "cody-music";
 import * as path from "path";
 import {
+  getDeviceFile,
   getExtensionName,
   getSoftwareSessionFile,
 } from "./managers/FileManager";
+import { v4 as uuidv4 } from "uuid";
 
 const fileIt = require("file-it");
 const moment = require("moment-timezone");
@@ -299,6 +301,24 @@ export function setItem(key, value) {
 
 export function getItem(key) {
   return fileIt.getJsonValue(getSoftwareSessionFile(), key);
+}
+
+export function getPluginUuid() {
+  let plugin_uuid = fileIt.getJsonValue(getDeviceFile(), "plugin_uuid");
+  if (!plugin_uuid) {
+      // set it for the 1st and only time
+      plugin_uuid = uuidv4();
+      fileIt.setJsonValue(getDeviceFile(), "plugin_uuid", plugin_uuid);
+  }
+  return plugin_uuid;
+}
+
+export function getAuthCallbackState() {
+  return fileIt.getJsonValue(getDeviceFile(), "auth_callback_state");
+}
+
+export function setAuthCallbackState(value: string) {
+  fileIt.setJsonValue(getDeviceFile(), "auth_callback_state", value);
 }
 
 export function isEmptyObj(obj) {

@@ -1,121 +1,151 @@
 import { window, ExtensionContext } from "vscode";
 import {
-  serverIsAvailable,
-  getAppJwt
+  serverIsAvailable
 } from "./DataController";
 import {
-  softwareSessionFileExists,
-  jwtExists,
   showOfflinePrompt,
   getItem,
   getOsUsername,
   getHostname,
-  setItem
+  setItem,
+  getPluginUuid,
+  getAuthCallbackState,
+  setAuthCallbackState
 } from "./Util";
 import { softwarePost, isResponseOk } from "./HttpClient";
 import jwt_decode = require("jwt-decode");
+import { v4 as uuidv4 } from "uuid";
 
-let secondary_window_activate_counter = 0;
 let retry_counter = 0;
-// 10 minutes
-const check_online_interval_ms = 1000 * 60 * 10;
+const one_min_millis = 1000 * 60;
 
-export async function onboardPlugin(ctx: ExtensionContext, successFunction: any) {
-  let windowState = window.state;
-  // check if window state is focused or not and the
-  // secondary_window_activate_counter is equal to zero
-  if (!windowState.focused && secondary_window_activate_counter === 0) {
-    // This window is not focused, call activate in 1 minute in case
-    // there's another vscode editor that is focused. Allow that one
-    // to activate right away.
-    setTimeout(() => {
-      secondary_window_activate_counter++;
-      onboardPlugin(ctx, successFunction);
-    }, 1000 * 10);
-  } else {
-    // make sure the jwt in the session.json isn't an app jwt
-    cleanOutAppJwt();
+export async function onboardPlugin(ctx: ExtensionContext, callback: any) {
+  let jwt = getItem("jwt");
 
-    // check session.json existence
-    const serverIsOnline = await serverIsAvailable();
-    if (!softwareSessionFileExists() || !jwtExists()) {
-      // session file doesn't exist
-      // check if the server is online before creating the anon user
-      if (!serverIsOnline) {
-        if (retry_counter === 0) {
-          showOfflinePrompt(true);
+    const windowState = window.state;
+
+    // first, verify that it is a valid jwt token
+    if (jwt && windowState.focused) {
+        // it's the primary window as a secondary window
+        const decoded = jwt_decode(jwt.split("JWT")[1]);
+        // check to see if its an app jwt ID
+        if (decoded["id"] > 9999999999) {
+            // its not valid and this is the primary window, nullify it
+            setItem("jwt", null);
+            jwt = null;
         }
-        // call activate again later
-        setTimeout(() => {
-          retry_counter++;
-          onboardPlugin(ctx, successFunction);
-        }, check_online_interval_ms);
-      } else {
-        // create the anon user
-        const result = await createAnonymousUser();
-        if (!result) {
-          if (retry_counter === 0) {
-            showOfflinePrompt(true);
-          }
-          // call activate again later
-          setTimeout(() => {
-            retry_counter++;
-            onboardPlugin(ctx, successFunction);
-          }, check_online_interval_ms);
-        } else {
-          // initialize the rest of the plugin
-          successFunction(ctx);
-        }
-      }
-    } else {
-      // has a session file, continue with initialization of the plugin
-      successFunction(ctx);
     }
-  }
+
+    if (jwt) {
+        // we have the jwt, call the callback that anon was not created
+        return callback(ctx);
+    }
+
+    if (windowState.focused) {
+        // perform primary window related work
+        primaryWindowOnboarding(ctx, callback);
+    } else {
+        // call the secondary onboarding logic
+        secondaryWindowOnboarding(ctx, callback);
+    }
 }
 
-function cleanOutAppJwt() {
-  const jwt = getItem("jwt");
-  // first, verify that it is a valid jwt token
-  // if it isn't, nullify it
-  if (jwt) {
-    const decoded = jwt_decode(jwt.split("JWT")[1]);
-    // if the decoded id is not a valid user id (it's probably an "app jwt")
-    // set the jwt to null
-    if (decoded["id"] > 9999999999) {
-      setItem("jwt", null);
-    }
+async function primaryWindowOnboarding(ctx: ExtensionContext, callback: any) {
+  let serverIsOnline = await serverIsAvailable();
+  if (serverIsOnline) {
+      // great, it's online, create the anon user
+      const jwt = await createAnonymousUser();
+      if (jwt) {
+          // great, it worked. call the callback
+          return callback(ctx);
+      }
+      // else its some kind of server issue, try again in a minute
+      serverIsOnline = false;
+  }
+
+  if (!serverIsOnline) {
+      // not online, try again in a minute
+      if (retry_counter === 0) {
+          // show the prompt that we're unable connect to our app 1 time only
+          showOfflinePrompt(true);
+      }
+      // call activate again later
+      setTimeout(() => {
+          retry_counter++;
+          onboardPlugin(ctx, callback);
+      }, one_min_millis * 2);
   }
 }
 
 /**
- * create an anonymous user
+* This is called if there's no JWT. If it reaches a
+* 6th call it will create an anon user.
+* @param ctx
+* @param callback
+*/
+async function secondaryWindowOnboarding(ctx: ExtensionContext, callback: any) {
+  const serverIsOnline = await serverIsAvailable();
+  if (!serverIsOnline) {
+      // not online, try again later
+      setTimeout(() => {
+        onboardPlugin(ctx, callback);
+      }, one_min_millis);
+      return;
+  } else if (retry_counter < 5) {
+      if (serverIsOnline) {
+          retry_counter++;
+      }
+      // call activate again in about 15 seconds
+      setTimeout(() => {
+        onboardPlugin(ctx, callback);
+      }, 1000 * 15);
+      return;
+  }
+
+  // tried enough times, create an anon user
+  await createAnonymousUser();
+  // call the callback
+  return callback(ctx);
+}
+
+/**
+ * create an anonymous user based on github email or mac addr
  */
-export async function createAnonymousUser() {
-  let appJwt = await getAppJwt();
-  if (appJwt) {
-    const jwt = getItem("jwt");
-    // check one more time before creating the anon user
-    if (!jwt) {
-      const creation_annotation = "NO_SESSION_FILE";
+export async function createAnonymousUser(ignoreJwt: boolean = false): Promise<string> {
+  const jwt = getItem("jwt");
+  // check one more time before creating the anon user
+  if (!jwt || ignoreJwt) {
+      // this should not be undefined if its an account reset
+      let plugin_uuid = getPluginUuid();
+      let auth_callback_state = getAuthCallbackState();
+      if (!auth_callback_state) {
+          auth_callback_state = uuidv4();
+          setAuthCallbackState(auth_callback_state);
+      }
       const username = await getOsUsername();
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const hostname = await getHostname();
-      let resp = await softwarePost(
-        "/data/onboard",
-        {
-          timezone,
-          username,
-          creation_annotation,
-          hostname,
-        },
-        appJwt
+
+      const resp = await softwarePost(
+          "/plugins/onboard",
+          {
+              timezone,
+              username,
+              plugin_uuid,
+              hostname,
+              auth_callback_state
+          }
       );
       if (isResponseOk(resp) && resp.data && resp.data.jwt) {
-        setItem("jwt", resp.data.jwt);
-        return resp.data.jwt;
+          setItem("jwt", resp.data.jwt);
+          if (!resp.data.user.registered) {
+              setItem("name", null);
+          }
+          setItem("switching_account", false);
+          setAuthCallbackState(null);
+          return resp.data.jwt;
       }
-    }
   }
+
   return null;
 }
