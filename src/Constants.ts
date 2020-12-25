@@ -4,6 +4,7 @@ export const YES_LABEL = "Yes";
 export const LOGIN_LABEL = "Log in";
 export const SIGNUP_LABEL = "Sign up";
 export const LOGOUT_LABEL = "Log out";
+export const DISCONNECT_LABEL = "Disconnect";
 export const UNTITLED = "Untitled";
 export const UNTITLED_WORKSPACE = "UntitledWorkspace";
 export const NO_PROJ_NAME = "Unnamed";

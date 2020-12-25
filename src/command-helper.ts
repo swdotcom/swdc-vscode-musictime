@@ -3,7 +3,6 @@ import {
   MusicControlManager,
   connectSpotify,
   disconnectSpotify,
-  disconnectSlack,
   switchSpotifyAccount,
   displayMusicTimeMetricsMarkdownDashboard,
 } from "./music/MusicControlManager";
@@ -11,7 +10,7 @@ import { launchMusicAnalytics, displayReadmeIfNotExists } from "./Util";
 import { MusicPlaylistProvider, connectPlaylistTreeView } from "./music/MusicPlaylistProvider";
 import { PlaylistItem, PlayerName, PlayerDevice, playSpotifyDevice } from "cody-music";
 import { SocialShareManager } from "./social/SocialShareManager";
-import { connectSlack } from "./slack/SlackControlManager";
+import { connectSlackWorkspace, disconnectSlack } from "./slack/SlackControlManager";
 import { MusicManager } from "./music/MusicManager";
 import {
   MusicRecommendationProvider,
@@ -265,7 +264,7 @@ export function createCommands(): {
   // CONNECT SLACK
   cmds.push(
     commands.registerCommand("musictime.connectSlack", () => {
-      connectSlack();
+      connectSlackWorkspace();
     })
   );
 

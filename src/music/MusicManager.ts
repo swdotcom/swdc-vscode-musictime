@@ -805,27 +805,6 @@ export class MusicManager {
         return createResult;
     }
 
-    async initializeSlack() {
-        const slackOauth = await getSlackOauth();
-        if (slackOauth) {
-            // update the CodyMusic credentials
-            this.updateSlackAccessInfo(slackOauth);
-        } else {
-            setItem("slack_access_token", null);
-        }
-    }
-
-    async updateSlackAccessInfo(slackOauth) {
-        /**
-         * {access_token, refresh_token}
-         */
-        if (slackOauth) {
-            setItem("slack_access_token", slackOauth.access_token);
-        } else {
-            setItem("slack_access_token", null);
-        }
-    }
-
     async updateSpotifyAccessInfo(spotifyOauth) {
         if (spotifyOauth && spotifyOauth.access_token) {
             // update the CodyMusic credentials

@@ -23,6 +23,8 @@ import * as path from "path";
 import {
   getDeviceFile,
   getExtensionName,
+  getFileDataAsJson,
+  getIntegrationsFile,
   getSoftwareSessionFile,
 } from "./managers/FileManager";
 import { v4 as uuidv4 } from "uuid";
@@ -319,6 +321,19 @@ export function getAuthCallbackState() {
 
 export function setAuthCallbackState(value: string) {
   fileIt.setJsonValue(getDeviceFile(), "auth_callback_state", value);
+}
+
+export function getIntegrations() {
+  let integrations = getFileDataAsJson(getIntegrationsFile());
+  if (!integrations) {
+    integrations = [];
+    syncIntegrations(integrations);
+  }
+  return integrations;
+}
+
+export function syncIntegrations(integrations) {
+  fileIt.writeJsonFileSync(getIntegrationsFile(), integrations);
 }
 
 export function isEmptyObj(obj) {
