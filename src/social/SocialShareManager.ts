@@ -213,7 +213,7 @@ export class SocialShareManager {
     }
 
     async shareSlack() {
-        const selectedChannel = await showSlackChannelMenu();
+        const {selectedChannel, access_token} = await showSlackChannelMenu();
         if (!selectedChannel) {
             return;
         }
@@ -223,9 +223,9 @@ export class SocialShareManager {
         if (!message) {
             return;
         }
-        const slackAccessToken = await getSlackAccessToken();
+
         const msg = `${message}\n${spotifyLinkUrl}`;
-        const web = new WebClient(slackAccessToken);
+        const web = new WebClient(access_token);
         await web.chat
             .postMessage({
                 text: msg,
@@ -233,20 +233,10 @@ export class SocialShareManager {
                 as_user: true
             })
             .catch(err => {
-                // try without sending "as_user"
-                web.chat
-                    .postMessage({
-                        text: msg,
-                        channel: selectedChannel
-                    })
-                    .catch(err => {
-                        if (err.message) {
-                            console.log(
-                                "error posting slack message: ",
-                                err.message
-                            );
-                        }
-                    });
+                console.log(
+                    "error posting slack message: ",
+                    err.message
+                );
             });
     }
 }

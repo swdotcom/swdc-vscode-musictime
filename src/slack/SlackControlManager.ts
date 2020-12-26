@@ -12,7 +12,7 @@ import {
 } from "../Util";
 import { refetchSlackConnectStatusLazily } from "../DataController";
 import { showQuickPick } from "../MenuManager";
-import { window } from "vscode";
+import { commands, window } from "vscode";
 import { softwarePut } from "../HttpClient";
 
 const queryString = require("query-string");
@@ -83,20 +83,19 @@ export async function showSlackChannelMenu() {
   };
 
   // get the available channels
-  const channelNames = await getChannelNames();
-  channelNames.sort();
+  let {channels, access_token} = await getChannels();
+  channels.sort(compareLabels);
 
-  channelNames.forEach((channelName) => {
-    menuOptions.items.push({
-      label: channelName,
-    });
-  });
+  // make sure the object array has labels
+  channels = channels.map(n => {return {...n, label: n.name};});
+
+  menuOptions.items = channels;
 
   const pick = await showQuickPick(menuOptions);
   if (pick && pick.label) {
-    return pick.label;
+    return {selectedChannel: pick.id, access_token};
   }
-  return null;
+  return {selectedChannel: null, access_token};
 }
 
 // get saved slack integrations
@@ -144,19 +143,29 @@ async function getChannels() {
     return [];
   });
   if (result && result.ok) {
-    return result.channels;
+    /**
+    created:1493157509
+    creator:'U54G1N6LC'
+    id:'C53QCUUKS'
+    is_archived:false
+    is_channel:true
+    is_ext_shared:false
+    is_general:true
+    is_group:false
+    is_im:false
+    is_member:true
+    is_mpim:false
+    is_org_shared:false
+    is_pending_ext_shared:false
+    is_private:false
+    is_shared:false
+    name:'company-announcements'
+    name_normalized:'company-announcements'
+    num_members:20
+    */
+    return { channels: result.channels, access_token };
   }
-  return [];
-}
-
-async function getChannelNames() {
-  const channels = await getChannels();
-  if (channels && channels.length > 0) {
-    return channels.map((channel) => {
-      return channel.name;
-    });
-  }
-  return [];
+  return {channels: [], access_token: null};
 }
 
 async function showSlackWorkspaceSelection() {
@@ -169,16 +178,23 @@ async function showSlackWorkspaceSelection() {
   integrations.forEach((integration) => {
     menuOptions.items.push({
       label: integration.team_domain,
+      value: integration.team_domain
     });
   });
 
   menuOptions.items.push({
     label: "Connect a Slack workspace",
+    command: "musictime.connectSlack"
   });
 
   const pick = await showQuickPick(menuOptions);
-  if (pick && pick.label) {
-    return pick.label;
+  if (pick) {
+    if (pick.value) {
+      return pick.value;
+    } else if (pick.command) {
+      commands.executeCommand(pick.command);
+      return null;
+    }
   }
   return null;
 }
@@ -207,4 +223,11 @@ async function showSlackWorkspacesToDisconnect() {
     return pick.value;
   }
   return null;
+}
+
+function compareLabels(a, b) {
+  if (a.name > b.name) return 1;
+  if (b.name > a.name) return -1;
+
+  return 0;
 }

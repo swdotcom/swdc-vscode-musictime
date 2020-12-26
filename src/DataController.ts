@@ -3,10 +3,10 @@ import { softwareGet, isResponseOk } from "./HttpClient";
 import {
     getItem,
     setItem,
-    nowInSecs,
     setAuthCallbackState,
     getAuthCallbackState,
     getIntegrations,
+    syncIntegrations,
 } from "./Util";
 import {
     getSpotifyLikedSongs,
@@ -31,7 +31,6 @@ const moment = require("moment-timezone");
 let loggedInCacheState = null;
 let toggleFileEventLogging = null;
 
-let slackFetchTimeout = null;
 let spotifyFetchTimeout = null;
 let currentDayHour = null;
 
@@ -101,6 +100,9 @@ export async function getSlackOauth(user = null) {
         }
       }
     }
+    // update the integrations if we found any new ones
+    syncIntegrations(currentIntegrations);
+
     return foundNewIntegration;
 }
 
