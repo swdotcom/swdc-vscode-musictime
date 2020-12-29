@@ -83,19 +83,20 @@ export async function getSlackOauth(user = null) {
           if (!foundIntegration) {
             // get the workspace domain using the authId
             const web = new WebClient(integration.access_token);
-            const usersIdentify = await web.users.identity((e) => {
+            const usersIdentify = await web.users.identity().catch((e) => {
               console.log("error fetching slack team info: ", e.message);
               return null;
             });
-            // usersIdentity returns
-            // {team: {id, name, domain, image_102, image_132, ....}...}
-            // set the domain
-            integration["team_domain"] = usersIdentify?.team?.domain;
-            integration["team_name"] = usersIdentify?.team?.name;
-            // add it
-            currentIntegrations.push(integration);
-  
-            foundNewIntegration = true;
+            if (usersIdentify) {
+                // usersIdentity returns
+                // {team: {id, name, domain, image_102, image_132, ....}...}
+                // set the domain
+                integration["team_domain"] = usersIdentify.team.domain;
+                integration["team_name"] = usersIdentify.team.name;
+                // add it
+                currentIntegrations.push(integration);
+                foundNewIntegration = true;
+            }
           }
         }
       }
@@ -119,26 +120,20 @@ export async function getMusicTimeUserStatus() {
             // NOT_FOUND, ANONYMOUS, OK, UNKNOWN
             const state = resp.data.state ? resp.data.state : "UNKNOWN";
             if (state === "OK") {
+                const user = resp.data.user;
                 // clear the auth callback state
-                setItem("switching_account", false);
                 setAuthCallbackState(null);
 
-                /**
-                 * stateData only contains:
-                 * {email, jwt, state}
-                 */
-                const stateData = resp.data;
-                if (stateData.email) {
-                    setItem("name", stateData.email);
+                if (user.registered === 1) {
+                    setItem("name", user.email);
                 }
                 // check the jwt
-                if (stateData.jwt) {
+                if (user.plugin_jwt) {
                     // update it
-                    setItem("jwt", stateData.jwt);
+                    setItem("jwt", user.plugin_jwt);
                 }
 
                 // get the user from the payload
-                const user = resp.data.user;
                 let foundSpotifyAuth = false;
 
                 const musicMgr: MusicManager = MusicManager.getInstance();
@@ -199,12 +194,6 @@ export async function refetchSlackConnectStatusLazily(tryCountUntilFoundUser = 4
     // clear the auth callback state
     setAuthCallbackState(null);
     window.showInformationMessage("Successfully connected to Slack");
-
-    // commands.executeCommand("codetime.refreshFlowTree");
-
-    setTimeout(() => {
-      // commands.executeCommand("codetime.refreshCodetimeMenuTree");
-    }, 1000);
   }
 }
 
@@ -227,12 +216,10 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
             refetchSpotifyConnectStatusLazily(tryCountUntilFound);
         } else {
             // clear the auth callback state
-            setItem("switching_account", false);
             setAuthCallbackState(null);
         }
     } else {
         // clear the auth callback state
-        setItem("switching_account", false);
         setAuthCallbackState(null);
 
         setItem("requiresSpotifyReAuth", false);

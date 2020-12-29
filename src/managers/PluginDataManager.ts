@@ -254,7 +254,6 @@ export class PluginDataManager {
     */
   async processPayloadHandler(
     payload: KeystrokeStats,
-    sendNow: boolean,
     nowTimes: any,
     isUnfocus: boolean = false
   ) {

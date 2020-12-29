@@ -13,8 +13,6 @@ import {
   setAuthCallbackState
 } from "./Util";
 import { softwarePost, isResponseOk } from "./HttpClient";
-import jwt_decode = require("jwt-decode");
-import { v4 as uuidv4 } from "uuid";
 
 let retry_counter = 0;
 const one_min_millis = 1000 * 60;
@@ -23,18 +21,6 @@ export async function onboardPlugin(ctx: ExtensionContext, callback: any) {
   let jwt = getItem("jwt");
 
     const windowState = window.state;
-
-    // first, verify that it is a valid jwt token
-    if (jwt && windowState.focused) {
-        // it's the primary window as a secondary window
-        const decoded = jwt_decode(jwt.split("JWT")[1]);
-        // check to see if its an app jwt ID
-        if (decoded["id"] > 9999999999) {
-            // its not valid and this is the primary window, nullify it
-            setItem("jwt", null);
-            jwt = null;
-        }
-    }
 
     if (jwt) {
         // we have the jwt, call the callback that anon was not created
@@ -118,10 +104,7 @@ export async function createAnonymousUser(ignoreJwt: boolean = false): Promise<s
       // this should not be undefined if its an account reset
       let plugin_uuid = getPluginUuid();
       let auth_callback_state = getAuthCallbackState();
-      if (!auth_callback_state) {
-          auth_callback_state = uuidv4();
-          setAuthCallbackState(auth_callback_state);
-      }
+
       const username = await getOsUsername();
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const hostname = await getHostname();
@@ -141,7 +124,6 @@ export async function createAnonymousUser(ignoreJwt: boolean = false): Promise<s
           if (!resp.data.user.registered) {
               setItem("name", null);
           }
-          setItem("switching_account", false);
           setAuthCallbackState(null);
           return resp.data.jwt;
       }

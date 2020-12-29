@@ -316,7 +316,12 @@ export function getPluginUuid() {
 }
 
 export function getAuthCallbackState() {
-  return fileIt.getJsonValue(getDeviceFile(), "auth_callback_state");
+  let auth_callback_state = fileIt.getJsonValue(getDeviceFile(), "auth_callback_state");
+  if (!auth_callback_state) {
+    auth_callback_state = uuidv4();
+    fileIt.setJsonValue(getDeviceFile(), "auth_callback_state", auth_callback_state);
+  }
+  return auth_callback_state;
 }
 
 export function setAuthCallbackState(value: string) {

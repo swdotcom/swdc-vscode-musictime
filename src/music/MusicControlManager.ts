@@ -43,11 +43,11 @@ import {
   isMac,
   getCodyErrorMessage,
   isWindows,
-  setAuthCallbackState,
   getPluginType,
   getVersion,
   getPluginUuid,
-  getPluginId
+  getPluginId,
+  getAuthCallbackState
 } from "../Util";
 import { softwareGet, softwarePut } from "../HttpClient";
 import {
@@ -75,7 +75,6 @@ import {
   getMusicTimeMarkdownFile,
   getSoftwareDir,
 } from "../managers/FileManager";
-import { v4 as uuidv4 } from "uuid";
 
 const queryString = require('query-string');
 
@@ -763,8 +762,7 @@ export async function connectSpotify() {
     await disconnectSpotify(false /*confirmDisconnect*/);
   }
 
-  const auth_callback_state = uuidv4();
-  setAuthCallbackState(auth_callback_state);
+  const auth_callback_state = getAuthCallbackState();
 
   let queryStr = queryString.stringify({
       plugin: getPluginType(),

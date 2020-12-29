@@ -357,13 +357,6 @@ export function createCommands(): {
   );
   cmds.push(sortPlaylistToOriginalCommand);
 
-  const switchToThisDeviceCommand = commands.registerCommand(
-    "musictime.switchToThisDevice",
-    async () => {
-      musicMgr.launchTrackPlayer(PlayerName.SpotifyDesktop);
-    }
-  );
-
   // PROCESS KEYSTROKES NOW
   cmds.push(
     commands.registerCommand("musictime.processKeystrokeData", () => {

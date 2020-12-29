@@ -19,6 +19,12 @@ const queryString = require("query-string");
 const { WebClient } = require("@slack/web-api");
 
 export async function connectSlackWorkspace() {
+  const registered = await checkRegistration();
+  if (!registered) {
+    return;
+  }
+
+  // make sure the user is logged in before connecting slack
   const qryStr = queryString.stringify({
     plugin: getPluginType(),
     plugin_uuid: getPluginUuid(),
@@ -223,6 +229,28 @@ async function showSlackWorkspacesToDisconnect() {
     return pick.value;
   }
   return null;
+}
+
+async function checkRegistration(showSignup = true) {
+  if (!getItem("name")) {
+    if (showSignup) {
+      window
+        .showInformationMessage(
+          "Connecting Slack requires a registered account. Connect Spotify to continue.",
+          {
+            modal: true,
+          },
+          "Connect Spotify"
+        )
+        .then(async (selection) => {
+          if (selection === "Connect Spotify") {
+            commands.executeCommand("musictime.connectSpotify");
+          }
+        });
+    }
+    return false;
+  }
+  return true;
 }
 
 function compareLabels(a, b) {
