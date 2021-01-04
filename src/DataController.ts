@@ -3,9 +3,10 @@ import { softwareGet, isResponseOk } from "./HttpClient";
 import {
     getItem,
     setItem,
-    nowInSecs,
     setAuthCallbackState,
     getAuthCallbackState,
+    getIntegrations,
+    syncIntegrations,
 } from "./Util";
 import {
     getSpotifyLikedSongs,
@@ -23,13 +24,13 @@ import { MusicCommandUtil } from "./music/MusicCommandUtil";
 import { MusicCommandManager } from "./music/MusicCommandManager";
 import { MusicStateManager } from "./music/MusicStateManager";
 import { requiresSpotifyAccess } from "./music/MusicUtil";
+const { WebClient } = require("@slack/web-api");
 
 const moment = require("moment-timezone");
 
 let loggedInCacheState = null;
 let toggleFileEventLogging = null;
 
-let slackFetchTimeout = null;
 let spotifyFetchTimeout = null;
 let currentDayHour = null;
 
@@ -68,25 +69,43 @@ export async function serverIsAvailable() {
     return serverAvailable;
 }
 
-export async function getSlackOauth() {
-    let jwt = getItem("jwt");
-    if (jwt) {
-        let user = await getUser(jwt);
-        if (user && user.auths) {
-            // get the one that is "slack"
-            for (let i = 0; i < user.auths.length; i++) {
-                if (user.auths[i].type === "slack") {
-                    await MusicManager.getInstance().updateSlackAccessInfo(
-                        user.auths[i]
-                    );
-                    return user.auths[i];
-                }
-            }
+export async function getSlackAuth() {
+  let foundNewIntegration = false;
+  const { user } = await getUserRegistrationState();
+  if (user && user.integrations) {
+    const currentIntegrations = getIntegrations();
+    // find the slack auth
+    for (const integration of user.integrations) {
+      // {access_token, name, plugin_uuid, scopes, pluginId, authId, refresh_token, scopes}
+      if (integration.name.toLowerCase() === "slack") {
+        // check if it exists
+        const foundIntegration = currentIntegrations.find((n) => n.authId === integration.authId);
+        if (!foundIntegration) {
+          // get the workspace domain using the authId
+          const web = new WebClient(integration.access_token);
+          const usersIdentify = await web.users.identity((e) => {
+            console.log("error fetching slack team info: ", e.message);
+            return null;
+          });
+          // usersIdentity returns
+          // {team: {id, name, domain, image_102, image_132, ....}...}
+          // set the domain
+          integration["team_domain"] = usersIdentify?.team?.domain;
+          integration["team_name"] = usersIdentify?.team?.name;
+          // add it
+          currentIntegrations.push(integration);
+
+          foundNewIntegration = true;
         }
+      }
     }
+
+    syncIntegrations(currentIntegrations);
+  }
+  return foundNewIntegration;
 }
 
-export async function getMusicTimeUserStatus() {
+export async function getUserRegistrationState() {
     // We don't have a user yet, check the users via the plugin/state
     const jwt = getItem("jwt");
     const auth_callback_state = getAuthCallbackState();
@@ -99,26 +118,20 @@ export async function getMusicTimeUserStatus() {
             // NOT_FOUND, ANONYMOUS, OK, UNKNOWN
             const state = resp.data.state ? resp.data.state : "UNKNOWN";
             if (state === "OK") {
+                const user = resp.data.user;
                 // clear the auth callback state
-                setItem("switching_account", false);
                 setAuthCallbackState(null);
 
-                /**
-                 * stateData only contains:
-                 * {email, jwt, state}
-                 */
-                const stateData = resp.data;
-                if (stateData.email) {
-                    setItem("name", stateData.email);
+                if (user.registered === 1) {
+                    setItem("name", user.email);
                 }
                 // check the jwt
-                if (stateData.jwt) {
+                if (user.plugin_jwt) {
                     // update it
-                    setItem("jwt", stateData.jwt);
+                    setItem("jwt", user.plugin_jwt);
                 }
 
                 // get the user from the payload
-                const user = resp.data.user;
                 let foundSpotifyAuth = false;
 
                 const musicMgr: MusicManager = MusicManager.getInstance();
@@ -132,20 +145,17 @@ export async function getMusicTimeUserStatus() {
                             foundSpotifyAuth = true;
                             // update spotify access info
                             await musicMgr.updateSpotifyAccessInfo(auth);
-                        } else if (user.auths[i].type === "slack") {
-                            // update slack connection
-                            await musicMgr.updateSlackAccessInfo(auth);
                         }
                     }
                 }
 
-                return { loggedOn: foundSpotifyAuth, state };
+                return { loggedOn: foundSpotifyAuth, state, user };
             }
             // return the state that is returned
-            return { loggedOn: false, state };
+            return { loggedOn: false, state, user: null };
         }
     }
-    return { loggedOn: false, state: "UNKNOWN" };
+    return { loggedOn: false, state: "UNKNOWN", user: null };
 }
 
 export async function getUser(jwt) {
@@ -162,27 +172,24 @@ export async function getUser(jwt) {
     return null;
 }
 
-export function refetchSlackConnectStatusLazily(tryCountUntilFound = 40) {
-    if (slackFetchTimeout) {
-        return;
-    }
-    slackFetchTimeout = setTimeout(() => {
-        slackFetchTimeout = null;
-        slackConnectStatusHandler(tryCountUntilFound);
-    }, 10000);
-}
-
-async function slackConnectStatusHandler(tryCountUntilFound) {
-    let oauth = await getSlackOauth();
-    if (!oauth) {
-        // try again if the count is not zero
-        if (tryCountUntilFound > 0) {
-            tryCountUntilFound -= 1;
-            refetchSlackConnectStatusLazily(tryCountUntilFound);
-        }
+export async function refetchSlackConnectStatusLazily(tryCountUntilFoundUser = 40) {
+  const slackAuth = await getSlackAuth();
+  if (!slackAuth) {
+    // try again if the count is not zero
+    if (tryCountUntilFoundUser > 0) {
+      tryCountUntilFoundUser -= 1;
+      setTimeout(() => {
+        refetchSlackConnectStatusLazily(tryCountUntilFoundUser);
+      }, 10000);
     } else {
-        window.showInformationMessage(`Successfully connected to Slack`);
+      // clear the auth callback state
+      setAuthCallbackState(null);
     }
+  } else {
+    // clear the auth callback state
+    setAuthCallbackState(null);
+    window.showInformationMessage("Successfully connected to Slack");
+  }
 }
 
 export function refetchSpotifyConnectStatusLazily(tryCountUntilFound = 40) {
@@ -196,7 +203,7 @@ export function refetchSpotifyConnectStatusLazily(tryCountUntilFound = 40) {
 }
 
 async function spotifyConnectStatusHandler(tryCountUntilFound) {
-    let oauthResult = await getMusicTimeUserStatus();
+    let oauthResult = await getUserRegistrationState();
     if (!oauthResult.loggedOn) {
         // try again if the count is not zero
         if (tryCountUntilFound > 0) {
@@ -204,12 +211,10 @@ async function spotifyConnectStatusHandler(tryCountUntilFound) {
             refetchSpotifyConnectStatusLazily(tryCountUntilFound);
         } else {
             // clear the auth callback state
-            setItem("switching_account", false);
             setAuthCallbackState(null);
         }
     } else {
         // clear the auth callback state
-        setItem("switching_account", false);
         setAuthCallbackState(null);
 
         setItem("requiresSpotifyReAuth", false);

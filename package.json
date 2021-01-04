@@ -1,7 +1,7 @@
 {
   "name": "music-time",
   "displayName": "Music Time for Spotify",
-  "version": "2.0.24",
+  "version": "2.0.25",
   "publisher": "softwaredotcom",
   "description": "Music Time for Spotify is a VS Code extension that discovers the most productive music to listen to as you code.",
   "author": {
@@ -374,7 +374,7 @@
     "webpack-cli": "^3.3.10"
   },
   "dependencies": {
-    "@slack/web-api": "^5.0.1",
+    "@slack/web-api": "^5.14.0",
     "@types/jwt-decode": "^2.2.1",
     "aws-sdk": "^2.470.0",
     "axios": "^0.19.0",

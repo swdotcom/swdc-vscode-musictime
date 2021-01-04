@@ -35,8 +35,7 @@ import {
 } from "../Constants";
 import { commands, window } from "vscode";
 import {
-    getSlackOauth,
-    getMusicTimeUserStatus,
+    getUserRegistrationState,
     populateSpotifyPlaylists,
     populateLikedSongs,
     populateSpotifyDevices,
@@ -805,27 +804,6 @@ export class MusicManager {
         return createResult;
     }
 
-    async initializeSlack() {
-        const slackOauth = await getSlackOauth();
-        if (slackOauth) {
-            // update the CodyMusic credentials
-            this.updateSlackAccessInfo(slackOauth);
-        } else {
-            setItem("slack_access_token", null);
-        }
-    }
-
-    async updateSlackAccessInfo(slackOauth) {
-        /**
-         * {access_token, refresh_token}
-         */
-        if (slackOauth) {
-            setItem("slack_access_token", slackOauth.access_token);
-        } else {
-            setItem("slack_access_token", null);
-        }
-    }
-
     async updateSpotifyAccessInfo(spotifyOauth) {
         if (spotifyOauth && spotifyOauth.access_token) {
             // update the CodyMusic credentials
@@ -864,7 +842,7 @@ export class MusicManager {
 
         // update the user info
         if (requiresSpotifyAccess()) {
-            await getMusicTimeUserStatus();
+            await getUserRegistrationState();
         } else {
             // this should only be done after we've updated the cody config
             const requiresReAuth = await this.requiresReAuthentication();

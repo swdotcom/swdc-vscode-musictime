@@ -71,7 +71,7 @@ export class KpmManager {
         // check if we have keystroke data
         if (keystrokeStats.hasData()) {
           // post the payload offline until the batch interval sends it out
-          keystrokeStats.postData(false /*sendNow*/, isUnfocus);
+          keystrokeStats.postData(isUnfocus);
         }
       }
     }
@@ -511,7 +511,7 @@ export class KpmManager {
     keystrokeStats.source[fileName] = fileInfo;
 
     setTimeout(() => {
-      keystrokeStats.postData(true /*sendNow*/);
+      keystrokeStats.postData();
     }, 0);
   }
 

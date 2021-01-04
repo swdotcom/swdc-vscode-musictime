@@ -43,11 +43,11 @@ import {
   isMac,
   getCodyErrorMessage,
   isWindows,
-  setAuthCallbackState,
   getPluginType,
   getVersion,
   getPluginUuid,
-  getPluginId
+  getPluginId,
+  getAuthCallbackState
 } from "../Util";
 import { softwareGet, softwarePut } from "../HttpClient";
 import {
@@ -64,7 +64,7 @@ import {
 import { MusicStateManager } from "./MusicStateManager";
 import { SocialShareManager } from "../social/SocialShareManager";
 import { tmpdir } from "os";
-import { connectSlack } from "../slack/SlackControlManager";
+import { connectSlackWorkspace, hasSlackWorkspaces } from "../slack/SlackControlManager";
 import { MusicManager } from "./MusicManager";
 import { MusicPlaylistManager } from "./MusicPlaylistManager";
 import { sortPlaylists, requiresSpotifyAccess, getDeviceSet, getDeviceId } from "./MusicUtil";
@@ -75,7 +75,6 @@ import {
   getMusicTimeMarkdownFile,
   getSoftwareDir,
 } from "../managers/FileManager";
-import { v4 as uuidv4 } from "uuid";
 
 const queryString = require('query-string');
 
@@ -494,7 +493,7 @@ export class MusicControlManager {
     const needsSpotifyAccess = requiresSpotifyAccess();
 
     // check to see if they have the slack access token
-    const slackAccessToken = getItem("slack_access_token");
+    const hasSlackAccess = hasSlackWorkspaces();
 
     if (!needsSpotifyAccess) {
       // check if we already have a playlist
@@ -571,19 +570,19 @@ export class MusicControlManager {
         command: "musictime.disconnectSpotify",
       });
 
-      if (!slackAccessToken) {
+      if (!hasSlackAccess) {
         menuOptions.items.push({
           label: "Connect Slack",
           detail: "To share a playlist or track on Slack, please connect your account",
           url: null,
-          cb: connectSlack,
+          cb: connectSlackWorkspace,
         });
       } else {
         menuOptions.items.push({
           label: "Disconnect Slack",
           detail: "Disconnect your Slack oauth integration",
           url: null,
-          command: "musictime.disconnectSlack",
+          command: "musictime.disconnectSlack"
         });
       }
     }
@@ -747,8 +746,6 @@ export async function displayMusicTimeMetricsMarkdownDashboard() {
 }
 
 export async function connectSpotify() {
-  let jwt = getItem("jwt");
-
   // check if they're already connected, if so then ask if they would
   // like to continue as we'll need to disconnect the current connection
   const needsSpotifyAccess = requiresSpotifyAccess();
@@ -765,8 +762,7 @@ export async function connectSpotify() {
     await disconnectSpotify(false /*confirmDisconnect*/);
   }
 
-  const auth_callback_state = uuidv4();
-  setAuthCallbackState(auth_callback_state);
+  const auth_callback_state = getAuthCallbackState();
 
   let queryStr = queryString.stringify({
       plugin: getPluginType(),
@@ -795,45 +791,31 @@ export async function switchSpotifyAccount() {
 }
 
 export async function disconnectSpotify(confirmDisconnect = true) {
-  await disconnectOauth("Spotify", confirmDisconnect);
-}
-
-export async function disconnectSlack(confirmDisconnect = true) {
-  await disconnectOauth("Slack", confirmDisconnect);
-}
-
-export async function disconnectOauth(type: string, confirmDisconnect = true) {
   const selection = confirmDisconnect
     ? await window.showInformationMessage(
-      `Are you sure you would like to disconnect ${type}?`,
+      `Are you sure you would like to disconnect Spotify?`,
       ...[YES_LABEL]
     )
     : YES_LABEL;
 
   if (selection === YES_LABEL) {
-    const type_lc = type.toLowerCase();
-    await softwarePut(`/auth/${type_lc}/disconnect`, {}, getItem("jwt"));
+    await softwarePut(`/auth/spotify/disconnect`, {}, getItem("jwt"));
 
-    // oauth is not null, initialize spotify
-    if (type_lc === "slack") {
-      await MusicManager.getInstance().updateSlackAccessInfo(null);
-    } else if (type_lc === "spotify") {
-      await MusicManager.getInstance().updateSpotifyAccessInfo(null);
+    await MusicManager.getInstance().updateSpotifyAccessInfo(null);
 
-      // clear the spotify playlists
-      dataMgr.disconnect();
+    // clear the spotify playlists
+    dataMgr.disconnect();
 
-      setTimeout(() => {
-        commands.executeCommand("musictime.refreshPlaylist");
-        commands.executeCommand("musictime.refreshRecommendations");
-      }, 1000);
+    setTimeout(() => {
+      commands.executeCommand("musictime.refreshPlaylist");
+      commands.executeCommand("musictime.refreshRecommendations");
+    }, 1000);
 
-      // update the status bar
-      MusicCommandManager.syncControls(dataMgr.runningTrack, false);
-    }
+    // update the status bar
+    MusicCommandManager.syncControls(dataMgr.runningTrack, false);
 
     if (confirmDisconnect) {
-      window.showInformationMessage(`Successfully disconnected your ${type} connection.`);
+      window.showInformationMessage(`Successfully disconnected your Spotify connection.`);
     }
   }
 }

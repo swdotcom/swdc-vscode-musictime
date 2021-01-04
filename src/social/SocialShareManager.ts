@@ -1,4 +1,4 @@
-import { buildQueryString, launchWebUrl, getItem } from "../Util";
+import { buildQueryString, launchWebUrl } from "../Util";
 import { showQuickPick } from "../MenuManager";
 import {
     buildSpotifyLink,
@@ -6,7 +6,9 @@ import {
 } from "../music/MusicControlManager";
 import {
     showSlackChannelMenu,
-    connectSlack
+    connectSlackWorkspace,
+    hasSlackWorkspaces,
+    getSlackAccessToken
 } from "../slack/SlackControlManager";
 import { window } from "vscode";
 const { WebClient } = require("@slack/web-api");
@@ -109,8 +111,7 @@ export class SocialShareManager {
             })
         });
 
-        const slackAccessToken = getItem("slack_access_token");
-        if (slackAccessToken) {
+        if (hasSlackWorkspaces()) {
             menuOptions.items.push({
                 label: "Slack",
                 detail: `Share '${label}' on Slack`,
@@ -163,7 +164,8 @@ export class SocialShareManager {
             cb: this.copyLink
         });
 
-        if (!slackAccessToken) {
+        const hasSlackAccess = hasSlackWorkspaces();
+        if (!hasSlackAccess) {
             // show divider
             menuOptions.items.push({
                 label:
@@ -178,7 +180,7 @@ export class SocialShareManager {
                 detail:
                     "To share a playlist or track on Slack, please connect your account",
                 url: null,
-                cb: connectSlack
+                cb: connectSlackWorkspace
             });
         }
 
@@ -211,7 +213,7 @@ export class SocialShareManager {
     }
 
     async shareSlack() {
-        const selectedChannel = await showSlackChannelMenu();
+        const {selectedChannel, access_token} = await showSlackChannelMenu();
         if (!selectedChannel) {
             return;
         }
@@ -221,9 +223,9 @@ export class SocialShareManager {
         if (!message) {
             return;
         }
-        const slackAccessToken = getItem("slack_access_token");
+
         const msg = `${message}\n${spotifyLinkUrl}`;
-        const web = new WebClient(slackAccessToken);
+        const web = new WebClient(access_token);
         await web.chat
             .postMessage({
                 text: msg,
@@ -231,20 +233,10 @@ export class SocialShareManager {
                 as_user: true
             })
             .catch(err => {
-                // try without sending "as_user"
-                web.chat
-                    .postMessage({
-                        text: msg,
-                        channel: selectedChannel
-                    })
-                    .catch(err => {
-                        if (err.message) {
-                            console.log(
-                                "error posting slack message: ",
-                                err.message
-                            );
-                        }
-                    });
+                console.log(
+                    "error posting slack message: ",
+                    err.message
+                );
             });
     }
 }

@@ -1,5 +1,4 @@
 import { getOs, getVersion, getPluginId, getNowTimes } from "../Util";
-import { FileChangeInfo } from "./models";
 import Project from "./Project";
 import { PluginDataManager } from "../managers/PluginDataManager";
 
@@ -66,26 +65,20 @@ export default class KeystrokeStats {
       foundKpmData = true;
     }
 
-    // Now remove files that don't have any keystrokes that only
-    // have an open or close associated with them. If they have
-    // open AND close then it's ok, keep it.
+    // Now remove files that don't have any keystrokes. These
+    // are most likely open/close event files.
     let keystrokesTally = 0;
     keys.forEach((key) => {
-      const data: FileChangeInfo = this.source[key];
-
-      const hasOpen = data.open > 0;
-      const hasClose = data.close > 0;
-      const hasKeystrokes = data.keystrokes > 0;
-      keystrokesTally += data.keystrokes;
-      if ((hasOpen && !hasClose && !hasKeystrokes) || (hasClose && !hasOpen && !hasKeystrokes)) {
-        // delete it, no keystrokes and only an open
+      const data = this.source[key];
+      if (!data.keystrokes) {
+        // delete it, no keystrokes
         delete this.source[key];
-      } else if (!foundKpmData && hasOpen && hasClose) {
-        foundKpmData = true;
+      } else {
+        keystrokesTally += data.keystrokes;
       }
     });
 
-    if (keystrokesTally > 0 && keystrokesTally !== this.keystrokes) {
+    if (keystrokesTally && !foundKpmData) {
       // use the keystrokes tally
       foundKpmData = true;
       this.keystrokes = keystrokesTally;
@@ -96,9 +89,9 @@ export default class KeystrokeStats {
   /**
    * send the payload
    */
-  async postData(sendNow: boolean = false, isUnfocus: boolean = false) {
+  async postData(isUnfocus: boolean = false) {
     // create the now times in case it's the secondary window and we have to wait
     const nowTimes = getNowTimes();
-    PluginDataManager.getInstance().processPayloadHandler(this, sendNow, nowTimes, isUnfocus);
+    PluginDataManager.getInstance().processPayloadHandler(this, nowTimes, isUnfocus);
   }
 }

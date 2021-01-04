@@ -24,6 +24,10 @@ export function getDeviceFile() {
   return getFile("device.json");
 }
 
+export function getIntegrationsFile() {
+  return getFile("integrations.json");
+}
+
 export function getSoftwareDataStoreFile() {
   return getFile("data.json");
 }

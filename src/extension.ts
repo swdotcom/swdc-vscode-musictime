@@ -44,9 +44,6 @@ export async function intializePlugin(ctx: ExtensionContext) {
   // this needs to happen first to enable spotify playlist and control logic
   await musicMgr.initializeSpotify();
 
-  // check if the user has a slack integration already connected
-  await musicMgr.initializeSlack();
-
   // show the readme if it doesn't exist
   displayReadmeIfNotExists();
 
