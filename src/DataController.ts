@@ -69,45 +69,43 @@ export async function serverIsAvailable() {
     return serverAvailable;
 }
 
-export async function getSlackOauth(user = null) {
-    let foundNewIntegration = false;
+export async function getSlackAuth() {
+  let foundNewIntegration = false;
+  const { user } = await getUserRegistrationState();
+  if (user && user.integrations) {
     const currentIntegrations = getIntegrations();
-    user = !user ? await getUser(getItem("jwt")) : user;
-    if (user?.integrations?.length) {
-      // find the slack auth
-      for (const integration of user.integrations) {
-        // {access_token, name, plugin_uuid, scopes, pluginId, authId, refresh_token, scopes}
-        if (integration.name.toLowerCase() === "slack") {
-          // check if it exists
-          const foundIntegration = currentIntegrations.find((n) => n.authId === integration.authId);
-          if (!foundIntegration) {
-            // get the workspace domain using the authId
-            const web = new WebClient(integration.access_token);
-            const usersIdentify = await web.users.identity().catch((e) => {
-              console.log("error fetching slack team info: ", e.message);
-              return null;
-            });
-            if (usersIdentify) {
-                // usersIdentity returns
-                // {team: {id, name, domain, image_102, image_132, ....}...}
-                // set the domain
-                integration["team_domain"] = usersIdentify.team.domain;
-                integration["team_name"] = usersIdentify.team.name;
-                // add it
-                currentIntegrations.push(integration);
-                foundNewIntegration = true;
-            }
-          }
+    // find the slack auth
+    for (const integration of user.integrations) {
+      // {access_token, name, plugin_uuid, scopes, pluginId, authId, refresh_token, scopes}
+      if (integration.name.toLowerCase() === "slack") {
+        // check if it exists
+        const foundIntegration = currentIntegrations.find((n) => n.authId === integration.authId);
+        if (!foundIntegration) {
+          // get the workspace domain using the authId
+          const web = new WebClient(integration.access_token);
+          const usersIdentify = await web.users.identity((e) => {
+            console.log("error fetching slack team info: ", e.message);
+            return null;
+          });
+          // usersIdentity returns
+          // {team: {id, name, domain, image_102, image_132, ....}...}
+          // set the domain
+          integration["team_domain"] = usersIdentify?.team?.domain;
+          integration["team_name"] = usersIdentify?.team?.name;
+          // add it
+          currentIntegrations.push(integration);
+
+          foundNewIntegration = true;
         }
       }
     }
-    // update the integrations if we found any new ones
-    syncIntegrations(currentIntegrations);
 
-    return foundNewIntegration;
+    syncIntegrations(currentIntegrations);
+  }
+  return foundNewIntegration;
 }
 
-export async function getMusicTimeUserStatus() {
+export async function getUserRegistrationState() {
     // We don't have a user yet, check the users via the plugin/state
     const jwt = getItem("jwt");
     const auth_callback_state = getAuthCallbackState();
@@ -138,9 +136,6 @@ export async function getMusicTimeUserStatus() {
 
                 const musicMgr: MusicManager = MusicManager.getInstance();
 
-                // add any new slack integrations
-                await getSlackOauth(user);
-
                 if (user.auths && user.auths.length > 0) {
                     for (let i = 0; i < user.auths.length; i++) {
                         const auth = user.auths[i];
@@ -154,13 +149,13 @@ export async function getMusicTimeUserStatus() {
                     }
                 }
 
-                return { loggedOn: foundSpotifyAuth, state };
+                return { loggedOn: foundSpotifyAuth, state, user };
             }
             // return the state that is returned
-            return { loggedOn: false, state };
+            return { loggedOn: false, state, user: null };
         }
     }
-    return { loggedOn: false, state: "UNKNOWN" };
+    return { loggedOn: false, state: "UNKNOWN", user: null };
 }
 
 export async function getUser(jwt) {
@@ -178,7 +173,7 @@ export async function getUser(jwt) {
 }
 
 export async function refetchSlackConnectStatusLazily(tryCountUntilFoundUser = 40) {
-  const slackAuth = await getSlackOauth();
+  const slackAuth = await getSlackAuth();
   if (!slackAuth) {
     // try again if the count is not zero
     if (tryCountUntilFoundUser > 0) {
@@ -208,7 +203,7 @@ export function refetchSpotifyConnectStatusLazily(tryCountUntilFound = 40) {
 }
 
 async function spotifyConnectStatusHandler(tryCountUntilFound) {
-    let oauthResult = await getMusicTimeUserStatus();
+    let oauthResult = await getUserRegistrationState();
     if (!oauthResult.loggedOn) {
         // try again if the count is not zero
         if (tryCountUntilFound > 0) {

@@ -35,8 +35,7 @@ import {
 } from "../Constants";
 import { commands, window } from "vscode";
 import {
-    getSlackOauth,
-    getMusicTimeUserStatus,
+    getUserRegistrationState,
     populateSpotifyPlaylists,
     populateLikedSongs,
     populateSpotifyDevices,
@@ -843,7 +842,7 @@ export class MusicManager {
 
         // update the user info
         if (requiresSpotifyAccess()) {
-            await getMusicTimeUserStatus();
+            await getUserRegistrationState();
         } else {
             // this should only be done after we've updated the cody config
             const requiresReAuth = await this.requiresReAuthentication();

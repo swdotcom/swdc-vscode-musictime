@@ -3,7 +3,7 @@ import { accessExpired, getSpotifyDevices } from "cody-music";
 import { disconnectSpotify } from "./MusicControlManager";
 import { getItem } from "../Util";
 import { getDeviceSetForDevices, showReconnectPrompt } from "./MusicUtil";
-import { getMusicTimeUserStatus } from "../DataController";
+import { getUserRegistrationState } from "../DataController";
 import { MusicDataManager } from "./MusicDataManager";
 
 export class MusicCommandUtil {
@@ -74,7 +74,7 @@ export class MusicCommandUtil {
             const spotifyAccessToken = getItem("spotify_access_token");
             if (spotifyAccessToken && (await accessExpired())) {
                 // populate the user information in case then check accessExpired again
-                let oauthResult = await getMusicTimeUserStatus();
+                let oauthResult = await getUserRegistrationState();
                 let expired = true;
                 if (oauthResult.loggedOn) {
                     // try one last time
