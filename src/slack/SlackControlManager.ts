@@ -133,7 +133,7 @@ export async function showSlackChannelMenu() {
 
 // get saved slack integrations
 export function getSlackWorkspaces() {
-  return getIntegrations().filter((n) => n.name.toLowerCase() === "slack");
+  return getIntegrations().filter((n) => n.name.toLowerCase() === "slack" && n.status.toLowerCase() === "active");
 }
 
 export function hasSlackWorkspaces() {

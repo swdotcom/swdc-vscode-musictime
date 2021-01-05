@@ -178,13 +178,11 @@ export class ProviderItemManager {
     parentItem.children = [];
     const workspaces = getSlackWorkspaces();
     for (const integration of workspaces) {
-      if (integration.name.toLowerCase() === "slack") {
-        const workspaceItem = this.buildKpmItem(integration.team_domain, "", "");
-        workspaceItem.contextValue = "slack_connection_node";
-        workspaceItem.description = `(${integration.team_name})`;
-        workspaceItem.value = integration.authId;
-        parentItem.children.push(workspaceItem);
-      }
+      const workspaceItem = this.buildKpmItem(integration.team_domain, "", "");
+      workspaceItem.contextValue = "slack_connection_node";
+      workspaceItem.description = `(${integration.team_name})`;
+      workspaceItem.value = integration.authId;
+      parentItem.children.push(workspaceItem);
     }
     return parentItem;
   }
