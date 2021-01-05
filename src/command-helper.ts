@@ -10,7 +10,7 @@ import { launchMusicAnalytics, displayReadmeIfNotExists } from "./Util";
 import { MusicPlaylistProvider, connectPlaylistTreeView } from "./music/MusicPlaylistProvider";
 import { PlaylistItem, PlayerName, PlayerDevice, playSpotifyDevice } from "cody-music";
 import { SocialShareManager } from "./social/SocialShareManager";
-import { connectSlackWorkspace, disconnectSlack } from "./slack/SlackControlManager";
+import { connectSlackWorkspace, disconnectSlack, disconnectSlackAuth } from "./slack/SlackControlManager";
 import { MusicManager } from "./music/MusicManager";
 import {
   MusicRecommendationProvider,
@@ -277,8 +277,12 @@ export function createCommands(): {
 
   // DISCONNECT SLACK
   cmds.push(
-    commands.registerCommand("musictime.disconnectSlack", () => {
-      disconnectSlack();
+    commands.registerCommand("musictime.disconnectSlack", (item:any) => {
+      if (!item) {
+        disconnectSlack();
+      } else {
+        disconnectSlackAuth(item.value);
+      }
     })
   );
 

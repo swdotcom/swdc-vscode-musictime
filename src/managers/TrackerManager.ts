@@ -1,7 +1,7 @@
 import swdcTracker from "swdc-tracker";
 import { api_endpoint } from "../Constants";
 import { getPluginName, getItem, getPluginId, getVersion, getWorkspaceFolders } from "../Util";
-import { KpmItem, FileChangeInfo } from "../model/models";
+import { FileChangeInfo } from "../model/models";
 import { getRepoIdentifierInfo } from "../repo/GitUtil";
 import KeystrokeStats from "../model/KeystrokeStats";
 import { getResourceInfo } from "../KpmRepoManager";
@@ -86,36 +86,6 @@ export class TrackerManager {
 
       swdcTracker.trackCodeTimeEvent(codetime_event);
     }
-  }
-
-  public async trackUIInteraction(item: KpmItem) {
-    // ui interaction doesn't require a jwt, no need to check for that here
-    if (!this.trackerReady) {
-      return;
-    }
-
-    const ui_interaction = {
-      interaction_type: item.interactionType,
-    };
-
-    const ui_element = {
-      element_name: item.name,
-      element_location: item.location,
-      color: item.color ? item.color : null,
-      icon_name: item.interactionIcon ? item.interactionIcon : null,
-      cta_text: !item.hideCTAInTracker
-        ? item.label || item.description || item.tooltip
-        : "redacted",
-    };
-
-    const ui_event = {
-      ...ui_interaction,
-      ...ui_element,
-      ...this.pluginParams,
-      ...this.getJwtParams(),
-    };
-
-    swdcTracker.trackUIInteraction(ui_event);
   }
 
   public async trackEditorAction(entity: string, type: string, event?: any) {

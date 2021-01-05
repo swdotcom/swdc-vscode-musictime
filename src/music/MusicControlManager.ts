@@ -521,7 +521,7 @@ export class MusicControlManager {
 
     if (!needsSpotifyAccess) {
       menuOptions.items.push({
-        label: "Open dashboard",
+        label: "Dashboard",
         detail: "View your latest music metrics right here in your editor",
         cb: displayMusicTimeMetricsMarkdownDashboard,
       });

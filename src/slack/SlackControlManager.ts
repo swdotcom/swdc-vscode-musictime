@@ -44,7 +44,7 @@ export async function connectSlackWorkspace() {
   }, 10000);
 }
 
-export async function disconnectSlack() {
+export async function disconnectSlack(authId: any = null) {
   const workspaces = getSlackWorkspaces();
   if (workspaces.length === 0) {
     window.showErrorMessage("Unable to find Slack integration to disconnect");
@@ -54,31 +54,58 @@ export async function disconnectSlack() {
   // show a selection of which one or all workspaces to disconnect
   const selectedItem = await showSlackWorkspacesToDisconnect();
   if (selectedItem) {
-    const authId = selectedItem.value;
-    const domain = selectedItem.label;
     let msg = "";
-    if (authId === "all") {
+    if (selectedItem === "all") {
       msg = "Are you sure you would like to disconnect all Slack workspaces?";
     } else {
-      msg = `Are you sure you would like to disconnect the '${domain}' Slack workspace?`;
+      msg = `Are you sure you would like to disconnect this Slack workspace?`;
     }
 
     // ask before disconnecting
     const selection = await window.showInformationMessage(msg, ...[DISCONNECT_LABEL]);
 
     if (selection === DISCONNECT_LABEL) {
-      if (authId === "all") {
+      if (selectedItem === "all") {
         for await (const workspace of workspaces) {
-            await softwarePut(`/auth/slack/disconnect`, { authId: workspace.authId }, getItem("jwt"));
-            removeSlackIntegration(workspace.authId);
+          await softwarePut(`/auth/slack/disconnect`, { authId: workspace.authId }, getItem("jwt"));
+          removeSlackIntegration(workspace.authId);
         }
         window.showInformationMessage("Disconnected selected Slack integrations");
       } else {
-        await softwarePut(`/auth/slack/disconnect`, { authId }, getItem("jwt"));
-        removeSlackIntegration(authId);
+        await softwarePut(`/auth/slack/disconnect`, { selectedItem }, getItem("jwt"));
+        removeSlackIntegration(selectedItem);
         window.showInformationMessage("Disconnected selected Slack integration");
       }
+
+      // refresh the tree view
+      setTimeout(() => {
+        // refresh the playlist to show the device button update
+        commands.executeCommand("musictime.refreshPlaylist");
+      }, 1000);
     }
+  }
+}
+
+// disconnect slack flow
+export async function disconnectSlackAuth(authId) {
+  // get the domain
+  const integration = getSlackWorkspaces().find((n) => n.authId === authId);
+  if (!integration) {
+    window.showErrorMessage("Unable to find selected integration to disconnect");
+    return;
+  }
+  // ask before disconnecting
+  const selection = await window.showInformationMessage(
+    `Are you sure you would like to disconnect the '${integration.team_domain}' Slack workspace?`,
+    ...[DISCONNECT_LABEL]
+  );
+
+  if (selection === DISCONNECT_LABEL) {
+    await softwarePut(`/auth/slack/disconnect`, { authId }, getItem("jwt"));
+    // disconnected, remove it from the integrations
+    removeSlackIntegration(authId);
+
+    commands.executeCommand("musictime.refreshPlaylist");
   }
 }
 

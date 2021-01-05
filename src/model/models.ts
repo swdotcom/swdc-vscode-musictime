@@ -1,33 +1,21 @@
 import { getVersion, getPluginId, getOs } from "../Util";
 import { NO_PROJ_NAME } from "../Constants";
-import { TreeItemCollapsibleState } from "vscode";
+import { PlaylistItem } from "cody-music";
 
 export enum UIInteractionType {
   Keyboard = "keyboard",
   Click = "click",
 }
 
-export class KpmItem {
-  id: string = "";
-  label: string = "";
+export class KpmItem extends PlaylistItem {
   description: string = "";
   value: string = "";
-  tooltip: string = "";
-  command: string = "";
   commandArgs: any[] = [];
-  type: string = "";
   contextValue: string = "";
   callback: any = null;
   icon: string = null;
   children: KpmItem[] = [];
-  color: string = "";
-  location: string = "";
-  name: string = "";
   eventDescription: string = null;
-  initialCollapsibleState: TreeItemCollapsibleState = TreeItemCollapsibleState.Collapsed;
-  interactionType: UIInteractionType = UIInteractionType.Click;
-  interactionIcon: string = "";
-  hideCTAInTracker: boolean = false;
 }
 
 export class KeystrokeAggregate {

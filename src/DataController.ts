@@ -189,6 +189,12 @@ export async function refetchSlackConnectStatusLazily(tryCountUntilFoundUser = 4
     // clear the auth callback state
     setAuthCallbackState(null);
     window.showInformationMessage("Successfully connected to Slack");
+
+    // refresh the tree view
+    setTimeout(() => {
+        // refresh the playlist to show the device button update
+        commands.executeCommand("musictime.refreshPlaylist");
+    }, 1000);
   }
 }
 

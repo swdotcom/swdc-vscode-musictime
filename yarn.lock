@@ -1367,14 +1367,6 @@ figgy-pudding@^3.5.1:
   resolved "https://registry.yarnpkg.com/figgy-pudding/-/figgy-pudding-3.5.2.tgz#b4eee8148abb01dcf1d1ac34367d59e12fa61d6e"
   integrity sha512-0btnI/H8f2pavGMN8w40mlSKOfTK2SVJmBfBeVIj3kNw0swwgzyRq0d5TJVOwodFmtvpPeWPN/MCcfuWF0Ezbw==
 
-file-it@1.0.26:
-  version "1.0.26"
-  resolved "https://registry.yarnpkg.com/file-it/-/file-it-1.0.26.tgz#238425aa87f9752856903052d4f9de5c0a8488e8"
-  integrity sha512-cho3hZj/cg6+UGg/I1QHFzFQddST0+xiLD3P+5vkbasmwl8/gCmyg+DdscieStS3h9DRcPbM+xxxBGw2yN+fKw==
-  dependencies:
-    "@types/universalify" "^1.0.0"
-    universalify "^2.0.0"
-
 file-it@^1.0.24:
   version "1.0.24"
   resolved "https://registry.yarnpkg.com/file-it/-/file-it-1.0.24.tgz#55950ea75c6f391576a87185fbf87ec7b6a5256a"
@@ -1382,6 +1374,14 @@ file-it@^1.0.24:
   dependencies:
     "@types/universalify" "^1.0.0"
     universalify "^1.0.0"
+
+file-it@^1.0.27:
+  version "1.0.27"
+  resolved "https://registry.yarnpkg.com/file-it/-/file-it-1.0.27.tgz#d4855914cfd4e102bf9bc749d3e56d69ca3f4f00"
+  integrity sha512-AB4nzm23mxyZPKGBxONEGACMtgiyg3V92zNhsZz5RuWHobZAK4KUWPRykwTdcHhcVOINGOTmk4SCXJvHfAk0tw==
+  dependencies:
+    "@types/universalify" "^1.0.0"
+    universalify "^2.0.0"
 
 file-loader@^6.0.0:
   version "6.0.0"
