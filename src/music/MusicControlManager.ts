@@ -775,8 +775,10 @@ export async function connectSpotify() {
 
   const endpoint = `${api_endpoint}/auth/spotify?${queryStr}`;
   launchWebUrl(endpoint);
+
+  const isIntegration = !!getItem("name");
   
-  refetchSpotifyConnectStatusLazily();
+  refetchSpotifyConnectStatusLazily(40, isIntegration);
 }
 
 export async function switchSpotifyAccount() {

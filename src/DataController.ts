@@ -71,7 +71,7 @@ export async function serverIsAvailable() {
 
 export async function getSlackAuth() {
   let foundNewIntegration = false;
-  const { user } = await getUserRegistrationState();
+  const { user } = await getUserRegistrationState(true /*isIntegration*/);
   if (user && user.integrations) {
     const currentIntegrations = getSlackWorkspaces();
     // find the slack auth
@@ -105,10 +105,10 @@ export async function getSlackAuth() {
   return foundNewIntegration;
 }
 
-export async function getUserRegistrationState() {
+export async function getUserRegistrationState(isIntegration = false) {
     // We don't have a user yet, check the users via the plugin/state
     const jwt = getItem("jwt");
-    const auth_callback_state = getAuthCallbackState();
+    const auth_callback_state = getAuthCallbackState(false /*autoCreate*/);
     const token = (auth_callback_state) ? auth_callback_state : jwt;
 
     if (token) {
@@ -122,13 +122,16 @@ export async function getUserRegistrationState() {
                 // clear the auth callback state
                 setAuthCallbackState(null);
 
-                if (user.registered === 1) {
-                    setItem("name", user.email);
-                }
-                // check the jwt
-                if (user.plugin_jwt) {
-                    // update it
-                    setItem("jwt", user.plugin_jwt);
+                // update the name and jwt if we're authenticating
+                if (!isIntegration) {
+                    if (user.registered === 1) {
+                        setItem("name", user.email);
+                    }
+                    // check the jwt
+                    if (user.plugin_jwt) {
+                        // update it
+                        setItem("jwt", user.plugin_jwt);
+                    }
                 }
 
                 // get the user from the payload
@@ -198,23 +201,23 @@ export async function refetchSlackConnectStatusLazily(tryCountUntilFoundUser = 4
   }
 }
 
-export function refetchSpotifyConnectStatusLazily(tryCountUntilFound = 40) {
+export function refetchSpotifyConnectStatusLazily(tryCountUntilFound = 40, isIntegration = false) {
     if (spotifyFetchTimeout) {
         return;
     }
     spotifyFetchTimeout = setTimeout(() => {
         spotifyFetchTimeout = null;
-        spotifyConnectStatusHandler(tryCountUntilFound);
+        spotifyConnectStatusHandler(tryCountUntilFound, isIntegration);
     }, 10000);
 }
 
-async function spotifyConnectStatusHandler(tryCountUntilFound) {
-    let oauthResult = await getUserRegistrationState();
+async function spotifyConnectStatusHandler(tryCountUntilFound, isIntegration) {
+    let oauthResult = await getUserRegistrationState(isIntegration);
     if (!oauthResult.loggedOn) {
         // try again if the count is not zero
         if (tryCountUntilFound > 0) {
             tryCountUntilFound -= 1;
-            refetchSpotifyConnectStatusLazily(tryCountUntilFound);
+            refetchSpotifyConnectStatusLazily(tryCountUntilFound, isIntegration);
         } else {
             // clear the auth callback state
             setAuthCallbackState(null);
