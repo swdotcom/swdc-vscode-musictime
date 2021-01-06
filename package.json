@@ -395,7 +395,7 @@
     "@slack/web-api": "^5.14.0",
     "@types/jwt-decode": "^2.2.1",
     "aws-sdk": "^2.470.0",
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "clipboardy": "^2.1.0",
     "cody-music": "2.9.31",
     "file-it": "^1.0.27",
