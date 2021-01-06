@@ -96,7 +96,10 @@ export class ProviderItemManager {
       "musictime.switchSpotifyAccount",
       PlayerType.NotAssigned,
       "Spotify Free",
-      "Connect to your premium Spotify account to enable web playback controls"
+      "Connect to your premium Spotify account to enable web playback controls",
+      null,
+      null,
+      "generate.svg"
     );
   }
 
@@ -173,7 +176,7 @@ export class ProviderItemManager {
   }
 
   getSlackIntegrationsTree(): KpmItem {
-    const parentItem = this.buildKpmItem("Slack workspaces", "", "slack-new.svg");
+    const parentItem = this.buildKpmItem("Slack workspaces", "", "slack.svg");
     parentItem.contextValue = "slack_connection_parent";
     parentItem.children = [];
     const workspaces = getSlackWorkspaces();

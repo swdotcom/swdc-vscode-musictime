@@ -105,8 +105,8 @@
         "command": "musictime.optionsIcon",
         "title": "Options",
         "icon": {
-          "light": "resources/light/options.svg",
-          "dark": "resources/dark/options.svg"
+          "light": "resources/light/controls.svg",
+          "dark": "resources/dark/controls.svg"
         }
       },
       {
@@ -129,8 +129,8 @@
         "command": "musictime.spotifyPlaylist",
         "title": "Launch Spotify",
         "icon": {
-          "light": "resources/light/spotify-logo.svg",
-          "dark": "resources/dark/spotify-logo.svg"
+          "light": "resources/light/spotify.svg",
+          "dark": "resources/dark/spotify.svg"
         }
       },
       {
