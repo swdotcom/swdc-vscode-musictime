@@ -168,6 +168,12 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
                 );
             }
             treeItem = createPlaylistTreeItem(p, TreeItemCollapsibleState.None);
+        } else if (p?.["children"]?.length) {
+            // this is a kpm item with children
+            return createPlaylistTreeItem(
+                p,
+                TreeItemCollapsibleState.Collapsed
+            );
         } else {
             // it's a track or a title
             treeItem = createPlaylistTreeItem(p, TreeItemCollapsibleState.None);
@@ -176,12 +182,17 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
         return treeItem;
     }
 
-    async getChildren(element?: PlaylistItem): Promise<PlaylistItem[]> {
+    async getChildren(element?: any): Promise<PlaylistItem[]> {
         const musicMgr: MusicManager = MusicManager.getInstance();
         const providerItemMgr: ProviderItemManager = ProviderItemManager.getInstance();
 
         if (dataMgr.ready) {
             if (element) {
+                // kpm item extending the playlist item
+                if (element.type === "kpm_type") {
+                    return element.children;
+                }
+
                 // return the playlist tracks
                 let tracks: PlaylistItem[] = await musicMgr.getPlaylistItemTracksForPlaylistId(
                     element.id
@@ -218,7 +229,15 @@ export class PlaylistTreeItem extends TreeItem {
     ) {
         super(treeItem.name, collapsibleState);
 
-        this.description = treeItem.type === "track" ? treeItem.artist : "";
+        if (treeItem["description"]) {
+            this.description = treeItem["description"];
+        } else {
+            this.description = treeItem.itemType === "track" ? treeItem.artist : "";
+        }
+
+        if (treeItem.tooltip) {
+            this.tooltip = treeItem.tooltip;
+        }
 
         const { lightPath, darkPath, contextValue } = getPlaylistIcon(treeItem);
         if (lightPath && darkPath) {
@@ -229,6 +248,9 @@ export class PlaylistTreeItem extends TreeItem {
             delete this.iconPath;
         }
         this.contextValue = contextValue;
+        if (treeItem.tooltip) {
+            this.tooltip = treeItem.tooltip;
+        }
     }
 
     iconPath = {

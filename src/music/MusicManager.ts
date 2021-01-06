@@ -226,6 +226,8 @@ export class MusicManager {
         // add the readme button
         items.push(this.providerItemMgr.getReadmeButton());
 
+        items.push(this.providerItemMgr.getSlackIntegrationsTree());
+
         if (playerName === PlayerName.ItunesDesktop) {
             // add the action items specific to itunes
             items.push(this.providerItemMgr.getSwitchToSpotifyButton());

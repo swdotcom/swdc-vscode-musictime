@@ -829,7 +829,7 @@ export function getFileType(fileName: string) {
 
 export function getPlaylistIcon(treeItem: PlaylistItem) {
   const stateVal = treeItem.state !== TrackStatus.Playing ? "notplaying" : "playing";
-  let contextValue = "";
+  let contextValue = treeItem["contextValue"] ?? "";
 
   // itemType will be either: track | playlist
   // type will be either: connected | action | recommendation | label | track | playlist | itunes | spotify

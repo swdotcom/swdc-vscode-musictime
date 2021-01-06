@@ -5,7 +5,6 @@ import {
     setItem,
     setAuthCallbackState,
     getAuthCallbackState,
-    getIntegrations,
     syncIntegrations,
 } from "./Util";
 import {
@@ -24,6 +23,7 @@ import { MusicCommandUtil } from "./music/MusicCommandUtil";
 import { MusicCommandManager } from "./music/MusicCommandManager";
 import { MusicStateManager } from "./music/MusicStateManager";
 import { requiresSpotifyAccess } from "./music/MusicUtil";
+import { getSlackWorkspaces } from "./slack/SlackControlManager";
 const { WebClient } = require("@slack/web-api");
 
 const moment = require("moment-timezone");
@@ -73,11 +73,11 @@ export async function getSlackAuth() {
   let foundNewIntegration = false;
   const { user } = await getUserRegistrationState();
   if (user && user.integrations) {
-    const currentIntegrations = getIntegrations();
+    const currentIntegrations = getSlackWorkspaces();
     // find the slack auth
     for (const integration of user.integrations) {
       // {access_token, name, plugin_uuid, scopes, pluginId, authId, refresh_token, scopes}
-      if (integration.name.toLowerCase() === "slack") {
+      if (integration.name.toLowerCase() === "slack" && integration.status.toLowerCase() === "active") {
         // check if it exists
         const foundIntegration = currentIntegrations.find((n) => n.authId === integration.authId);
         if (!foundIntegration) {
@@ -189,6 +189,12 @@ export async function refetchSlackConnectStatusLazily(tryCountUntilFoundUser = 4
     // clear the auth callback state
     setAuthCallbackState(null);
     window.showInformationMessage("Successfully connected to Slack");
+
+    // refresh the tree view
+    setTimeout(() => {
+        // refresh the playlist to show the device button update
+        commands.executeCommand("musictime.refreshPlaylist");
+    }, 1000);
   }
 }
 
