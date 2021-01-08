@@ -70,8 +70,12 @@ export async function serverIsAvailable() {
 }
 
 export async function getSlackAuth() {
-  let foundNewIntegration = false;
   const { user } = await getUserRegistrationState(true /*isIntegration*/);
+  return await updateUserIntegrations(user);
+}
+
+export async function updateUserIntegrations(user) {
+  let foundNewIntegration = false;
   if (user && user.integrations) {
     const currentIntegrations = getSlackWorkspaces();
     // find the slack auth
@@ -132,6 +136,9 @@ export async function getUserRegistrationState(isIntegration = false) {
                         // update it
                         setItem("jwt", user.plugin_jwt);
                     }
+
+                    // update integrations
+                    await updateUserIntegrations(user);
                 }
 
                 // get the user from the payload
