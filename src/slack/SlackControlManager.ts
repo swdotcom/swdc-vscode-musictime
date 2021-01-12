@@ -44,7 +44,7 @@ export async function connectSlackWorkspace() {
   }, 10000);
 }
 
-export async function disconnectSlack(authId: any = null) {
+export async function disconnectSlack() {
   const workspaces = getSlackWorkspaces();
   if (workspaces.length === 0) {
     window.showErrorMessage("Unable to find Slack integration to disconnect");
@@ -171,7 +171,7 @@ async function getChannels() {
     return;
   }
   const web = new WebClient(access_token);
-  const result = await web.conversations.list({ exclude_archived: true }).catch((err) => {
+  const result = await web.conversations.list({ exclude_archived: true, limit: 1000 }).catch((err) => {
     console.log("Unable to retrieve slack channels: ", err.message);
     return [];
   });

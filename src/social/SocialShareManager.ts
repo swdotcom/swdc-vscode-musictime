@@ -232,6 +232,10 @@ export class SocialShareManager {
                 channel: selectedChannel,
                 as_user: true
             })
+            .then(r => {
+                // notify the share is complete
+                window.showInformationMessage(`Successfully shared the message to Slack.`);
+            })
             .catch(err => {
                 console.log(
                     "error posting slack message: ",
