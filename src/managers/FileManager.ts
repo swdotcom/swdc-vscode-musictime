@@ -5,7 +5,7 @@ import TimeData from "../model/TimeData";
 import { v4 as uuidv4 } from "uuid";
 import { commands, Uri, ViewColumn } from "vscode";
 import * as path from "path";
-import { softwareGet } from "../HttpClient";
+import { softwareGet, softwarePost } from "../HttpClient";
 
 const moment = require("moment-timezone");
 
@@ -255,6 +255,9 @@ export function displayReadmeIfNotExists(override = false) {
 
     commands.executeCommand("markdown.showPreview", readmeUri, ViewColumn.One);
     setItem("displayedMtReadme", true);
+
+    // activate the plugin
+    softwarePost("/plugins/activate", {}, getItem("jwt"));
   }
 }
 
