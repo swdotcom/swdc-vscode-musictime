@@ -23,7 +23,8 @@ import { MusicDataManager } from "./MusicDataManager";
 import { MusicManager } from "./MusicManager";
 import { isMac } from "../Util";
 import { KpmItem } from "../model/models";
-import { getSlackWorkspaces } from "../slack/SlackControlManager";
+import { getSlackWorkspaces } from "../managers/SlackManager";
+import { getItem } from "../managers/FileManager";
 
 export class ProviderItemManager {
   private static instance: ProviderItemManager;
@@ -153,12 +154,49 @@ export class ProviderItemManager {
       "action",
       "musictime.displayReadme",
       null,
-      "Learn more",
+      "Documentation",
       "View the Music Time Readme to learn more",
       "",
       null,
       "readme.svg"
     );
+  }
+
+  getLoggedInButton() {
+    const connectedToInfo = this.getAuthTypeIconAndLabel();
+    return this.buildActionItem("title", "action", null, null, connectedToInfo.label, connectedToInfo.tooltip, "", null, connectedToInfo.icon);
+  }
+
+  getAuthTypeIconAndLabel() {
+    const authType = getItem("authType");
+    const name = getItem("name");
+    let tooltip = name ? `Connected as ${name}` : "";
+    if (authType === "google") {
+      return {
+        icon: "google.svg",
+        label: name,
+        tooltip,
+      };
+    } else if (authType === "github") {
+      return {
+        icon: "github.svg",
+        label: name,
+        tooltip,
+      };
+    }
+    return {
+      icon: "email.svg",
+      label: name,
+      tooltip,
+    };
+  }
+
+  getSignupButton() {
+    return this.buildActionItem("title", "action", "musictime.signUpAccount", null, "Sign up", "Sign up to see more data visualizations.", "", null, "paw.svg");
+  }
+
+  getLoginButton() {
+    return this.buildActionItem("title", "action", "musictime.logInAccount", null, "Log in", "Log in to see more data visualizations.", "", null, "paw.svg");
   }
 
   getGenerateDashboardButton() {
@@ -181,7 +219,7 @@ export class ProviderItemManager {
     parentItem.children = [];
     const workspaces = getSlackWorkspaces();
     for (const integration of workspaces) {
-      const workspaceItem = this.buildKpmItem(integration.team_domain, "", "");
+      const workspaceItem = this.buildKpmItem(integration.team_domain, "", "slack.svg");
       workspaceItem.contextValue = "slack_connection_node";
       workspaceItem.description = `(${integration.team_name})`;
       workspaceItem.value = integration.authId;
@@ -236,7 +274,7 @@ export class ProviderItemManager {
     listItem.id = "launchmusicanalytics";
     listItem.command = "musictime.launchAnalytics";
     listItem.playerType = PlayerType.WebSpotify;
-    listItem.name = "See web analytics";
+    listItem.name = "More data at Software.com";
     listItem.tooltip = "See music analytics in the web app";
     return listItem;
   }

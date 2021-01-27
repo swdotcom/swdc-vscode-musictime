@@ -1,5 +1,4 @@
-import { createSpotifyIdFromUri, createUriFromTrackId, nowInSecs, logIt, isMac } from "../Util";
-import { populatePlayerContext } from "../DataController";
+import { createSpotifyIdFromUri, createUriFromTrackId, nowInSecs, isMac } from "../Util";
 import {
   Track,
   TrackStatus,
@@ -168,7 +167,7 @@ export class MusicStateManager {
         // update the playlistId
         this.updateTrackPlaylistId(playingTrack);
         // the player context such as player device status
-        populatePlayerContext();
+        MusicDataManager.getInstance().populatePlayerContext();
         if (trackStateChanged) {
           // update the device info in case the device has changed
           commands.executeCommand("musictime.refreshDeviceInfo");
@@ -176,7 +175,7 @@ export class MusicStateManager {
       }
     } catch (e) {
       const errMsg = e.message || e;
-      logIt(`Unexpected track state processing error: ${errMsg}`);
+      console.error(`Unexpected track state processing error: ${errMsg}`);
     }
   }
 

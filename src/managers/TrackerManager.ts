@@ -1,10 +1,11 @@
 import swdcTracker from "swdc-tracker";
 import { api_endpoint } from "../Constants";
-import { getPluginName, getItem, getPluginId, getVersion, getWorkspaceFolders } from "../Util";
+import { getPluginName, getPluginId, getVersion, getWorkspaceFolders } from "../Util";
 import { FileChangeInfo } from "../model/models";
 import { getRepoIdentifierInfo } from "../repo/GitUtil";
 import KeystrokeStats from "../model/KeystrokeStats";
 import { getResourceInfo } from "../KpmRepoManager";
+import { getItem } from "./FileManager";
 
 const moment = require("moment-timezone");
 

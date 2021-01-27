@@ -2,11 +2,9 @@ import {
   workspace,
   extensions,
   window,
-  ViewColumn,
-  Uri,
-  commands,
   TextDocument,
   WorkspaceFolder,
+  commands,
 } from "vscode";
 import {
   CODE_TIME_EXT_ID,
@@ -17,17 +15,9 @@ import {
   SOFTWARE_TOP_40_PLAYLIST_ID,
   SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
 } from "./Constants";
-import { getToggleFileEventLoggingState } from "./DataController";
 import { PlaylistItem, TrackStatus, CodyResponse, CodyResponseType } from "cody-music";
 import * as path from "path";
-import {
-  getDeviceFile,
-  getExtensionName,
-  getFileDataAsJson,
-  getIntegrationsFile,
-  getSoftwareSessionFile,
-} from "./managers/FileManager";
-import { v4 as uuidv4 } from "uuid";
+import { getItem } from "./managers/FileManager";
 
 const fileIt = require("file-it");
 const moment = require("moment-timezone");
@@ -37,7 +27,6 @@ const fs = require("fs");
 const os = require("os");
 const crypto = require("crypto");
 
-// const resourcePath: string = path.join(__filename, "..", "..", "resources");
 const resourcePath: string = path.join(__dirname, "resources");
 
 export const alpha = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -112,15 +101,6 @@ export function codeTimeExtInstalled() {
 export function musicTimeExtInstalled() {
   const musicTimeExt = extensions.getExtension(MUSIC_TIME_EXT_ID);
   return musicTimeExt ? true : false;
-}
-
-export function getSessionFileCreateTime() {
-  let sessionFile = getSoftwareSessionFile();
-  const stat = fs.statSync(sessionFile);
-  if (stat.birthtime) {
-    return stat.birthtime;
-  }
-  return stat.ctime;
 }
 
 export function isGitProject(projectDir) {
@@ -297,50 +277,6 @@ export function validateEmail(email) {
   return re.test(email);
 }
 
-export function setItem(key, value) {
-  fileIt.setJsonValue(getSoftwareSessionFile(), key, value);
-}
-
-export function getItem(key) {
-  return fileIt.getJsonValue(getSoftwareSessionFile(), key);
-}
-
-export function getPluginUuid() {
-  let plugin_uuid = fileIt.getJsonValue(getDeviceFile(), "plugin_uuid");
-  if (!plugin_uuid) {
-      // set it for the 1st and only time
-      plugin_uuid = uuidv4();
-      fileIt.setJsonValue(getDeviceFile(), "plugin_uuid", plugin_uuid);
-  }
-  return plugin_uuid;
-}
-
-export function getAuthCallbackState(autoCreate = true) {
-  let auth_callback_state = fileIt.getJsonValue(getDeviceFile(), "auth_callback_state");
-  if (!auth_callback_state && autoCreate) {
-    auth_callback_state = uuidv4();
-    fileIt.setJsonValue(getDeviceFile(), "auth_callback_state", auth_callback_state);
-  }
-  return auth_callback_state;
-}
-
-export function setAuthCallbackState(value: string) {
-  fileIt.setJsonValue(getDeviceFile(), "auth_callback_state", value);
-}
-
-export function getIntegrations() {
-  let integrations = getFileDataAsJson(getIntegrationsFile());
-  if (!integrations) {
-    integrations = [];
-    syncIntegrations(integrations);
-  }
-  return integrations;
-}
-
-export function syncIntegrations(integrations) {
-  fileIt.writeJsonFileSync(getIntegrationsFile(), integrations);
-}
-
 export function isEmptyObj(obj) {
   return Object.keys(obj).length === 0 && obj.constructor === Object;
 }
@@ -411,54 +347,6 @@ export async function getOsUsername() {
   return username;
 }
 
-export function softwareSessionFileExists() {
-  // don't auto create the file
-  const file = getSoftwareSessionFile();
-  // check if it exists
-  return fs.existsSync(file);
-}
-
-export function jwtExists() {
-  let jwt = getItem("jwt");
-  return !jwt ? false : true;
-}
-
-export function getLocalREADMEFile() {
-  const resourcePath: string = path.join(__dirname, "resources");
-  const file = path.join(resourcePath, "README.md");
-  return file;
-}
-
-export function displayReadmeIfNotExists(override = false) {
-  const displayedReadme = getItem("displayedMtReadme");
-  if (!displayedReadme || override) {
-    setTimeout(() => {
-      commands.executeCommand("musictime.revealTree");
-    }, 1000);
-
-    const readmeUri = Uri.file(getLocalREADMEFile());
-
-    commands.executeCommand("markdown.showPreview", readmeUri, ViewColumn.One);
-    setItem("displayedMtReadme", true);
-  }
-}
-
-export function logEvent(message) {
-  const logEvents = getToggleFileEventLoggingState();
-  if (logEvents) {
-    console.log(`${getExtensionName()}: ${message}`);
-  }
-}
-
-export function logIt(message) {
-  console.log(`${getExtensionName()}: ${message}`);
-}
-
-export function getSoftwareSessionAsJson() {
-  let data = fileIt.readJsonFileSync(getSoftwareSessionFile());
-  return data ? data : {};
-}
-
 export async function showOfflinePrompt(addReconnectMsg = false) {
   // shows a prompt that we're not able to communicate with the app server
   let infoMsg = "Our service is temporarily unavailable. ";
@@ -503,12 +391,6 @@ export function getNowTimes() {
 
 export function getFormattedDay(unixSeconds) {
   return moment.unix(unixSeconds).format(dayFormat);
-}
-
-export function isNewDay() {
-  const { day } = getNowTimes();
-  const currentDay = getItem("currentDay");
-  return currentDay !== day ? true : false;
 }
 
 export function coalesceNumber(val, defaultVal = 0) {
@@ -681,7 +563,37 @@ export function launchWebUrl(url) {
 }
 
 export function launchMusicAnalytics() {
+  const isRegistered = checkRegistration();
+  if (!isRegistered) {
+    return;
+  }
   open(`${launch_url}/music`);
+}
+
+export function checkRegistration(showSignup = true) {
+  if (!getItem("name")) {
+    if (showSignup) {
+      showModalSignupPrompt("A registered account is required to continue. Sign up or log in to continue.");
+    }
+    return false;
+  }
+  return true;
+}
+
+export function showModalSignupPrompt(msg: string) {
+  window
+    .showInformationMessage(
+      msg,
+      {
+        modal: true,
+      },
+      "Sign up"
+    )
+    .then(async (selection) => {
+      if (selection === "Sign up") {
+        commands.executeCommand("musictime.signUpAccount");
+      }
+    });
 }
 
 /**

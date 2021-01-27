@@ -8,8 +8,7 @@ import {
     showSlackChannelMenu,
     connectSlackWorkspace,
     hasSlackWorkspaces,
-    getSlackAccessToken
-} from "../slack/SlackControlManager";
+} from "../managers/SlackManager";
 import { window } from "vscode";
 const { WebClient } = require("@slack/web-api");
 

@@ -6,22 +6,20 @@ import { commands, ExtensionContext } from "vscode";
 import { onboardPlugin } from "./OnboardManager";
 import {
   getVersion,
-  logIt,
   getPluginName,
-  displayReadmeIfNotExists,
 } from "./Util";
 import { createCommands } from "./command-helper";
 import { MusicManager } from "./music/MusicManager";
 import { TrackerManager } from "./managers/TrackerManager";
-
-const tracker: TrackerManager = TrackerManager.getInstance();
+import { displayReadmeIfNotExists } from "./managers/FileManager";
+import { migrateAccessInfo } from "./managers/SpotifyManager";
 
 export function deactivate(ctx: ExtensionContext) {
   // Process this window's keystroke data since the window has become unfocused/deactivated
   commands.executeCommand("musictime.processKeystrokeData");
 
   // store the deactivate event
-  tracker.trackEditorAction("editor", "deactivate");
+  TrackerManager.getInstance().trackEditorAction("editor", "deactivate");
 }
 
 export async function activate(ctx: ExtensionContext) {
@@ -30,23 +28,23 @@ export async function activate(ctx: ExtensionContext) {
 }
 
 export async function intializePlugin(ctx: ExtensionContext) {
-  logIt(`Loaded ${getPluginName()} v${getVersion()}`);
+  console.log(`Loaded ${getPluginName()} v${getVersion()}`);
 
   //
   // add the player commands before we show the playlist
   //
   ctx.subscriptions.push(createCommands());
 
-  // init the music manager and cody config
-  const musicMgr: MusicManager = MusicManager.getInstance();
+  // migrate legacy spotify access token info to integration info
+  await migrateAccessInfo();
 
   // This will initialize the user and spotify
   // this needs to happen first to enable spotify playlist and control logic
-  await musicMgr.initializeSpotify();
+  await MusicManager.getInstance().initializeSpotify();
 
   // show the readme if it doesn't exist
   displayReadmeIfNotExists();
 
   // store the activate event
-  tracker.init();
+  TrackerManager.getInstance().init();
 }

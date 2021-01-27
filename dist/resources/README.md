@@ -107,7 +107,7 @@ Here are the different ways you can discover your most productive music.
 
 ### **1. View your web analytics**
 
-Click on the “See web analytics” button to see your most productive songs, artists, and genres by productivity score. You can also visit app.software.com/login and use your Spotify email address to log in.
+Click on the “More data at Software.com” button to see your most productive songs, artists, and genres by productivity score. You can also visit app.software.com/login and use your Spotify email address to log in.
 
 <p align="center" style="margin: 0 10%">
   <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/music-time-see-web-analytics.png" alt="Music Time web analytics button" />

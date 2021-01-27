@@ -1,8 +1,8 @@
-import { getItem } from "../Util";
 import { getSessionSummaryData, saveSessionSummaryToDisk } from "../storage/SessionSummaryData";
 import { updateSessionFromSummaryApi } from "../storage/TimeSummaryData";
 import { softwareGet, isResponseOk } from "../HttpClient";
 import { SessionSummary } from "../model/models";
+import { getItem } from "./FileManager";
 
 // every 1 min
 const DAY_CHECK_TIMER_INTERVAL = 1000 * 60;

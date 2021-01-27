@@ -3,12 +3,9 @@ import {
     PlaylistItem,
     Track,
     PlayerDevice,
-    CodyConfig,
-    setConfig,
     PlayerContext,
+    getSpotifyPlayerContext,
 } from "cody-music";
-import { SpotifyUser } from "cody-music/dist/lib/profile";
-import { isMac, getItem } from "../Util";
 import { commands } from "vscode";
 import { PERSONAL_TOP_SONGS_PLID } from "../Constants";
 import {
@@ -17,6 +14,8 @@ import {
     softwareDelete,
     softwarePut,
 } from "../HttpClient";
+import { getItem } from "../managers/FileManager";
+import { MusicCommandManager } from "./MusicCommandManager";
 
 export class MusicDataManager {
     private static instance: MusicDataManager;
@@ -26,11 +25,8 @@ export class MusicDataManager {
 
     public selectedTrackItem: PlaylistItem = null;
     public selectedPlaylist: PlaylistItem = null;
-    public spotifyClientId: string = "";
-    public spotifyClientSecret: string = "";
     public buildingCustomPlaylist: boolean = false;
     public playlistTrackMap: any = {};
-    public spotifyUser: SpotifyUser = null;
     public userTopSongs: any[] = [];
     public sortAlphabetically: boolean = false;
     public playlistMap: {} = {};
@@ -69,10 +65,8 @@ export class MusicDataManager {
         this.spotifyLikedSongs = [];
         this.origRawPlaylistOrder = [];
         this.rawPlaylists = [];
-        this.spotifyUser = null;
         this.selectedTrackItem = null;
         this.selectedPlaylist = null;
-        this.spotifyClientId = "";
         this.currentDevices = [];
         this.runningTrack = new Track();
     }
@@ -90,34 +84,7 @@ export class MusicDataManager {
             playerName = PlayerName.SpotifyWeb;
         }
 
-        // check if it's change in player type
-        const shouldUpdateCodyConfig =
-            playerName !== this._currentPlayerName ? true : false;
         this._currentPlayerName = playerName;
-
-        // if it's a player type change, update cody config so it
-        // can disable the other player until it is selected
-        if (shouldUpdateCodyConfig) {
-            this.updateCodyConfig();
-        }
-    }
-
-    /**
-     * Update the cody config settings for cody-music
-     */
-    updateCodyConfig() {
-        const accessToken = getItem("spotify_access_token");
-        const refreshToken = getItem("spotify_refresh_token");
-
-        const codyConfig: CodyConfig = new CodyConfig();
-        codyConfig.enableItunesDesktop = false;
-        codyConfig.enableItunesDesktopSongTracking = isMac();
-        codyConfig.enableSpotifyDesktop = isMac();
-        codyConfig.spotifyClientId = this.spotifyClientId;
-        codyConfig.spotifyAccessToken = accessToken;
-        codyConfig.spotifyRefreshToken = refreshToken;
-        codyConfig.spotifyClientSecret = this.spotifyClientSecret;
-        setConfig(codyConfig);
     }
 
     removeTrackFromRecommendations(trackId) {
@@ -229,6 +196,15 @@ export class MusicDataManager {
                 }
             });
         }
+    }
+
+    async populatePlayerContext() {
+        const spotifyContext: PlayerContext = await getSpotifyPlayerContext();
+        MusicDataManager.getInstance().spotifyContext = spotifyContext;
+        MusicCommandManager.syncControls(
+            MusicDataManager.getInstance().runningTrack,
+            false
+        );
     }
 
     // reconcile. meaning the user may have deleted the lists our 2 buttons created;

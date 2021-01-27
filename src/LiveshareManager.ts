@@ -1,16 +1,14 @@
 import { softwarePost, isResponseOk } from "./HttpClient";
-import { getItem, logIt } from "./Util";
+import { getItem } from "./managers/FileManager";
 
 export async function manageLiveshareSession(session) {
     softwarePost("/data/liveshare", session, getItem("jwt"))
         .then(async resp => {
-            if (isResponseOk(resp)) {
-                logIt("completed liveshare sync");
-            } else {
-                logIt(`unable to sync liveshare metrics: ${resp.message}`);
+            if (!isResponseOk(resp)) {
+                console.debug(`unable to sync liveshare metrics: ${resp.message}`);
             }
         })
         .catch(err => {
-            logIt(`unable to sync liveshare metrics: ${err.message}`);
+            console.debug(`unable to sync liveshare metrics: ${err.message}`);
         });
 }

@@ -11,12 +11,10 @@ import {
 } from "vscode";
 import { PlaylistItem } from "cody-music";
 import { MusicManager } from "./MusicManager";
-import { logIt, getPlaylistIcon } from "../Util";
+import { getPlaylistIcon } from "../Util";
 import { ProviderItemManager } from "./ProviderItemManager";
 import { MusicDataManager } from "./MusicDataManager";
-import { populateSpotifyUser } from "../DataController";
-
-const dataMgr: MusicDataManager = MusicDataManager.getInstance();
+import { hasSpotifyUser, populateSpotifyUser } from "../managers/SpotifyManager";
 
 /**
  * Create the playlist tree item (root or leaf)
@@ -31,6 +29,7 @@ const createPlaylistTreeItem = (
 };
 
 export const refreshPlaylistViewIfRequired = async () => {
+    const dataMgr: MusicDataManager = MusicDataManager.getInstance();
     if (!dataMgr.spotifyPlaylists || dataMgr.spotifyPlaylists.length === 0) {
         await MusicManager.getInstance().refreshPlaylists();
     }
@@ -74,6 +73,7 @@ export const connectPlaylistTreeView = (view: TreeView<PlaylistItem>) => {
             const selectedPlaylist = await musicMgr.getPlaylistById(
                 currentPlaylistId
             );
+            const dataMgr: MusicDataManager = MusicDataManager.getInstance();
             dataMgr.selectedPlaylist = selectedPlaylist;
 
             // play it
@@ -125,11 +125,12 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
                 select,
             });
         } catch (err) {
-            logIt(`Unable to select track: ${err.message}`);
+            console.error(`Unable to select track: ${err.message}`);
         }
     }
 
     async revealTree() {
+        const dataMgr: MusicDataManager = MusicDataManager.getInstance();
         if (
             !dataMgr.spotifyPlaylists ||
             dataMgr.spotifyPlaylists.length === 0
@@ -148,13 +149,13 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
                     select: false,
                 });
             } catch (err) {
-                logIt(`Unable to select track: ${err.message}`);
+                console.error(`Unable to select track: ${err.message}`);
             }
         }, 1000);
     }
 
     getTreeItem(p: PlaylistItem): PlaylistTreeItem {
-        let treeItem: PlaylistTreeItem = null;
+        let treeItem: any = null;
         if (p.type === "playlist") {
             // it's a track parent (playlist)
             if (p && p.tracks && p.tracks["total"] && p.tracks["total"] > 0) {
@@ -186,6 +187,7 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
         const musicMgr: MusicManager = MusicManager.getInstance();
         const providerItemMgr: ProviderItemManager = ProviderItemManager.getInstance();
 
+        const dataMgr: MusicDataManager = MusicDataManager.getInstance();
         if (dataMgr.ready) {
             if (element) {
                 // kpm item extending the playlist item
@@ -207,7 +209,7 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
                 return musicMgr.currentPlaylists;
             }
         } else {
-            if (!musicMgr.hasSpotifyUser()) {
+            if (!hasSpotifyUser()) {
                 await populateSpotifyUser();
             }
             const loadingItem: PlaylistItem = providerItemMgr.getLoadingButton();

@@ -1,19 +1,16 @@
 import { api_endpoint, DISCONNECT_LABEL } from "../Constants";
 import {
-  getAuthCallbackState,
-  getIntegrations,
-  getItem,
   getPluginId,
   getPluginType,
-  getPluginUuid,
   getVersion,
   launchWebUrl,
-  syncIntegrations,
 } from "../Util";
-import { refetchSlackConnectStatusLazily } from "../DataController";
 import { showQuickPick } from "../MenuManager";
 import { commands, window } from "vscode";
 import { softwarePut } from "../HttpClient";
+import { updateSlackIntegrations } from "./IntegrationManager";
+import { getAuthCallbackState, getIntegrations, getItem, getPluginUuid, setAuthCallbackState, syncIntegrations } from "./FileManager";
+import { getUserRegistrationState } from "./UserStatusManager";
 
 const queryString = require("query-string");
 const { WebClient } = require("@slack/web-api");
@@ -42,6 +39,37 @@ export async function connectSlackWorkspace() {
   setTimeout(() => {
     refetchSlackConnectStatusLazily(40);
   }, 10000);
+}
+
+export async function refetchSlackConnectStatusLazily(tryCountUntilFoundUser = 40) {
+  const slackAuth = await getSlackAuth();
+  if (!slackAuth) {
+    // try again if the count is not zero
+    if (tryCountUntilFoundUser > 0) {
+      tryCountUntilFoundUser -= 1;
+      setTimeout(() => {
+        refetchSlackConnectStatusLazily(tryCountUntilFoundUser);
+      }, 10000);
+    } else {
+      // clear the auth callback state
+      setAuthCallbackState(null);
+    }
+  } else {
+    // clear the auth callback state
+    setAuthCallbackState(null);
+    window.showInformationMessage("Successfully connected to Slack");
+
+    // refresh the tree view
+    setTimeout(() => {
+        // refresh the playlist to show the device button update
+        commands.executeCommand("musictime.refreshPlaylist");
+    }, 1000);
+  }
+}
+
+export async function getSlackAuth() {
+  const { user } = await getUserRegistrationState();
+  return await updateSlackIntegrations(user);
 }
 
 export async function disconnectSlack() {

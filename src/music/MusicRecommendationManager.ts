@@ -1,5 +1,5 @@
 import { commands } from "vscode";
-import { Track, getRecommendationsForTracks } from "cody-music";
+import { Track, getRecommendationsForTracks, PlaylistItem } from "cody-music";
 import {
     sortTracks,
     requiresSpotifyAccess,
@@ -7,9 +7,10 @@ import {
 } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 
-const dataMgr: MusicDataManager = MusicDataManager.getInstance();
+
 
 export async function refreshRecommendations() {
+    const dataMgr: MusicDataManager = MusicDataManager.getInstance();
     if (requiresSpotifyAccess()) {
         // update the recommended tracks to empty
         dataMgr.recommendationTracks = [];
@@ -52,6 +53,21 @@ export async function getRecommendedTracks(
     return [];
 }
 
+export async function getRecommendationsForSelectedTrack(playlistItem: PlaylistItem) {
+    console.log("fetching recommendation for track: ", playlistItem.name);
+    const tracks: Track[] = (await getRecommendationsForTracks(
+        [playlistItem.id],
+        100,
+        "" /*market*/,
+        20,
+        100,
+        [],
+        [],
+        {}
+    )) || [];
+    updateRecommendationTree(playlistItem.name, tracks);
+}
+
 export async function updateRecommendations(
     label: string,
     likedSongSeedLimit: number = 5,
@@ -59,6 +75,7 @@ export async function updateRecommendations(
     features: any = {},
     offset: number = 0
 ) {
+    const dataMgr: MusicDataManager = MusicDataManager.getInstance();
     dataMgr.currentRecMeta = {
         label,
         likedSongSeedLimit,
@@ -77,6 +94,11 @@ export async function updateRecommendations(
         (await this.getRecommendedTracks(trackIds, seed_genres, features)) ||
         [];
 
+    updateRecommendationTree(label, tracks);
+}
+
+function updateRecommendationTree(label: string, tracks: Track[]) {
+    const dataMgr: MusicDataManager = MusicDataManager.getInstance();
     // get the tracks that have already been recommended
     let existingTrackIds = dataMgr.prevRecTrackMap[label]
         ? dataMgr.prevRecTrackMap[label]
@@ -128,6 +150,7 @@ export async function getTrackIdsForRecommendations(
     likedSongSeedLimit: number = 5,
     offset: number = 0
 ) {
+    const dataMgr: MusicDataManager = MusicDataManager.getInstance();
     let trackIds = [];
     let trackRecs = dataMgr.trackIdsForRecommendations || [];
 

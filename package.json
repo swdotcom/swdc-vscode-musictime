@@ -49,7 +49,8 @@
     "vscode:prepublish": "webpack --mode production",
     "webpack": "webpack --mode development",
     "webpack-dev": "webpack --mode development --watch",
-    "test-compile": "tsc -p ./"
+    "test-compile": "tsc -p ./",
+    "show-dependencies": "env NODE_CONFIG_ENV=localhost node tools/show-dependencies.js"
   },
   "contributes": {
     "commands": [
@@ -285,6 +286,14 @@
       {
         "command": "musictime.songTitleRefresh",
         "title": "Music Time: Display song info"
+      },
+      {
+        "command": "musictime.getTrackRecommendations",
+        "title": "Music Time: Get recommendations",
+        "icon": {
+          "light": "resources/light/beaker.svg",
+          "dark": "resources/dark/beaker.svg"
+        }
       }
     ],
     "viewsContainers": {
@@ -311,24 +320,29 @@
     "menus": {
       "view/item/context": [
         {
-          "command": "musictime.shareTrack",
+          "command": "musictime.getTrackRecommendations",
           "when": "viewItem =~ /track-item.*/ || viewItem =~ /spotify-recommendation.*/",
           "group": "inline@1"
         },
         {
-          "command": "musictime.removeTrack",
-          "when": "viewItem =~ /track-item.*/",
-          "group": "inline@2"
-        },
-        {
-          "command": "musictime.addToPlaylist",
+          "command": "musictime.shareTrack",
           "when": "viewItem =~ /track-item.*/ || viewItem =~ /spotify-recommendation.*/",
           "group": "inline@2"
         },
         {
+          "command": "musictime.removeTrack",
+          "when": "viewItem =~ /track-item.*/",
+          "group": "inline@3"
+        },
+        {
+          "command": "musictime.addToPlaylist",
+          "when": "viewItem =~ /track-item.*/ || viewItem =~ /spotify-recommendation.*/",
+          "group": "inline@3"
+        },
+        {
           "command": "musictime.follow",
           "when": "viewItem =~ /.*-softwaretop40/",
-          "group": "inline@2"
+          "group": "inline@3"
         },
         {
           "command": "musictime.disconnectSlack",
