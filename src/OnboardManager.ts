@@ -4,15 +4,11 @@ import {
 } from "./DataController";
 import {
   showOfflinePrompt,
-  getItem,
   getOsUsername,
   getHostname,
-  setItem,
-  getPluginUuid,
-  getAuthCallbackState,
-  setAuthCallbackState
 } from "./Util";
 import { softwarePost, isResponseOk } from "./HttpClient";
+import { getAuthCallbackState, getItem, getPluginUuid, setAuthCallbackState, setItem } from "./managers/FileManager";
 
 let retry_counter = 0;
 const one_min_millis = 1000 * 60;

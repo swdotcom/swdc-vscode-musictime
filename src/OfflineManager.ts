@@ -1,6 +1,6 @@
-import { getNowTimes, getItem } from "./Util";
+import { getNowTimes } from "./Util";
 import { DEFAULT_SESSION_THRESHOLD_SECONDS } from "./Constants";
-import { getCurrentPayloadFile, getSessionSummaryFile } from "./managers/FileManager";
+import { getCurrentPayloadFile, getItem, getSessionSummaryFile } from "./managers/FileManager";
 
 const fileIt = require("file-it");
 

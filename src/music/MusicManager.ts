@@ -23,6 +23,7 @@ import {
     playTrackInContext,
     accessExpired,
     removeTracksFromPlaylist,
+    getSpotifyLikedSongs,
 } from "cody-music";
 import {
     PERSONAL_TOP_SONGS_NAME,
@@ -35,24 +36,18 @@ import {
 } from "../Constants";
 import { commands, window } from "vscode";
 import {
-    getUserRegistrationState,
     populateSpotifyPlaylists,
-    populateLikedSongs,
     populateSpotifyDevices,
-    populateSpotifyUser,
 } from "../DataController";
 import {
-    getItem,
-    setItem,
     isMac,
-    logIt,
     getCodyErrorMessage,
     createUriFromTrackId,
     createUriFromPlaylistId,
 } from "../Util";
 import { isResponseOk, softwareGet, softwarePost } from "../HttpClient";
 import { MusicCommandManager } from "./MusicCommandManager";
-import { MusicControlManager, disconnectSpotify } from "./MusicControlManager";
+import { MusicControlManager } from "./MusicControlManager";
 import { ProviderItemManager } from "./ProviderItemManager";
 import {
     sortPlaylists,
@@ -61,11 +56,16 @@ import {
     getDeviceSet,
     getDeviceId,
     showReconnectPrompt,
+    requiresSpotifyReAuthentication,
 } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 import { MusicCommandUtil } from "./MusicCommandUtil";
 import { refreshRecommendations } from "./MusicRecommendationManager";
 import { MusicStateManager } from "./MusicStateManager";
+import { populateSpotifyUser, updateCodyConfig, disconnectSpotify, getSpotifyIntegration, isPremiumUser, hasSpotifyUser, updateSpotifyClientInfo } from "../managers/SpotifyManager";
+import { getItem, setItem } from "../managers/FileManager";
+import { getUserRegistrationState } from "../managers/UserStatusManager";
+import { updateSpotifyIntegrations } from "../managers/IntegrationManager";
 
 export class MusicManager {
     private static instance: MusicManager;
@@ -157,9 +157,10 @@ export class MusicManager {
         let items: PlaylistItem[] = [];
 
         // states: [NOT_CONNECTED, MAC_PREMIUM, MAC_NON_PREMIUM, PC_PREMIUM, PC_NON_PREMIUM]
-        const CONNECTED = !requiresSpotifyAccess() ? true : false;
-        const IS_PREMIUM = this.isSpotifyPremium() ? true : false;
-        let HAS_SPOTIFY_USER = this.hasSpotifyUser() ? true : false;
+        const CONNECTED = !!(!requiresSpotifyAccess());
+        const IS_PREMIUM = !!(isPremiumUser());
+        const HAS_SPOTIFY_USER = !!(hasSpotifyUser());
+        const REGISTERED = !!(getItem("name"));
 
         const type =
             playerName === PlayerName.ItunesDesktop ? "itunes" : "spotify";
@@ -188,7 +189,7 @@ export class MusicManager {
         }
 
         if (!hasLikedSongs && CONNECTED) {
-            await populateLikedSongs();
+            MusicDataManager.getInstance().spotifyLikedSongs = await getSpotifyLikedSongs();
         }
 
         // sort
@@ -205,6 +206,10 @@ export class MusicManager {
             });
         }
 
+        if (REGISTERED) {
+            items.push(this.providerItemMgr.getLoggedInButton());
+        }
+
         // show the spotify connect premium button if they're connected and a non-premium account
         if (CONNECTED && !IS_PREMIUM) {
             // show the spotify premium account required button
@@ -214,17 +219,23 @@ export class MusicManager {
         }
 
         // add the connect to spotify if they still need to connect
-        if (!CONNECTED) {
+        if (!CONNECTED || requiresSpotifyReAuthentication()) {
             items.push(this.providerItemMgr.getConnectToSpotifyButton());
         }
+
+        if (CONNECTED && !REGISTERED) {
+            // show the signup and login button if the user is not registered
+            items.push(this.providerItemMgr.getSignupButton());
+            items.push(this.providerItemMgr.getLoginButton());
+        }
+
+        // add the readme button
+        items.push(this.providerItemMgr.getReadmeButton());
 
         if (CONNECTED) {
             items.push(this.providerItemMgr.getGenerateDashboardButton());
             items.push(this.providerItemMgr.getWebAnalyticsButton());
         }
-
-        // add the readme button
-        items.push(this.providerItemMgr.getReadmeButton());
 
         if (CONNECTED) {
           items.push(this.providerItemMgr.getSlackIntegrationsTree());
@@ -534,7 +545,6 @@ export class MusicManager {
     }
 
     async playNextLikedSong() {
-        const isPremiumUser = MusicManager.getInstance().isSpotifyPremium();
         const deviceId = getDeviceId();
 
         // play the next song
@@ -545,7 +555,7 @@ export class MusicManager {
                 0
             );
             this.dataMgr.selectedTrackItem = playlistItem;
-            if (isPremiumUser) {
+            if (isPremiumUser()) {
                 // play the next track
                 await MusicCommandUtil.getInstance().runSpotifyCommand(
                     playSpotifyTrack,
@@ -561,7 +571,6 @@ export class MusicManager {
     }
 
     async playPreviousLikedSong() {
-        const isPremiumUser = MusicManager.getInstance().isSpotifyPremium();
         const deviceId = getDeviceId();
         // play the next song
         const prevTrack: Track = this.getPreviousSpotifyLikedSong();
@@ -571,7 +580,7 @@ export class MusicManager {
                 0
             );
             this.dataMgr.selectedTrackItem = playlistItem;
-            if (isPremiumUser) {
+            if (isPremiumUser()) {
                 // launch and play the next track
                 await MusicCommandUtil.getInstance().runSpotifyCommand(
                     playSpotifyTrack,
@@ -703,7 +712,7 @@ export class MusicManager {
                 PERSONAL_TOP_SONGS_PLID,
                 PERSONAL_TOP_SONGS_NAME
             ).catch((err) => {
-                logIt("Error updating music time with generated playlist ID");
+                console.error("Error updating music time with generated playlist ID");
             });
         } else {
             // get the spotify playlist id from the app's existing playlist info
@@ -741,7 +750,7 @@ export class MusicManager {
                 } else {
                     await replacePlaylistTracks(playlistId, tracksToAdd).catch(
                         (err) => {
-                            logIt(`Error replacing tracks: ${err.message}`);
+                            console.error(`Error replacing tracks: ${err.message}`);
                         }
                     );
 
@@ -808,80 +817,30 @@ export class MusicManager {
         return createResult;
     }
 
-    async updateSpotifyAccessInfo(spotifyOauth) {
-        if (spotifyOauth && spotifyOauth.access_token) {
-            // update the CodyMusic credentials
-            setItem("spotify_access_token", spotifyOauth.access_token);
-            setItem("spotify_refresh_token", spotifyOauth.refresh_token);
-            setItem("requiresSpotifyReAuth", false);
-            // update cody config
-            this.dataMgr.updateCodyConfig();
-        } else {
-            setItem("spotify_access_token", null);
-            setItem("spotify_refresh_token", null);
-            setItem("requiresSpotifyReAuth", true);
-            // update cody config
-            this.dataMgr.updateCodyConfig();
-            // update the spotify user to null
-            this.dataMgr.spotifyUser = null;
-        }
-    }
-
-    async initializeSpotify() {
+    async initializeSpotify(hardRefresh = false) {
         // get the client id and secret
-        let clientId = "";
-        let clientSecret = "";
+        await updateSpotifyClientInfo();
 
-        let jwt = getItem("jwt");
-        const resp = await softwareGet("/auth/spotify/clientInfo", jwt);
-        if (isResponseOk(resp)) {
-            // get the clientId and clientSecret
-            clientId = resp.data.clientId;
-            clientSecret = resp.data.clientSecret;
-        }
+        // update cody music with all access info
+        updateCodyConfig();
 
-        this.dataMgr.spotifyClientId = clientId;
-        this.dataMgr.spotifyClientSecret = clientSecret;
-        this.dataMgr.updateCodyConfig();
+        // first get the spotify user
+        await populateSpotifyUser(hardRefresh);
 
-        // update the user info
-        if (requiresSpotifyAccess()) {
-            await getUserRegistrationState();
-        } else {
-            // this should only be done after we've updated the cody config
-            const requiresReAuth = await this.requiresReAuthentication();
-            if (requiresReAuth) {
-                const email = getItem("name");
-
-                // remove their current spotify info and initiate the auth flow
-                await disconnectSpotify(false /*confirmDisconnect*/);
-
-                showReconnectPrompt(email);
-            } else {
-                // initialize the user and devices
-                await populateSpotifyUser();
-                setTimeout(() => {
-                    // populate spotify devices lazily
-                    populateSpotifyDevices();
-                }, 2000);
-            }
-        }
+        await populateSpotifyDevices();
 
         // initialize the status bar music controls
         MusicCommandManager.initialize();
     }
 
     async requiresReAuthentication(): Promise<boolean> {
-        const checkedSpotifyAccess = getItem("vscode_checkedSpotifyAccess");
-        const hasAccessToken = getItem("spotify_access_token");
-        if (!checkedSpotifyAccess && hasAccessToken) {
+        const spotifyIntegration = getSpotifyIntegration();
+        if (spotifyIntegration) {
             const expired = await accessExpired();
 
             if (expired) {
                 setItem("requiresSpotifyReAuth", true);
             }
-
-            setItem("vscode_checkedSpotifyAccess", true);
             return expired;
         }
         return false;
@@ -900,14 +859,11 @@ export class MusicManager {
             activeDesktopPlayerDevice,
         } = getDeviceSet();
 
-        const isPremiumUser = MusicManager.getInstance().isSpotifyPremium();
-        const isMacUser = isMac();
-
         const hasDesktopDevice =
             activeDesktopPlayerDevice || desktop ? true : false;
 
         const requiresDesktopLaunch =
-            !isPremiumUser && isMac() && !hasDesktopDevice ? true : false;
+            !isPremiumUser() && isMac() && !hasDesktopDevice ? true : false;
 
         if (requiresDesktopLaunch && playerName !== PlayerName.SpotifyDesktop) {
             window.showInformationMessage(
@@ -936,7 +892,7 @@ export class MusicManager {
                 : false;
 
         if (
-            !isPremiumUser &&
+            !isPremiumUser() &&
             (hasSelectedTrackItem || hasSelectedPlaylistItem)
         ) {
             // show the track or playlist
@@ -1033,19 +989,6 @@ export class MusicManager {
         return isMac() && (desktop || activeDesktopPlayerDevice) ? true : false;
     }
 
-    hasSpotifyUser() {
-        return this.dataMgr.spotifyUser && this.dataMgr.spotifyUser.product
-            ? true
-            : false;
-    }
-
-    isSpotifyPremium() {
-        return this.hasSpotifyUser() &&
-            this.dataMgr.spotifyUser.product === "premium"
-            ? true
-            : false;
-    }
-
     getPlayerNameForPlayback() {
         // if you're offline you may still have spotify desktop player abilities.
         // check if the current player is spotify and we don't have web access.
@@ -1053,7 +996,7 @@ export class MusicManager {
         if (
             this.dataMgr.currentPlayerName !== PlayerName.ItunesDesktop &&
             isMac() &&
-            !this.isSpotifyPremium()
+            !isPremiumUser()
         ) {
             return PlayerName.SpotifyDesktop;
         }
@@ -1062,8 +1005,8 @@ export class MusicManager {
 
     async showPlayerLaunchConfirmation(callback: any = null) {
         // if they're a mac non-premium user, just launch the desktop player
-        const isPremiumUser = MusicManager.getInstance().isSpotifyPremium();
-        if (isMac() && !isPremiumUser) {
+
+        if (isMac() && !isPremiumUser()) {
             return this.launchTrackPlayer(PlayerName.SpotifyDesktop, callback);
         } else {
             const buttons = ["Web Player", "Desktop Player"];
@@ -1101,11 +1044,9 @@ export class MusicManager {
             activeDesktopPlayerDevice,
         } = getDeviceSet();
 
-        let hasSpotifyUser = MusicManager.getInstance().hasSpotifyUser();
-        if (!hasSpotifyUser) {
+        if (!hasSpotifyUser()) {
             // try again
             await populateSpotifyUser();
-            hasSpotifyUser = MusicManager.getInstance().hasSpotifyUser();
         }
 
         const hasDesktopLaunched =
@@ -1115,10 +1056,9 @@ export class MusicManager {
             hasDesktopLaunched || webPlayer || activeWebPlayerDevice
                 ? true
                 : false;
-        const isPremiumUser = MusicManager.getInstance().isSpotifyPremium();
 
         const requiresDesktopLaunch =
-            !isPremiumUser && isMac() && !hasDesktopLaunched ? true : false;
+            !isPremiumUser() && isMac() && !hasDesktopLaunched ? true : false;
 
         if (!hasDesktopOrWebLaunched || requiresDesktopLaunch) {
             return await this.showPlayerLaunchConfirmation(callback);
@@ -1281,8 +1221,7 @@ export class MusicManager {
                 ? true
                 : false;
 
-        const isPremiumUser = MusicManager.getInstance().isSpotifyPremium();
-        const useSpotifyWeb = isPremiumUser || !isMac() ? true : false;
+        const useSpotifyWeb = isPremiumUser() || !isMac() ? true : false;
 
         let result = null;
         if (isRecommendationTrack || isLikedSong) {
@@ -1303,7 +1242,6 @@ export class MusicManager {
                     params
                 );
             }
-            await musicCommandUtil.checkIfAccessExpired(result);
         } else if (playlistId) {
             if (useSpotifyWeb) {
                 // NORMAL playlist request

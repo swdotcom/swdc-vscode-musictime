@@ -1,5 +1,5 @@
 import { window, StatusBarAlignment, StatusBarItem } from "vscode";
-import { getSongDisplayName, isMac, getItem, setItem } from "../Util";
+import { getSongDisplayName } from "../Util";
 import { TrackStatus, Track } from "cody-music";
 import {
     requiresSpotifyAccess,
@@ -7,7 +7,7 @@ import {
     requiresSpotifyReAuthentication,
 } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
-import { MusicManager } from "./MusicManager";
+import { getItem, setItem } from "../managers/FileManager";
 
 export interface Button {
     /**
@@ -32,6 +32,7 @@ export interface Button {
 // const songNameDisplayTimeoutMillis: number = 12000;
 
 export class MusicCommandManager {
+    private static _initialized: boolean = false;
     private static _buttons: Button[] = [];
     private static _hideSongTimeout = null;
     private static _isLoading: boolean = false;
@@ -52,6 +53,10 @@ export class MusicCommandManager {
      * Create the list of status bar buttons that will be displayed.
      */
     public static async initialize() {
+        if (this._initialized) {
+            return;
+        }
+        this._initialized = true;
         const musictimeMenuTooltip = this.getMusicMenuTooltip();
 
         let requiresReAuth = requiresSpotifyReAuthentication();
@@ -140,7 +145,6 @@ export class MusicCommandManager {
         }
 
         this._isLoading = showLoading;
-        const foundDevice = getDeviceId() ? true : false;
 
         const requiresAccessToken = requiresSpotifyAccess();
         let requiresReAuth = requiresSpotifyReAuthentication();
@@ -150,13 +154,8 @@ export class MusicCommandManager {
             requiresReAuth = false;
         }
 
-        const isPremiumUser = MusicManager.getInstance().isSpotifyPremium();
-
-        const isNonPremiumNonMacUser =
-            !isMac() && !isPremiumUser ? true : false;
         const requiresAuth =
             requiresAccessToken || requiresReAuth ? true : false;
-        const hasDeviceOrSong = pauseIt || playIt || foundDevice ? true : false;
 
         if (requiresAuth) {
             this.showLaunchPlayerControls();

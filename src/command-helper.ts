@@ -1,16 +1,13 @@
 import { commands, Disposable, window, TreeView } from "vscode";
 import {
   MusicControlManager,
-  connectSpotify,
-  disconnectSpotify,
-  switchSpotifyAccount,
   displayMusicTimeMetricsMarkdownDashboard,
 } from "./music/MusicControlManager";
-import { launchMusicAnalytics, displayReadmeIfNotExists } from "./Util";
+import { launchMusicAnalytics } from "./Util";
 import { MusicPlaylistProvider, connectPlaylistTreeView } from "./music/MusicPlaylistProvider";
 import { PlaylistItem, PlayerName, PlayerDevice, playSpotifyDevice } from "cody-music";
 import { SocialShareManager } from "./social/SocialShareManager";
-import { connectSlackWorkspace, disconnectSlack, disconnectSlackAuth } from "./slack/SlackControlManager";
+import { connectSlackWorkspace, disconnectSlack, disconnectSlackAuth } from "./managers/SlackManager";
 import { MusicManager } from "./music/MusicManager";
 import {
   MusicRecommendationProvider,
@@ -23,12 +20,15 @@ import {
 } from "./selector/SortPlaylistSelectorManager";
 import { populateSpotifyPlaylists, populateSpotifyDevices } from "./DataController";
 import { showDeviceSelectorMenu } from "./selector/SpotifyDeviceSelectorManager";
-import { updateRecommendations, refreshRecommendations } from "./music/MusicRecommendationManager";
+import { updateRecommendations, refreshRecommendations, getRecommendationsForSelectedTrack } from "./music/MusicRecommendationManager";
 import { MusicCommandUtil } from "./music/MusicCommandUtil";
 import { showSearchInput } from "./selector/SearchSelectorManager";
 import { getDeviceId, requiresSpotifyAccess } from "./music/MusicUtil";
 import { KpmManager } from "./managers/KpmManager";
 import { MusicStateManager } from "./music/MusicStateManager";
+import { connectSpotify, disconnectSpotify, switchSpotifyAccount } from "./managers/SpotifyManager";
+import { displayReadmeIfNotExists } from "./managers/FileManager";
+import { launchLogin, showLogInMenuOptions, showSignUpMenuOptions } from "./managers/UserStatusManager";
 
 /**
  * add the commands to vscode....
@@ -467,6 +467,44 @@ export function createCommands(): {
       updateRecommendations(label, likedSongSeedLimit, seed_genres, features);
     })
   );
+
+  // signup button click
+  cmds.push(
+    commands.registerCommand("musictime.signUpAccount", async () => {
+      showSignUpMenuOptions();
+    })
+  );
+
+  // login button click
+  cmds.push(
+    commands.registerCommand("musictime.googleLogin", async () => {
+      launchLogin("google", true);
+    })
+  );
+
+  cmds.push(
+    commands.registerCommand("musictime.githubLogin", async () => {
+      launchLogin("github", true);
+    })
+  );
+
+  cmds.push(
+    commands.registerCommand("musictime.emailSignup", async () => {
+      launchLogin("software", false);
+    })
+  );
+
+  cmds.push(
+    commands.registerCommand("musictime.emailLogin", async () => {
+      launchLogin("software", true);
+    })
+  );
+
+  cmds.push(
+    commands.registerCommand("musictime.getTrackRecommendations", async (node: PlaylistItem) => {
+      getRecommendationsForSelectedTrack(node);
+    })
+  )
 
   // initialize the kpm controller to start the listener
   KpmManager.getInstance();

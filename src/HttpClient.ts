@@ -3,7 +3,6 @@ import axios from "axios";
 import { api_endpoint } from "./Constants";
 
 import {
-    logIt,
     getPluginId,
     getPluginName,
     getVersion,
@@ -44,7 +43,7 @@ export async function softwareGet(api, jwt, additionHeaders = null) {
     }
 
     return await beApi.get(api).catch((err) => {
-        logIt(`error fetching data for ${api}, message: ${err.message}`);
+        console.debug(`error fetching data for ${api}, message: ${err.message}`);
         return err;
     });
 }
@@ -70,7 +69,7 @@ export async function softwarePut(api, payload, jwt) {
             ) {
                 errMsg = err.response.data.message;
             }
-            logIt(`error posting data for ${api}, message: ${errMsg}`);
+            console.debug(`error posting data for ${api}, message: ${errMsg}`);
             return err;
         });
 }
@@ -98,7 +97,7 @@ export async function softwarePost(api, payload, jwt = null) {
             ) {
                 errMsg = err.response.data.message;
             }
-            logIt(`error posting data for ${api}, message: ${errMsg}`);
+            console.debug(`error posting data for ${api}, message: ${errMsg}`);
             return err;
         });
 }
@@ -114,7 +113,7 @@ export async function softwareDelete(api, jwt) {
             return resp;
         })
         .catch((err) => {
-            logIt(
+            console.debug(
                 `error with delete request for ${api}, message: ${err.message}`
             );
             return err;

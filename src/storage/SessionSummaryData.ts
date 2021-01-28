@@ -1,7 +1,7 @@
 import { SessionSummary, KeystrokeAggregate } from "../model/models";
-import { getNowTimes, getItem, coalesceNumber } from "../Util";
+import { getNowTimes, coalesceNumber } from "../Util";
 import { DEFAULT_SESSION_THRESHOLD_SECONDS } from "../Constants";
-import { getFileDataAsJson, getSessionSummaryFile } from "../managers/FileManager";
+import { getFileDataAsJson, getItem, getSessionSummaryFile } from "../managers/FileManager";
 
 const fileIt = require("file-it");
 

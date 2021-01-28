@@ -4,14 +4,15 @@ import {
     CodyResponseType,
     addTracksToPlaylist,
     createPlaylist,
-    PlaylistItem
+    PlaylistItem,
+    getSpotifyLikedSongs
 } from "cody-music";
 import { OK_LABEL, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
 import { getCodyErrorMessage } from "../Util";
 import {
-    populateLikedSongs,
     populateSpotifyPlaylists
 } from "../DataController";
+import { MusicDataManager } from "./MusicDataManager";
 
 export class MusicPlaylistManager {
     private static instance: MusicPlaylistManager;
@@ -78,7 +79,7 @@ export class MusicPlaylistManager {
                 setTimeout(async () => {
                     // repopulate the playlists
                     if (playlist_id === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME) {
-                        await populateLikedSongs();
+                        MusicDataManager.getInstance().spotifyLikedSongs = await getSpotifyLikedSongs();
                     } else {
                         await populateSpotifyPlaylists();
                     }

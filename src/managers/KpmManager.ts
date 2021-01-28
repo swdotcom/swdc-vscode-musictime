@@ -4,7 +4,6 @@ import { UNTITLED, NO_PROJ_NAME, DEFAULT_DURATION_MILLIS } from "../Constants";
 import {
   getRootPathForFile,
   getNowTimes,
-  logEvent,
   getFileAgeInDays,
   isFileActive,
   codeTimeExtInstalled,
@@ -142,7 +141,6 @@ export class KpmManager {
     this.updateStaticValues(rootObj, staticInfo);
 
     rootObj.source[staticInfo.filename].open += 1;
-    logEvent(`File opened`);
   }
 
   /**
@@ -228,16 +226,12 @@ export class KpmManager {
         // it's a copy and paste event
         sourceObj.paste += 1;
         sourceObj.charsPasted += textChangeInfo.textChangeLen;
-        logEvent("Copy+Paste Incremented");
       } else if (textChangeInfo.textChangeLen < 0) {
         sourceObj.delete += 1;
         // update the overall count
       } else if (textChangeInfo.hasNonNewLineData) {
         // update the data for this fileInfo keys count
         sourceObj.add += 1;
-        // update the overall count
-        logEvent("charsAdded incremented");
-        logEvent("addEvents incremented");
       }
       // increment keystrokes by 1
       rootObj.keystrokes += 1;
@@ -250,10 +244,8 @@ export class KpmManager {
           : event.lineCount || 0;
 
       if (textChangeInfo.linesDeleted) {
-        logEvent(`Removed ${textChangeInfo.linesDeleted} lines`);
         sourceObj.linesRemoved += textChangeInfo.linesDeleted;
       } else if (textChangeInfo.linesAdded) {
-        logEvent(`Added ${textChangeInfo.linesAdded} lines`);
         sourceObj.linesAdded += textChangeInfo.linesAdded;
       }
     }

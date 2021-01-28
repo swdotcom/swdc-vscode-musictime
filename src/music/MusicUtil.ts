@@ -2,10 +2,10 @@ import { PlaylistItem, deletePlaylist, Track, PlayerDevice } from "cody-music";
 import { NOT_NOW_LABEL, OK_LABEL } from "../Constants";
 import { window, commands } from "vscode";
 import { MusicManager } from "./MusicManager";
-import { getItem } from "../Util";
 import { populateSpotifyPlaylists } from "../DataController";
 import { MusicDataManager } from "./MusicDataManager";
-import { connectSpotify } from "./MusicControlManager";
+import { connectSpotify, getSpotifyIntegration } from "../managers/SpotifyManager";
+import { getItem } from "../managers/FileManager";
 
 // duplicate music time playlists names:
 // "My AI Top 40", "My Custom Top 40", "Custom Top 40", "AI-generated Custom Top 40", "Software Top 40"
@@ -156,9 +156,9 @@ export async function buildTracksForRecommendations(playlists) {
 }
 
 export function requiresSpotifyAccess() {
-    let spotifyAccessToken = getItem("spotify_access_token");
+    const spotifyIntegration = getSpotifyIntegration();
     // no spotify access token then return true, the user requires spotify access
-    return !spotifyAccessToken ? true : false;
+    return !spotifyIntegration ? true : false;
 }
 
 export function requiresSpotifyReAuthentication() {

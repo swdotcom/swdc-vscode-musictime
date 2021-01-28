@@ -1,7 +1,5 @@
 import {
   getNowTimes,
-  isNewDay,
-  setItem,
   getProjectFolder,
   getWorkspaceName,
   getHostname,
@@ -10,9 +8,9 @@ import {
 import {
   getFileDataAsJson,
   storeJsonData,
-  clearLastSavedKeystrokeStats,
-  getLastSavedKeystrokesStats,
-  getTimeCounterFile
+  getTimeCounterFile,
+  isNewDay,
+  setItem
 } from "./FileManager";
 import TimeCounterStats from "../model/TimeCounterStats";
 import {
@@ -48,7 +46,6 @@ const path = require("path");
 const FIFTEEN_MIN_IN_SECONDS: number = 60 * 15;
 const TWO_MIN_INTERVAL: number = 1000 * 60 * 2;
 
-const tracker: TrackerManager = TrackerManager.getInstance();
 
 export class PluginDataManager {
   private static instance: PluginDataManager;
@@ -208,9 +205,6 @@ export class PluginDataManager {
       // Clear the session summary data (report and status bar info)
       clearSessionSummaryData();
 
-      // clear the last save payload
-      clearLastSavedKeystrokeStats();
-
       // clear time data data. this will also clear the
       // code time and active code time numbers
       clearTimeDataSummary();
@@ -355,7 +349,7 @@ export class PluginDataManager {
     }
 
     // send the payload to the tracker manager
-    tracker.trackCodeTimeEvent(payload);
+    TrackerManager.getInstance().trackCodeTimeEvent(payload);
   }
 
   async clearStatsForNewDay() {
@@ -479,12 +473,8 @@ export class PluginDataManager {
     // default error to empty
     payload.project_null_error = "";
 
-    // get the latest payload (in-memory or on file)
-    let lastPayload: KeystrokeStats = await getLastSavedKeystrokesStats();
-
     // check to see if we're in a new day
     if (isNewDay()) {
-      lastPayload = null;
       if (td) {
         // don't rely on the previous TimeData
         td = null;
@@ -510,14 +500,6 @@ export class PluginDataManager {
       // We found a TimeData object, use that info
       cumulative_editor_seconds = td.editor_seconds;
       cumulative_session_seconds = td.session_seconds;
-    } else if (lastPayload) {
-      // use the last saved keystrokestats
-      if (lastPayload.cumulative_editor_seconds) {
-        cumulative_editor_seconds = lastPayload.cumulative_editor_seconds + 60;
-      }
-      if (lastPayload.cumulative_session_seconds) {
-        cumulative_session_seconds = lastPayload.cumulative_session_seconds + 60;
-      }
     }
 
     // Check if the final cumulative editor seconds is less than the cumulative session seconds
