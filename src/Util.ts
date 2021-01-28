@@ -573,7 +573,7 @@ export function launchMusicAnalytics() {
 export function checkRegistration(showSignup = true) {
   if (!getItem("name")) {
     if (showSignup) {
-      showModalSignupPrompt("A registered account is required to continue. Sign up or log in to continue.");
+      showModalSignupPrompt("Sign up or register for a web.com account at Software.com to view your most productive music.");
     }
     return false;
   }
