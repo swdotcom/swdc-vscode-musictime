@@ -38,12 +38,12 @@ export async function intializePlugin(ctx: ExtensionContext) {
   // migrate legacy spotify access token info to integration info
   await migrateAccessInfo();
 
+  // show the readme if it doesn't exist
+  displayReadmeIfNotExists();
+
   // This will initialize the user and spotify
   // this needs to happen first to enable spotify playlist and control logic
   await MusicManager.getInstance().initializeSpotify();
-
-  // show the readme if it doesn't exist
-  displayReadmeIfNotExists();
 
   // store the activate event
   TrackerManager.getInstance().init();

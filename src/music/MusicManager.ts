@@ -817,38 +817,17 @@ export class MusicManager {
         return createResult;
     }
 
-    async initializeSpotify() {
+    async initializeSpotify(hardRefresh = false) {
         // get the client id and secret
         await updateSpotifyClientInfo();
 
         // update cody music with all access info
         updateCodyConfig();
 
-        // update the user info
-        if (requiresSpotifyAccess()) {
-            const registrationState = await getUserRegistrationState(getItem("jwt"));
-            if (registrationState.connected) {
-                await updateSpotifyIntegrations(registrationState.user);
-            }
-        } else {
-            // this should only be done after we've updated the cody config
-            const requiresReAuth = await this.requiresReAuthentication();
-            if (requiresReAuth) {
-                const email = getItem("name");
+        // first get the spotify user
+        await populateSpotifyUser(hardRefresh);
 
-                // remove their current spotify info and initiate the auth flow
-                await disconnectSpotify(false /*confirmDisconnect*/);
-
-                showReconnectPrompt(email);
-            } else {
-                // initialize the user and devices
-                await populateSpotifyUser();
-                setTimeout(() => {
-                    // populate spotify devices lazily
-                    populateSpotifyDevices();
-                }, 2000);
-            }
-        }
+        await populateSpotifyDevices();
 
         // initialize the status bar music controls
         MusicCommandManager.initialize();

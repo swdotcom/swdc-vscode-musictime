@@ -109,7 +109,7 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
     }
 
     refresh(): void {
-        this._onDidChangeTreeData.fire();
+        this._onDidChangeTreeData.fire(null);
     }
 
     refreshParent(parent: PlaylistItem) {

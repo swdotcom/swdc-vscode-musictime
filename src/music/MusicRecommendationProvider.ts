@@ -90,7 +90,7 @@ export class MusicRecommendationProvider
     }
 
     refresh(): void {
-        this._onDidChangeTreeData.fire();
+        this._onDidChangeTreeData.fire(null);
     }
 
     refreshParent(parent: PlaylistItem) {

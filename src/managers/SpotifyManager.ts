@@ -95,22 +95,18 @@ async function refetchSpotifyConnectStatusLazily(tryCountUntilFound) {
 
     setItem("requiresSpotifyReAuth", false);
 
-    updateUserInfoIfRegistered(registrationState.user);
-
     // update the login status
     window.showInformationMessage(`Successfully connected to Spotify. Loading playlists...`);
-
-    // first get the spotify user
-    await populateSpotifyUser();
 
     // clear existing spotify integrations
     clearSpotifyIntegrations();
 
+    // update the spotify integrations before populating the spotify user
     await updateSpotifyIntegrations(registrationState.user);
     await updateSlackIntegrations(registrationState.user);
 
     // initialize spotify and playlists
-    await MusicManager.getInstance().initializeSpotify();
+    await MusicManager.getInstance().initializeSpotify(true /*hardRefresh*/);
 
     // initiate the playlist build
     setTimeout(() => {
@@ -119,9 +115,9 @@ async function refetchSpotifyConnectStatusLazily(tryCountUntilFound) {
   }
 }
 
-export async function populateSpotifyUser() {
+export async function populateSpotifyUser(hardRefresh = false) {
   const spotifyIntegration = getSpotifyIntegration();
-  if (spotifyIntegration && (!spotifyUser || !spotifyUser.id)) {
+  if (spotifyIntegration && (hardRefresh || !spotifyUser || !spotifyUser.id)) {
     // get the user
     spotifyUser = await getUserProfile();
   }
