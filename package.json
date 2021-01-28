@@ -1,7 +1,7 @@
 {
   "name": "music-time",
   "displayName": "Music Time for Spotify",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "publisher": "softwaredotcom",
   "description": "Music Time for Spotify is a VS Code extension that discovers the most productive music to listen to as you code.",
   "author": {
@@ -346,12 +346,12 @@
         },
         {
           "command": "musictime.disconnectSlack",
-          "when": "viewItem =~ /.*slack_connection_node.*/",
+          "when": "viewItem =~ /.*musictime_slack_workspace_node.*/",
           "group": "inline@1"
         },
         {
           "command": "musictime.connectSlack",
-          "when": "viewItem =~ /.*slack_connection_parent.*/",
+          "when": "viewItem =~ /.*musictime_slack_folder_parent.*/",
           "group": "inline@1"
         }
       ],
