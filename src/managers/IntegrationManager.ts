@@ -21,7 +21,7 @@ async function updateIntegrations(user, name) {
   let foundNewIntegration: boolean = false;
   let currentIntegrations = getIntegrations();
   for (const integration of user.integrations) {
-    const isActive = integration.name.toLowerCase() === name && integration.status.toLowerCase() === "active";
+    const isActive = !!(integration.name.toLowerCase() === name && integration.status.toLowerCase() === "active" && integration.access_token);
     const isFound = currentIntegrations?.length ? currentIntegrations.find((n) => n.authId === integration.authId) : null;
     // {access_token, name, plugin_uuid, scopes, pluginId, authId, refresh_token, scopes}
     if (isActive && !isFound) {

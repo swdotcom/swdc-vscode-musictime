@@ -291,15 +291,15 @@ async function checkRegistration(showSignup = true) {
     if (showSignup) {
       window
         .showInformationMessage(
-          "Connecting Slack requires a registered account. Connect Spotify to continue.",
+          "Connecting Slack requires a registered account. Sign up or register for a web.com account at Software.com.",
           {
             modal: true,
           },
-          "Connect Spotify"
+          "Sign up"
         )
         .then(async (selection) => {
-          if (selection === "Connect Spotify") {
-            commands.executeCommand("musictime.connectSpotify");
+          if (selection === "Sign up") {
+            commands.executeCommand("musictime.signUpAccount");
           }
         });
     }
