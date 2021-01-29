@@ -1,6 +1,7 @@
 import axios from "axios";
 
 import { api_endpoint } from "./Constants";
+import { getPluginUuid } from "./managers/FileManager";
 
 import {
     getPluginId,
@@ -23,6 +24,7 @@ beApi.defaults.headers.common[
     "X-SWDC-Plugin-TZ"
 ] = Intl.DateTimeFormat().resolvedOptions().timeZone;
 beApi.defaults.headers.common["X-SWDC-Plugin-Offset"] = getOffsetSeconds() / 60;
+beApi.defaults.headers.common["X-SWDC-Plugin-UUID"] = getPluginUuid();
 
 /**
  * Response returns a paylod with the following

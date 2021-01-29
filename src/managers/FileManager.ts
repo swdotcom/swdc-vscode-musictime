@@ -245,8 +245,13 @@ export function getLocalREADMEFile() {
 }
 
 export function displayReadmeIfNotExists(override = false) {
-  const displayedReadme = getItem("displayedMtReadme");
-  if (!displayedReadme || override) {
+  const vscode_musictime_initialized = getItem("displayedMtReadme");
+  if (!vscode_musictime_initialized) {
+    // activate the plugin
+    softwarePost("/plugins/activate", {}, getItem("jwt"));
+  }
+
+  if (!vscode_musictime_initialized || override) {
     setTimeout(() => {
       commands.executeCommand("musictime.revealTree");
     }, 1000);
@@ -255,9 +260,6 @@ export function displayReadmeIfNotExists(override = false) {
 
     commands.executeCommand("markdown.showPreview", readmeUri, ViewColumn.One);
     setItem("displayedMtReadme", true);
-
-    // activate the plugin
-    softwarePost("/plugins/activate", {}, getItem("jwt"));
   }
 }
 
