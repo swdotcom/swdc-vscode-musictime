@@ -215,12 +215,12 @@ export class ProviderItemManager {
 
   getSlackIntegrationsTree(): KpmItem {
     const parentItem = this.buildKpmItem("Slack workspaces", "", "slack.svg");
-    parentItem.contextValue = "slack_connection_parent";
+    parentItem.contextValue = "musictime_slack_folder_parent";
     parentItem.children = [];
     const workspaces = getSlackWorkspaces();
     for (const integration of workspaces) {
       const workspaceItem = this.buildKpmItem(integration.team_domain, "", "slack.svg");
-      workspaceItem.contextValue = "slack_connection_node";
+      workspaceItem.contextValue = "musictime_slack_workspace_node";
       workspaceItem.description = `(${integration.team_name})`;
       workspaceItem.value = integration.authId;
       parentItem.children.push(workspaceItem);
