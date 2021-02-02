@@ -1,38 +1,12 @@
-import {
-  getNowTimes,
-  getProjectFolder,
-  getWorkspaceName,
-  getHostname,
-  coalesceNumber,
-} from "../Util";
-import {
-  getFileDataAsJson,
-  storeJsonData,
-  getTimeCounterFile,
-  isNewDay,
-  setItem
-} from "./FileManager";
+import { getNowTimes, getProjectFolder, getWorkspaceName, getHostname, coalesceNumber } from "../Util";
+import { getFileDataAsJson, storeJsonData, getTimeCounterFile, isNewDay, setItem } from "./FileManager";
 import TimeCounterStats from "../model/TimeCounterStats";
-import {
-  clearSessionSummaryData,
-  getTimeBetweenLastPayload,
-  incrementSessionSummaryData,
-} from "../storage/SessionSummaryData";
-import {
-  clearFileChangeInfoSummaryData,
-  getFileChangeSummaryAsJson,
-  saveFileChangeInfoToDisk,
-} from "../storage/FileChangeInfoSummaryData";
-import { SummaryManager } from "./SummaryManager";
+import { clearSessionSummaryData, getTimeBetweenLastPayload, incrementSessionSummaryData } from "../storage/SessionSummaryData";
+import { clearFileChangeInfoSummaryData, getFileChangeSummaryAsJson, saveFileChangeInfoToDisk } from "../storage/FileChangeInfoSummaryData";
 import KeystrokeStats from "../model/KeystrokeStats";
 import { UNTITLED, NO_PROJ_NAME } from "../Constants";
 import { WorkspaceFolder } from "vscode";
-import {
-  getResourceInfo,
-  getRepoContributorInfo,
-  getRepoFileCount,
-  getFileContributorCount,
-} from "../KpmRepoManager";
+import { getResourceInfo, getRepoContributorInfo, getRepoFileCount, getFileContributorCount } from "../KpmRepoManager";
 import Project from "../model/Project";
 import RepoContributorInfo from "../model/RepoContributorInfo";
 import { FileChangeInfo, KeystrokeAggregate } from "../model/models";
@@ -45,7 +19,6 @@ const path = require("path");
 
 const FIFTEEN_MIN_IN_SECONDS: number = 60 * 15;
 const TWO_MIN_INTERVAL: number = 1000 * 60 * 2;
-
 
 export class PluginDataManager {
   private static instance: PluginDataManager;
@@ -198,7 +171,6 @@ export class PluginDataManager {
    */
   async midnightCheckHandler() {
     if (isNewDay()) {
-
       // reset stats
       this.clearStatsForNewDay();
 
@@ -215,10 +187,6 @@ export class PluginDataManager {
       // update the current day
       const nowTimes = getNowTimes();
       setItem("currentDay", nowTimes.day);
-
-      setTimeout(() => {
-        SummaryManager.getInstance().updateSessionSummaryFromServer();
-      }, 5000);
     }
   }
 
@@ -246,11 +214,7 @@ export class PluginDataManager {
     * Step 8) Clear "elapsed_code_time_seconds"
     * Step 9) Clear "focused_editor_seconds"
     */
-  async processPayloadHandler(
-    payload: KeystrokeStats,
-    nowTimes: any,
-    isUnfocus: boolean = false
-  ) {
+  async processPayloadHandler(payload: KeystrokeStats, nowTimes: any, isUnfocus: boolean = false) {
     // this should take the now_in_sec as the truth since the unfocus
     // will trigger the process payload and can happen under a minute
     const now = Math.min(nowTimes.now_in_sec, payload.start + 60);
@@ -287,19 +251,14 @@ export class PluginDataManager {
 
     // Step 4) Update "elapsed_active_code_time_seconds"
     // get the MIN of elapsed_seconds and focused_editor_seconds
-    let min_elapsed_active_code_time_seconds = Math.min(
-      this.stats.elapsed_seconds,
-      this.stats.focused_editor_seconds
-    );
+    let min_elapsed_active_code_time_seconds = Math.min(this.stats.elapsed_seconds, this.stats.focused_editor_seconds);
     min_elapsed_active_code_time_seconds = coalesceNumber(min_elapsed_active_code_time_seconds);
     // make sure min_elapsed_active_code_time_seconds is not negative
     min_elapsed_active_code_time_seconds = Math.max(min_elapsed_active_code_time_seconds, 0);
     // set the elapsed_active_code_time_seconds to the min of the above only
     // if its greater than zero and less than/equal to 15 minutes
     this.stats.elapsed_active_code_time_seconds =
-      min_elapsed_active_code_time_seconds <= FIFTEEN_MIN_IN_SECONDS
-        ? min_elapsed_active_code_time_seconds
-        : 0;
+      min_elapsed_active_code_time_seconds <= FIFTEEN_MIN_IN_SECONDS ? min_elapsed_active_code_time_seconds : 0;
 
     // Step 5) Update "cumulative_code_time_seconds"
     this.stats.cumulative_code_time_seconds += this.stats.elapsed_code_time_seconds;
@@ -379,10 +338,7 @@ export class PluginDataManager {
   async populateRepoMetrics(payload: KeystrokeStats) {
     if (payload.project && payload.project.identifier && payload.project.directory) {
       // REPO contributor count
-      const repoContributorInfo: RepoContributorInfo = await getRepoContributorInfo(
-        payload.project.directory,
-        true
-      );
+      const repoContributorInfo: RepoContributorInfo = await getRepoContributorInfo(payload.project.directory, true);
       payload.repoContributorCount = repoContributorInfo ? repoContributorInfo.count || 0 : 0;
 
       // REPO file count
@@ -465,10 +421,7 @@ export class PluginDataManager {
   async updateCumulativeSessionTime(payload: KeystrokeStats, sessionSeconds: number) {
     // increment the projects session and file seconds
     // This will find a time data object based on the current day
-    let td: TimeData = await incrementSessionAndFileSecondsAndFetch(
-      payload.project,
-      sessionSeconds
-    );
+    let td: TimeData = await incrementSessionAndFileSecondsAndFetch(payload.project, sessionSeconds);
 
     // default error to empty
     payload.project_null_error = "";
@@ -515,9 +468,7 @@ export class PluginDataManager {
 
   async updateAggregateInfo(fileChangeInfoMap, payload, sessionSeconds) {
     const aggregate: KeystrokeAggregate = new KeystrokeAggregate();
-    aggregate.directory = payload.project
-      ? payload.project.directory || NO_PROJ_NAME
-      : NO_PROJ_NAME;
+    aggregate.directory = payload.project ? payload.project.directory || NO_PROJ_NAME : NO_PROJ_NAME;
     Object.keys(payload.source).forEach((key) => {
       const fileInfo: FileChangeInfo = payload.source[key];
       /**
