@@ -1,24 +1,13 @@
+import { PlayerType, PlaylistItem, PlaylistTrackInfo, PlayerDevice, PlayerName, Track } from "cody-music";
 import {
-    PlayerType,
-    PlaylistItem,
-    PlaylistTrackInfo,
-    PlayerDevice,
-    PlayerName,
-    Track,
-} from "cody-music";
-import {
-    SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
-    PERSONAL_TOP_SONGS_PLID,
-    GENERATE_CUSTOM_PLAYLIST_TITLE,
-    REFRESH_CUSTOM_PLAYLIST_TITLE,
-    GENERATE_CUSTOM_PLAYLIST_TOOLTIP,
-    REFRESH_CUSTOM_PLAYLIST_TOOLTIP,
+  SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
+  PERSONAL_TOP_SONGS_PLID,
+  GENERATE_CUSTOM_PLAYLIST_TITLE,
+  REFRESH_CUSTOM_PLAYLIST_TITLE,
+  GENERATE_CUSTOM_PLAYLIST_TOOLTIP,
+  REFRESH_CUSTOM_PLAYLIST_TOOLTIP,
 } from "../Constants";
-import {
-    requiresSpotifyAccess,
-    getDeviceSet,
-    requiresSpotifyReAuthentication,
-} from "./MusicUtil";
+import { requiresSpotifyAccess, getDeviceSet, requiresSpotifyReAuthentication } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 import { MusicManager } from "./MusicManager";
 import { isMac } from "../Util";
@@ -116,7 +105,7 @@ export class ProviderItemManager {
     const requiresReAuth = requiresSpotifyReAuthentication();
     const action = requiresReAuth ? "Reconnect" : "Connect";
     return this.buildActionItem(
-      "connectspotify",
+      "connecttospotify",
       "spotify",
       "musictime.connectSpotify",
       PlayerType.WebSpotify,
@@ -130,7 +119,7 @@ export class ProviderItemManager {
     const requiresReAuth = requiresSpotifyReAuthentication();
     const action = requiresReAuth ? "Reconnect" : "Connect";
     return this.buildActionItem(
-      "connectspotify",
+      "recommendconnecttospotify",
       "spotify",
       "musictime.connectSpotify",
       PlayerType.WebSpotify,
@@ -140,17 +129,17 @@ export class ProviderItemManager {
   }
 
   getSwitchToSpotifyButton() {
-    return this.buildActionItem("title", "spotify", "musictime.launchSpotifyDesktop", PlayerType.WebSpotify, "Launch Spotify");
+    return this.buildActionItem("switchtospotify", "spotify", "musictime.launchSpotifyDesktop", PlayerType.WebSpotify, "Launch Spotify");
   }
 
   getSwitchToItunesButton() {
-    return this.buildActionItem("title", "itunes", "musictime.launchItunes", PlayerType.MacItunesDesktop, "Launch iTunes");
+    return this.buildActionItem("switchtoitunes", "itunes", "musictime.launchItunes", PlayerType.MacItunesDesktop, "Launch iTunes");
   }
 
   // readme button
   getReadmeButton() {
     return this.buildActionItem(
-      "title",
+      "documentation",
       "action",
       "musictime.displayReadme",
       null,
@@ -164,7 +153,17 @@ export class ProviderItemManager {
 
   getLoggedInButton() {
     const connectedToInfo = this.getAuthTypeIconAndLabel();
-    return this.buildActionItem("title", "action", null, null, connectedToInfo.label, connectedToInfo.tooltip, "", null, connectedToInfo.icon);
+    return this.buildActionItem(
+      "loggedinbutton",
+      "action",
+      null,
+      null,
+      connectedToInfo.label,
+      connectedToInfo.tooltip,
+      "",
+      null,
+      connectedToInfo.icon
+    );
   }
 
   getAuthTypeIconAndLabel() {
@@ -192,16 +191,36 @@ export class ProviderItemManager {
   }
 
   getSignupButton() {
-    return this.buildActionItem("title", "action", "musictime.signUpAccount", null, "Sign up", "Sign up to see more data visualizations.", "", null, "paw.svg");
+    return this.buildActionItem(
+      "signupbutton",
+      "action",
+      "musictime.signUpAccount",
+      null,
+      "Sign up",
+      "Sign up to see more data visualizations.",
+      "",
+      null,
+      "paw.svg"
+    );
   }
 
   getLoginButton() {
-    return this.buildActionItem("title", "action", "musictime.logInAccount", null, "Log in", "Log in to see more data visualizations.", "", null, "paw.svg");
+    return this.buildActionItem(
+      "loginbutton",
+      "action",
+      "musictime.logInAccount",
+      null,
+      "Log in",
+      "Log in to see more data visualizations.",
+      "",
+      null,
+      "paw.svg"
+    );
   }
 
   getGenerateDashboardButton() {
     return this.buildActionItem(
-      "title",
+      "dashboardbutton",
       "action",
       "musictime.displayDashboard",
       null,
@@ -229,13 +248,13 @@ export class ProviderItemManager {
   }
 
   createSpotifyDevicesButton(title, tooltip, loggedIn, command = null) {
-    const button = this.buildActionItem("title", "spotify", command, PlayerType.WebSpotify, title, tooltip);
+    const button = this.buildActionItem("devicesbutton", "spotify", command, PlayerType.WebSpotify, title, tooltip);
     button.tag = loggedIn ? "active" : "disabled";
     return button;
   }
 
   getLineBreakButton() {
-    return this.buildActionItem("title", "divider", null, PlayerType.NotAssigned, "", "");
+    return this.buildActionItem("linebreak", "divider", null, PlayerType.NotAssigned, "", "");
   }
 
   buildActionItem(id, type, command, playerType: PlayerType, name, tooltip = "", itemType: string = "", callback: any = null, icon: string = "") {
@@ -280,7 +299,7 @@ export class ProviderItemManager {
   }
 
   getNoTracksFoundButton() {
-    return this.buildActionItem("title", "message", null, PlayerType.NotAssigned, "Your tracks will appear here");
+    return this.buildActionItem("notracksfoundbutton", "message", null, PlayerType.NotAssigned, "Your tracks will appear here");
   }
 
   async getSwitchToThisDeviceButton() {
@@ -289,7 +308,13 @@ export class ProviderItemManager {
     if (activeDevice && !webPlayer && !desktop) {
       // return a button to switch to this computer if we have devices
       // and none of them are of type "Computer"
-      const button = this.buildActionItem("title", "action", "musictime.switchToThisDevice", PlayerType.MacSpotifyDesktop, "Switch To This Device");
+      const button = this.buildActionItem(
+        "switchtothisdevicebutton",
+        "action",
+        "musictime.switchToThisDevice",
+        PlayerType.MacSpotifyDesktop,
+        "Switch To This Device"
+      );
       return button;
     }
     return null;
@@ -341,7 +366,7 @@ export class ProviderItemManager {
 
     if (!requiresSpotifyAccess()) {
       const labelButton = this.buildActionItem(
-        "label",
+        MusicDataManager.getInstance().recommendationLabel,
         "label",
         null,
         PlayerType.NotAssigned,
