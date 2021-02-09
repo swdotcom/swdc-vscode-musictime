@@ -1,11 +1,4 @@
-import {
-  workspace,
-  extensions,
-  window,
-  TextDocument,
-  WorkspaceFolder,
-  commands,
-} from "vscode";
+import { workspace, extensions, window, TextDocument, WorkspaceFolder, commands } from "vscode";
 import {
   CODE_TIME_EXT_ID,
   MUSIC_TIME_EXT_ID,
@@ -14,6 +7,7 @@ import {
   MUSIC_TIME_TYPE,
   SOFTWARE_TOP_40_PLAYLIST_ID,
   SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
+  SOFTWARE_FOLDER,
 } from "./Constants";
 import { PlaylistItem, TrackStatus, CodyResponse, CodyResponseType } from "cody-music";
 import * as path from "path";
@@ -87,7 +81,7 @@ export function getVersion() {
 
 export function isCodeTimeMetricsFile(fileName) {
   fileName = fileName || "";
-  if (fileName.includes(".software") && fileName.includes("CodeTime")) {
+  if (fileName.includes(SOFTWARE_FOLDER) && fileName.includes("CodeTime")) {
     return true;
   }
   return false;
@@ -351,8 +345,7 @@ export async function showOfflinePrompt(addReconnectMsg = false) {
   // shows a prompt that we're not able to communicate with the app server
   let infoMsg = "Our service is temporarily unavailable. ";
   if (addReconnectMsg) {
-    infoMsg +=
-      "We will try to reconnect again in 10 minutes. Your status bar will not update at this time.";
+    infoMsg += "We will try to reconnect again in 10 minutes. Your status bar will not update at this time.";
   } else {
     infoMsg += "Please try again later.";
   }
@@ -514,13 +507,7 @@ export async function getCommandResultAsList(cmd, projectDir) {
   result = result.trim();
   // replace newlines with \r, remove the < and > around the email string and split by \n
   // to return an array of values
-  const resultList = result
-    .replace(/\r\n/g, "\r")
-    .replace(/\n/g, "\r")
-    .replace(/^\s+/g, " ")
-    .replace(/</g, "")
-    .replace(/>/g, "")
-    .split(/\r/);
+  const resultList = result.replace(/\r\n/g, "\r").replace(/\n/g, "\r").replace(/^\s+/g, " ").replace(/</g, "").replace(/>/g, "").split(/\r/);
   return resultList;
 }
 
@@ -781,12 +768,8 @@ export function getPlaylistIcon(treeItem: PlaylistItem) {
   if (treeItem["icon"]) {
     lightPath = path.join(resourcePath, "light", treeItem["icon"]);
     darkPath = path.join(resourcePath, "dark", treeItem["icon"]);
-  } else if (
-    treeItem.type.includes("spotify") ||
-    (treeItem.tag.includes("spotify") && treeItem.itemType !== "playlist")
-  ) {
-    const spotifySvg =
-      treeItem.tag === "disabled" ? "spotify-disconnected.svg" : "spotify.svg";
+  } else if (treeItem.type.includes("spotify") || (treeItem.tag.includes("spotify") && treeItem.itemType !== "playlist")) {
+    const spotifySvg = treeItem.tag === "disabled" ? "spotify-disconnected.svg" : "spotify.svg";
     lightPath = path.join(resourcePath, "light", spotifySvg);
     darkPath = path.join(resourcePath, "dark", spotifySvg);
   } else if (treeItem.itemType === "playlist" && treeItem.tag !== "paw") {
