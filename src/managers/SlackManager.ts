@@ -1,13 +1,8 @@
 import { api_endpoint, DISCONNECT_LABEL } from "../Constants";
-import {
-  getPluginId,
-  getPluginType,
-  getVersion,
-  launchWebUrl,
-} from "../Util";
+import { getPluginId, getPluginType, getVersion, launchWebUrl } from "../Util";
 import { showQuickPick } from "../MenuManager";
 import { commands, window } from "vscode";
-import { softwarePut } from "../HttpClient";
+import { softwareDelete } from "../HttpClient";
 import { updateSlackIntegrations } from "./IntegrationManager";
 import { getAuthCallbackState, getIntegrations, getItem, getPluginUuid, setAuthCallbackState, syncIntegrations } from "./FileManager";
 import { getUserRegistrationState } from "./UserStatusManager";
@@ -61,8 +56,8 @@ export async function refetchSlackConnectStatusLazily(tryCountUntilFoundUser = 4
 
     // refresh the tree view
     setTimeout(() => {
-        // refresh the playlist to show the device button update
-        commands.executeCommand("musictime.refreshPlaylist");
+      // refresh the playlist to show the device button update
+      commands.executeCommand("musictime.refreshPlaylist");
     }, 1000);
   }
 }
@@ -95,12 +90,12 @@ export async function disconnectSlack() {
     if (selection === DISCONNECT_LABEL) {
       if (selectedItem === "all") {
         for await (const workspace of workspaces) {
-          await softwarePut(`/auth/slack/disconnect`, { authId: workspace.authId }, getItem("jwt"));
+          await softwareDelete(`/integrations/${workspace.id}`, getItem("jwt"));
           removeSlackIntegration(workspace.authId);
         }
         window.showInformationMessage("Disconnected selected Slack integrations");
       } else {
-        await softwarePut(`/auth/slack/disconnect`, { selectedItem }, getItem("jwt"));
+        await softwareDelete(`/integrations/${selectedItem}`, getItem("jwt"));
         removeSlackIntegration(selectedItem);
         window.showInformationMessage("Disconnected selected Slack integration");
       }
@@ -129,7 +124,7 @@ export async function disconnectSlackAuth(authId) {
   );
 
   if (selection === DISCONNECT_LABEL) {
-    await softwarePut(`/auth/slack/disconnect`, { authId }, getItem("jwt"));
+    await softwareDelete(`/integrations/${integration.id}`, getItem("jwt"));
     // disconnected, remove it from the integrations
     removeSlackIntegration(authId);
 
@@ -144,19 +139,21 @@ export async function showSlackChannelMenu() {
   };
 
   // get the available channels
-  let {channels, access_token} = await getChannels();
+  let { channels, access_token } = await getChannels();
   channels.sort(compareLabels);
 
   // make sure the object array has labels
-  channels = channels.map(n => {return {...n, label: n.name};});
+  channels = channels.map((n) => {
+    return { ...n, label: n.name };
+  });
 
   menuOptions.items = channels;
 
   const pick = await showQuickPick(menuOptions);
   if (pick && pick.label) {
-    return {selectedChannel: pick.id, access_token};
+    return { selectedChannel: pick.id, access_token };
   }
-  return {selectedChannel: null, access_token};
+  return { selectedChannel: null, access_token };
 }
 
 // get saved slack integrations
@@ -226,7 +223,7 @@ async function getChannels() {
     */
     return { channels: result.channels, access_token };
   }
-  return {channels: [], access_token: null};
+  return { channels: [], access_token: null };
 }
 
 async function showSlackWorkspaceSelection() {
@@ -239,13 +236,13 @@ async function showSlackWorkspaceSelection() {
   integrations.forEach((integration) => {
     menuOptions.items.push({
       label: integration.team_domain,
-      value: integration.team_domain
+      value: integration.team_domain,
     });
   });
 
   menuOptions.items.push({
     label: "Connect a Slack workspace",
-    command: "musictime.connectSlack"
+    command: "musictime.connectSlack",
   });
 
   const pick = await showQuickPick(menuOptions);
