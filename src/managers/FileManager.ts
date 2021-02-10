@@ -1,11 +1,10 @@
-import {
-  isWindows, getNowTimes, isLinux
-} from "../Util";
+import { isWindows, getNowTimes, isLinux } from "../Util";
 import TimeData from "../model/TimeData";
 import { v4 as uuidv4 } from "uuid";
 import { commands, Uri, ViewColumn } from "vscode";
 import * as path from "path";
 import { softwareGet, softwarePost } from "../HttpClient";
+import { SOFTWARE_FOLDER } from "../Constants";
 
 const moment = require("moment-timezone");
 
@@ -125,7 +124,7 @@ export function getExtensionName() {
 export function getSoftwareDir(autoCreate = true) {
   const homedir = os.homedir();
 
-  const softwareDataDir = `${homedir}${getSeparator(".software")}`;
+  const softwareDataDir = `${homedir}${getSeparator(SOFTWARE_FOLDER)}`;
 
   if (autoCreate && !fs.existsSync(softwareDataDir)) {
     fs.mkdirSync(softwareDataDir);
@@ -193,9 +192,9 @@ export function getSessionFileCreateTime() {
 export function getPluginUuid() {
   let plugin_uuid = fileIt.getJsonValue(getDeviceFile(), "plugin_uuid");
   if (!plugin_uuid) {
-      // set it for the 1st and only time
-      plugin_uuid = uuidv4();
-      fileIt.setJsonValue(getDeviceFile(), "plugin_uuid", plugin_uuid);
+    // set it for the 1st and only time
+    plugin_uuid = uuidv4();
+    fileIt.setJsonValue(getDeviceFile(), "plugin_uuid", plugin_uuid);
   }
   return plugin_uuid;
 }
@@ -299,10 +298,7 @@ export async function fetchMusicTimeMetricsDashboard() {
 }
 
 async function fetchDashboardData(fileName: string, isHtml: boolean) {
-  const musicSummary = await softwareGet(
-    `/dashboard/music?linux=${isLinux()}&html=${isHtml}`,
-    getItem("jwt")
-  );
+  const musicSummary = await softwareGet(`/dashboard/music?linux=${isLinux()}&html=${isHtml}`, getItem("jwt"));
 
   // get the content
   let content = musicSummary && musicSummary.data ? musicSummary.data : NO_DATA;

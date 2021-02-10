@@ -17,6 +17,8 @@ export const SHORT_THRESHOLD_HOURS = 1;
 export const CODE_TIME_PLUGIN_ID = 2;
 export const MUSIC_TIME_PLUGIN_ID = 13;
 
+export const SOFTWARE_FOLDER = ".software";
+
 // API ENDPOINT
 export const api_endpoint = "https://api.software.com";
 

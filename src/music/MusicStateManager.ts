@@ -1,18 +1,13 @@
-import { createSpotifyIdFromUri, createUriFromTrackId, nowInSecs, isMac } from "../Util";
-import {
-  Track,
-  TrackStatus,
-  getTrack,
-  PlayerName,
-  CodyResponse,
-  getSpotifyRecentlyPlayedBefore,
-} from "cody-music";
+import { createSpotifyIdFromUri, createUriFromTrackId, nowInSecs, isMac, wrapExecPromise } from "../Util";
+import { Track, TrackStatus, getTrack, PlayerName, CodyResponse, getSpotifyRecentlyPlayedBefore } from "cody-music";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { MusicDataManager } from "./MusicDataManager";
 import { commands } from "vscode";
 import { getDeviceId, requiresSpotifyAccess } from "./MusicUtil";
-
+const path = require("path");
 const moment = require("moment-timezone");
+
+const resourcePath: string = path.join(__dirname, "resources");
 
 export class MusicStateManager {
   private static instance: MusicStateManager;
@@ -57,11 +52,7 @@ export class MusicStateManager {
   }
 
   public isExistingTrackPlaying(): boolean {
-    return this.existingTrack &&
-      this.existingTrack.id &&
-      this.existingTrack.state === TrackStatus.Playing
-      ? true
-      : false;
+    return this.existingTrack && this.existingTrack.id && this.existingTrack.state === TrackStatus.Playing ? true : false;
   }
 
   /**
@@ -92,7 +83,7 @@ export class MusicStateManager {
       let playingTrack: Track = null;
       if (isMac()) {
         // fetch from the desktop
-        playingTrack = await getTrack(PlayerName.SpotifyDesktop);
+        playingTrack = await this.fetchSpotifyMacTrack();
         // applescript doesn't always return a name
         if (deviceId && (!playingTrack || !playingTrack.name)) {
           playingTrack = await getTrack(PlayerName.SpotifyWeb);
@@ -193,5 +184,23 @@ export class MusicStateManager {
     if (resp && resp.data && resp.data.tracks && resp.data.tracks.length) {
       MusicDataManager.getInstance().runningTrack = resp.data.tracks[0];
     }
+  }
+
+  private async fetchSpotifyMacTrack() {
+    const checkStateScript = path.join(resourcePath, "scripts", "check_state.spotify.applescript");
+    const getSpotifyTrackInfo = path.join(resourcePath, "scripts", "get_state.spotify.applescript");
+    let isRunning = await wrapExecPromise(`osascript ${checkStateScript}`);
+    try {
+      isRunning = JSON.parse(isRunning);
+    } catch (e) {}
+
+    if (isRunning === true) {
+      // get the track info
+      const trackInfo = await wrapExecPromise(`osascript ${getSpotifyTrackInfo}`);
+      try {
+        return JSON.parse(trackInfo);
+      } catch (e) {}
+    }
+    return null;
   }
 }
