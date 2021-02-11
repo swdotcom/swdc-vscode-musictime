@@ -24,6 +24,7 @@ export async function connectSlackWorkspace() {
     plugin_id: getPluginId(),
     auth_callback_state: getAuthCallbackState(),
     integrate: "slack",
+    plugin_token: getItem("jwt"),
   });
 
   const url = `${api_endpoint}/auth/slack?${qryStr}`;

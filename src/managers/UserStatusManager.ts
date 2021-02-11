@@ -7,23 +7,27 @@ import { getAuthCallbackState, getItem, getPluginUuid, setAuthCallbackState, set
 
 const queryString = require("query-string");
 
-export async function getUserRegistrationState(overriding_token: string = null) {
+export async function getUserRegistrationState(isIntegration = true) {
   const auth_callback_state = getAuthCallbackState(false /*autoCreate*/);
-
-  const token = auth_callback_state ?? overriding_token;
+  const jwt = getItem("jwt");
+  const token = auth_callback_state ?? jwt;
 
   if (token) {
     const api = "/users/plugin/state";
-    const resp = await softwareGet(api, token);
+    let resp = await softwareGet(api, token);
     if (isResponseOk(resp) && resp.data) {
       // NOT_FOUND, ANONYMOUS, OK, UNKNOWN
-      const state = resp.data.state ? resp.data.state : "UNKNOWN";
-      if (state === "OK") {
-        const user = resp.data.user;
+      let user = resp.data.user;
+      if (!user && auth_callback_state && isIntegration) {
+        // try with the jwt
+        resp = await softwareGet(api, jwt);
+        user = isResponseOk(resp) && resp.data ? resp.data.user : null;
+      }
+      if (user) {
         // clear the auth callback state
         setAuthCallbackState(null);
 
-        return { connected: true, state, user };
+        return { connected: true, state: "OK", user };
       }
     }
   }
@@ -127,7 +131,7 @@ export async function launchLogin(loginType: string = "software", switching_acco
   url = `${url}?${qryStr}`;
 
   launchWebUrl(url);
-  
+
   // use the defaults
   setTimeout(() => {
     refetchUserStatusLazily(40);
@@ -135,7 +139,7 @@ export async function launchLogin(loginType: string = "software", switching_acco
 }
 
 async function refetchUserStatusLazily(tryCountUntilFound) {
-  let registrationState = await getUserRegistrationState();
+  let registrationState = await getUserRegistrationState(false);
   if (!registrationState.connected) {
     // try again if the count is not zero
     if (tryCountUntilFound > 0) {
