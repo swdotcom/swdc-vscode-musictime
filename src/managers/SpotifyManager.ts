@@ -3,13 +3,7 @@ import { commands, window } from "vscode";
 import { api_endpoint, YES_LABEL } from "../Constants";
 import { isResponseOk, softwareGet, softwarePut } from "../HttpClient";
 import SoftwareIntegration from "../model/SoftwareIntegration";
-import {
-  getPluginId,
-  getPluginType,
-  getVersion,
-  isMac,
-  launchWebUrl,
-} from "../Util";
+import { getPluginId, getPluginType, getVersion, isMac, launchWebUrl } from "../Util";
 import { SpotifyUser } from "cody-music/dist/lib/profile";
 import { MusicDataManager } from "../music/MusicDataManager";
 import { MusicCommandManager } from "../music/MusicCommandManager";
@@ -39,9 +33,9 @@ export function isPremiumUser() {
 export async function updateSpotifyClientInfo() {
   const resp = await softwareGet("/auth/spotify/clientInfo", getItem("jwt"));
   if (isResponseOk(resp)) {
-      // get the clientId and clientSecret
-      spotifyClientId = resp.data.clientId;
-      spotifyClientSecret = resp.data.clientSecret;
+    // get the clientId and clientSecret
+    spotifyClientId = resp.data.clientId;
+    spotifyClientSecret = resp.data.clientSecret;
   }
 }
 
@@ -68,6 +62,7 @@ export async function connectSpotify() {
     plugin_id: getPluginId(),
     mac: isMac(),
     auth_callback_state,
+    plugin_token: getItem("jwt"),
   });
 
   const endpoint = `${api_endpoint}/auth/spotify?${queryStr}`;
