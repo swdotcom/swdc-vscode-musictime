@@ -93,18 +93,25 @@ export async function launchLogin(loginType: string = "software", switching_acco
   setItem("authType", loginType);
   setItem("switching_account", switching_account);
 
+  const jwt = getItem("jwt");
+  const name = getItem("name");
+
   const auth_callback_state = getAuthCallbackState(true);
 
   let url = "";
 
   let obj = {
     plugin: getPluginType(),
-    plugin_uuid: getPluginUuid(),
     pluginVersion: getVersion(),
     plugin_id: getPluginId(),
     auth_callback_state,
     login: true,
   };
+
+  if (!name) {
+    obj["pluigin_uuid"] = getPluginUuid();
+    obj["plugin_token"] = jwt;
+  }
 
   if (loginType === "github") {
     // github signup/login flow
