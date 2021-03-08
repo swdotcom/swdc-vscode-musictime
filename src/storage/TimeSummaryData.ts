@@ -60,7 +60,7 @@ export async function getCurrentTimeSummaryProject(
         const resource = await getResourceInfo(rootPath);
         if (resource) {
           project.resource = resource;
-          project.identifier = resource.identifier;
+          project.identifier = resource.identifier || "";
         }
       } catch (e) {
         //

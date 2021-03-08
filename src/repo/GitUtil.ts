@@ -1,5 +1,5 @@
-import { CommitChangeStats } from "../model/models";
-
+const fs = require("fs");
+const path = require("path");
 
 function stripOutSlashes(str) {
   var parts = str.split("//");
@@ -63,4 +63,15 @@ export function getRepoIdentifierInfo(identifier) {
   }
 
   return { identifier, owner_id, repo_name };
+}
+
+export function isGitProject(projectDir) {
+  if (!projectDir) {
+    return false;
+  }
+
+  if (!fs.existsSync(path.join(projectDir, ".git"))) {
+    return false;
+  }
+  return true;
 }

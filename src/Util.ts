@@ -12,6 +12,7 @@ import {
 import { PlaylistItem, TrackStatus, CodyResponse, CodyResponseType } from "cody-music";
 import * as path from "path";
 import { getItem } from "./managers/FileManager";
+import { isGitProject } from './repo/GitUtil';
 
 const fileIt = require("file-it");
 const moment = require("moment-timezone");
@@ -95,17 +96,6 @@ export function codeTimeExtInstalled() {
 export function musicTimeExtInstalled() {
   const musicTimeExt = extensions.getExtension(MUSIC_TIME_EXT_ID);
   return musicTimeExt ? true : false;
-}
-
-export function isGitProject(projectDir) {
-  if (!projectDir) {
-    return false;
-  }
-
-  if (!fs.existsSync(path.join(projectDir, ".git"))) {
-    return false;
-  }
-  return true;
 }
 
 /**
@@ -483,15 +473,17 @@ export async function getGitEmail() {
   for (let i = 0; i < projectDirs.length; i++) {
     let projectDir = projectDirs[i];
 
-    let email = await wrapExecPromise("git config user.email", projectDir);
-    if (email) {
-      /**
-       * // normalize the email, possible github email types
-       * shupac@users.noreply.github.com
-       * 37358488+rick-software@users.noreply.github.com
-       */
-      email = normalizeGithubEmail(email);
-      return email;
+    if (projectDir && isGitProject(projectDir)) {
+      let email = await wrapExecPromise("git config user.email", projectDir);
+      if (email) {
+        /**
+         * // normalize the email, possible github email types
+         * shupac@users.noreply.github.com
+         * 37358488+rick-software@users.noreply.github.com
+         */
+        email = normalizeGithubEmail(email);
+        return email;
+      }
     }
   }
   return null;

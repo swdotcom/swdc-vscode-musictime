@@ -1,3 +1,4 @@
+import { isGitProject } from './repo/GitUtil';
 import {
   wrapExecPromise,
   isWindows,
@@ -42,7 +43,7 @@ export async function getFileContributorCount(fileName) {
   }
 
   const projectDir = getProjectDir(fileName);
-  if (!projectDir) {
+  if (!projectDir || !isGitProject(projectDir)) {
     return 0;
   }
 
@@ -67,7 +68,7 @@ export async function getFileContributorCount(fileName) {
 
 export async function getRepoFileCount(fileName) {
   const projectDir = getProjectDir(fileName);
-  if (!projectDir) {
+  if (!projectDir || !isGitProject(projectDir)) {
     return 0;
   }
 
@@ -85,7 +86,7 @@ export async function getRepoFileCount(fileName) {
 
 export async function getRepoContributorInfo(fileName, filterOutNonEmails: boolean = true) {
   const projectDir = getProjectDir(fileName);
-  if (!projectDir) {
+  if (!projectDir || !isGitProject(projectDir)) {
     return null;
   }
 
@@ -144,6 +145,9 @@ export async function getRepoContributorInfo(fileName, filterOutNonEmails: boole
 // use "git symbolic-ref --short HEAD" to get the git branch
 // use "git config --get remote.origin.url" to get the remote url
 export async function getResourceInfo(projectDir) {
+  if (!projectDir || !isGitProject(projectDir)) {
+    return {};
+  }
   let branch = await wrapExecPromise("git symbolic-ref --short HEAD", projectDir);
   let identifier = await wrapExecPromise("git config --get remote.origin.url", projectDir);
   let email = await wrapExecPromise("git config user.email", projectDir);
