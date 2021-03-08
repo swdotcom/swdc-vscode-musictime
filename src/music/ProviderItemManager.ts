@@ -1,11 +1,6 @@
 import { PlayerType, PlaylistItem, PlaylistTrackInfo, PlayerDevice, PlayerName, Track } from "cody-music";
 import {
-  SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
-  PERSONAL_TOP_SONGS_PLID,
-  GENERATE_CUSTOM_PLAYLIST_TITLE,
-  REFRESH_CUSTOM_PLAYLIST_TITLE,
-  GENERATE_CUSTOM_PLAYLIST_TOOLTIP,
-  REFRESH_CUSTOM_PLAYLIST_TOOLTIP,
+  SPOTIFY_LIKED_SONGS_PLAYLIST_NAME
 } from "../Constants";
 import { requiresSpotifyAccess, getDeviceSet, requiresSpotifyReAuthentication } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
@@ -85,7 +80,7 @@ export class ProviderItemManager {
       "action",
       "musictime.switchSpotifyAccount",
       PlayerType.NotAssigned,
-      "Spotify Free",
+      "Switch Account",
       "Connect to your premium Spotify account to enable web playback controls",
       null,
       null,
@@ -138,32 +133,16 @@ export class ProviderItemManager {
 
   // readme button
   getReadmeButton() {
-    return this.buildActionItem(
-      "documentation",
-      "action",
-      "musictime.displayReadme",
-      null,
-      "Documentation",
-      "View the Music Time Readme to learn more",
-      "",
-      null,
-      "readme.svg"
-    );
+    return this.buildKpmItem("Documentation", "View the Music Time Readme to learn more", "readme.svg", "musictime.displayReadme");
   }
 
   getLoggedInButton() {
     const connectedToInfo = this.getAuthTypeIconAndLabel();
-    return this.buildActionItem(
-      "loggedinbutton",
-      "action",
-      null,
-      null,
-      connectedToInfo.label,
-      connectedToInfo.tooltip,
-      "",
-      null,
-      connectedToInfo.icon
-    );
+
+    const parentItem = this.buildKpmItem(connectedToInfo.label, connectedToInfo.tooltip, connectedToInfo.icon);
+    parentItem.contextValue = "musictime_slack_folder_parent";
+    parentItem.children = [this.getReadmeButton(), this.getGenerateDashboardButton(), this.getWebAnalyticsButton()];
+    return parentItem;
   }
 
   getAuthTypeIconAndLabel() {
@@ -219,17 +198,7 @@ export class ProviderItemManager {
   }
 
   getGenerateDashboardButton() {
-    return this.buildActionItem(
-      "dashboardbutton",
-      "action",
-      "musictime.displayDashboard",
-      null,
-      "Dashboard",
-      "View your latest music metrics right here in your editor",
-      "",
-      null,
-      "dashboard.svg"
-    );
+    return this.buildKpmItem("Dashboard", "View your latest music metrics right here in your editor", "dashboard.svg", "musictime.displayDashboard");
   }
 
   getSlackIntegrationsTree(): KpmItem {
@@ -286,16 +255,7 @@ export class ProviderItemManager {
 
   getWebAnalyticsButton() {
     // See web analytics
-    let listItem: PlaylistItem = new PlaylistItem();
-    listItem.tracks = new PlaylistTrackInfo();
-    listItem.type = "action";
-    listItem.tag = "paw";
-    listItem.id = "launchmusicanalytics";
-    listItem.command = "musictime.launchAnalytics";
-    listItem.playerType = PlayerType.WebSpotify;
-    listItem.name = "More data at Software.com";
-    listItem.tooltip = "See music analytics in the web app";
-    return listItem;
+    return this.buildKpmItem("More data at Software.com", "See music analytics in the web app", "paw.svg", "musictime.launchAnalytics");
   }
 
   getNoTracksFoundButton() {
@@ -316,33 +276,6 @@ export class ProviderItemManager {
         "Switch To This Device"
       );
       return button;
-    }
-    return null;
-  }
-
-  // get the custom playlist button by checkinf if the custom playlist
-  // exists or not. if it doesn't exist then it will show the create label,
-  // otherwise, it will show the refresh label
-  getCustomPlaylistButton() {
-    // update the existing playlist that matches the personal playlist with a paw if found
-    const customPlaylist = MusicDataManager.getInstance().getMusicTimePlaylistByTypeId(PERSONAL_TOP_SONGS_PLID);
-
-    const personalPlaylistLabel = !customPlaylist ? GENERATE_CUSTOM_PLAYLIST_TITLE : REFRESH_CUSTOM_PLAYLIST_TITLE;
-    const personalPlaylistTooltip = !customPlaylist ? GENERATE_CUSTOM_PLAYLIST_TOOLTIP : REFRESH_CUSTOM_PLAYLIST_TOOLTIP;
-
-    if (MusicDataManager.getInstance().currentPlayerName !== PlayerName.ItunesDesktop && !requiresSpotifyAccess()) {
-      // add the connect spotify link
-      let listItem: PlaylistItem = new PlaylistItem();
-      listItem.tracks = new PlaylistTrackInfo();
-      listItem.type = "action";
-      listItem.tag = "action";
-      listItem.id = "codingfavorites";
-      listItem.command = "musictime.generateWeeklyPlaylist";
-      listItem.playerType = PlayerType.WebSpotify;
-      listItem.name = personalPlaylistLabel;
-      listItem.tooltip = personalPlaylistTooltip;
-      listItem["icon"] = "generate.svg";
-      return listItem;
     }
     return null;
   }

@@ -24,11 +24,10 @@ import { updateRecommendations, refreshRecommendations, getRecommendationsForSel
 import { MusicCommandUtil } from "./music/MusicCommandUtil";
 import { showSearchInput } from "./selector/SearchSelectorManager";
 import { getDeviceId, requiresSpotifyAccess } from "./music/MusicUtil";
-import { KpmManager } from "./managers/KpmManager";
 import { MusicStateManager } from "./music/MusicStateManager";
 import { connectSpotify, disconnectSpotify, switchSpotifyAccount } from "./managers/SpotifyManager";
 import { displayReadmeIfNotExists } from "./managers/FileManager";
-import { launchLogin, showLogInMenuOptions, showSignUpMenuOptions } from "./managers/UserStatusManager";
+import { launchLogin, showSignUpMenuOptions } from "./managers/UserStatusManager";
 
 /**
  * add the commands to vscode....
@@ -361,13 +360,6 @@ export function createCommands(): {
   );
   cmds.push(sortPlaylistToOriginalCommand);
 
-  // PROCESS KEYSTROKES NOW
-  cmds.push(
-    commands.registerCommand("musictime.processKeystrokeData", () => {
-      KpmManager.getInstance().processKeystrokeData(true /*isUnfocus*/);
-    })
-  );
-
   const launchSpotifyCommand = commands.registerCommand("musictime.launchSpotify", async () => {
     musicMgr.launchTrackPlayer(PlayerName.SpotifyWeb);
   });
@@ -395,12 +387,6 @@ export function createCommands(): {
     musicMgr.launchTrackPlayer(PlayerName.ItunesDesktop)
   );
   cmds.push(launchItunesPlaylistCommand);
-
-  const generateWeeklyPlaylistCommand = commands.registerCommand(
-    "musictime.generateWeeklyPlaylist",
-    () => musicMgr.generateUsersWeeklyTopSongs()
-  );
-  cmds.push(generateWeeklyPlaylistCommand);
 
   const launchMusicAnalyticsCommand = commands.registerCommand("musictime.launchAnalytics", () =>
     launchMusicAnalytics()
@@ -504,10 +490,7 @@ export function createCommands(): {
     commands.registerCommand("musictime.getTrackRecommendations", async (node: PlaylistItem) => {
       getRecommendationsForSelectedTrack(node);
     })
-  )
-
-  // initialize the kpm controller to start the listener
-  KpmManager.getInstance();
+  );
 
   return Disposable.from(...cmds);
 }

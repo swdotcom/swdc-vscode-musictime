@@ -15,6 +15,7 @@ import { getPlaylistIcon } from "../Util";
 import { ProviderItemManager } from "./ProviderItemManager";
 import { MusicDataManager } from "./MusicDataManager";
 import { hasSpotifyUser, populateSpotifyUser } from "../managers/SpotifyManager";
+import { requiresSpotifyAccess } from './MusicUtil';
 
 /**
  * Create the playlist tree item (root or leaf)
@@ -140,18 +141,27 @@ export class MusicPlaylistProvider implements TreeDataProvider<PlaylistItem> {
 
         this.refresh();
 
-        const item: PlaylistItem = ProviderItemManager.getInstance().getReadmeButton();
-        setTimeout(() => {
-            try {
-                // select the readme item
-                this.view.reveal(item, {
-                    focus: true,
-                    select: false,
-                });
-            } catch (err) {
-                console.error(`Unable to select track: ${err.message}`);
-            }
-        }, 1000);
+        const providerMgr: ProviderItemManager = ProviderItemManager.getInstance();
+        let button = null;
+        const CONNECTED = !!!requiresSpotifyAccess();
+        if (CONNECTED) {
+          button = await providerMgr.getActiveSpotifyDevicesButton();
+        } else {
+          button = await providerMgr.getConnectToSpotifyButton();
+        }
+        if (button) {
+            setTimeout(() => {
+                try {
+                    // select the readme item
+                    this.view.reveal(button, {
+                        focus: true,
+                        select: false,
+                    });
+                } catch (err) {
+                    console.error(`Unable to select track: ${err.message}`);
+                }
+            }, 1000);
+        }
     }
 
     getTreeItem(p: PlaylistItem): PlaylistTreeItem {

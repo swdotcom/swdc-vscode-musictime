@@ -1,13 +1,9 @@
 import swdcTracker from "swdc-tracker";
 import { api_endpoint } from "../Constants";
 import { getPluginName, getPluginId, getVersion, getWorkspaceFolders } from "../Util";
-import { FileChangeInfo } from "../model/models";
 import { getRepoIdentifierInfo } from "../repo/GitUtil";
-import KeystrokeStats from "../model/KeystrokeStats";
 import { getResourceInfo } from "../KpmRepoManager";
 import { getItem } from "./FileManager";
-
-const moment = require("moment-timezone");
 
 export class TrackerManager {
   private static instance: TrackerManager;
@@ -31,61 +27,6 @@ export class TrackerManager {
     if (result.status === 200) {
       this.trackerReady = true;
       this.trackEditorAction("editor", "activate");
-    }
-  }
-
-  public async trackCodeTimeEvent(keystrokeStats: KeystrokeStats) {
-    if (!this.trackerReady) {
-      return;
-    }
-
-    // extract the project info from the keystroke stats
-    const projectInfo = {
-      project_directory: keystrokeStats.project.directory,
-      project_name: keystrokeStats.project.name,
-    };
-
-    // loop through the files in the keystroke stats "source"
-    const fileKeys = Object.keys(keystrokeStats.source);
-    for await (let file of fileKeys) {
-      const fileData: FileChangeInfo = keystrokeStats.source[file];
-
-      const codetime_entity = {
-        keystrokes: fileData.keystrokes,
-        lines_added: fileData.documentChangeInfo.linesAdded,
-        lines_deleted: fileData.documentChangeInfo.linesDeleted,
-        characters_added: fileData.documentChangeInfo.charactersAdded,
-        characters_deleted: fileData.documentChangeInfo.charactersDeleted,
-        single_deletes: fileData.documentChangeInfo.singleDeletes,
-        multi_deletes: fileData.documentChangeInfo.multiDeletes,
-        single_adds: fileData.documentChangeInfo.singleAdds,
-        multi_adds: fileData.documentChangeInfo.multiAdds,
-        auto_indents: fileData.documentChangeInfo.autoIndents,
-        replacements: fileData.documentChangeInfo.replacements,
-        start_time: moment.unix(fileData.start).utc().format(),
-        end_time: moment.unix(fileData.end).utc().format(),
-      };
-
-      const file_entity = {
-        file_name: fileData.fsPath?.split(fileData.projectDir)?.[1],
-        file_path: fileData.fsPath,
-        syntax: fileData.syntax,
-        line_count: fileData.lines,
-        character_count: fileData.length,
-      };
-
-      const repoParams = await this.getRepoParams(keystrokeStats.project.directory);
-
-      const codetime_event = {
-        ...codetime_entity,
-        ...file_entity,
-        ...projectInfo,
-        ...this.pluginParams,
-        ...this.getJwtParams(),
-        ...repoParams,
-      };
-
-      swdcTracker.trackCodeTimeEvent(codetime_event);
     }
   }
 

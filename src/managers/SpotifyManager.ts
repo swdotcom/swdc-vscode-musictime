@@ -26,7 +26,11 @@ export function hasSpotifyUser() {
   return !!(spotifyUser && spotifyUser.product);
 }
 
-export function isPremiumUser() {
+export async function isPremiumUser() {
+  if (spotifyUser && spotifyUser.product !== "premium") {
+    // check 1 more time
+    await populateSpotifyUser(true);
+  }
   return !!(spotifyUser && spotifyUser.product === "premium");
 }
 
@@ -208,5 +212,9 @@ export async function migrateAccessInfo() {
         updateCodyConfig();
       }
     }
+
+    // remove the legacy spotify_access_token to so we don't have to check
+    // if the user needs to migrate any longer
+    setItem("spotify_access_token", null);
   }
 }

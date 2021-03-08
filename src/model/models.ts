@@ -1,5 +1,4 @@
 import { getVersion, getPluginId, getOs } from "../Util";
-import { NO_PROJ_NAME } from "../Constants";
 import { PlaylistItem } from "cody-music";
 
 export enum UIInteractionType {
@@ -18,17 +17,6 @@ export class KpmItem extends PlaylistItem {
   eventDescription: string = null;
 }
 
-export class KeystrokeAggregate {
-  add: number = 0;
-  close: number = 0;
-  delete: number = 0;
-  linesAdded: number = 0;
-  linesRemoved: number = 0;
-  open: number = 0;
-  paste: number = 0;
-  keystrokes: number = 0;
-  directory: string = NO_PROJ_NAME;
-}
 
 export class DocumentChangeInfo {
   linesAdded: number = 0;

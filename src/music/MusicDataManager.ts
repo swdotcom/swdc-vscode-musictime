@@ -7,7 +7,6 @@ import {
     getSpotifyPlayerContext,
 } from "cody-music";
 import { commands } from "vscode";
-import { PERSONAL_TOP_SONGS_PLID } from "../Constants";
 import {
     softwareGet,
     isResponseOk,
@@ -113,19 +112,6 @@ export class MusicDataManager {
         return foundSong ? true : false;
     }
 
-    getAiTopFortyPlaylist() {
-        // Add the AI generated playlist
-        if (this.generatedPlaylists && this.generatedPlaylists.length) {
-            const aiPlaylist = this.generatedPlaylists.find(
-                (e: PlaylistItem) => {
-                    return e.playlistTypeId === PERSONAL_TOP_SONGS_PLID;
-                }
-            );
-            return aiPlaylist;
-        }
-        return null;
-    }
-
     /**
      * Checks if the user's spotify playlists contains either
      * the global top 40 or the user's coding favorites playlist.
@@ -205,42 +191,5 @@ export class MusicDataManager {
             MusicDataManager.getInstance().runningTrack,
             false
         );
-    }
-
-    // reconcile. meaning the user may have deleted the lists our 2 buttons created;
-    // global and custom.  We'll remove them from our db if we're unable to find a matching
-    // playlist_id we have saved.
-    async reconcilePlaylists() {
-        if (
-            this.savedPlaylists &&
-            this.savedPlaylists.length &&
-            this.generatedPlaylists &&
-            this.generatedPlaylists.length
-        ) {
-            for (let i = 0; i < this.savedPlaylists.length; i++) {
-                const savedPlaylist = this.savedPlaylists[i];
-                const foundPlaylist = this.generatedPlaylists.find(
-                    (p: PlaylistItem) => (p.id = savedPlaylist.id)
-                );
-
-                if (!foundPlaylist) {
-                    // no longer found, delete it
-                    await softwareDelete(
-                        `/music/playlist/generated/${savedPlaylist.id}`,
-                        getItem("jwt")
-                    );
-                } else if (foundPlaylist.name !== savedPlaylist.name) {
-                    // update the name on the music time app
-                    const payload = {
-                        name: foundPlaylist.name,
-                    };
-                    await softwarePut(
-                        `/music/playlist/generated/${savedPlaylist.id}`,
-                        payload,
-                        getItem("jwt")
-                    );
-                }
-            }
-        }
     }
 }

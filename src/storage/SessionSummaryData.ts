@@ -1,4 +1,4 @@
-import { SessionSummary, KeystrokeAggregate } from "../model/models";
+import { SessionSummary } from "../model/models";
 import { getNowTimes, coalesceNumber } from "../Util";
 import { DEFAULT_SESSION_THRESHOLD_SECONDS } from "../Constants";
 import { getFileDataAsJson, getItem, getSessionSummaryFile } from "../managers/FileManager";
@@ -86,23 +86,4 @@ export function getTimeBetweenLastPayload() {
   }
 
   return { sessionSeconds, elapsedSeconds };
-}
-
-export async function incrementSessionSummaryData(
-  aggregates: KeystrokeAggregate,
-  sessionSeconds: number
-) {
-  let sessionSummaryData = getSessionSummaryData();
-  // fill in missing attributes
-  sessionSummaryData = coalesceMissingAttributes(sessionSummaryData);
-  // convert to minutes
-  const sessionMinutes = sessionSeconds ? sessionSeconds / 60 : 0;
-  sessionSummaryData.currentDayMinutes += sessionMinutes;
-
-  // increment the current day attributes except for the current day minutes
-  sessionSummaryData.currentDayKeystrokes += aggregates.keystrokes;
-  sessionSummaryData.currentDayLinesAdded += aggregates.linesAdded;
-  sessionSummaryData.currentDayLinesRemoved += aggregates.linesRemoved;
-
-  saveSessionSummaryToDisk(sessionSummaryData);
 }

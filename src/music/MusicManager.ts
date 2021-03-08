@@ -8,9 +8,7 @@ import {
   getPlaylistTracks,
   PaginationItem,
   CodyResponseType,
-  createPlaylist,
   addTracksToPlaylist,
-  replacePlaylistTracks,
   launchPlayer,
   PlayerDevice,
   getSpotifyPlaylist,
@@ -26,8 +24,6 @@ import {
   getSpotifyLikedSongs,
 } from "cody-music";
 import {
-  PERSONAL_TOP_SONGS_NAME,
-  PERSONAL_TOP_SONGS_PLID,
   SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
   SOFTWARE_TOP_40_PLAYLIST_ID,
   SHOW_ITUNES_LAUNCH_BUTTON,
@@ -210,14 +206,7 @@ export class MusicManager {
       // show the signup and login button if the user is not registered
       items.push(this.providerItemMgr.getSignupButton());
       items.push(this.providerItemMgr.getLoginButton());
-    }
-
-    // add the readme button
-    items.push(this.providerItemMgr.getReadmeButton());
-
-    if (CONNECTED) {
-      items.push(this.providerItemMgr.getGenerateDashboardButton());
-      items.push(this.providerItemMgr.getWebAnalyticsButton());
+      items.push(this.providerItemMgr.getReadmeButton());
     }
 
     if (CONNECTED) {
@@ -261,23 +250,11 @@ export class MusicManager {
         // line break between actions and software playlist section
         items.push(this.providerItemMgr.getLineBreakButton());
 
-        // get the custom playlist button
-        const customPlaylistButton: PlaylistItem = this.providerItemMgr.getCustomPlaylistButton();
-        if (customPlaylistButton) {
-          items.push(customPlaylistButton);
-        }
-
         // get the Software Top 40 Playlist and add it to the playlist
         const softwareTop40: PlaylistItem = await this.getSoftwareTop40(playlists);
         if (softwareTop40) {
           // add it to music time playlist
           items.push(softwareTop40);
-        }
-
-        // Add the AI generated playlist
-        const aiPlaylist: PlaylistItem = this.dataMgr.getAiTopFortyPlaylist();
-        if (aiPlaylist) {
-          items.push(aiPlaylist);
         }
 
         // LIKED SONGS folder
@@ -577,93 +554,6 @@ export class MusicManager {
       // clear the favorites
       this.dataMgr.userTopSongs = [];
     }
-  }
-
-  async generateUsersWeeklyTopSongs() {
-    if (this.dataMgr.buildingCustomPlaylist) {
-      return;
-    }
-
-    if (requiresSpotifyAccess()) {
-      // don't create or refresh, no spotify access provided
-      return;
-    }
-
-    this.dataMgr.buildingCustomPlaylist = true;
-
-    let customPlaylist: PlaylistItem = this.dataMgr.getMusicTimePlaylistByTypeId(PERSONAL_TOP_SONGS_PLID);
-
-    const infoMsg = !customPlaylist
-      ? `Creating and populating the ${PERSONAL_TOP_SONGS_NAME} playlist, please wait.`
-      : `Refreshing the ${PERSONAL_TOP_SONGS_NAME} playlist, please wait.`;
-
-    window.showInformationMessage(infoMsg);
-
-    let playlistId = null;
-    if (!customPlaylist) {
-      const playlistResult: CodyResponse = await createPlaylist(PERSONAL_TOP_SONGS_NAME, true);
-
-      const errMsg = getCodyErrorMessage(playlistResult);
-      if (errMsg) {
-        window.showErrorMessage(
-          `There was an unexpected error adding tracks to the playlist. ${errMsg} Refresh the playlist and try again if you feel the problem has been resolved.`,
-          ...[OK_LABEL]
-        );
-        this.dataMgr.buildingCustomPlaylist = false;
-        return;
-      }
-
-      playlistId = playlistResult.data.id;
-
-      await this.updateSavedPlaylists(playlistId, PERSONAL_TOP_SONGS_PLID, PERSONAL_TOP_SONGS_NAME).catch((err) => {
-        console.error("Error updating music time with generated playlist ID");
-      });
-    } else {
-      // get the spotify playlist id from the app's existing playlist info
-      playlistId = customPlaylist.id;
-    }
-
-    // get the spotify track ids and create the playlist
-    if (playlistId) {
-      // sync the user's weekly top songs
-      await this.syncUsersWeeklyTopSongs();
-
-      // add the tracks
-      // list of [{trackId, artist, name}...]
-      if (this.dataMgr.userTopSongs && this.dataMgr.userTopSongs.length > 0) {
-        let tracksToAdd: string[] = this.dataMgr.userTopSongs.map((item) => {
-          if (item.uri) {
-            return item.uri;
-          } else if (item.trackId) {
-            return item.trackId;
-          }
-          return item.id;
-        });
-
-        if (!customPlaylist) {
-          await this.addTracks(playlistId, PERSONAL_TOP_SONGS_NAME, tracksToAdd);
-        } else {
-          await replacePlaylistTracks(playlistId, tracksToAdd).catch((err) => {
-            console.error(`Error replacing tracks: ${err.message}`);
-          });
-
-          window.showInformationMessage(`Successfully refreshed ${PERSONAL_TOP_SONGS_NAME}.`);
-        }
-      } else {
-        window.showInformationMessage(
-          `Successfully created ${PERSONAL_TOP_SONGS_NAME}, but we're unable to add any songs at the moment.`,
-          ...[OK_LABEL]
-        );
-      }
-    }
-
-    // repopulate the spotify playlists
-    await populateSpotifyPlaylists();
-
-    commands.executeCommand("musictime.refreshPlaylist");
-
-    // update building custom playlist to false
-    this.dataMgr.buildingCustomPlaylist = false;
   }
 
   async addTracks(playlist_id: string, name: string, tracksToAdd: string[]) {

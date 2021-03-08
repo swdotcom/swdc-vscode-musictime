@@ -45,9 +45,6 @@ export async function serverIsAvailable() {
 export async function populateSpotifyPlaylists() {
     const dataMgr: MusicDataManager = MusicDataManager.getInstance();
 
-    // reconcile playlists
-    dataMgr.reconcilePlaylists();
-
     // clear out the raw and orig playlists
     dataMgr.origRawPlaylistOrder = [];
     dataMgr.rawPlaylists = [];

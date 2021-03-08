@@ -41,12 +41,7 @@ import {
   checkRegistration,
 } from "../Util";
 import {
-  REFRESH_CUSTOM_PLAYLIST_TITLE,
-  GENERATE_CUSTOM_PLAYLIST_TITLE,
-  REFRESH_CUSTOM_PLAYLIST_TOOLTIP,
-  GENERATE_CUSTOM_PLAYLIST_TOOLTIP,
   SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
-  PERSONAL_TOP_SONGS_PLID,
   OK_LABEL,
 } from "../Constants";
 import { MusicStateManager } from "./MusicStateManager";
@@ -473,30 +468,6 @@ export class MusicControlManager {
 
     // check to see if they have the slack access token
     const hasSlackAccess = hasSlackWorkspaces();
-
-    if (!needsSpotifyAccess) {
-      // check if we already have a playlist
-      const savedPlaylists: PlaylistItem[] = this.dataMgr.savedPlaylists;
-
-      // check if they've generated a playlist yet
-      const customPlaylist = this.dataMgr.getMusicTimePlaylistByTypeId(PERSONAL_TOP_SONGS_PLID);
-
-      let personalPlaylistLabel = !customPlaylist
-        ? GENERATE_CUSTOM_PLAYLIST_TITLE
-        : REFRESH_CUSTOM_PLAYLIST_TITLE;
-      const personalPlaylistTooltip = !customPlaylist
-        ? GENERATE_CUSTOM_PLAYLIST_TOOLTIP
-        : REFRESH_CUSTOM_PLAYLIST_TOOLTIP;
-
-      if (!savedPlaylists || savedPlaylists.length === 0) {
-        // show the generate playlist menu item
-        menuOptions.items.push({
-          label: personalPlaylistLabel,
-          detail: personalPlaylistTooltip,
-          cb: MusicManager.getInstance().generateUsersWeeklyTopSongs,
-        });
-      }
-    }
 
     menuOptions.items.push({
       label: "Dashboard",
