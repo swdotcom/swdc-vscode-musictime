@@ -1,7 +1,7 @@
 {
   "name": "music-time",
   "displayName": "Music Time for Spotify",
-  "version": "2.1.10",
+  "version": "2.1.11",
   "publisher": "softwaredotcom",
   "description": "Music Time for Spotify is a VS Code extension that discovers the most productive music to listen to as you code.",
   "author": {
@@ -213,7 +213,7 @@
       },
       {
         "command": "musictime.menu",
-        "title": "Music Time: Click to see more from Music Time"
+        "title": "Music Time: Click to see more"
       },
       {
         "command": "musictime.currentSong",
@@ -289,10 +289,18 @@
       },
       {
         "command": "musictime.getTrackRecommendations",
-        "title": "Music Time: Get recommendations",
+        "title": "Get recommendations",
         "icon": {
           "light": "resources/light/beaker.svg",
           "dark": "resources/dark/beaker.svg"
+        }
+      },
+      {
+        "command": "musictime.showAlbum",
+        "title": "Show album",
+        "icon": {
+          "light": "resources/light/album.svg",
+          "dark": "resources/dark/album.svg"
         }
       }
     ],
@@ -320,24 +328,29 @@
     "menus": {
       "view/item/context": [
         {
-          "command": "musictime.getTrackRecommendations",
+          "command": "musictime.showAlbum",
           "when": "viewItem =~ /track-item.*/ || viewItem =~ /spotify-recommendation.*/",
           "group": "inline@1"
         },
         {
-          "command": "musictime.shareTrack",
+          "command": "musictime.getTrackRecommendations",
           "when": "viewItem =~ /track-item.*/ || viewItem =~ /spotify-recommendation.*/",
           "group": "inline@2"
         },
         {
+          "command": "musictime.shareTrack",
+          "when": "viewItem =~ /track-item.*/ || viewItem =~ /spotify-recommendation.*/",
+          "group": "inline@3"
+        },
+        {
           "command": "musictime.removeTrack",
           "when": "viewItem =~ /track-item.*/",
-          "group": "inline@3"
+          "group": "inline@4"
         },
         {
           "command": "musictime.addToPlaylist",
           "when": "viewItem =~ /track-item.*/ || viewItem =~ /spotify-recommendation.*/",
-          "group": "inline@3"
+          "group": "inline@4"
         },
         {
           "command": "musictime.follow",
@@ -409,7 +422,7 @@
     "@slack/web-api": "^5.14.0",
     "axios": "^0.21.1",
     "clipboardy": "^2.1.0",
-    "cody-music": "2.9.31",
+    "cody-music": "2.10.2",
     "file-it": "^1.1.0",
     "moment-timezone": "^0.5.25",
     "open": "^6.4.0",

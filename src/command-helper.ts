@@ -20,7 +20,7 @@ import {
 } from "./selector/SortPlaylistSelectorManager";
 import { populateSpotifyPlaylists, populateSpotifyDevices } from "./DataController";
 import { showDeviceSelectorMenu } from "./selector/SpotifyDeviceSelectorManager";
-import { updateRecommendations, refreshRecommendations, getRecommendationsForSelectedTrack } from "./music/MusicRecommendationManager";
+import { updateRecommendations, refreshRecommendations, getRecommendationsForSelectedTrack, showAlbum } from "./music/MusicRecommendationManager";
 import { MusicCommandUtil } from "./music/MusicCommandUtil";
 import { showSearchInput } from "./selector/SearchSelectorManager";
 import { getDeviceId, requiresSpotifyAccess } from "./music/MusicUtil";
@@ -489,6 +489,12 @@ export function createCommands(): {
   cmds.push(
     commands.registerCommand("musictime.getTrackRecommendations", async (node: PlaylistItem) => {
       getRecommendationsForSelectedTrack(node);
+    })
+  );
+
+  cmds.push(
+    commands.registerCommand("musictime.showAlbum", async (node: PlaylistItem) => {
+      showAlbum(node);
     })
   );
 

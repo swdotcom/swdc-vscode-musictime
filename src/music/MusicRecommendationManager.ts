@@ -1,5 +1,5 @@
 import { commands } from "vscode";
-import { Track, getRecommendationsForTracks, PlaylistItem } from "cody-music";
+import { Track, getRecommendationsForTracks, PlaylistItem, getSpotifyAlbumTracks } from "cody-music";
 import {
     sortTracks,
     requiresSpotifyAccess,
@@ -51,6 +51,13 @@ export async function getRecommendedTracks(
     }
 
     return [];
+}
+
+export async function showAlbum(playlistItem: PlaylistItem) {
+    if (playlistItem["albumId"]) {
+        const albumTracks: Track[] = await getSpotifyAlbumTracks(playlistItem["albumId"]);
+        updateRecommendationTree(playlistItem["albumName"], albumTracks);
+    }
 }
 
 export async function getRecommendationsForSelectedTrack(playlistItem: PlaylistItem) {

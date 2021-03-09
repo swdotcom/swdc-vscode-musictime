@@ -450,6 +450,9 @@ export class MusicManager {
     playlistItem.playerType = track.playerType;
     playlistItem.itemType = "track";
     playlistItem["icon"] = "track.svg";
+    playlistItem["albumId"] = track?.album?.id;
+    playlistItem["albumName"] = track?.album?.name;
+
 
     delete playlistItem.tracks;
 
