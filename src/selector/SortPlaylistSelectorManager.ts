@@ -1,7 +1,7 @@
 import { showQuickPick } from "../MenuManager";
 import { MusicManager } from "../music/MusicManager";
 import { MusicDataManager } from "../music/MusicDataManager";
-import { Track, PlayerContext, getSpotifyPlayerContext, TrackStatus } from "cody-music";
+import { Track, PlayerContext, TrackStatus } from "cody-music";
 import { getDeviceSet } from "../music/MusicUtil";
 
 export async function showSortPlaylistMenu() {

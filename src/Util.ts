@@ -1,4 +1,4 @@
-import { workspace, extensions, window, TextDocument, WorkspaceFolder, commands } from "vscode";
+import { workspace, extensions, window, WorkspaceFolder, commands } from "vscode";
 import {
   CODE_TIME_EXT_ID,
   MUSIC_TIME_EXT_ID,
@@ -32,36 +32,6 @@ export const MARKER_WIDTH = 4;
 const NUMBER_IN_EMAIL_REGEX = new RegExp("^\\d+\\+");
 const dayFormat = "YYYY-MM-DD";
 const dayTimeFormat = "LLLL";
-
-// start off as focused as the editor may have
-// had that file in the tabs. any close or tab
-// switch will set this to false if the file isn't CodeTime
-let editorSessiontoken = null;
-let workspace_name = null;
-
-export function getWorkspaceName() {
-  if (!workspace_name) {
-    workspace_name = randomCode();
-  }
-  return workspace_name;
-}
-
-export function getEditorSessionToken() {
-  if (!editorSessiontoken) {
-    editorSessiontoken = randomCode();
-  }
-  return editorSessiontoken;
-}
-
-/**
- * This will return a random whole number inclusively between the min and max
- * @param min
- * @param max
- */
-export function getRandomArbitrary(min, max) {
-  max = max + 0.1;
-  return parseInt(Math.random() * (max - min) + min, 10);
-}
 
 export function getPluginId() {
   return MUSIC_TIME_PLUGIN_ID;
@@ -99,25 +69,6 @@ export function musicTimeExtInstalled() {
 }
 
 /**
- * This method is sync, no need to await on it.
- * @param file
- */
-export function getFileAgeInDays(file) {
-  if (!fs.existsSync(file)) {
-    return 0;
-  }
-  const stat = fs.statSync(file);
-  let creationTimeSec = stat.birthtimeMs || stat.ctimeMs;
-  // convert to seconds
-  creationTimeSec /= 1000;
-
-  const daysDiff = moment.duration(moment().diff(moment.unix(creationTimeSec))).asDays();
-
-  // if days diff is 0 then use 200, otherwise 100 per day, which is equal to a 9000 limit for 90 days
-  return daysDiff > 1 ? parseInt(daysDiff, 10) : 1;
-}
-
-/**
  * These will return the workspace folders.
  * use the uri.fsPath to get the full path
  * use the name to get the folder name
@@ -150,20 +101,6 @@ export function getActiveProjectWorkspace(): WorkspaceFolder {
     }
   }
   return null;
-}
-
-export function isFileActive(file: string, isCloseEvent: boolean = false): boolean {
-  if (isCloseEvent) return true;
-
-  if (workspace.textDocuments) {
-    for (let i = 0; i < workspace.textDocuments.length; i++) {
-      const doc: TextDocument = workspace.textDocuments[i];
-      if (doc && doc.fileName === file) {
-        return true;
-      }
-    }
-  }
-  return false;
 }
 
 export function findFirstActiveDirectoryOrWorkspaceDirectory(): string {
@@ -212,18 +149,6 @@ export function getNumberOfTextDocumentsOpen() {
   return workspace.textDocuments ? workspace.textDocuments.length : 0;
 }
 
-export function isFileOpen(fileName) {
-  if (workspace.textDocuments) {
-    for (let i = 0; i < workspace.textDocuments.length; i++) {
-      const doc: TextDocument = workspace.textDocuments[i];
-      if (doc && doc.fileName === fileName) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
 export function getRootPathForFile(fileName) {
   let folder = getProjectFolder(fileName);
   if (folder) {
@@ -254,15 +179,6 @@ export function getProjectFolder(fileName) {
     return liveshareFolder;
   }
   return null;
-}
-
-export function validateEmail(email) {
-  let re = /\S+@\S+\.\S+/;
-  return re.test(email);
-}
-
-export function isEmptyObj(obj) {
-  return Object.keys(obj).length === 0 && obj.constructor === Object;
 }
 
 export function isLinux() {
@@ -489,31 +405,6 @@ export async function getGitEmail() {
   return null;
 }
 
-// replace all newlines, additional spaces, < or > chars with empty and split by the \r
-// the < and > surround the github email address
-export async function getCommandResultAsList(cmd, projectDir) {
-  let result = await wrapExecPromise(cmd, projectDir);
-  if (!result) {
-    return [];
-  }
-  result = result.trim();
-  // replace newlines with \r, remove the < and > around the email string and split by \n
-  // to return an array of values
-  const resultList = result.replace(/\r\n/g, "\r").replace(/\n/g, "\r").replace(/^\s+/g, " ").replace(/</g, "").replace(/>/g, "").split(/\r/);
-  return resultList;
-}
-
-export async function getCommandResultString(cmd, projectDir) {
-  let result = await wrapExecPromise(cmd, projectDir);
-  if (!result) {
-    // something went wrong, but don't try to parse a null or undefined str
-    return null;
-  }
-  result = result.trim();
-  result = result.replace(/\r\n/g, "\r").replace(/\n/g, "\r").replace(/^\s+/g, " ");
-  return result;
-}
-
 export async function wrapExecPromise(cmd, projectDir = null) {
   let result = null;
   try {
@@ -531,10 +422,6 @@ export async function wrapExecPromise(cmd, projectDir = null) {
     result = null;
   }
   return result;
-}
-
-export function countUniqueStrings(list: Array<string>) {
-  return new Set(list).size;
 }
 
 export function launchWebUrl(url) {
@@ -612,17 +499,6 @@ export function getDashboardRow(label, value) {
   return content;
 }
 
-export function getSectionHeader(label) {
-  let content = `${label}\n`;
-  // add 3 to account for the " : " between the columns
-  let dashLen = DASHBOARD_LABEL_WIDTH + DASHBOARD_VALUE_WIDTH + 15;
-  for (let i = 0; i < dashLen; i++) {
-    content += "-";
-  }
-  content += "\n";
-  return content;
-}
-
 export function buildQueryString(obj) {
   let params = [];
   if (obj) {
@@ -689,33 +565,6 @@ export function createSpotifyIdFromUri(id: string) {
     return id.substring(id.lastIndexOf(":") + 1);
   }
   return id;
-}
-
-export function isValidJson(val: any) {
-  if (val === null || val === undefined) {
-    return false;
-  }
-  if (typeof val === "string" || typeof val === "number") {
-    return false;
-  }
-  try {
-    const stringifiedVal = JSON.stringify(val);
-    JSON.parse(stringifiedVal);
-    return true;
-  } catch (e) {
-    //
-  }
-  return false;
-}
-
-export function getFileType(fileName: string) {
-  let fileType = "";
-  const lastDotIdx = fileName.lastIndexOf(".");
-  const len = fileName.length;
-  if (lastDotIdx !== -1 && lastDotIdx < len - 1) {
-    fileType = fileName.substring(lastDotIdx + 1);
-  }
-  return fileType;
 }
 
 export function getPlaylistIcon(treeItem: PlaylistItem) {
@@ -802,28 +651,7 @@ export function getCodyErrorMessage(response: CodyResponse) {
   return "";
 }
 
-export function isBatchSizeUnderThreshold(payloads) {
-  const payloadDataLen = Buffer.byteLength(JSON.stringify(payloads));
-  if (payloadDataLen <= 100000) {
-    return true;
-  }
-  return false;
-}
-
 export function getFileDataArray(file) {
   let payloads: any[] = fileIt.readJsonArraySync(file);
-  return payloads;
-}
-
-export function getFileDataPayloadsAsJson(file) {
-  // Still trying to find out when "undefined" is set into the data.json
-  // but this will help remove it so we can process the json lines without failure
-  let content = fileIt.readContentFileSync(file);
-  if (content.indexOf("undefined") !== -1) {
-    // remove "undefined" and re-save, then read (only found in the beginning of the content)
-    content = content.replace("undefined", "");
-    fileIt.writeContentFileSync(file, content);
-  }
-  let payloads: any[] = fileIt.readJsonLinesSync(file);
   return payloads;
 }

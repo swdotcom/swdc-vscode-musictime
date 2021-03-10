@@ -777,20 +777,14 @@ cliui@^5.0.0:
     strip-ansi "^5.2.0"
     wrap-ansi "^5.1.0"
 
-clone@2.x:
-  version "2.1.2"
-  resolved "https://registry.yarnpkg.com/clone/-/clone-2.1.2.tgz#1b7f4b9f591f1e8f83670401600345a02887435f"
-  integrity sha1-G39Ln1kfHo+DZwQBYANFoCiHQ18=
-
-cody-music@2.10.2:
-  version "2.10.2"
-  resolved "https://registry.yarnpkg.com/cody-music/-/cody-music-2.10.2.tgz#ec36bc490df003cfc84f58f1210550269159ff3d"
-  integrity sha512-iwQN/ygOWw9frW6kIGN+0ae+lj2kJ/t+z6Dc+XuBbkqa8RVLw9j95qEf2BdzRgl292zth1W5/TEKKAPCDE3K/Q==
+cody-music@2.10.3:
+  version "2.10.3"
+  resolved "https://registry.yarnpkg.com/cody-music/-/cody-music-2.10.3.tgz#2a58613396b5d8caa0a37ad838709344f1376fef"
+  integrity sha512-qwXPv5BJoMcJeMe+yvhPBkDx6FgOr7cB+Z5gpaPVi10UOHop1zSdeyrI77BsN2VV5eHoiFgauUqp9N3GmB3N6Q==
   dependencies:
     axios "^0.21.1"
     dotenv "^8.2.0"
     moment-timezone "^0.5.33"
-    node-cache "^5.1.2"
     open "^8.0.2"
 
 collection-visit@^1.0.0:
@@ -2315,13 +2309,6 @@ nice-try@^1.0.4:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/nice-try/-/nice-try-1.0.5.tgz#a3378a7696ce7d223e88fc9b764bd7ef1089e366"
   integrity sha512-1nh45deeb5olNY7eX82BkPO7SSxR5SSYJiPTrTdFUVYwAl8CKMA5N9PjTYkHiRjisVcxcQ1HXdLhx2qxxJzLNQ==
-
-node-cache@^5.1.2:
-  version "5.1.2"
-  resolved "https://registry.yarnpkg.com/node-cache/-/node-cache-5.1.2.tgz#f264dc2ccad0a780e76253a694e9fd0ed19c398d"
-  integrity sha512-t1QzWwnk4sjLWaQAS8CHgOJ+RAfmHpxFWmc36IWTiWHQfs0w5JDMBS1b1ZxQteo0vVVuWJvIUKHDkkeK7vIGCg==
-  dependencies:
-    clone "2.x"
 
 node-libs-browser@^2.2.1:
   version "2.2.1"

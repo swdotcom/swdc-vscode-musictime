@@ -180,15 +180,6 @@ export function getItem(key) {
   return fileIt.getJsonValue(getSoftwareSessionFile(), key);
 }
 
-export function getSessionFileCreateTime() {
-  let sessionFile = getSoftwareSessionFile();
-  const stat = fs.statSync(sessionFile);
-  if (stat.birthtime) {
-    return stat.birthtime;
-  }
-  return stat.ctime;
-}
-
 export function getPluginUuid() {
   let plugin_uuid = fileIt.getJsonValue(getDeviceFile(), "plugin_uuid");
   if (!plugin_uuid) {

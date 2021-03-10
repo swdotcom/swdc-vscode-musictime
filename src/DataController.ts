@@ -27,10 +27,6 @@ export function isNewHour() {
     return false;
 }
 
-export function getLoggedInCacheState() {
-    return loggedInCacheState;
-}
-
 export async function serverIsAvailable() {
     let serverAvailable = await softwareGet("/ping", null)
         .then((result) => {
