@@ -1,4 +1,4 @@
-import { createSpotifyIdFromUri, createUriFromTrackId, nowInSecs, isMac, wrapExecPromise } from "../Util";
+import { createSpotifyIdFromUri, createUriFromTrackId, nowInSecs, isMac, getCommandResultString } from "../Util";
 import { Track, TrackStatus, getTrack, PlayerName, CodyResponse, getSpotifyRecentlyPlayedBefore } from "cody-music";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { MusicDataManager } from "./MusicDataManager";
@@ -189,14 +189,11 @@ export class MusicStateManager {
   private async fetchSpotifyMacTrack() {
     const checkStateScript = path.join(resourcePath, "scripts", "check_state.spotify.applescript");
     const getSpotifyTrackInfo = path.join(resourcePath, "scripts", "get_state.spotify.applescript");
-    let isRunning = await wrapExecPromise(`osascript ${checkStateScript}`);
-    try {
-      isRunning = JSON.parse(isRunning);
-    } catch (e) {}
+    const isRunning = getCommandResultString(`osascript ${checkStateScript}`);
 
-    if (isRunning === true) {
+    if (isRunning === "true") {
       // get the track info
-      const trackInfo = await wrapExecPromise(`osascript ${getSpotifyTrackInfo}`);
+      const trackInfo = getCommandResultString(`osascript ${getSpotifyTrackInfo}`);
       try {
         return JSON.parse(trackInfo);
       } catch (e) {}

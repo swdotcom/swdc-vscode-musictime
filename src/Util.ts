@@ -13,11 +13,11 @@ import { PlaylistItem, TrackStatus, CodyResponse, CodyResponseType } from "cody-
 import * as path from "path";
 import { getItem } from "./managers/FileManager";
 import { isGitProject } from './repo/GitUtil';
+import { execSync } from 'child_process';
 
 const fileIt = require("file-it");
 const moment = require("moment-timezone");
 const open = require("open");
-const { exec } = require("child_process");
 const fs = require("fs");
 const os = require("os");
 const crypto = require("crypto");
@@ -196,7 +196,7 @@ export function isMac() {
 }
 
 export async function getHostname() {
-  let hostname = await getCommandResult("hostname", 1);
+  let hostname = getCommandResultString("hostname");
   return hostname;
 }
 
@@ -220,29 +220,10 @@ export function getOs() {
   return "";
 }
 
-export async function getCommandResult(cmd, maxLines: any = -1) {
-  let result = await wrapExecPromise(`${cmd}`, null);
-  if (!result) {
-    return "";
-  }
-  let contentList = result.replace(/\r\n/g, "\r").replace(/\n/g, "\r").split(/\r/);
-  if (contentList && contentList.length > 0) {
-    let len = maxLines !== -1 ? Math.min(contentList.length, maxLines) : contentList.length;
-    for (let i = 0; i < len; i++) {
-      let line = contentList[i];
-      if (line && line.trim().length > 0) {
-        result = line.trim();
-        break;
-      }
-    }
-  }
-  return result;
-}
-
 export async function getOsUsername() {
   let username = os.userInfo().username;
   if (!username || username.trim() === "") {
-    username = await getCommandResult("whoami", 1);
+    username = getCommandResultString("whoami");
   }
   return username;
 }
@@ -324,19 +305,6 @@ export function formatPathIfNecessary(pathString: string) {
   return pathString;
 }
 
-function execPromise(command, opts) {
-  return new Promise(function (resolve, reject) {
-    exec(command, opts, (error, stdout, stderr) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-
-      resolve(stdout.trim());
-    });
-  });
-}
-
 export function normalizeGithubEmail(email: string, filterOutNonEmails = true) {
   if (email) {
     if (filterOutNonEmails && (email.endsWith("github.com") || email.includes("users.noreply"))) {
@@ -390,7 +358,7 @@ export async function getGitEmail() {
     let projectDir = projectDirs[i];
 
     if (projectDir && isGitProject(projectDir)) {
-      let email = await wrapExecPromise("git config user.email", projectDir);
+      let email = getCommandResultString("git config user.email", projectDir);
       if (email) {
         /**
          * // normalize the email, possible github email types
@@ -405,24 +373,20 @@ export async function getGitEmail() {
   return null;
 }
 
-export async function wrapExecPromise(cmd, projectDir = null) {
-  let result = null;
+export function getCommandResultString(cmd, projectDir = null): string {
+  const opts = projectDir !== undefined && projectDir !== null ? { cwd: projectDir } : {};
+
   try {
-    let opts = projectDir !== undefined && projectDir !== null ? { cwd: projectDir } : {};
-    result = await execPromise(cmd, opts).catch((e) => {
-      if (e.message) {
-        console.log("task error: ", e.message);
-      }
-      return null;
-    });
-  } catch (e) {
-    if (e.message) {
-      console.log("task error: ", e.message);
+    const data = execSync(cmd, opts);
+    const lines = data ? data.toString().trim().split(/\r?\n/) : null;
+    if (lines && lines.length) {
+      return lines[0];
     }
-    result = null;
+  } catch (e) {
+    console.log("extension error: ", e);
   }
-  return result;
-}
+  return null;
+};
 
 export function launchWebUrl(url) {
   open(url);
