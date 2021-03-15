@@ -1,5 +1,5 @@
 import { accessExpired, getSpotifyDevices } from "cody-music";
-import { getDeviceSetForDevices } from "./MusicUtil";
+import { getDeviceSet } from './MusicUtil';
 
 export class MusicCommandUtil {
     private static instance: MusicCommandUtil;
@@ -64,14 +64,13 @@ export class MusicCommandUtil {
     async isDeviceError(result) {
         if (result && this.getResponseStatus(result) === 404) {
             // check to see if there's an active device
-            const devices = await getSpotifyDevices();
             const {
                 webPlayer,
                 desktop,
                 activeDevice,
                 activeComputerDevice,
                 activeWebPlayerDevice,
-            } = getDeviceSetForDevices(devices);
+            } = getDeviceSet()
             if (!webPlayer && !desktop) {
                 return true;
             }

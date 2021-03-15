@@ -22,6 +22,8 @@ import {
   accessExpired,
   removeTracksFromPlaylist,
   getSpotifyLikedSongs,
+  pause,
+  transferSpotifyDevice
 } from "cody-music";
 import {
   SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
@@ -595,7 +597,7 @@ export class MusicManager {
     // first get the spotify user
     await populateSpotifyUser(hardRefresh);
 
-    await populateSpotifyDevices();
+    await populateSpotifyDevices(false);
 
     // initialize the status bar music controls
     MusicCommandManager.initialize();
@@ -668,7 +670,7 @@ export class MusicManager {
 
   async checkDeviceLaunch(playerName: PlayerName, tries: number = 5, callback: any = null) {
     setTimeout(async () => {
-      await populateSpotifyDevices(true);
+      await populateSpotifyDevices(true /*retry*/);
       const devices = this.dataMgr.currentDevices;
       if ((!devices || devices.length == 0) && tries > 0) {
         tries--;
@@ -727,6 +729,11 @@ export class MusicManager {
 
       if (selectedButton === "Desktop Player" || selectedButton === "Web Player") {
         const playerName: PlayerName = selectedButton === "Desktop Player" ? PlayerName.SpotifyDesktop : PlayerName.SpotifyWeb;
+
+        // play it to get spotify to update the device ID
+        await play(playerName);
+        await pause(playerName);
+
         // start the launch process and pass the callback when complete
         return this.launchTrackPlayer(playerName, callback);
       }
@@ -917,8 +924,16 @@ export class MusicManager {
     if (await musicCommandUtil.isDeviceError(result)) {
       this.showPlayerLaunchConfirmation(this.playMusicSelection);
     } else {
-      setTimeout(() => {
-        MusicStateManager.getInstance().fetchTrack();
+      setTimeout(async () => {
+        await MusicStateManager.getInstance().fetchTrack();
+        if (this.dataMgr.runningTrack.state !== TrackStatus.Playing) {
+          await transferSpotifyDevice(deviceId, true);
+          if (!useSpotifyWeb) {
+            play(PlayerName.SpotifyDesktop);
+          } else {
+            play(PlayerName.SpotifyWeb);
+          }
+        }
       }, 1000);
     }
   };

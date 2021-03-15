@@ -77,17 +77,17 @@ export async function populateSpotifyPlaylists() {
     await dataMgr.populatePlayerContext();
 }
 
-export async function populateSpotifyDevices(isDeviceLaunch = false) {
+export async function populateSpotifyDevices(tryAgain = false) {
     const devices = await MusicCommandUtil.getInstance().runSpotifyCommand(
         getSpotifyDevices
     );
 
-    if (devices.status && devices.status === 429 && !isDeviceLaunch) {
+    if (devices.status && devices.status === 429 && tryAgain) {
         // try one more time in lazily since its not a device launch request.
         // the device launch requests retries a few times every couple seconds.
         setTimeout(() => {
             // use true to specify its a device launch so this doens't try continuously
-            populateSpotifyDevices(true);
+            populateSpotifyDevices(false);
         }, 8000);
         return;
     }

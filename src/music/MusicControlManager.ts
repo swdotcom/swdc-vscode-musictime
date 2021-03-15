@@ -105,7 +105,7 @@ export class MusicControlManager {
 
     setTimeout(() => {
       this.stateMgr.fetchTrack();
-    }, 1000);
+    }, 600);
   }
 
   async previousSong() {
@@ -119,7 +119,7 @@ export class MusicControlManager {
 
     setTimeout(() => {
       this.stateMgr.fetchTrack();
-    }, 1000);
+    }, 600);
   }
 
   /**
@@ -160,7 +160,7 @@ export class MusicControlManager {
 
       setTimeout(() => {
         this.stateMgr.fetchTrack();
-      }, 1000);
+      }, 600);
     }
   }
 
@@ -178,7 +178,7 @@ export class MusicControlManager {
 
     setTimeout(() => {
       this.stateMgr.fetchTrack();
-    }, 1000);
+    }, 600);
   }
 
   async setShuffleOn() {
@@ -187,7 +187,7 @@ export class MusicControlManager {
 
     setTimeout(() => {
       this.stateMgr.fetchTrack();
-    }, 1000);
+    }, 600);
   }
 
   async setShuffleOff() {
@@ -196,7 +196,7 @@ export class MusicControlManager {
 
     setTimeout(() => {
       this.stateMgr.fetchTrack();
-    }, 1000);
+    }, 600);
   }
 
   async setRepeatTrackOn() {
@@ -205,7 +205,7 @@ export class MusicControlManager {
 
     setTimeout(() => {
       this.stateMgr.fetchTrack();
-    }, 1000);
+    }, 600);
   }
 
   async setRepeatPlaylistOn() {
@@ -214,7 +214,7 @@ export class MusicControlManager {
 
     setTimeout(() => {
       this.stateMgr.fetchTrack();
-    }, 1000);
+    }, 600);
   }
 
   async setRepeatOnOff(setToOn: boolean) {
@@ -227,7 +227,7 @@ export class MusicControlManager {
 
     setTimeout(() => {
       this.stateMgr.fetchTrack();
-    }, 1000);
+    }, 600);
   }
 
   async setMuteOn() {

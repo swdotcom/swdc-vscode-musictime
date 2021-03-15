@@ -240,7 +240,7 @@ export function createCommands(): {
     commands.registerCommand("musictime.songTitleRefresh", async () => {
       const deviceId = getDeviceId();
       if (!deviceId) {
-        await populateSpotifyDevices();
+        await populateSpotifyDevices(false);
       }
       MusicStateManager.getInstance().fetchTrack();
     })
@@ -317,7 +317,7 @@ export function createCommands(): {
     "musictime.refreshDeviceInfo",
     async () => {
       if (!requiresSpotifyAccess()) {
-        await populateSpotifyDevices();
+        await populateSpotifyDevices(false);
       }
     }
   );
