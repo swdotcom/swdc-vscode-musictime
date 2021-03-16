@@ -12,8 +12,6 @@ import { MusicStateManager } from "./music/MusicStateManager";
 
 const moment = require("moment-timezone");
 
-let loggedInCacheState = null;
-
 let currentDayHour = null;
 
 export function isNewHour() {

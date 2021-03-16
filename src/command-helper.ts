@@ -27,7 +27,7 @@ import { getDeviceId, requiresSpotifyAccess } from "./music/MusicUtil";
 import { MusicStateManager } from "./music/MusicStateManager";
 import { connectSpotify, disconnectSpotify, switchSpotifyAccount } from "./managers/SpotifyManager";
 import { displayReadmeIfNotExists } from "./managers/FileManager";
-import { launchLogin, showSignUpMenuOptions } from "./managers/UserStatusManager";
+import { launchLogin, showLogInMenuOptions, showSignUpMenuOptions } from "./managers/UserStatusManager";
 
 /**
  * add the commands to vscode....
@@ -460,6 +460,12 @@ export function createCommands(): {
       showSignUpMenuOptions();
     })
   );
+
+  cmds.push(
+    commands.registerCommand("musictime.logInAccount", async () => {
+      showLogInMenuOptions();
+    })
+  )
 
   // login button click
   cmds.push(

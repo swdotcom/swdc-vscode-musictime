@@ -223,11 +223,6 @@ export function softwareSessionFileExists() {
   return fs.existsSync(file);
 }
 
-export function jwtExists() {
-  let jwt = getItem("jwt");
-  return !jwt ? false : true;
-}
-
 export function getLocalREADMEFile() {
   const resourcePath: string = path.join(__dirname, "resources");
   const file = path.join(resourcePath, "README.md");

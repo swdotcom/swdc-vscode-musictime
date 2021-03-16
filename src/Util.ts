@@ -1,6 +1,5 @@
 import { workspace, extensions, window, WorkspaceFolder, commands } from "vscode";
 import {
-  CODE_TIME_EXT_ID,
   MUSIC_TIME_EXT_ID,
   launch_url,
   MUSIC_TIME_PLUGIN_ID,
@@ -56,11 +55,6 @@ export function isCodeTimeMetricsFile(fileName) {
     return true;
   }
   return false;
-}
-
-export function codeTimeExtInstalled() {
-  const codeTimeExt = extensions.getExtension(CODE_TIME_EXT_ID);
-  return codeTimeExt ? true : false;
 }
 
 export function musicTimeExtInstalled() {

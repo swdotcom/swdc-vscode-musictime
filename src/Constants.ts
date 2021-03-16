@@ -28,7 +28,6 @@ export const launch_url = "https://app.software.com";
 export const DEFAULT_CURRENTLY_PLAYING_TRACK_CHECK_SECONDS = 45;
 export const DEFAULT_SESSION_THRESHOLD_SECONDS = 60 * 15;
 
-export const CODE_TIME_EXT_ID = "softwaredotcom.swdc-vscode";
 export const MUSIC_TIME_EXT_ID = "softwaredotcom.music-time";
 
 export const MUSIC_TIME_TYPE = "musictime";
