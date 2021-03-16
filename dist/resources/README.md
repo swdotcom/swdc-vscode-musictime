@@ -1,35 +1,27 @@
-<br />
+# Music Time for Spotify
 
-<h1 align="center">
-  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/software-headphones.png" height="30px" />&nbsp
-  Music Time for Spotify
-  <br />
-  &nbsp
-</h1>
-
-<br />
-
-<p align="center"><a href="https://www.software.com">Music Time for Spotify</a> is a VS Code extension that discovers the most productive music to listen to as you code.
+<p>
+  <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.music-time">
+    <img alt="Music Time for Spotify in the VS Code Marketplace" src="https://vsmarketplacebadge.apphb.com/version-short/softwaredotcom.music-time.svg?style=flat-square&color=00b4ee&label=marketplace">
+  </a>
+  <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.music-time">
+    <img alt="Music Time for Spotify Installs" src="https://vsmarketplacebadge.apphb.com/installs-short/softwaredotcom.music-time.svg?style=flat-square&color=00b4ee">
+  </a>
+  <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.music-time">
+    <img alt="Music Time for Spotify Rating" src="https://vsmarketplacebadge.apphb.com/rating-short/softwaredotcom.music-time.svg?style=flat-square&color=00b4ee">
+  </a>
 </p>
 
-<i>Music Time requires a Spotify account. We currently do not support Apple Music, Google Play, or any other players, but may in a future plugin.</i>
+<p><a href="https://www.software.com"><img alt="Software.com" src="https://assets.software.com/readme/software-logo-light.png" width="100px"></a></p>
 
-<br />
+[Music Time for Spotify](https://www.software.com) is a VS Code extension that discovers the most productive music to listen to as you code. Music Time is built on the [Code Time](https://www.software.com/code-time) extension and performs machine learning against a range of music metrics plus productivity data from over 150,000 developers to determine song recommendations.
 
-<p align="center">
-  <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.music-time">
-    <img alt="Marketplace" src="https://vsmarketplacebadge.apphb.com/version-short/softwaredotcom.music-time.svg"></a>
-  <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.music-time">
-    <img alt="Installs" src="https://vsmarketplacebadge.apphb.com/installs-short/softwaredotcom.music-time.svg"></a>
-  <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.music-time">
-    <img alt="Rating" src="https://vsmarketplacebadge.apphb.com/rating-short/softwaredotcom.music-time.svg"></a>
-</p>
+**You will need the following to use Music Time:**
 
-<br />
+* [Code Time](https://marketplace.visualstudio.com/items?itemName=softwaredotcom.swdc-vscode): Our Code Time extension provides automatic programming metrics and time tracking. Music Time works with Code Time to combine your music and coding data to find your most productive music. Code Time is a required dependency of Music Time.
+* [Spotify](https://www.spotify.com): To get started, you will need a Spotify account. We currently do not support Apple Music, Google Play, or any other players, but may in a future plugin.
 
-<p align="center" style="margin: 0 0">
-  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/music-time-diagram.png" alt="Music Time diagram" />
-</p>
+![Music Time features](https://assets.software.com/readme/music-time/vscode/features-2.1.15.png)
 
 ## Features
 
@@ -37,122 +29,82 @@
 
 -   **Embedded playlists**: Browse and play your Spotify playlists and songs from your editor.
 
--   **AI playlists**: Get a personalized AI playlist generated using machine learning to help you focus.
+-   **Song recommendations**: Get personalized recommendations generated using machine learning to help you focus.
 
--   **Metrics profile**: Learn how the underlying metrics of music (including tempo, loudness, speechiness, energy, and valence) impact how you code.
-
--   **Personal top 40**: See your most productive songs, artists, and genres every week in your weekly top 40.
-
--   **Weekly music dashboard**: See your top songs, artists, and genres each week by productivity score and plays while coding.
+-   **Personal top 40**: See your most productive songs and artists every week in your weekly top 40.
 
 -   **Global top 40**: Discover new music from developers around the world in our Software Top 40 playlist.
 
+-   **Music metrics**: Learn how the underlying metrics of music (including tempo, loudness, speechiness, energy, and valence) impact how you code.
+
 -   **Slack integration**: Connect Slack to share songs and playlists in channels in your workspace.
-
-Music Time is built on the [Code Time](https://www.software.com/code-time) plugin and performs machine learning against a range of music metrics plus productivity data from over 70,000 developers to determine song recommendations. You can also check out the [cody-music](https://www.npmjs.com/package/cody-music) npm package for more information about how this extension works.
-
-<br />
 
 ## Getting started
 
-### **1. Connect your Spotify account**
+### Connect your Spotify account
 
-Click the **Connect Spotify** button in the status bar or in the playlist tree, which will prompt you to log in to your Spotify account.
+Click  **Connect Spotify** in the status bar or in the Music Time side panel. Music Time will prompt you to log in to your Spotify account. Once you have successfully connected your Spotify account, you can return to VS Code where you will now see your playlists and music recommendations. 
 
-<p align="center" style="margin: 0 10%">
-  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/music-time-connect-spotify.png" alt="Connect Spotify in the status bar" />
-</p>
+### Control your music and playlists
 
-### **2. Control your music and playlists right from your editor**
+Open the Music Time side panel and click on any song in your list of playlists. Music Time may prompt you to open a Spotify player—either the desktop app or web player. The song you selected should begin playing automatically.
 
-Click on any song in your list of playlists. Music Time will prompt you to open a Spotify player—either the desktop app or web player.
+You can play, pause, rewind, and skip songs from the status bar of your editor using the Music Time player controls. You can like a song and add it to you **Liked** songs playlist in Spotify by clicking the heart icon. View the name of the currently playing song by clicking the heartbeat icon. 
 
-⚠️ Music Time requires a premium Spotify account and an internet connection to control your music on Windows and Linux. If you are on a Mac, Music Time can also control the Spotify desktop app using AppleScript as either a premium or non-premium user.
+⚠️ Music Time requires a premium Spotify account and an internet connection to control your music on Windows and Linux. If you are using macOS, Music Time can also control the Spotify desktop app using AppleScript as either a premium or non-premium user.
 
-### **3. Generate your personal playlist**
+![Music Time player controls](https://swdc-vscode.s3-us-west-1.amazonaws.com/music-time-player-controls.png)
 
-Click the **Generate AI Playlist** button to get a personalized AI playlist generated using machine learning. Your AI Top 40 playlist is initially based on your liked songs and global developer data, but will improve as you listen to more music while you code. 
+### Explore song recommendations
 
-<p align="center" style="margin: 0 10%">
-  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/music-time-ai-playlist.png" alt="Music Time AI Top 40" />
-</p>
+Music Time recommends songs by genre and mood based on your listening history. You can see a list of recommended songs in thee **Recommendations** section of the Music Time side panel. 
 
-### **4. Try a song recommendation**
+You can adjust the mood of Music Time's recommendations by hovering over **Recommendations** and clicking the beaker icon. Try happy, energetic, or danceable music for upbeat work or classical or jazz for slower, more complex tasks. For more granular controls, click the filter icon next to **Recommendations** to filter by 100+ different genres. 
 
-We also recommend songs by genre and mood of music based on your listening history. Try happy, energetic, or danceable music for upbeat work or classical or jazz for slower, more complex tasks. You can add a song to a playlist using the "+" button.
+Find something you like? You can quickly add a song to a playlist using the "**+**" button when you hover over a song name.
 
-<p align="center" style="margin: 0 10%">
-  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/music-time-recommendations.png" alt="Music Time recommendations" />
-</p>
+![Music Time recommendations](https://swdc-vscode.s3-us-west-1.amazonaws.com/music-time-recommendations.png)
 
-### **5. Like a song**
+### Like the currently playing song
 
-Like a song from the status bar by pressing the "♡" button, which helps us improve your song recommendations and adds that song to your Liked Songs playlist on Spotify.
+Like a song from the status bar by pressing the "♡" button, which helps us improve your song recommendations and adds that song to your **Liked Songs** playlist on Spotify.
 
-<p align="center" style="margin: 0 10%">
-  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/music-time-player-controls.png" alt="Like a song in the status bar" />
-</p>
+### Discover the Software Top 40
 
-### **6. Check out the Software Top 40**
+Discover new music from developers around the world in a playlist generated by our algorithms. The Software Top 40 playlist is refreshed every week. You can explore the Top 40 playlist in the Music Time view or in the in-editor dashboard.
 
-Discover new music from developers around the world in a playlist generated by our algorithms. The Software Top 40 playlist is refreshed every week.
+## Find Productive Music
 
-<br />
+As you listen to music while you code, Music Time calculates a productivity score by combining your coding metrics with your listening history and data from over 150,000 developers. Here are the different ways you can discover your most productive music.
 
-## Find your most productive music
+### Open your Music Time dashboard
 
-As you listen to music while you code, we calculate a productivity score by combining your coding metrics with your listening history and data from over 50,000 developers.
+Open the Music Time view then expand the dropdown menu next to your email address. Click **Dashboard** to generate an in-editor report of your top songs and artists by productivity score.
 
-Here are the different ways you can discover your most productive music.
+![Music Time dashboard](https://swdc-vscode.s3-us-west-1.amazonaws.com/music-time-open-dashboard.png)
 
-### **1. View your web analytics**
+### Explore your music metrics
 
-Click on the “More data at Software.com” button to see your most productive songs, artists, and genres by productivity score. You can also visit app.software.com/login and use your Spotify email address to log in.
-
-<p align="center" style="margin: 0 10%">
-  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/music-time-see-web-analytics.png" alt="Music Time web analytics button" />
-</p>
-
-### **2. Open your Music Time dashboard**
-
-Click the “🎧” icon in the status bar then **Music Time Dashboard** to generate an in-editor report of your top songs, artists, and genres by productivity score.
-
-<p align="center" style="margin: 0 10%">
-  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/music-time-open-dashboard.png" alt="Music Time dashboard" />
-</p>
-
-### **3. Explore your music metrics**
+Open the Music Time view and click the dropdown next to your account email. Click **More data at Software.com** to see your most productive songs, artists, and genres by productivity score. 
 
 Discover how the underlying [metrics of music](https://app.software.com/music/metrics) (including tempo, loudness, speechiness, energy, and valence) impact how you code.
 
-<p align="center" style="margin: 0 10%">
-  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/music-metrics.png" alt="Music Time music metrics" />
-</p>
+![Music Time metrics](https://swdc-vscode.s3-us-west-1.amazonaws.com/music-metrics.png)
 
-### **4. Visualize your Code Time metrics**
+### Visualize your Code Time metrics
 
-Music Time is built on our [Code Time plugin](https://www.software.com/code-time). In the web app, under settings, you can enable "Code Time" to see your Code Time data—such as your keystrokes, time by file and project, and lines of code—which is used calculate to your productivity scores. [Visit your feed](https://app.software.com) to see simple visualizations of your Code Time data, such as a rolling heatmap of your top programming times by hour of the day.
+Music Time is built on our [Code Time plugin](https://www.software.com/code-time). With Code Time, you can track and visualize your time spent coding, top projects, work-life balance, and more. [Visit your dashboard](https://app.software.com) to see visualizations of your Code Time data.
 
-<p align="center" style="margin: 0 10%">
-  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/average-heatmap.png" width="800px" alt="90-day rolling average heatmap" />
-</p>
-
-<br />
-
-## Share your top songs
+## Share Music
 
 Share your top songs on Facebook, Twitter, WhatsApp, and Tumblr by clicking on the share icon next to a song in the playlist tree. You can also Connect Slack to share songs with your team.
 
-<p align="center" style="margin: 0 10%">
-  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/music-time-share-menu.png" alt="Music Time share button" />
-</p>
+![Music Time sharing](https://swdc-vscode.s3-us-west-1.amazonaws.com/music-time-share-menu.png)
 
 Connecting Slack requires team member permissions or above. You will not be able to connect Slack as a single or multi-channel guest.
 
-<br />
+## Join the Community
 
-## Contributing & Feedback
+Enjoying Music Time? Let us know how it’s going by tweeting or following us at [@software_hq](https://twitter.com/software_hq).
 
-Enjoying Music Time? Tweet at us ([@softwaretop40](https://twitter.com/softwaretop40)) and follow us on Instagram ([@softwaretop40](https://www.instagram.com/softwaretop40/)).
-
-You can open an issue on a GitHub page or contact us at [support@software.com](mailto:support@software.com) with any additional questions or feedback.
+Have any questions? Create an issue in the [Music Time project](https://github.com/swdotcom/swdc-vscode-musictime) on GitHub or send us an email at [support@software.com](mailto:support@software.com) and we’ll get back to you as soon as we can.
