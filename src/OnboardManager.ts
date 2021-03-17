@@ -12,9 +12,7 @@ export async function onboardPlugin(ctx: ExtensionContext, callback: any) {
     if (jwt) {
       return callback(ctx);
     }
-    setTimeout(() => {
-      return callback(ctx);
-    }, 6000);
+    primaryWindowOnboarding(ctx, callback);
 }
 
 async function primaryWindowOnboarding(ctx: ExtensionContext, callback: any) {
