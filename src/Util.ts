@@ -452,56 +452,6 @@ export function showWarningMessage(message: string) {
   return window.showWarningMessage(`${message}`);
 }
 
-export function getDashboardRow(label, value) {
-  let content = `${getDashboardLabel(label)} : ${getDashboardValue(value)}\n`;
-  return content;
-}
-
-export function buildQueryString(obj) {
-  let params = [];
-  if (obj) {
-    let keys = Object.keys(obj);
-    if (keys && keys.length > 0) {
-      for (let i = 0; i < keys.length; i++) {
-        let key = keys[i];
-        let val = obj[key];
-        if (val && val !== undefined) {
-          let encodedVal = encodeURIComponent(val);
-          params.push(`${key}=${encodedVal}`);
-        }
-      }
-    }
-  }
-  if (params.length > 0) {
-    return "?" + params.join("&");
-  } else {
-    return "";
-  }
-}
-
-function getDashboardLabel(label, width = DASHBOARD_LABEL_WIDTH) {
-  return getDashboardDataDisplay(width, label);
-}
-
-function getDashboardValue(value) {
-  let valueContent = getDashboardDataDisplay(DASHBOARD_VALUE_WIDTH, value);
-  let paddedContent = "";
-  for (let i = 0; i < 11; i++) {
-    paddedContent += " ";
-  }
-  paddedContent += valueContent;
-  return paddedContent;
-}
-
-function getDashboardDataDisplay(widthLen, data) {
-  let len = data.constructor === String ? widthLen - data.length : widthLen - String(data).length;
-  let content = "";
-  for (let i = 0; i < len; i++) {
-    content += " ";
-  }
-  return `${content}${data}`;
-}
-
 export function createUriFromTrackId(track_id: string) {
   if (track_id && !track_id.includes("spotify:track:")) {
     track_id = `spotify:track:${track_id}`;

@@ -22,7 +22,6 @@ import {
   accessExpired,
   removeTracksFromPlaylist,
   getSpotifyLikedSongs,
-  pause,
   transferSpotifyDevice
 } from "cody-music";
 import {
@@ -66,6 +65,7 @@ export class MusicManager {
 
   private providerItemMgr: ProviderItemManager;
   private dataMgr: MusicDataManager;
+  private selectedPlayerName: PlayerName;
 
   private constructor() {
     this.providerItemMgr = ProviderItemManager.getInstance();
@@ -684,12 +684,10 @@ export class MusicManager {
         commands.executeCommand("musictime.refreshDeviceInfo");
 
         if (callback) {
-          setTimeout(async () => {
-            callback();
-          }, 1000);
+          callback();
         }
       }
-    }, 2000);
+    }, 1500);
   }
 
   async isLikedSong() {
@@ -728,14 +726,13 @@ export class MusicManager {
       );
 
       if (selectedButton === "Desktop Player" || selectedButton === "Web Player") {
-        const playerName: PlayerName = selectedButton === "Desktop Player" ? PlayerName.SpotifyDesktop : PlayerName.SpotifyWeb;
+        this.selectedPlayerName = selectedButton === "Desktop Player" ? PlayerName.SpotifyDesktop : PlayerName.SpotifyWeb;
 
         // play it to get spotify to update the device ID
-        await play(playerName);
-        await pause(playerName);
+        await play(this.selectedPlayerName);
 
         // start the launch process and pass the callback when complete
-        return this.launchTrackPlayer(playerName, callback);
+        return this.launchTrackPlayer(this.selectedPlayerName, callback);
       }
     }
     return;
@@ -884,57 +881,53 @@ export class MusicManager {
     const isLikedSong = this.dataMgr.selectedPlaylist && this.dataMgr.selectedPlaylist.name === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME ? true : false;
     const isRecommendationTrack = this.dataMgr.selectedTrackItem.type === "recommendation" ? true : false;
 
-    const useSpotifyWeb = isPremiumUser() || !isMac() ? true : false;
-
     let result = null;
     if (isRecommendationTrack || isLikedSong) {
-      if (useSpotifyWeb) {
-        // it's a liked song or recommendation track play request
-        result = await this.playRecommendationsOrLikedSongsByPlaylist(this.dataMgr.selectedTrackItem, deviceId);
-      } else {
-        // play it using applescript
+      if (isMac() && this.selectedPlayerName === PlayerName.SpotifyDesktop) {
+        // play it using applescript prevent 502 or 499s
         const trackUri = createUriFromTrackId(this.dataMgr.selectedTrackItem.id);
         const params = [trackUri];
-        result = await playTrackInContext(PlayerName.SpotifyDesktop, params);
+        try {
+          result = await playTrackInContext(PlayerName.SpotifyDesktop, params);
+        } catch (e) {}
+      }
+      if (!result || result !== "ok") {
+        // try with the web player
+        result = await this.playRecommendationsOrLikedSongsByPlaylist(this.dataMgr.selectedTrackItem, deviceId);
       }
     } else if (playlistId) {
-      if (useSpotifyWeb) {
-        // NORMAL playlist request
-        // play a playlist
-        result = await musicCommandUtil.runSpotifyCommand(playSpotifyPlaylist, [playlistId, trackId, deviceId]);
-      } else {
+      if (isMac() && this.selectedPlayerName === PlayerName.SpotifyDesktop) {
         // play it using applescript
         const trackUri = createUriFromTrackId(trackId);
         const playlistUri = createUriFromPlaylistId(playlistId);
         const params = [trackUri, playlistUri];
-        result = await playTrackInContext(PlayerName.SpotifyDesktop, params);
+        try {
+          result = await playTrackInContext(PlayerName.SpotifyDesktop, params);
+        } catch (e) {}
+      }
+      if (!result || result !== "ok") {
+        // try with the web player
+        result = await musicCommandUtil.runSpotifyCommand(playSpotifyPlaylist, [playlistId, trackId, deviceId]);
       }
     } else {
-      if (useSpotifyWeb) {
-        // else it's not a liked or recommendation play request, just play the selected track
-        result = await musicCommandUtil.runSpotifyCommand(playSpotifyTrack, [trackId, deviceId]);
-      } else {
+      if (isMac() && this.selectedPlayerName === PlayerName.SpotifyDesktop) {
         // play it using applescript
         const trackUri = createUriFromTrackId(trackId);
         const params = [trackUri];
-        result = await playTrackInContext(PlayerName.SpotifyDesktop, params);
+        try {
+          result = await playTrackInContext(PlayerName.SpotifyDesktop, params);
+        } catch (e) {}
+      }
+      if (!result || result !== "ok") {
+        // else it's not a liked or recommendation play request, just play the selected track
+        result = await musicCommandUtil.runSpotifyCommand(playSpotifyTrack, [trackId, deviceId]);
       }
     }
 
-    if (await musicCommandUtil.isDeviceError(result)) {
-      this.showPlayerLaunchConfirmation(this.playMusicSelection);
-    } else {
-      setTimeout(async () => {
-        await MusicStateManager.getInstance().fetchTrack();
-        if (this.dataMgr.runningTrack.state !== TrackStatus.Playing) {
-          await transferSpotifyDevice(deviceId, true);
-          if (!useSpotifyWeb) {
-            play(PlayerName.SpotifyDesktop);
-          } else {
-            play(PlayerName.SpotifyWeb);
-          }
-        }
-      }, 1000);
+    await MusicStateManager.getInstance().fetchTrack();
+    if (this.dataMgr.runningTrack.state !== TrackStatus.Playing) {
+      await transferSpotifyDevice(deviceId, true);
+      await play(this.selectedPlayerName);
     }
   };
 

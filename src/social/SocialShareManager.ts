@@ -1,4 +1,4 @@
-import { buildQueryString, launchWebUrl } from "../Util";
+import { launchWebUrl } from "../Util";
 import { showQuickPick } from "../MenuManager";
 import {
     buildSpotifyLink,
@@ -10,6 +10,8 @@ import {
     hasSlackWorkspaces,
 } from "../managers/SlackManager";
 import { window } from "vscode";
+
+const queryString = require("query-string");
 const { WebClient } = require("@slack/web-api");
 
 let musicId: string = "";
@@ -83,8 +85,7 @@ export class SocialShareManager {
         };
 
         const sharerObj = sharers[sharer.toLowerCase()];
-        const queryStr = buildQueryString(sharerObj.params);
-        const shareUrl = `${sharerObj.shareUrl}${queryStr}`;
+        const shareUrl = `${sharerObj.shareUrl}${queryString.stringify(sharerObj.params)}`;
         return shareUrl;
     }
 

@@ -63,7 +63,6 @@ import { connectSpotify, isPremiumUser } from "../managers/SpotifyManager";
 const fileIt = require("file-it");
 const clipboardy = require("clipboardy");
 
-
 export class MusicControlManager {
   private currentTrackToAdd: PlaylistItem = null;
 
