@@ -8,11 +8,19 @@ let retry_counter = 0;
 const one_min_millis = 1000 * 60;
 
 export async function onboardPlugin(ctx: ExtensionContext, callback: any) {
-    const jwt = getItem("jwt");
-    if (jwt) {
-      return callback(ctx);
-    }
+  const jwt = getItem("jwt");
+  if (jwt) {
+    return callback(ctx);
+  }
+  const windowState = window.state;
+  if (windowState.focused) {
+    // perform primary window related work
     primaryWindowOnboarding(ctx, callback);
+  } else {
+    // call the secondary onboarding logic
+    secondaryWindowOnboarding(ctx, callback);
+    return callback(ctx);
+  }
 }
 
 async function primaryWindowOnboarding(ctx: ExtensionContext, callback: any) {

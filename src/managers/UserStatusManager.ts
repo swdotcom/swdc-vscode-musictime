@@ -10,19 +10,22 @@ const queryString = require("query-string");
 export async function getUserRegistrationState(isIntegration = true) {
   const auth_callback_state = getAuthCallbackState(false /*autoCreate*/);
   const jwt = getItem("jwt");
+  const name = getItem("name");
   const token = auth_callback_state ?? jwt;
 
   if (token) {
     const api = "/users/plugin/state";
     let resp = await softwareGet(api, token);
+    let foundUser = resp.data && resp.data.user ? true : false;
+
+    const integrationOrNoUser = isIntegration || !name ? true : false;
+    if (!foundUser && integrationOrNoUser && auth_callback_state) {
+      // use the jwt
+      resp = await softwareGet(api, jwt);
+    }
     if (isResponseOk(resp) && resp.data) {
       // NOT_FOUND, ANONYMOUS, OK, UNKNOWN
       let user = resp.data.user;
-      if (!user && auth_callback_state && isIntegration) {
-        // try with the jwt
-        resp = await softwareGet(api, jwt);
-        user = isResponseOk(resp) && resp.data ? resp.data.user : null;
-      }
       if (user) {
         // clear the auth callback state
         setAuthCallbackState(null);
