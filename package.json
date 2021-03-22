@@ -423,11 +423,11 @@
     "axios": "^0.21.1",
     "clipboardy": "^2.1.0",
     "cody-music": "2.10.3",
-    "file-it": "^1.1.0",
+    "file-it": "^1.1.1",
     "moment-timezone": "^0.5.25",
     "open": "^6.4.0",
     "query-string": "^6.13.7",
-    "swdc-tracker": "^1.3.3",
+    "swdc-tracker": "^1.4.5",
     "uuid": "^8.3.1",
     "vsls": "0.3.1291"
   }

@@ -22,10 +22,6 @@ export function getSoftwareSessionFile() {
   return getFile("session.json");
 }
 
-export function getAuthFile() {
-  return getFile("auth.json");
-}
-
 export function getDeviceFile() {
   return getFile("device.json");
 }
@@ -181,12 +177,6 @@ export function setItem(key, value) {
 }
 
 export function getItem(key) {
-  if (key === "jwt" || key === "name") {
-    const val = fileIt.getJsonValue(getAuthFile(), key);
-    if (val) {
-      return val;
-    }
-  }
   return fileIt.getJsonValue(getSoftwareSessionFile(), key);
 }
 
