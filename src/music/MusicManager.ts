@@ -924,9 +924,10 @@ export class MusicManager {
       }
     }
 
+    await transferSpotifyDevice(deviceId, true);
+
     await MusicStateManager.getInstance().fetchTrack();
     if (this.dataMgr.runningTrack.state !== TrackStatus.Playing) {
-      await transferSpotifyDevice(deviceId, true);
       await play(this.selectedPlayerName);
     }
   };

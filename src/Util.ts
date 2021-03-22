@@ -13,6 +13,7 @@ import * as path from "path";
 import { getItem } from "./managers/FileManager";
 import { isGitProject } from './repo/GitUtil';
 import { execSync } from 'child_process';
+import { execCmd } from './managers/ExecManager';
 
 const fileIt = require("file-it");
 const moment = require("moment-timezone");
@@ -190,7 +191,7 @@ export function isMac() {
 }
 
 export async function getHostname() {
-  let hostname = getCommandResultString("hostname");
+  let hostname = execCmd("hostname");
   return hostname;
 }
 
@@ -217,7 +218,7 @@ export function getOs() {
 export async function getOsUsername() {
   let username = os.userInfo().username;
   if (!username || username.trim() === "") {
-    username = getCommandResultString("whoami");
+    username = execCmd("whoami");
   }
   return username;
 }
@@ -352,7 +353,7 @@ export async function getGitEmail() {
     let projectDir = projectDirs[i];
 
     if (projectDir && isGitProject(projectDir)) {
-      let email = getCommandResultString("git config user.email", projectDir);
+      let email = execCmd("git config user.email", projectDir);
       if (email) {
         /**
          * // normalize the email, possible github email types
@@ -366,21 +367,6 @@ export async function getGitEmail() {
   }
   return null;
 }
-
-export function getCommandResultString(cmd, projectDir = null): string {
-  const opts = projectDir !== undefined && projectDir !== null ? { cwd: projectDir } : {};
-
-  try {
-    const data = execSync(cmd, opts);
-    const lines = data ? data.toString().trim().split(/\r?\n/) : null;
-    if (lines && lines.length) {
-      return lines[0];
-    }
-  } catch (e) {
-    console.log("extension error: ", e);
-  }
-  return null;
-};
 
 export function launchWebUrl(url) {
   open(url);

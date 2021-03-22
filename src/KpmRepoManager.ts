@@ -1,6 +1,6 @@
 import { isGitProject } from './repo/GitUtil';
+import { execCmd } from "./managers/ExecManager"
 import {
-  getCommandResultString,
   normalizeGithubEmail,
 } from "./Util";
 
@@ -11,11 +11,13 @@ export async function getResourceInfo(projectDir) {
   if (!projectDir || !isGitProject(projectDir)) {
     return null;
   }
-  let branch = getCommandResultString("git symbolic-ref --short HEAD", projectDir);
-  let identifier = getCommandResultString("git config --get remote.origin.url", projectDir);
-  let email = getCommandResultString("git config user.email", projectDir);
-  email = normalizeGithubEmail(email);
-  let tag = getCommandResultString("git describe --all", projectDir);
+  let branch = execCmd("git symbolic-ref --short HEAD", projectDir);
+  let identifier = execCmd("git config --get remote.origin.url", projectDir);
+  let email = execCmd("git config user.email", projectDir);
+  if (email) {
+    email = normalizeGithubEmail(email);
+  }
+  let tag = execCmd("git describe --all", projectDir);
 
   // both should be valid to return the resource info
   if (branch && identifier) {
