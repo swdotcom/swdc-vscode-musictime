@@ -141,39 +141,22 @@ export async function launchLogin(loginType: string = "software", switching_acco
   url = `${url}?${qryStr}`;
 
   launchWebUrl(url);
-
-  // use the defaults
-  setTimeout(() => {
-    refetchUserStatusLazily(40);
-  }, 10000);
 }
 
-async function refetchUserStatusLazily(tryCountUntilFound) {
-  let registrationState = await getUserRegistrationState(false);
-  if (!registrationState.connected) {
-    // try again if the count is not zero
-    if (tryCountUntilFound > 0) {
-      tryCountUntilFound -= 1;
-      refetchUserStatusLazily(tryCountUntilFound);
-    } else {
-      // clear the auth callback state
-      setAuthCallbackState(null);
-    }
-  } else {
-    // clear the auth callback state
-    setAuthCallbackState(null);
+export function authenticationCompleteHandler(user) {
+  // clear the auth callback state
+  setAuthCallbackState(null);
 
-    // set the email and jwt
-    updateUserInfoIfRegistered(registrationState.user);
+  // set the email and jwt
+  updateUserInfoIfRegistered(user);
 
-    // update the login status
-    window.showInformationMessage(`Successfully registered.`);
+  // update the login status
+  window.showInformationMessage(`Successfully registered.`);
 
-    // initiate the playlist build
-    setTimeout(() => {
-      commands.executeCommand("musictime.hardRefreshPlaylist");
-    }, 1000);
-  }
+  // initiate the playlist build
+  setTimeout(() => {
+    commands.executeCommand("musictime.hardRefreshPlaylist");
+  }, 1000);
 }
 
 export function updateUserInfoIfRegistered(user) {

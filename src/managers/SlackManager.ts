@@ -31,36 +31,6 @@ export async function connectSlackWorkspace() {
 
   // authorize the user for slack
   launchWebUrl(url);
-  // lazily check if the user has completed the slack authentication
-  setTimeout(() => {
-    refetchSlackConnectStatusLazily(40);
-  }, 10000);
-}
-
-export async function refetchSlackConnectStatusLazily(tryCountUntilFoundUser = 40) {
-  const slackAuth = await getSlackAuth();
-  if (!slackAuth) {
-    // try again if the count is not zero
-    if (tryCountUntilFoundUser > 0) {
-      tryCountUntilFoundUser -= 1;
-      setTimeout(() => {
-        refetchSlackConnectStatusLazily(tryCountUntilFoundUser);
-      }, 10000);
-    } else {
-      // clear the auth callback state
-      setAuthCallbackState(null);
-    }
-  } else {
-    // clear the auth callback state
-    setAuthCallbackState(null);
-    window.showInformationMessage("Successfully connected to Slack");
-
-    // refresh the tree view
-    setTimeout(() => {
-      // refresh the playlist to show the device button update
-      commands.executeCommand("musictime.refreshPlaylist");
-    }, 1000);
-  }
 }
 
 export async function getSlackAuth() {
