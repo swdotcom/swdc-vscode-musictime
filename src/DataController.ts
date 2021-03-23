@@ -86,7 +86,7 @@ export async function populateSpotifyDevices(tryAgain = false) {
         setTimeout(() => {
             // use true to specify its a device launch so this doens't try continuously
             populateSpotifyDevices(false);
-        }, 8000);
+        }, 5000);
         return;
     }
 

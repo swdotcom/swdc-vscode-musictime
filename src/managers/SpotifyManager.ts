@@ -8,7 +8,7 @@ import { SpotifyUser } from "cody-music/dist/lib/profile";
 import { MusicDataManager } from "../music/MusicDataManager";
 import { MusicCommandManager } from "../music/MusicCommandManager";
 import { getAuthCallbackState, getIntegrations, getItem, getPluginUuid, setAuthCallbackState, setItem } from "./FileManager";
-import { getUser, getUserRegistrationState } from "./UserStatusManager";
+import { getUser } from "./UserStatusManager";
 import { clearSpotifyIntegrations, updateSpotifyIntegrations } from "./IntegrationManager";
 
 const queryString = require("query-string");

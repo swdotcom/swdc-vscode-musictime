@@ -7,36 +7,6 @@ import { getAuthCallbackState, getItem, getPluginUuid, setAuthCallbackState, set
 
 const queryString = require("query-string");
 
-export async function getUserRegistrationState(isIntegration = true) {
-  const auth_callback_state = getAuthCallbackState(false /*autoCreate*/);
-  const jwt = getItem("jwt");
-  const name = getItem("name");
-  const token = auth_callback_state ?? jwt;
-
-  if (token) {
-    const api = "/users/plugin/state";
-    let resp = await softwareGet(api, token);
-    let foundUser = resp.data && resp.data.user ? true : false;
-
-    const integrationOrNoUser = isIntegration || !name ? true : false;
-    if (!foundUser && integrationOrNoUser && auth_callback_state) {
-      // use the jwt
-      resp = await softwareGet(api, jwt);
-    }
-    if (isResponseOk(resp) && resp.data) {
-      // NOT_FOUND, ANONYMOUS, OK, UNKNOWN
-      let user = resp.data.user;
-      if (user) {
-        // clear the auth callback state
-        setAuthCallbackState(null);
-
-        return { connected: true, state: "OK", user };
-      }
-    }
-  }
-  return { connected: false, state: "UNKNOWN", user: null };
-}
-
 export async function getUser(jwt) {
   if (jwt) {
     let api = `/users/me`;
@@ -107,12 +77,12 @@ export async function launchLogin(loginType: string = "software", switching_acco
     plugin: getPluginType(),
     pluginVersion: getVersion(),
     plugin_id: getPluginId(),
+    pluigin_uuid: getPluginUuid(),
     auth_callback_state,
     login: true,
   };
 
   if (!name) {
-    obj["pluigin_uuid"] = getPluginUuid();
     obj["plugin_token"] = jwt;
   }
 
@@ -148,7 +118,12 @@ export function authenticationCompleteHandler(user) {
   setAuthCallbackState(null);
 
   // set the email and jwt
-  updateUserInfoIfRegistered(user);
+  if (user?.registered === 1) {
+    if (user.plugin_jwt) {
+      setItem("jwt", user.plugin_jwt);
+    }
+    setItem("name", user.email);
+  }
 
   // update the login status
   window.showInformationMessage(`Successfully registered.`);
@@ -157,14 +132,4 @@ export function authenticationCompleteHandler(user) {
   setTimeout(() => {
     commands.executeCommand("musictime.hardRefreshPlaylist");
   }, 1000);
-}
-
-export function updateUserInfoIfRegistered(user) {
-  // set the email and jwt
-  if (user?.registered === 1) {
-    if (user.plugin_jwt) {
-      setItem("jwt", user.plugin_jwt);
-    }
-    setItem("name", user.email);
-  }
 }

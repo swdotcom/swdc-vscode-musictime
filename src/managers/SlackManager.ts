@@ -5,7 +5,7 @@ import { commands, window } from "vscode";
 import { softwareDelete } from "../HttpClient";
 import { updateSlackIntegrations } from "./IntegrationManager";
 import { getAuthCallbackState, getIntegrations, getItem, getPluginUuid, setAuthCallbackState, syncIntegrations } from "./FileManager";
-import { getUserRegistrationState } from "./UserStatusManager";
+import { getUser } from "./UserStatusManager";
 
 const queryString = require("query-string");
 const { WebClient } = require("@slack/web-api");
@@ -34,7 +34,7 @@ export async function connectSlackWorkspace() {
 }
 
 export async function getSlackAuth() {
-  const { user } = await getUserRegistrationState();
+  const { user } = await getUser(getItem("jwt"));
   return await updateSlackIntegrations(user);
 }
 
