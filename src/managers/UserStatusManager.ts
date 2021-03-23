@@ -3,6 +3,7 @@ import { api_endpoint, launch_url } from "../Constants";
 import { isResponseOk, softwareGet } from "../HttpClient";
 import { showQuickPick } from "../MenuManager";
 import { launchWebUrl, getPluginType, getVersion, getPluginId } from "../Util";
+import { initializeWebsockets } from '../websockets';
 import { getAuthCallbackState, getItem, getPluginUuid, setAuthCallbackState, setItem } from "./FileManager";
 
 const queryString = require("query-string");
@@ -123,6 +124,12 @@ export function authenticationCompleteHandler(user) {
       setItem("jwt", user.plugin_jwt);
     }
     setItem("name", user.email);
+  }
+
+  try {
+    initializeWebsockets();
+  } catch (e) {
+    console.error("Failed to initialize codetime websockets", e);
   }
 
   // update the login status
