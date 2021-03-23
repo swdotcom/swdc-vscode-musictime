@@ -20,34 +20,39 @@ export async function updateSpotifyIntegrations(user) {
 async function updateIntegrations(user, name) {
   let foundNewIntegration: boolean = false;
   let currentIntegrations = getIntegrations();
+  const integrations = [];
   for (const integration of user.integrations) {
     const isActive = !!(integration.name.toLowerCase() === name && integration.status.toLowerCase() === "active" && integration.access_token);
     const isFound = currentIntegrations?.length ? currentIntegrations.find((n) => n.authId === integration.authId) : null;
     // {access_token, name, plugin_uuid, scopes, pluginId, authId, refresh_token, scopes}
-    if (isActive && !isFound) {
+    if (isActive) {
       // get the team domain and name if this is a slack integration
-      if (integration.name.toLowerCase() === "slack") {
+      if (!isFound) {
         // get the workspace domain using the authId
         const web = new WebClient(integration.access_token);
-        const usersIdentify = await web.users.identity((e) => {
+        try {
+          const usersIdentify = await web.users.identity().catch((e) => {
+            console.log("error fetching slack team info: ", e.message);
+            return null;
+          });
+          if (usersIdentify) {
+            // usersIdentity returns
+            // {team: {id, name, domain, image_102, image_132, ....}...}
+            // set the domain
+            integration["team_domain"] = usersIdentify?.team?.domain;
+            integration["team_name"] = usersIdentify?.team?.name;
+            integrations.push(integration);
+            foundNewIntegration = true;
+          }
+        } catch (e) {
           console.log("error fetching slack team info: ", e.message);
-          return null;
-        });
-        // usersIdentity returns
-        // {team: {id, name, domain, image_102, image_132, ....}...}
-        // set the domain
-        integration["team_domain"] = usersIdentify?.team?.domain;
-        integration["team_name"] = usersIdentify?.team?.name;
+        }
+      } else {
+        integrations.push(integration);
       }
-      // add it
-      currentIntegrations.push(integration);
-
-      foundNewIntegration = true;
     }
   }
-  if (foundNewIntegration) {
-    syncIntegrations(currentIntegrations);
-  }
+  syncIntegrations(integrations);
 
   return foundNewIntegration;
 }

@@ -7,6 +7,8 @@ import { getItem, getPluginUuid } from './managers/FileManager';
 const WebSocket = require("ws");
 
 let retryTimeout = undefined;
+let maxRetries = 20;
+let retryCount = 0;
 
 export function initializeWebsockets() {
   const options = {
@@ -56,6 +58,11 @@ export function initializeWebsockets() {
 }
 
 function retryConnection() {
+  if (retryCount > maxRetries) {
+    return;
+  }
+  retryCount++;
+
   console.debug("[CodeTime] retrying websockets connecting in 10 seconds");
 
   retryTimeout = setTimeout(() => {

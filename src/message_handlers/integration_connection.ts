@@ -28,6 +28,9 @@ export async function handleIntegrationConnectionSocketEvent(body: any) {
 		commands.executeCommand("musictime.refreshPlaylist");
 	  }, 1000);
 	}
+
+	await updateSlackIntegrations(user);
+
   } else if (integration_type_id === 12) {
 	  // clear the auth callback state
 	  setAuthCallbackState(null);
@@ -42,7 +45,6 @@ export async function handleIntegrationConnectionSocketEvent(body: any) {
 
 	  // update the spotify integrations before populating the spotify user
 	  await updateSpotifyIntegrations(user);
-	  await updateSlackIntegrations(user);
 
 	  // initialize spotify and playlists
 	  await MusicManager.getInstance().initializeSpotify(true /*hardRefresh*/);
