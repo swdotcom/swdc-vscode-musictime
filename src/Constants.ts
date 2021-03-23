@@ -25,6 +25,8 @@ export const api_endpoint = "https://api.software.com";
 // DASHBOARD URL
 export const launch_url = "https://app.software.com";
 
+export const websockets_url = "wss://api.software.com/websockets";
+
 export const DEFAULT_CURRENTLY_PLAYING_TRACK_CHECK_SECONDS = 45;
 export const DEFAULT_SESSION_THRESHOLD_SECONDS = 60 * 15;
 

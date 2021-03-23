@@ -8,9 +8,8 @@ import { SpotifyUser } from "cody-music/dist/lib/profile";
 import { MusicDataManager } from "../music/MusicDataManager";
 import { MusicCommandManager } from "../music/MusicCommandManager";
 import { getAuthCallbackState, getIntegrations, getItem, getPluginUuid, setAuthCallbackState, setItem } from "./FileManager";
-import { getUser, getUserRegistrationState } from "./UserStatusManager";
-import { clearSpotifyIntegrations, updateSlackIntegrations, updateSpotifyIntegrations } from "./IntegrationManager";
-import { MusicManager } from "../music/MusicManager";
+import { getUser } from "./UserStatusManager";
+import { clearSpotifyIntegrations, updateSpotifyIntegrations } from "./IntegrationManager";
 
 const queryString = require("query-string");
 
@@ -71,47 +70,6 @@ export async function connectSpotify() {
 
   const endpoint = `${api_endpoint}/auth/spotify?${queryStr}`;
   launchWebUrl(endpoint);
-
-  setTimeout(() => {
-    refetchSpotifyConnectStatusLazily(40);
-  }, 10000);
-}
-
-async function refetchSpotifyConnectStatusLazily(tryCountUntilFound) {
-  let registrationState = await getUserRegistrationState();
-  if (!registrationState.connected) {
-    // try again if the count is not zero
-    if (tryCountUntilFound > 0) {
-      tryCountUntilFound -= 1;
-      refetchSpotifyConnectStatusLazily(tryCountUntilFound);
-    } else {
-      // clear the auth callback state
-      setAuthCallbackState(null);
-    }
-  } else {
-    // clear the auth callback state
-    setAuthCallbackState(null);
-
-    setItem("requiresSpotifyReAuth", false);
-
-    // update the login status
-    window.showInformationMessage(`Successfully connected to Spotify. Loading playlists...`);
-
-    // clear existing spotify integrations
-    clearSpotifyIntegrations();
-
-    // update the spotify integrations before populating the spotify user
-    await updateSpotifyIntegrations(registrationState.user);
-    await updateSlackIntegrations(registrationState.user);
-
-    // initialize spotify and playlists
-    await MusicManager.getInstance().initializeSpotify(true /*hardRefresh*/);
-
-    // initiate the playlist build
-    setTimeout(() => {
-      commands.executeCommand("musictime.hardRefreshPlaylist");
-    }, 2000);
-  }
 }
 
 export async function populateSpotifyUser(hardRefresh = false) {

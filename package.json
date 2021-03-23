@@ -419,7 +419,7 @@
     "webpack-cli": "^3.3.10"
   },
   "dependencies": {
-    "@slack/web-api": "^5.14.0",
+    "@slack/web-api": "^6.1.0",
     "axios": "^0.21.1",
     "clipboardy": "^2.1.0",
     "cody-music": "2.10.3",
@@ -429,6 +429,7 @@
     "query-string": "^6.13.7",
     "swdc-tracker": "^1.4.5",
     "uuid": "^8.3.1",
-    "vsls": "0.3.1291"
+    "vsls": "0.3.1291",
+    "ws": "^7.4.4"
   }
 }

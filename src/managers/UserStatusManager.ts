@@ -3,39 +3,10 @@ import { api_endpoint, launch_url } from "../Constants";
 import { isResponseOk, softwareGet } from "../HttpClient";
 import { showQuickPick } from "../MenuManager";
 import { launchWebUrl, getPluginType, getVersion, getPluginId } from "../Util";
+import { initializeWebsockets } from '../websockets';
 import { getAuthCallbackState, getItem, getPluginUuid, setAuthCallbackState, setItem } from "./FileManager";
 
 const queryString = require("query-string");
-
-export async function getUserRegistrationState(isIntegration = true) {
-  const auth_callback_state = getAuthCallbackState(false /*autoCreate*/);
-  const jwt = getItem("jwt");
-  const name = getItem("name");
-  const token = auth_callback_state ?? jwt;
-
-  if (token) {
-    const api = "/users/plugin/state";
-    let resp = await softwareGet(api, token);
-    let foundUser = resp.data && resp.data.user ? true : false;
-
-    const integrationOrNoUser = isIntegration || !name ? true : false;
-    if (!foundUser && integrationOrNoUser && auth_callback_state) {
-      // use the jwt
-      resp = await softwareGet(api, jwt);
-    }
-    if (isResponseOk(resp) && resp.data) {
-      // NOT_FOUND, ANONYMOUS, OK, UNKNOWN
-      let user = resp.data.user;
-      if (user) {
-        // clear the auth callback state
-        setAuthCallbackState(null);
-
-        return { connected: true, state: "OK", user };
-      }
-    }
-  }
-  return { connected: false, state: "UNKNOWN", user: null };
-}
 
 export async function getUser(jwt) {
   if (jwt) {
@@ -107,12 +78,12 @@ export async function launchLogin(loginType: string = "software", switching_acco
     plugin: getPluginType(),
     pluginVersion: getVersion(),
     plugin_id: getPluginId(),
+    pluigin_uuid: getPluginUuid(),
     auth_callback_state,
     login: true,
   };
 
   if (!name) {
-    obj["pluigin_uuid"] = getPluginUuid();
     obj["plugin_token"] = jwt;
   }
 
@@ -141,42 +112,12 @@ export async function launchLogin(loginType: string = "software", switching_acco
   url = `${url}?${qryStr}`;
 
   launchWebUrl(url);
-
-  // use the defaults
-  setTimeout(() => {
-    refetchUserStatusLazily(40);
-  }, 10000);
 }
 
-async function refetchUserStatusLazily(tryCountUntilFound) {
-  let registrationState = await getUserRegistrationState(false);
-  if (!registrationState.connected) {
-    // try again if the count is not zero
-    if (tryCountUntilFound > 0) {
-      tryCountUntilFound -= 1;
-      refetchUserStatusLazily(tryCountUntilFound);
-    } else {
-      // clear the auth callback state
-      setAuthCallbackState(null);
-    }
-  } else {
-    // clear the auth callback state
-    setAuthCallbackState(null);
+export function authenticationCompleteHandler(user) {
+  // clear the auth callback state
+  setAuthCallbackState(null);
 
-    // set the email and jwt
-    updateUserInfoIfRegistered(registrationState.user);
-
-    // update the login status
-    window.showInformationMessage(`Successfully registered.`);
-
-    // initiate the playlist build
-    setTimeout(() => {
-      commands.executeCommand("musictime.hardRefreshPlaylist");
-    }, 1000);
-  }
-}
-
-export function updateUserInfoIfRegistered(user) {
   // set the email and jwt
   if (user?.registered === 1) {
     if (user.plugin_jwt) {
@@ -184,4 +125,18 @@ export function updateUserInfoIfRegistered(user) {
     }
     setItem("name", user.email);
   }
+
+  try {
+    initializeWebsockets();
+  } catch (e) {
+    console.error("Failed to initialize codetime websockets", e);
+  }
+
+  // update the login status
+  window.showInformationMessage(`Successfully registered.`);
+
+  // initiate the playlist build
+  setTimeout(() => {
+    commands.executeCommand("musictime.hardRefreshPlaylist");
+  }, 1000);
 }
