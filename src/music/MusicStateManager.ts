@@ -56,6 +56,10 @@ export class MusicStateManager {
     return this.existingTrack && this.existingTrack.id && this.existingTrack.state === TrackStatus.Playing ? true : false;
   }
 
+  public fetchPlayingTrack(): Promise<Track> {
+    return getTrack(PlayerName.SpotifyWeb);
+  }
+
   /**
    * Core logic in gathering tracks. This is called every 20 seconds.
    */

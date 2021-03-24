@@ -33,7 +33,7 @@ import {
 } from "../Constants";
 import { commands, window } from "vscode";
 import { populateSpotifyPlaylists, populateSpotifyDevices } from "../DataController";
-import { isMac, getCodyErrorMessage, createUriFromTrackId, createUriFromPlaylistId } from "../Util";
+import { isMac, getCodyErrorMessage, createUriFromTrackId, createUriFromPlaylistId, isWindows } from "../Util";
 import { isResponseOk, softwareGet, softwarePost } from "../HttpClient";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { MusicControlManager } from "./MusicControlManager";
@@ -664,7 +664,7 @@ export class MusicManager {
     }
 
     setTimeout(() => {
-      this.checkDeviceLaunch(playerName, 7, callback);
+      this.checkDeviceLaunch(playerName, 5, callback);
     }, 1500);
   }
 
@@ -672,7 +672,11 @@ export class MusicManager {
     setTimeout(async () => {
       await populateSpotifyDevices(true /*retry*/);
       const devices = this.dataMgr.currentDevices;
-      if ((!devices || devices.length == 0) && tries > 0) {
+      if ((!devices || devices.length == 0) && tries >= 0) {
+        if (!isWindows() && tries === 1) {
+          // play it to get spotify to update the device ID
+          await play(this.selectedPlayerName);
+        }
         tries--;
         this.checkDeviceLaunch(playerName, tries, callback);
       } else {
@@ -727,9 +731,6 @@ export class MusicManager {
 
       if (selectedButton === "Desktop Player" || selectedButton === "Web Player") {
         this.selectedPlayerName = selectedButton === "Desktop Player" ? PlayerName.SpotifyDesktop : PlayerName.SpotifyWeb;
-
-        // play it to get spotify to update the device ID
-        await play(this.selectedPlayerName);
 
         // start the launch process and pass the callback when complete
         return this.launchTrackPlayer(this.selectedPlayerName, callback);
@@ -924,11 +925,24 @@ export class MusicManager {
       }
     }
 
-    await transferSpotifyDevice(deviceId, true);
+    setTimeout(() => {
+      this.checkPlayingState(deviceId);
+    }, 1000);
+  };
 
-    await MusicStateManager.getInstance().fetchTrack();
-    if (this.dataMgr.runningTrack.state !== TrackStatus.Playing) {
-      await play(this.selectedPlayerName);
+  checkPlayingState = async (deviceId: string, tries = 3) => {
+    tries--;
+    const track:Track = await MusicStateManager.getInstance().fetchPlayingTrack();
+    if (!track || track.state !== TrackStatus.Playing) {
+      if (tries >= 0) {
+        setTimeout(() => {
+          this.checkPlayingState(deviceId, tries);
+        }, 2000);
+      } else {
+        // try to play it
+        await transferSpotifyDevice(deviceId, true);
+        play(this.selectedPlayerName);
+      }
     }
   };
 
