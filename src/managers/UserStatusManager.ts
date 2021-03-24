@@ -78,7 +78,7 @@ export async function launchLogin(loginType: string = "software", switching_acco
     plugin: getPluginType(),
     pluginVersion: getVersion(),
     plugin_id: getPluginId(),
-    pluigin_uuid: getPluginUuid(),
+    plugin_uuid: getPluginUuid(),
     auth_callback_state,
     login: true,
   };

@@ -6,6 +6,7 @@ import { clearSpotifyIntegrations, updateSlackIntegrations, updateSpotifyIntegra
 import { getSlackAuth } from "../managers/SlackManager";
 import { getUser } from '../managers/UserStatusManager';
 import { MusicManager } from '../music/MusicManager';
+import { initializeWebsockets } from '../websockets';
 
 export async function handleIntegrationConnectionSocketEvent(body: any) {
   // integration_type_id = 14 (slack), 12 (spotify)
@@ -45,6 +46,12 @@ export async function handleIntegrationConnectionSocketEvent(body: any) {
 
 	  // update the spotify integrations before populating the spotify user
 	  await updateSpotifyIntegrations(user);
+
+	  try {
+		initializeWebsockets();
+	  } catch (e) {
+		console.error("Failed to initialize websockets", e);
+	  }
 
 	  // initialize spotify and playlists
 	  await MusicManager.getInstance().initializeSpotify(true /*hardRefresh*/);
