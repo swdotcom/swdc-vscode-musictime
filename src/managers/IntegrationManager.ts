@@ -42,22 +42,18 @@ async function updateIntegrations(user, name) {
               // set the domain
               integration["team_domain"] = usersIdentify?.team?.domain;
               integration["team_name"] = usersIdentify?.team?.name;
-              // add the new integration
-              integrations.push(integration);
+              // its a new integration
               foundNewIntegration = true;
             }
           } catch (e) {
             console.log("error fetching slack team info: ", e.message);
           }
         } else {
-          // add the new integration
-          integrations.push(integration);
+          // its a new integration
           foundNewIntegration = true;
         }
-      } else {
-        // add the existing
-        integrations.push(integration);
       }
+      integrations.push(integration);
     }
   }
   syncIntegrations(integrations);

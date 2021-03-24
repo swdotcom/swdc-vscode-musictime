@@ -12,7 +12,6 @@ import { PlaylistItem, TrackStatus, CodyResponse, CodyResponseType } from "cody-
 import * as path from "path";
 import { getItem } from "./managers/FileManager";
 import { isGitProject } from './repo/GitUtil';
-import { execSync } from 'child_process';
 import { execCmd } from './managers/ExecManager';
 
 const fileIt = require("file-it");
