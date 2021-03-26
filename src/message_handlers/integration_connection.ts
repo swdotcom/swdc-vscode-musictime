@@ -3,6 +3,7 @@
 import { commands, window } from "vscode";
 import { getItem, setAuthCallbackState } from '../managers/FileManager';
 import { updateSlackIntegrations, updateSpotifyIntegration } from '../managers/IntegrationManager';
+import { updateAddedNewIntegration } from '../managers/SpotifyManager';
 import { getUser, processNewSpotifyIntegration } from '../managers/UserStatusManager';
 
 export async function handleIntegrationConnectionSocketEvent(body: any) {
@@ -34,7 +35,10 @@ export async function handleIntegrationConnectionSocketEvent(body: any) {
 	  setAuthCallbackState(null);
 
 	  // update the spotify integrations before populating the spotify user
-	  await updateSpotifyIntegration(user);
+	  const updatedNewIntegration = await updateSpotifyIntegration(user);
+
+	  // clear the polling timer
+	  updateAddedNewIntegration(updatedNewIntegration);
 
 	  processNewSpotifyIntegration();
   }

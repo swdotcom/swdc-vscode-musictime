@@ -10,7 +10,15 @@ export async function updateSpotifyIntegration(user) {
       (n) => n.name.toLowerCase() === "spotify" && n.status.toLowerCase() === "active" && n.access_token
     );
     if (spotifyIntegrations.length) {
-      const spotifyIntegration = spotifyIntegrations[spotifyIntegrations.length - 1];
+      // sort by updatedAt desc
+      const sortedActivities = spotifyIntegrations.sort((a, b) => {
+        const aDate = new Date(a.updatedAt).getTime();
+        const bDate = new Date(b.updatedAt).getTime();
+        if (aDate > bDate) return 1;
+        if (aDate < bDate) return -1;
+        return 0;
+      });
+      const spotifyIntegration = sortedActivities[0];
       syncSpotifyIntegration(spotifyIntegration);
       return !!(!existingSpotifyIntegration || existingSpotifyIntegration.authId !== spotifyIntegration.authId);
     }

@@ -10,12 +10,18 @@ import { MusicCommandManager } from "../music/MusicCommandManager";
 import { getAuthCallbackState, getIntegrations, getItem, getPluginUuid, setItem } from "./FileManager";
 import { getUser } from "./UserStatusManager";
 import { clearSpotifyIntegrations, updateSpotifyIntegration } from "./IntegrationManager";
+import { processNewSpotifyIntegration } from "./UserStatusManager";
 
 const queryString = require("query-string");
 
 let spotifyUser: SpotifyUser = null;
 let spotifyClientId: string = "";
 let spotifyClientSecret: string = "";
+let addedNewIntegration: boolean = false;
+
+export function updateAddedNewIntegration(val: boolean) {
+  addedNewIntegration = val;
+}
 
 export function getConnectedSpotifyUser() {
   return spotifyUser;
@@ -70,6 +76,24 @@ export async function connectSpotify() {
 
   const endpoint = `${api_endpoint}/auth/spotify?${queryStr}`;
   launchWebUrl(endpoint);
+  addedNewIntegration = false;
+  setTimeout(() =>{
+    lazilyPollForSpotifyConnection();
+  }, 15000);
+}
+
+export async function lazilyPollForSpotifyConnection(tries:number = 20) {
+  addedNewIntegration = (!addedNewIntegration) ? await updateSpotifyIntegration(await getUser(getItem("jwt"))) : addedNewIntegration;
+  if (!addedNewIntegration) {
+    // try again
+    tries--;
+    setTimeout(() =>{
+      lazilyPollForSpotifyConnection(tries);
+    }, 15000);
+  } else {
+    // reload the playlists
+    processNewSpotifyIntegration();
+  }
 }
 
 export async function populateSpotifyUser(hardRefresh = false) {
