@@ -3,9 +3,7 @@
 import { commands, window } from "vscode";
 import { getItem, setAuthCallbackState } from '../managers/FileManager';
 import { updateSlackIntegrations, updateSpotifyIntegration } from '../managers/IntegrationManager';
-import { getSlackAuth } from "../managers/SlackManager";
 import { getUser, processNewSpotifyIntegration } from '../managers/UserStatusManager';
-import { initializeWebsockets } from '../websockets';
 
 export async function handleIntegrationConnectionSocketEvent(body: any) {
   // integration_type_id = 14 (slack), 12 (spotify)
@@ -15,7 +13,7 @@ export async function handleIntegrationConnectionSocketEvent(body: any) {
   const user = await getUser(getItem("jwt"));
 
   if (integration_type_id === 14) {
-    await getSlackAuth();
+    await updateSlackIntegrations(user);
 
     if (action === "add") {
 	  // clear the auth callback state

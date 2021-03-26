@@ -3,9 +3,7 @@ import { getPluginId, getPluginType, getVersion, launchWebUrl } from "../Util";
 import { showQuickPick } from "../MenuManager";
 import { commands, window } from "vscode";
 import { softwareDelete } from "../HttpClient";
-import { updateSlackIntegrations } from "./IntegrationManager";
 import { getAuthCallbackState, getIntegrations, getItem, getPluginUuid, syncSlackIntegrations } from "./FileManager";
-import { getUser } from "./UserStatusManager";
 
 const queryString = require("query-string");
 const { WebClient } = require("@slack/web-api");
@@ -31,11 +29,6 @@ export async function connectSlackWorkspace() {
 
   // authorize the user for slack
   launchWebUrl(url);
-}
-
-export async function getSlackAuth() {
-  const { user } = await getUser(getItem("jwt"));
-  return await updateSlackIntegrations(user);
 }
 
 export async function disconnectSlack() {
