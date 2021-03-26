@@ -16,8 +16,6 @@ import { migrateAccessInfo } from "./managers/SpotifyManager";
 import { clearWebsocketConnectionRetryTimeout, initializeWebsockets } from './websockets';
 
 export function deactivate(ctx: ExtensionContext) {
-  // Process this window's keystroke data since the window has become unfocused/deactivated
-  commands.executeCommand("musictime.processKeystrokeData");
 
   clearWebsocketConnectionRetryTimeout();
 

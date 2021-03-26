@@ -2,9 +2,11 @@ import { commands, window } from "vscode";
 import { api_endpoint, launch_url } from "../Constants";
 import { isResponseOk, softwareGet } from "../HttpClient";
 import { showQuickPick } from "../MenuManager";
+import { MusicManager } from '../music/MusicManager';
 import { launchWebUrl, getPluginType, getVersion, getPluginId } from "../Util";
 import { initializeWebsockets } from '../websockets';
 import { getAuthCallbackState, getItem, getPluginUuid, setAuthCallbackState, setItem } from "./FileManager";
+import { updateSlackIntegrations, updateSpotifyIntegration } from './IntegrationManager';
 
 const queryString = require("query-string");
 
@@ -114,29 +116,61 @@ export async function launchLogin(loginType: string = "software", switching_acco
   launchWebUrl(url);
 }
 
-export function authenticationCompleteHandler(user) {
+export async function authenticationCompleteHandler(user) {
   // clear the auth callback state
   setAuthCallbackState(null);
 
   // set the email and jwt
   if (user?.registered === 1) {
-    if (user.plugin_jwt) {
-      setItem("jwt", user.plugin_jwt);
+    const currName = getItem("name");
+    if (currName != user.email) {
+      if (user.plugin_jwt) {
+        setItem("jwt", user.plugin_jwt);
+      }
+      setItem("name", user.email);
+      // update the login status
+      window.showInformationMessage(`Successfully registered`);
+
+      try {
+        initializeWebsockets();
+      } catch (e) {
+        console.error("Failed to initialize websockets", e);
+      }
     }
-    setItem("name", user.email);
-  }
 
-  try {
-    initializeWebsockets();
-  } catch (e) {
-    console.error("Failed to initialize codetime websockets", e);
-  }
+    // update the slack and spotify integrations
+    const addedNewSlackIntegration = await updateSlackIntegrations(user);
 
-  // update the login status
-  window.showInformationMessage(`Successfully registered.`);
+    const addedNewIntegration = await updateSpotifyIntegration(user);
+    if (addedNewIntegration) {
+      // this will refresh the playlist for both slack and spotify
+      processNewSpotifyIntegration();
+    } else if (addedNewSlackIntegration) {
+      // refresh the tree view
+	    setTimeout(() => {
+        // refresh the playlist to show the device button update
+        commands.executeCommand("musictime.refreshPlaylist");
+      }, 1000);
+    }
+  }
 
   // initiate the playlist build
   setTimeout(() => {
     commands.executeCommand("musictime.hardRefreshPlaylist");
   }, 1000);
+}
+
+export async function processNewSpotifyIntegration() {
+  setItem("requiresSpotifyReAuth", false);
+
+	// update the login status
+	window.showInformationMessage(`Successfully connected to Spotify. Loading playlists...`);
+
+	// initialize spotify and playlists
+	await MusicManager.getInstance().initializeSpotify(true /*refreshUser*/);
+
+	// initiate the playlist build
+	setTimeout(() => {
+	  commands.executeCommand("musictime.hardRefreshPlaylist");
+	}, 2000);
 }

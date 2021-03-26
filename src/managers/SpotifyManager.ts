@@ -7,9 +7,9 @@ import { getPluginId, getPluginType, getVersion, isMac, launchWebUrl } from "../
 import { SpotifyUser } from "cody-music/dist/lib/profile";
 import { MusicDataManager } from "../music/MusicDataManager";
 import { MusicCommandManager } from "../music/MusicCommandManager";
-import { getAuthCallbackState, getIntegrations, getItem, getPluginUuid, setAuthCallbackState, setItem } from "./FileManager";
+import { getAuthCallbackState, getIntegrations, getItem, getPluginUuid, setItem } from "./FileManager";
 import { getUser } from "./UserStatusManager";
-import { clearSpotifyIntegrations, updateSpotifyIntegrations } from "./IntegrationManager";
+import { clearSpotifyIntegrations, updateSpotifyIntegration } from "./IntegrationManager";
 
 const queryString = require("query-string");
 
@@ -166,7 +166,7 @@ export async function migrateAccessInfo() {
       const user = await getUser(getItem("jwt"));
       if (user) {
         // update the integrations
-        await updateSpotifyIntegrations(user);
+        await updateSpotifyIntegration(user);
         updateCodyConfig();
       }
     }

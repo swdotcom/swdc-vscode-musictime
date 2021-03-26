@@ -207,12 +207,27 @@ export function getIntegrations() {
   let integrations = getFileDataAsJson(getIntegrationsFile());
   if (!integrations) {
     integrations = [];
-    syncIntegrations(integrations);
+    fileIt.writeJsonFileSync(getIntegrationsFile(), integrations);
+  }
+  const integrationsLen = integrations.length;
+  // check to see if there are any [] values and remove them
+  integrations = integrations.filter((n) => n && n.authId);
+  if (integrations.length !== integrationsLen) {
+    // update the file with the latest
+    fileIt.writeJsonFileSync(getIntegrationsFile(), integrations);
   }
   return integrations;
 }
 
-export function syncIntegrations(integrations) {
+export function syncSlackIntegrations(integrations) {
+  const nonSlackIntegrations = getIntegrations().filter((integration) => integration.name.toLowerCase() != "slack");
+  integrations = integrations?.length ? [...integrations, ...nonSlackIntegrations] : nonSlackIntegrations;
+  fileIt.writeJsonFileSync(getIntegrationsFile(), integrations);
+}
+
+export function syncSpotifyIntegration(integration) {
+  const nonSpotifyIntegrations = getIntegrations().filter(integration => integration.name.toLowerCase() != "spotify");
+  const integrations = integration ? [...nonSpotifyIntegrations, integration] : nonSpotifyIntegrations;
   fileIt.writeJsonFileSync(getIntegrationsFile(), integrations);
 }
 

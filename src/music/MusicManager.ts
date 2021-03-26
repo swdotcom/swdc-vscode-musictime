@@ -587,7 +587,7 @@ export class MusicManager {
     return createResult;
   }
 
-  async initializeSpotify(hardRefresh = false) {
+  async initializeSpotify(refreshUser = false) {
     // get the client id and secret
     await updateSpotifyClientInfo();
 
@@ -595,7 +595,7 @@ export class MusicManager {
     updateCodyConfig();
 
     // first get the spotify user
-    await populateSpotifyUser(hardRefresh);
+    await populateSpotifyUser(refreshUser);
 
     await populateSpotifyDevices(false);
 

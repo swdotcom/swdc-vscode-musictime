@@ -1,11 +1,10 @@
 
 
 import { commands, window } from "vscode";
-import { getItem, setAuthCallbackState, setItem } from '../managers/FileManager';
-import { clearSpotifyIntegrations, updateSlackIntegrations, updateSpotifyIntegrations } from '../managers/IntegrationManager';
+import { getItem, setAuthCallbackState } from '../managers/FileManager';
+import { updateSlackIntegrations, updateSpotifyIntegration } from '../managers/IntegrationManager';
 import { getSlackAuth } from "../managers/SlackManager";
-import { getUser } from '../managers/UserStatusManager';
-import { MusicManager } from '../music/MusicManager';
+import { getUser, processNewSpotifyIntegration } from '../managers/UserStatusManager';
 import { initializeWebsockets } from '../websockets';
 
 export async function handleIntegrationConnectionSocketEvent(body: any) {
@@ -36,29 +35,9 @@ export async function handleIntegrationConnectionSocketEvent(body: any) {
 	  // clear the auth callback state
 	  setAuthCallbackState(null);
 
-	  setItem("requiresSpotifyReAuth", false);
-
-	  // update the login status
-	  window.showInformationMessage(`Successfully connected to Spotify. Loading playlists...`);
-
-	  // clear existing spotify integrations
-	  clearSpotifyIntegrations();
-
 	  // update the spotify integrations before populating the spotify user
-	  await updateSpotifyIntegrations(user);
+	  await updateSpotifyIntegration(user);
 
-	  try {
-		initializeWebsockets();
-	  } catch (e) {
-		console.error("Failed to initialize websockets", e);
-	  }
-
-	  // initialize spotify and playlists
-	  await MusicManager.getInstance().initializeSpotify(true /*hardRefresh*/);
-
-	  // initiate the playlist build
-	  setTimeout(() => {
-		commands.executeCommand("musictime.hardRefreshPlaylist");
-	  }, 2000);
+	  processNewSpotifyIntegration();
   }
 }

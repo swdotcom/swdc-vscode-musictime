@@ -27,33 +27,31 @@ export function initializeWebsockets() {
   const ws = new WebSocket(websockets_url, options);
 
   ws.on("open", function open() {
-    console.debug("[CodeTime] websockets connection open");
+    console.debug("[MusicTime] websockets connection open");
   });
 
   ws.on("message", function incoming(data) {
-    console.debug("[CodeTime] received websocket message: ", data);
-
     handleIncomingMessage(data);
   });
 
   ws.on("close", function close(code, reason) {
-    console.debug("[CodeTime] websockets connection closed");
+    console.debug("[MusicTime] websockets connection closed");
 
     retryConnection();
   });
 
   ws.on("unexpected-response", function unexpectedResponse(request, response) {
-    console.debug("[CodeTime] unexpected websockets response:", response.statusCode);
+    console.debug("[MusicTime] unexpected websockets response:", response.statusCode);
 
     if (response.statusCode === 426) {
-      console.error("[CodeTime] websockets request had invalid headers. Are you behind a proxy?");
+      console.error("[MusicTime] websockets request had invalid headers. Are you behind a proxy?");
     } else {
       retryConnection();
     }
   });
 
   ws.on("error", function error(e) {
-    console.error("[CodeTime] error connecting to websockets", e);
+    console.error("[MusicTime] error connecting to websockets", e);
   });
 }
 
@@ -63,10 +61,10 @@ function retryConnection() {
   }
   retryCount++;
 
-  console.debug("[CodeTime] retrying websockets connecting in 10 seconds");
+  console.debug("[MusicTime] retrying websockets connecting in 10 seconds");
 
   retryTimeout = setTimeout(() => {
-    console.log("[CodeTime] attempting to reinitialize websockets connection");
+    console.log("[MusicTime] attempting to reinitialize websockets connection");
     initializeWebsockets();
   }, 10000);
 }
@@ -83,7 +81,7 @@ const handleIncomingMessage = (data: any) => {
 
     switch (message.type) {
       case "info":
-        console.info(`[CodeTime] ${message.body}`);
+        console.info(`[MusicTime] ${message.body}`);
         break;
       case "authenticated_plugin_user":
         handleAuthenticatedPluginUser(message.body);
@@ -92,9 +90,9 @@ const handleIncomingMessage = (data: any) => {
         handleIntegrationConnectionSocketEvent(message.body);
         break;
       default:
-        console.warn("[CodeTime] received unhandled websocket message type", data);
+        console.warn("[MusicTime] received unhandled websocket message type", data);
     }
   } catch (e) {
-    console.error("[CodeTime] Unable to handle incoming message", data);
+    console.error("[MusicTime] Unable to handle incoming message", data);
   }
 };

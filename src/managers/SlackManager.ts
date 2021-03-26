@@ -4,7 +4,7 @@ import { showQuickPick } from "../MenuManager";
 import { commands, window } from "vscode";
 import { softwareDelete } from "../HttpClient";
 import { updateSlackIntegrations } from "./IntegrationManager";
-import { getAuthCallbackState, getIntegrations, getItem, getPluginUuid, setAuthCallbackState, syncIntegrations } from "./FileManager";
+import { getAuthCallbackState, getIntegrations, getItem, getPluginUuid, syncSlackIntegrations } from "./FileManager";
 import { getUser } from "./UserStatusManager";
 
 const queryString = require("query-string");
@@ -154,7 +154,7 @@ export function removeSlackIntegration(authId) {
   const currentIntegrations = getIntegrations();
 
   const newIntegrations = currentIntegrations.filter((n) => n.authId !== authId);
-  syncIntegrations(newIntegrations);
+  syncSlackIntegrations(newIntegrations);
 }
 
 //////////////////////////
