@@ -54,4 +54,23 @@ const config = {
 		],
 	},
 };
-module.exports = config;
+const webviewSidebar = {
+	target: "web",
+	entry: "./src/app/index.tsx",
+	output: {
+	  path: path.resolve(__dirname, "dist"),
+	  filename: "webviewSidebar.js",
+	},
+	devtool: "eval-source-map",
+	resolve: {
+	  extensions: [".js", ".ts", ".tsx", "css"],
+	},
+	module: {
+	  rules: [
+		{ test: /\.tsx?$/, loaders: ["babel-loader", "ts-loader"] },
+		{ test: /\.css$/, loaders: ["style-loader", "css-loader"] },
+	  ],
+	},
+  };
+
+module.exports = [webviewSidebar, config];

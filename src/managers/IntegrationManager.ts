@@ -4,26 +4,36 @@ const { WebClient } = require("@slack/web-api");
 
 export async function updateSpotifyIntegration(user) {
   const existingSpotifyIntegrations = getIntegrations().filter((n) => n.name.toLowerCase() === "spotify");
-  const existingSpotifyIntegration = existingSpotifyIntegrations.length ? existingSpotifyIntegrations[existingSpotifyIntegrations.length - 1] : null;
+  const existingSpotifyIntegration = getLatestSpotifyIntegration(existingSpotifyIntegrations)
   if (user?.integrations?.length) {
     const spotifyIntegrations = user.integrations.filter(
       (n) => n.name.toLowerCase() === "spotify" && n.status.toLowerCase() === "active" && n.access_token
     );
     if (spotifyIntegrations.length) {
-      // sort by updatedAt desc
-      const sortedActivities = spotifyIntegrations.sort((a, b) => {
-        const aDate = new Date(a.updatedAt).getTime();
-        const bDate = new Date(b.updatedAt).getTime();
-        if (aDate > bDate) return 1;
-        if (aDate < bDate) return -1;
-        return 0;
-      });
-      const spotifyIntegration = sortedActivities[0];
-      syncSpotifyIntegration(spotifyIntegration);
-      return !!(!existingSpotifyIntegration || existingSpotifyIntegration.authId !== spotifyIntegration.authId);
+      const spotifyIntegration = getLatestSpotifyIntegration(spotifyIntegrations);
+      if (spotifyIntegration) {
+        syncSpotifyIntegration(spotifyIntegration);
+        if (!existingSpotifyIntegration || existingSpotifyIntegration.authId !== spotifyIntegration.authId) {
+          return true;
+        }
+      }
     }
   }
   return false;
+}
+
+function getLatestSpotifyIntegration(spotifyIntegrations) {
+  if (spotifyIntegrations?.length) {
+    const sorted = spotifyIntegrations.sort((a, b) => {
+      const aDate = new Date(a.updatedAt).getTime();
+      const bDate = new Date(b.updatedAt).getTime();
+      if (aDate > bDate) return 1;
+      if (aDate < bDate) return -1;
+      return 0;
+    });
+    return sorted[0]
+  }
+  return null;
 }
 
 export async function updateSlackIntegrations(user) {

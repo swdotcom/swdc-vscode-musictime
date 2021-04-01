@@ -34,7 +34,7 @@ import {
 import { commands, window } from "vscode";
 import { populateSpotifyPlaylists, populateSpotifyDevices } from "../DataController";
 import { isMac, getCodyErrorMessage, createUriFromTrackId, createUriFromPlaylistId, isWindows } from "../Util";
-import { isResponseOk, softwareGet, softwarePost } from "../HttpClient";
+import { isResponseOk, softwareGet } from "../HttpClient";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { MusicControlManager } from "./MusicControlManager";
 import { ProviderItemManager } from "./ProviderItemManager";
@@ -123,11 +123,8 @@ export class MusicManager {
     }
     this.dataMgr.buildingPlaylists = true;
 
-    if (this.dataMgr.currentPlayerName === PlayerName.ItunesDesktop) {
-      await this.refreshPlaylistForPlayer();
-    } else {
-      await this.refreshPlaylistForPlayer();
-    }
+    await this.refreshPlaylistForPlayer();
+
     await MusicCommandManager.syncControls(this.dataMgr.runningTrack);
 
     this.dataMgr.buildingPlaylists = false;
@@ -572,19 +569,6 @@ export class MusicManager {
         window.showErrorMessage(`There was an unexpected error adding tracks to the playlist. ${addTracksResult.message}`, ...[OK_LABEL]);
       }
     }
-  }
-
-  async updateSavedPlaylists(playlist_id: string, playlistTypeId: number, name: string) {
-    // playlistTypeId 1 = personal custom top 40
-    const payload = {
-      playlist_id,
-      playlistTypeId,
-      name,
-    };
-    let jwt = getItem("jwt");
-    let createResult = await softwarePost("/music/playlist/generated", payload, jwt);
-
-    return createResult;
   }
 
   async initializeSpotify(refreshUser = false) {

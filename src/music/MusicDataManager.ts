@@ -10,8 +10,6 @@ import { commands } from "vscode";
 import {
     softwareGet,
     isResponseOk,
-    softwareDelete,
-    softwarePut,
 } from "../HttpClient";
 import { getItem } from "../managers/FileManager";
 import { MusicCommandManager } from "./MusicCommandManager";
@@ -123,29 +121,6 @@ export class MusicDataManager {
             (e: PlaylistItem) => e.playlistTypeId === playlistTypeId
         );
         return pItem;
-    }
-
-    async fetchSavedPlaylists() {
-        let playlists = [];
-
-        const response = await softwareGet(
-            "/music/playlist/generated",
-            getItem("jwt")
-        );
-
-        if (isResponseOk(response)) {
-            // only return the non-deleted playlists
-            for (let i = 0; i < response.data.length; i++) {
-                const savedPlaylist = response.data[i];
-                if (savedPlaylist && savedPlaylist["deleted"] !== 1) {
-                    savedPlaylist.id = savedPlaylist.playlist_id;
-                    savedPlaylist.playlistTypeId = savedPlaylist.playlistTypeId;
-                    playlists.push(savedPlaylist);
-                }
-            }
-        }
-
-        this.savedPlaylists = playlists;
     }
 
     /**

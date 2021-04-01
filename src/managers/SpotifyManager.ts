@@ -31,6 +31,16 @@ export function hasSpotifyUser() {
   return !!(spotifyUser && spotifyUser.product);
 }
 
+export function getSpotifyEmail() {
+  const spotifyIntegration = getSpotifyIntegration();
+  return spotifyIntegration?.value;
+}
+
+export async function getSoftwareTop40() {
+  const data = await softwareGet("/music/top40");
+  return isResponseOk(data) ? data.data : null;
+}
+
 export async function isPremiumUser() {
   if (spotifyUser && spotifyUser.product !== "premium") {
     // check 1 more time

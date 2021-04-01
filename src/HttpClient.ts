@@ -32,7 +32,7 @@ beApi.defaults.headers.common["X-SWDC-Plugin-UUID"] = getPluginUuid();
  * @param api
  * @param jwt
  */
-export async function softwareGet(api, jwt, additionHeaders = null) {
+export async function softwareGet(api, jwt = null, additionHeaders = null) {
     if (jwt) {
         beApi.defaults.headers.common["Authorization"] = jwt;
     }
@@ -146,7 +146,7 @@ export function hasTokenExpired(resp) {
  * axios always sends the following
  * status:200
  * statusText:"OK"
- * 
+ *
     code:"ENOTFOUND"
     config:Object {adapter: , transformRequest: Object, transformResponse: Object, …}
     errno:"ENOTFOUND"

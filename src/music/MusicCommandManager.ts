@@ -44,6 +44,10 @@ export class MusicCommandManager {
         // private to prevent non-singleton usage
     }
 
+    public static isInitialized(): boolean {
+        return this._initialized;
+    }
+
     public static isLoading(): boolean {
         return this._isLoading;
     }

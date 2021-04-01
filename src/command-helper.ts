@@ -1,9 +1,9 @@
-import { commands, Disposable, window, TreeView } from "vscode";
+import { commands, Disposable, window, TreeView, ExtensionContext } from "vscode";
 import {
   MusicControlManager,
   displayMusicTimeMetricsMarkdownDashboard,
 } from "./music/MusicControlManager";
-import { launchMusicAnalytics } from "./Util";
+import { launchMusicAnalytics, launchWebUrl } from "./Util";
 import { MusicPlaylistProvider, connectPlaylistTreeView } from "./music/MusicPlaylistProvider";
 import { PlaylistItem, PlayerName, PlayerDevice, playSpotifyDevice } from "cody-music";
 import { SocialShareManager } from "./social/SocialShareManager";
@@ -28,11 +28,13 @@ import { MusicStateManager } from "./music/MusicStateManager";
 import { connectSpotify, disconnectSpotify, switchSpotifyAccount } from "./managers/SpotifyManager";
 import { displayReadmeIfNotExists } from "./managers/FileManager";
 import { launchLogin, showLogInMenuOptions, showSignUpMenuOptions } from "./managers/UserStatusManager";
+import { MusicTimeWebviewSidebar } from './sidebar/MusicTimeWebviewSidebar';
+import { vscode_mt_issues_url } from './Constants';
 
 /**
  * add the commands to vscode....
  */
-export function createCommands(): {
+export function createCommands(ctx: ExtensionContext): {
   dispose: () => void;
 } {
   let cmds = [];
@@ -327,6 +329,8 @@ export function createCommands(): {
     await musicMgr.clearPlaylists();
     await musicMgr.refreshPlaylists();
     treePlaylistProvider.refresh();
+
+    commands.executeCommand("musictime.refreshMusicTimeView");
   });
   cmds.push(refreshPlaylistCommand);
 
@@ -501,6 +505,28 @@ export function createCommands(): {
   cmds.push(
     commands.registerCommand("musictime.showAlbum", async (node: PlaylistItem) => {
       showAlbum(node);
+    })
+  );
+
+  // WEB VIEW PROVIDER
+  const mtWebviewSidebar: MusicTimeWebviewSidebar = new MusicTimeWebviewSidebar(ctx.extensionUri);
+  cmds.push(
+    window.registerWebviewViewProvider("musictime.webView", mtWebviewSidebar, {
+      webviewOptions: {
+        retainContextWhenHidden: true,
+      },
+    })
+  );
+
+  cmds.push(
+    commands.registerCommand("musictime.refreshMusicTimeView", () => {
+      mtWebviewSidebar.refresh();
+    })
+  );
+
+  cmds.push(
+    commands.registerCommand("musictime.submitAnIssue", () => {
+      launchWebUrl(vscode_mt_issues_url);
     })
   );
 

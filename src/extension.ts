@@ -2,7 +2,7 @@
 
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import { commands, ExtensionContext } from "vscode";
+import { commands, ExtensionContext, window } from "vscode";
 import { onboardPlugin } from "./OnboardManager";
 import {
   getVersion,
@@ -14,6 +14,8 @@ import { TrackerManager } from "./managers/TrackerManager";
 import { displayReadmeIfNotExists } from "./managers/FileManager";
 import { migrateAccessInfo } from "./managers/SpotifyManager";
 import { clearWebsocketConnectionRetryTimeout, initializeWebsockets } from './websockets';
+
+let currentColorKind: number = undefined;
 
 export function deactivate(ctx: ExtensionContext) {
 
@@ -34,7 +36,7 @@ export async function intializePlugin(ctx: ExtensionContext) {
   //
   // add the player commands before we show the playlist
   //
-  ctx.subscriptions.push(createCommands());
+  ctx.subscriptions.push(createCommands(ctx));
 
   // migrate legacy spotify access token info to integration info
   await migrateAccessInfo();
@@ -54,4 +56,32 @@ export async function intializePlugin(ctx: ExtensionContext) {
   } catch (e) {
     console.error("Failed to initialize websockets", e);
   }
+}
+
+export function getCurrentColorKind() {
+  if (!currentColorKind) {
+    currentColorKind = window.activeColorTheme.kind;
+  }
+  return currentColorKind;
+}
+
+/**
+ * Active color theme listener
+ */
+ function activateColorKindChangeListener() {
+  currentColorKind = window.activeColorTheme.kind;
+
+  window.onDidChangeActiveColorTheme((event) => {
+    let kindChanged = false;
+    if (event.kind !== currentColorKind) {
+      kindChanged = true;
+    }
+
+    currentColorKind = event.kind;
+
+    // let the sidebar know the new current color kind
+    setTimeout(() => {
+      commands.executeCommand("musictime.refreshMusicTimeView");
+    }, 250);
+  });
 }

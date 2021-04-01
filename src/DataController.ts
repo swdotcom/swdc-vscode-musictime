@@ -43,9 +43,6 @@ export async function populateSpotifyPlaylists() {
     dataMgr.origRawPlaylistOrder = [];
     dataMgr.rawPlaylists = [];
 
-    // fetch music time app saved playlists
-    await dataMgr.fetchSavedPlaylists();
-
     // fetch the playlists from spotify
     const rawPlaylists = await MusicCommandUtil.getInstance().runSpotifyCommand(
         getPlaylists,

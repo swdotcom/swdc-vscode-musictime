@@ -4,13 +4,22 @@
         "target": "es6",
         "outDir": "./dist/",
         "lib": [
-            "es6"
+            "es6",
+            "dom"
         ],
         "sourceMap": true,
-        "rootDir": "."
+        "rootDir": ".",
+        "jsx": "react",
+        "allowSyntheticDefaultImports": true
     },
     "exclude": [
         "node_modules",
         ".vscode-test"
+    ],
+    "plugins": [
+        {
+            "name": "typescript-tslint-plugin",
+            "configFile": "./tslint.json"
+        }
     ]
 }
