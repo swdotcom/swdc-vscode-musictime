@@ -10,7 +10,6 @@ import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
 import { PlaylistIcon, TrackIcon } from "../icons";
 import IconButton from "@material-ui/core/IconButton";
-import Box from "@material-ui/core/Box";
 import deepPurple from "@material-ui/core/colors/deepPurple";
 import grey from "@material-ui/core/colors/grey";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
@@ -19,7 +18,7 @@ import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import { BeakerIcon, MuiAlbumIcon, MuiShareIcon, MuiCloseIcon } from "../icons";
 
-const ITEM_HEIGHT = 48;
+const MAX_MENU_HEIGHT = 84;
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -31,10 +30,12 @@ const useStyles = makeStyles((theme: Theme) =>
 			marginLeft: 4
     },
     playlistName: {
-      marginLeft: -10
+      marginLeft: -10,
+			overflow: "hidden"
     },
 		trackName: {
-			margin: 0
+			margin: 0,
+			overflow: "hidden"
 		},
 		menuItem: {
 			margin: 0,
@@ -115,8 +116,9 @@ export default function PlaylistItemNode(props) {
 			key={item.id}>
 			<Grid item xs={10}
 				className={(item.type === "playlist") ? classes.playlistName : classes.trackName}>
-				<Button classes={{ root: classes.textButton }} startIcon={(item.type === "playlist") ? <PlaylistIcon /> : <TrackIcon />}>
-					<Box textOverflow="ellipsis" overflow="hidden" style={{padding: 0, margin: 0}}><Typography style={{padding: 0, margin: 0}}>{ item.name }</Typography></Box>
+				<Button classes={{ root: classes.textButton }}
+					startIcon={(item.type === "playlist") ? <PlaylistIcon /> : <TrackIcon />}>
+					<Typography noWrap >{ item.name }</Typography>
 				</Button>
 			</Grid>
 			<Grid item xs={2}>
@@ -138,7 +140,7 @@ export default function PlaylistItemNode(props) {
 					open={open}
 					PaperProps={{
 						style: {
-							maxHeight: ITEM_HEIGHT * 4.5,
+							maxHeight: MAX_MENU_HEIGHT,
 							backgroundColor: grey[900]
 						},
 					}}>

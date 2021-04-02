@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Account from "./components/account";
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
@@ -10,6 +10,7 @@ import Setup from "./components/setup";
 import ColdStart from "./components/cold_start";
 import Playlists from "./components/playlists";
 import Divider from "@material-ui/core/Divider";
+import MediaControl from "./components/media_control";
 
 const useStyles = makeStyles((theme) => ({
   gridItem: {
@@ -21,11 +22,53 @@ const useStyles = makeStyles((theme) => ({
     marginButtom: 10,
     background: "linear-gradient(#6879F5, #976AF7)"
   },
+  playlistGridItem: {
+    marginLeft: 10,
+    marginRight: 10
+  }
 }));
+
+const getWidth = () => window.innerWidth
+  || document.documentElement.clientWidth
+  || document.body.clientWidth;
+
+const getHeight = () => window.innerHeight
+  || document.documentElement.clientHeight
+  || document.body.clientHeight;
+
+function useCurrentHeight() {
+  // save current window width in the state object
+  let [height, setHeight] = useState(getHeight());
+
+  // in this case useEffect will execute only once because
+  // it does not have any dependencies.
+  useEffect(() => {
+    const resizeListener = () => {
+      // change width from the state object
+      setHeight(getHeight())
+    };
+    // set resize listener
+    window.addEventListener('resize', resizeListener);
+
+    // clean up function
+    return () => {
+      // remove resize listener
+      window.removeEventListener('resize', resizeListener);
+    }
+  }, [])
+
+  return height;
+}
+
+const ACCOUNT_HEIGHT = 65;
+const MEDIA_HEIGHT = 150;
+const RECOMMENDATIONS_HEIGHT = 150;
+const MIN_PLAYLIST_HEIGHT = 250;
 
 export default function SideBar(props) {
   const classes = useStyles();
 
+  const playlistTreeViewHeight = Math.max(MIN_PLAYLIST_HEIGHT, useCurrentHeight() - ACCOUNT_HEIGHT - MEDIA_HEIGHT - RECOMMENDATIONS_HEIGHT);
   const currentColorKind = props.stateData.currentColorKind;
   const prefersDarkMode = !!(currentColorKind === 2);
 
@@ -37,14 +80,14 @@ export default function SideBar(props) {
             "Inter",
             "-apple-system",
             "BlinkMacSystemFont",
-            '"Segoe UI"',
+            "Segoe UI",
             "Roboto",
             "Oxygen",
             "Ubuntu",
             "Cantarell",
             "Fira Sans",
             "Droid Sans",
-            '"Helvetica Neue"',
+            "Helvetica Neue",
             "sans-serif",
           ].join(","),
           fontSize: 12,
@@ -139,7 +182,7 @@ export default function SideBar(props) {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Grid container>
+      <Grid container id="music-time-container">
         {(!props.stateData.registered || (!props.stateData.spotifyUser)) && (
           <Grid item xs={12} className={classes.gridItemSetup}>
             <Setup stateData={props.stateData} vscode={props.vscode} />
@@ -156,8 +199,15 @@ export default function SideBar(props) {
           <ColdStart vscode={props.vscode} stateData={props.stateData}/>
         </Grid>)}
 
+        {props.stateData.spotifyUser && (
+        <Grid item xs={12} className={classes.playlistGridItem}>
+          <Playlists vscode={props.vscode} stateData={props.stateData} viewHeight={playlistTreeViewHeight}/>
+        </Grid>)}
+
+        {props.stateData.spotifyUser && (<Divider />)}
+
         {props.stateData.spotifyUser && (<Grid item xs={12} className={classes.gridItem}>
-          <Playlists vscode={props.vscode} stateData={props.stateData}/>
+          <MediaControl vscode={props.vscode} stateData={props.stateData}/>
         </Grid>)}
 
       </Grid>

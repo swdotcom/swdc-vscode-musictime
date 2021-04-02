@@ -10,7 +10,8 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
     flexGrow: 1,
     backgroundColor: "transparent",
-    marginLeft: -8
+    marginLeft: -8,
+    overflowX: "hidden"
   },
 }));
 
@@ -20,6 +21,8 @@ export default function Playlists(props) {
   const classes = useStyles();
 
   playlistTracks = props.stateData.playlistTracks;
+
+  console.log("----- setting tree view to: ", props.viewHeight);
 
   async function onTreeNodeToggle(event, nodeIds: string[]) {
     if (nodeIds?.length) {
@@ -43,6 +46,7 @@ export default function Playlists(props) {
       aria-label="gmail"
       defaultExpanded={props.stateData.selectedPlaylistId ? [props.stateData.selectedPlaylistId] : []}
       className={classes.root}
+      style={{height: `${props.viewHeight}px`}}
       defaultCollapseIcon={<ArrowDropDownIcon />}
       defaultExpandIcon={<ArrowRightIcon />}
     >
