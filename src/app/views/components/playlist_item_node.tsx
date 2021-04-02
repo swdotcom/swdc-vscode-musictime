@@ -28,6 +28,7 @@ const useStyles = makeStyles((theme: Theme) =>
       justifyContent: "flex-start",
       padding: theme.spacing(0.25, 0.5),
       fontWeight: 500,
+			marginLeft: 4
     },
     playlistName: {
       marginLeft: -10
@@ -115,7 +116,7 @@ export default function PlaylistItemNode(props) {
 			<Grid item xs={10}
 				className={(item.type === "playlist") ? classes.playlistName : classes.trackName}>
 				<Button classes={{ root: classes.textButton }} startIcon={(item.type === "playlist") ? <PlaylistIcon /> : <TrackIcon />}>
-					<Box textOverflow="ellipsis" overflow="hidden">{ item.name }</Box>
+					<Box textOverflow="ellipsis" overflow="hidden" style={{padding: 0, margin: 0}}><Typography style={{padding: 0, margin: 0}}>{ item.name }</Typography></Box>
 				</Button>
 			</Grid>
 			<Grid item xs={2}>

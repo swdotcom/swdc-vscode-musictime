@@ -9,6 +9,7 @@ import grey from "@material-ui/core/colors/grey";
 import Setup from "./components/setup";
 import ColdStart from "./components/cold_start";
 import Playlists from "./components/playlists";
+import Divider from "@material-ui/core/Divider";
 
 const useStyles = makeStyles((theme) => ({
   gridItem: {
@@ -118,8 +119,8 @@ export default function SideBar(props) {
               marginTop: 0,
             },
             primary: {
-              fontWeight: 600,
-              fontSize: 14,
+              fontWeight: 500,
+              fontSize: 12,
             },
             secondary: {
               color: grey[500],
@@ -148,6 +149,8 @@ export default function SideBar(props) {
         {props.stateData.registered && (<Grid item xs={12} className={classes.gridItem}>
           <Account vscode={props.vscode} stateData={props.stateData} />
         </Grid>)}
+
+        <Divider />
 
         {!props.stateData.spotifyUser && (<Grid item xs={12} className={classes.gridItem}>
           <ColdStart vscode={props.vscode} stateData={props.stateData}/>

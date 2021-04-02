@@ -1,21 +1,16 @@
 import React, { useState } from "react";
-import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
 import List from "@material-ui/core/List";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import { makeStyles } from "@material-ui/core/styles";
-import AccountCircleIcon from "@material-ui/icons/AccountCircle";
 import { GoogleIcon, GithubIcon, EmailIcon } from "../icons";
-import { MessageIcon, DocumentIcon, SpotifyIcon } from "../icons";
-import deepPurple from "@material-ui/core/colors/deepPurple";
+import { MessageIcon, DocumentIcon, SpotifyIcon, MuiSyncIcon } from "../icons";
 import IconButton from "@material-ui/core/IconButton";
-import MonetizationOnIcon from "@material-ui/icons/MonetizationOn";
 import Typography from "@material-ui/core/Typography";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import Collapse from "@material-ui/core/Collapse";
-import SyncIcon from "@material-ui/icons/Sync";
 import grey from "@material-ui/core/colors/grey";
 
 const useStyles = makeStyles((theme) => ({
@@ -35,22 +30,50 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: -10
   },
   collapseList: {
+    flexGrow: 1,
     width: "100%",
   },
   collapseListItem: {
     marginLeft: 10,
   },
+  primaryListText: {
+    flexGrow: 1,
+    width: "100%",
+    fontWeight: 400,
+    fontSize: 12,
+  },
   secondaryListText: {
     color: grey[500],
-    fontWeight: 400
-  }
+    fontWeight: 300,
+    fontSize: 12,
+    float: "right"
+  },
+  listItemIcon: {
+    minWidth: 26
+  },
+  label: {
+    fontWeight: 'inherit',
+    color: 'inherit',
+  },
+  labelRoot: {
+    display: 'flex',
+    alignItems: 'center',
+    padding: theme.spacing(0.5, 0),
+  },
+  labelIcon: {
+    marginRight: theme.spacing(1),
+  },
+  labelText: {
+    fontWeight: 'inherit',
+    flexGrow: 1,
+  },
 }));
 
 export default function Account(props) {
   const classes = useStyles();
   const stateData = props.stateData;
 
-  const [spotifyAccountOpen, setSpotifyAccountOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
 
   function documentationClickHandler() {
     const command = {
@@ -68,6 +91,10 @@ export default function Account(props) {
     props.vscode.postMessage(command);
   }
 
+  function switchSpotifyHandler() {
+
+  }
+
   function connectSpotifyHandler() {
     if (stateData.spotifyUser) {
       return;
@@ -79,8 +106,8 @@ export default function Account(props) {
     props.vscode.postMessage(command);
   }
 
-  function spotifyAccountClickHandler() {
-    setSpotifyAccountOpen(!spotifyAccountOpen);
+  function accountClickHandler() {
+    setAccountOpen(!accountOpen);
   }
 
   return (
@@ -88,9 +115,12 @@ export default function Account(props) {
       <Grid item xs={12}>
         <List disablePadding={true} dense={true}>
           <ListItem disableGutters={true} dense={true}>
-            <ListItemText primary="Software Account" secondary={!stateData.registered ? "Manage your account" : stateData.email} />
-            <ListItemSecondaryAction classes={{ root: classes.secondaryAction }}>
-              <div aria-label="Authentication type">
+            <ListItemText primary="Account" secondary={!stateData.registered ? "Manage your account" : stateData.email} />
+            <ListItemSecondaryAction classes={{ root: classes.secondaryAction }} onClick={accountClickHandler}>
+              <IconButton
+                size="small"
+                edge="end"
+                aria-label="View account info">
                 {!stateData.registered ? null : stateData.authType === "github" ? (
                   <GithubIcon />
                 ) : stateData.authType === "google" ? (
@@ -98,61 +128,68 @@ export default function Account(props) {
                 ) : (
                   <EmailIcon />
                 )}
-              </div>
+              </IconButton>
             </ListItemSecondaryAction>
           </ListItem>
         </List>
       </Grid>
-      <Grid container direction="row" justify="space-between" alignItems="flex-start">
-        <Grid item xs={11} className={classes.gridItem}>
-          <Button onClick={connectSpotifyHandler} classes={{ root: classes.textButton }} startIcon={<SpotifyIcon />}>
-            {props.stateData.spotifyUser ? props.stateData.spotifyUser.email : "Connect Spotify"}
-          </Button>
-        </Grid>
-        {props.stateData.spotifyUser && (<Grid item xs={1} style={{ marginRight: 4 }}>
-          <IconButton
-                size="small"
-                style={{ color: deepPurple[300] }}
-                aria-label="Spotify Account"
-                onClick={spotifyAccountClickHandler}>
-            <AccountCircleIcon/>
-          </IconButton>
-        </Grid>)}
-
-      </Grid>
-      <Collapse in={spotifyAccountOpen} timeout="auto" unmountOnExit>
+      <Collapse in={accountOpen} timeout="auto" unmountOnExit>
         <List className={classes.collapseList} disablePadding={true} dense={true}>
-          <ListItem disableGutters={true} dense={true} className={classes.collapseListItem}>
-            <ListItemIcon style={{ minWidth: "30px" }}>
-              <MonetizationOnIcon style={{ color: deepPurple[300] }}/>
-            </ListItemIcon>
-            <ListItemText id="spotify-account-plan"
-              primary={props.stateData.spotifyUser?.display_name}/>
-            <ListItemSecondaryAction>
-              <Typography className={classes.secondaryListText}>
-                {(props.stateData.spotifyUser?.product === "premium" ? "Premium plan" : "Open plan")}
-              </Typography>
-            </ListItemSecondaryAction>
-          </ListItem>
-          <ListItem disableGutters={true} dense={true} button className={classes.collapseListItem}>
-            <ListItemIcon style={{ minWidth: "30px" }}>
-              <SyncIcon style={{ color: deepPurple[300] }}/>
-            </ListItemIcon>
-            <ListItemText id="spotify-account-switch" primary="Switch spotify account"/>
-          </ListItem>
-        </List>
+          {!props.stateData.spotifyUser && (
+            <ListItem disableGutters={true} dense={true} button onClick={connectSpotifyHandler}>
+              <ListItemIcon className={classes.listItemIcon}>
+                <SpotifyIcon/>
+              </ListItemIcon>
+              <ListItemText id="spotify-connect-li" primary="Connect Spotify"
+                classes={{primary: classes.primaryListText}}/>
+            </ListItem>
+          )}
+          {props.stateData.spotifyUser && (
+            <Grid container
+              justify="space-between"
+              alignItems="center">
+              <Grid item xs={10}>
+                <div className={classes.labelRoot}>
+                  <SpotifyIcon />
+                  <Typography style={{paddingLeft: 5}}>
+                    {props.stateData.spotifyUser.email}
+                  </Typography>
+                </div>
+              </Grid>
+              <Grid item xs={2} className={classes.secondaryListText}>
+                {(props.stateData.spotifyUser?.product === "premium" ? "Premium" : "Open")}
+              </Grid>
+            </Grid>
+          )}
 
+          {props.stateData.spotifyUser && (
+            <ListItem disableGutters={true} dense={true} button onClick={switchSpotifyHandler}>
+              <ListItemIcon className={classes.listItemIcon}>
+                <MuiSyncIcon/>
+              </ListItemIcon>
+              <ListItemText id="spotify-switch-li" primary="Switch spotify account"
+                classes={{primary: classes.primaryListText}}/>
+            </ListItem>
+          )}
+
+          <ListItem disableGutters={true} dense={true} button onClick={documentationClickHandler}>
+            <ListItemIcon className={classes.listItemIcon}>
+              <DocumentIcon/>
+            </ListItemIcon>
+            <ListItemText id="documentation-li" primary="Documentation"
+              classes={{primary: classes.primaryListText}}/>
+          </ListItem>
+
+          <ListItem disableGutters={true} dense={true} button onClick={submitIssueClickHandler}>
+            <ListItemIcon className={classes.listItemIcon}>
+              <MessageIcon/>
+            </ListItemIcon>
+            <ListItemText id="submit-issue-li" primary="Submit an issue"
+              classes={{primary: classes.primaryListText}}/>
+          </ListItem>
+
+        </List>
       </Collapse>
-      <Grid item xs={12} className={classes.gridItem}>
-        <Button onClick={documentationClickHandler} classes={{ root: classes.textButton }} startIcon={<DocumentIcon />}>
-          Documentation
-        </Button>
-      </Grid>
-      <Grid item xs={12} className={classes.gridItem}>
-        <Button onClick={submitIssueClickHandler} classes={{ root: classes.textButton }} startIcon={<MessageIcon />}>
-          Submit an issue
-        </Button>
-      </Grid>
     </Grid>
   );
 }
