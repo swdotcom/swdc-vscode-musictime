@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import PropTypes from 'prop-types';
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
+import PropTypes from 'prop-types';
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
 import { PlaylistIcon, TrackIcon } from "../icons";
@@ -9,6 +9,10 @@ import Box from "@material-ui/core/Box";
 import deepPurple from "@material-ui/core/colors/deepPurple";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import Fade from "@material-ui/core/Fade";
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+
+const ITEM_HEIGHT = 48;
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -26,10 +30,11 @@ const useStyles = makeStyles((theme: Theme) =>
 		}
   })
 );
-
 export default function PlaylistItemNode(props) {
-  const classes = useStyles();
+	const classes = useStyles();
 	const [show, setShow] = useState(false);
+	const [anchorEl, setAnchorEl] = useState(null);
+	const open = Boolean(anchorEl);
 
 	const { item } = props;
 
@@ -53,6 +58,16 @@ export default function PlaylistItemNode(props) {
 		}, 250);
 	}
 
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+		event.preventDefault();
+  };
+
+  const handleClose = (event) => {
+    setAnchorEl(null);
+		event.preventDefault();
+  };
+
   return (
 		<Grid container direction="row" justify="space-between"
 			onMouseOver={showMenu}
@@ -71,10 +86,30 @@ export default function PlaylistItemNode(props) {
 						size="small"
 						style={{ color: deepPurple[300] }}
 						onMouseOver={showMenu}
-						aria-label="Playlist menu">
+						onClick={handleClick}
+						aria-label={(item.type === "playlist") ? "Playlist menu" : "Track menu"}>
 						<MoreVertIcon/>
 					</IconButton>
 				</Fade>
+				{(item.type === "track") && (<Menu
+					id="long-menu"
+					anchorEl={anchorEl}
+					keepMounted
+					open={open}
+					onClose={handleClose}
+					PaperProps={{
+						style: {
+							maxHeight: ITEM_HEIGHT * 4.5,
+						},
+					}}>
+						<MenuItem key="share" onClick={handleClose}>
+							Show album
+						</MenuItem>
+						<MenuItem key="create" onClick={handleClose}>
+							Get recommendations
+						</MenuItem>
+				</Menu>)}
+
 			</Grid>
 		</Grid>
   );
