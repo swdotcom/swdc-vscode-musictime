@@ -9,7 +9,6 @@ const useStyles = makeStyles((theme) => ({
   root: {
     width: "100%",
     flexGrow: 1,
-    backgroundColor: "transparent",
     marginLeft: -8,
     overflowX: "hidden"
   },
@@ -21,8 +20,6 @@ export default function Playlists(props) {
   const classes = useStyles();
 
   playlistTracks = props.stateData.playlistTracks;
-
-  console.log("----- setting tree view to: ", props.viewHeight);
 
   async function onTreeNodeToggle(event, nodeIds: string[]) {
     if (nodeIds?.length) {

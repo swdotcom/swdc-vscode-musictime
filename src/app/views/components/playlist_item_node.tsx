@@ -18,7 +18,7 @@ import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import { BeakerIcon, MuiAlbumIcon, MuiShareIcon, MuiCloseIcon } from "../icons";
 
-const MAX_MENU_HEIGHT = 84;
+const MAX_MENU_HEIGHT = 220;
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

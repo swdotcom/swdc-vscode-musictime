@@ -11,6 +11,12 @@ import ColdStart from "./components/cold_start";
 import Playlists from "./components/playlists";
 import Divider from "@material-ui/core/Divider";
 import MediaControl from "./components/media_control";
+import {
+  ACCOUNT_HEIGHT,
+  MEDIA_HEIGHT,
+  RECOMMENDATIONS_MIN_HEIGHT,
+  PLAYLIST_MIN_HEIGHT
+} from "../utils/view_constants";
 
 const useStyles = makeStyles((theme) => ({
   gridItem: {
@@ -27,10 +33,6 @@ const useStyles = makeStyles((theme) => ({
     marginRight: 10
   }
 }));
-
-const getWidth = () => window.innerWidth
-  || document.documentElement.clientWidth
-  || document.body.clientWidth;
 
 const getHeight = () => window.innerHeight
   || document.documentElement.clientHeight
@@ -60,15 +62,12 @@ function useCurrentHeight() {
   return height;
 }
 
-const ACCOUNT_HEIGHT = 65;
-const MEDIA_HEIGHT = 150;
-const RECOMMENDATIONS_HEIGHT = 150;
-const MIN_PLAYLIST_HEIGHT = 250;
-
 export default function SideBar(props) {
   const classes = useStyles();
 
-  const playlistTreeViewHeight = Math.max(MIN_PLAYLIST_HEIGHT, useCurrentHeight() - ACCOUNT_HEIGHT - MEDIA_HEIGHT - RECOMMENDATIONS_HEIGHT);
+  const maxPlaylistHeight = useCurrentHeight() - ACCOUNT_HEIGHT - MEDIA_HEIGHT - RECOMMENDATIONS_MIN_HEIGHT;
+  const playlistTreeViewHeight = Math.max(PLAYLIST_MIN_HEIGHT, maxPlaylistHeight);
+
   const currentColorKind = props.stateData.currentColorKind;
   const prefersDarkMode = !!(currentColorKind === 2);
 
@@ -182,7 +181,7 @@ export default function SideBar(props) {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Grid container id="music-time-container">
+      <Grid container style={{overflowX: "hidden"}}>
         {(!props.stateData.registered || (!props.stateData.spotifyUser)) && (
           <Grid item xs={12} className={classes.gridItemSetup}>
             <Setup stateData={props.stateData} vscode={props.vscode} />

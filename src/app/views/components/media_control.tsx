@@ -8,10 +8,32 @@ import Typography from "@material-ui/core/Typography";
 import SkipPreviousIcon from "@material-ui/icons/SkipPrevious";
 import PlayArrowIcon from "@material-ui/icons/PlayArrow";
 import SkipNextIcon from "@material-ui/icons/SkipNext";
+import Link from "@material-ui/core/Link";
+import List from "@material-ui/core/List";
+import ListItemText from "@material-ui/core/ListItemText";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
+import PropTypes from "prop-types";
+import Button from "@material-ui/core/Button";
+import Grid from "@material-ui/core/Grid";
+import { PlaylistIcon, TrackIcon } from "../icons";
+import deepPurple from "@material-ui/core/colors/deepPurple";
+import grey from "@material-ui/core/colors/grey";
+import MoreVertIcon from "@material-ui/icons/MoreVert";
+import Fade from "@material-ui/core/Fade";
+import Menu from "@material-ui/core/Menu";
+import MenuItem from "@material-ui/core/MenuItem";
+import { BeakerIcon, MuiAlbumIcon, MuiShareIcon, MuiCloseIcon } from "../icons";
+
+import { MEDIA_HEIGHT } from "../../utils/view_constants";
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    display: "flex",
+    flexGrow: 1,
+    padding: 0,
+    margin: 0,
+    width: "100%",
+    height: `${(MEDIA_HEIGHT - 8)}px`
   },
   details: {
     display: "flex",
@@ -30,8 +52,26 @@ const useStyles = makeStyles((theme) => ({
     paddingBottom: theme.spacing(1),
   },
   playIcon: {
-    height: 38,
-    width: 38,
+    height: 22,
+    width: 22,
+  },
+  headerPrimary: {
+    color: deepPurple[200]
+  },
+  headerSecondary: {
+    color: grey[500],
+    fontWeight: 300,
+    fontSize: 12
+  },
+  link: {
+    cursor: "pointer",
+    width: "100%",
+    height: "100%",
+    display: "block"
+  },
+  img: {
+      width: "100%",
+      minWidth: 150
   },
 }));
 
@@ -43,12 +83,16 @@ export default function MediaControl(props) {
     <Card className={classes.root}>
       <div className={classes.details}>
         <CardContent className={classes.content}>
-          <Typography component="h5" variant="h5">
-            Live From Space
-          </Typography>
-          <Typography variant="subtitle1" color="textSecondary">
-            Mac Miller
-          </Typography>
+          <List disablePadding={true} dense={true}>
+            <ListItem disableGutters={true} dense={true}>
+              {props.item
+                ? (<ListItemText
+                primary={<Typography noWrap className={classes.headerPrimary}>{ props.item.name }</Typography>}
+                secondary={<Typography noWrap className={classes.headerSecondary}>{ props.item.albumName }</Typography>}/>)
+                : (<ListItemText
+                  primary={<Typography noWrap className={classes.headerPrimary}>Select a track</Typography>}/>)}
+            </ListItem>
+          </List>
         </CardContent>
         <div className={classes.controls}>
           <IconButton aria-label="previous">
@@ -62,11 +106,15 @@ export default function MediaControl(props) {
           </IconButton>
         </div>
       </div>
+      <img src="https://i.scdn.co/image/5a73a056d0af707b4119a883d87285feda543fbb" width="30" height="30"/>
+      {/* <Link className={classes.link}>
+            <img src="https://i.scdn.co/image/5a73a056d0af707b4119a883d87285feda543fbb" className={classes.img} />
+        </Link>
       <CardMedia
         className={classes.cover}
-        image="/static/images/cards/live-from-space.jpg"
-        title="Live from space album cover"
-      />
+        image="https://i.scdn.co/image/5a73a056d0af707b4119a883d87285feda543fbb"
+        title={props.item?.name}
+      /> */}
     </Card>
   );
 }
