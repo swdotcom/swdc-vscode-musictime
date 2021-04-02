@@ -30,7 +30,7 @@ export default function Playlists(props) {
         const command = {
           action: "musictime.fetchPlaylistTracks",
           command: "command_execute",
-          arguments: [playlist_id],
+          arguments: [playlist_id]
         };
         props.vscode.postMessage(command);
       }
@@ -48,7 +48,7 @@ export default function Playlists(props) {
     >
       {props.stateData.spotifyPlaylists ? (
         props.stateData.spotifyPlaylists.map((item, index) => {
-          return (<PlaylistItem playlistItem={item} key={index} playlistTracks={props.stateData.playlistTracks[item.id]}/>)
+          return (<PlaylistItem vscode={props.vscode} playlistItem={item} key={index} playlistTracks={props.stateData.playlistTracks[item.id]}/>)
         })) : (null)}
     </TreeView>
   );

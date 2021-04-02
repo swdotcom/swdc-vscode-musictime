@@ -1,13 +1,18 @@
 import React, { useState } from "react";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
-import CardHeader from "@material-ui/core/CardHeader";
+import List from "@material-ui/core/List";
+import ListItemText from "@material-ui/core/ListItemText";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import PropTypes from "prop-types";
+import Typography from "@material-ui/core/Typography";
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
 import { PlaylistIcon, TrackIcon } from "../icons";
 import IconButton from "@material-ui/core/IconButton";
 import Box from "@material-ui/core/Box";
 import deepPurple from "@material-ui/core/colors/deepPurple";
+import grey from "@material-ui/core/colors/grey";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import Fade from "@material-ui/core/Fade";
 import Menu from "@material-ui/core/Menu";
@@ -32,7 +37,26 @@ const useStyles = makeStyles((theme: Theme) =>
 		},
 		menuItem: {
 			margin: 0,
-			padding: 0
+			padding: 0,
+		},
+		menuItemText: {
+			color: "white",
+			fontWeight: 300,
+			fontSize: 12
+		},
+		menuList: {
+			overflow: "hidden"
+		},
+		menuHeaderPrimary: {
+			color: deepPurple[200]
+		},
+		menuHeaderSecondary: {
+			color: grey[500],
+			fontWeight: 300,
+			fontSize: 12
+		},
+		menuHeaderAction: {
+			right: -4,
 		}
   })
 );
@@ -64,15 +88,24 @@ export default function PlaylistItemNode(props) {
 		}, 250);
 	}
 
-  const handleClick = (event) => {
+  function handleClick(event) {
     setAnchorEl(event.currentTarget);
 		event.preventDefault();
-  };
+  }
 
-  const handleClose = (event) => {
+  function handleClose(event) {
     setAnchorEl(null);
 		event.preventDefault();
-  };
+  }
+
+	function showAlbum() {
+		const command = {
+      action: "musictime.showAlbum",
+      command: "command_execute",
+			arguments: [item]
+    };
+    props.vscode.postMessage(command);
+	}
 
   return (
 		<Grid container direction="row" justify="space-between"
@@ -102,31 +135,37 @@ export default function PlaylistItemNode(props) {
 					anchorEl={anchorEl}
 					keepMounted
 					open={open}
-					onClose={handleClose}
 					PaperProps={{
 						style: {
 							maxHeight: ITEM_HEIGHT * 4.5,
+							backgroundColor: grey[900]
 						},
 					}}>
-						<MenuItem key="menu_title" onClick={handleClose}>
-							<CardHeader
-								action={<MuiCloseIcon />}
-								title={item.name}
-								subheader={item?.albumName}/>
+						<MenuItem key="menu_title">
+							<List disablePadding={true} dense={true}>
+          			<ListItem disableGutters={true} dense={true} className={classes.menuList}>
+            			<ListItemText
+										primary={<Typography noWrap className={classes.menuHeaderPrimary}>{ item.name }</Typography>}
+										secondary={<Typography noWrap className={classes.menuHeaderSecondary}>{ item?.albumName }</Typography>}/>
+									<ListItemSecondaryAction classes={{ root: classes.menuHeaderAction }} onClick={handleClose}>
+										<MuiCloseIcon/>
+									</ListItemSecondaryAction>
+								</ListItem>
+							</List>
 						</MenuItem>
 						<MenuItem key="album" onClick={handleClose} disableGutters dense className={classes.menuItem}>
-							<Button classes={{ root: classes.textButton }} startIcon={<MuiAlbumIcon />}>
-								Show album
+							<Button classes={{ root: classes.textButton }} startIcon={<MuiAlbumIcon />} onClick={showAlbum}>
+								<Typography className={classes.menuItemText}>Show album</Typography>
 							</Button>
 						</MenuItem>
 						<MenuItem key="recommendations" onClick={handleClose} disableGutters dense className={classes.menuItem}>
 							<Button classes={{ root: classes.textButton }} startIcon={<BeakerIcon />}>
-								Get recommendations
+								<Typography className={classes.menuItemText}>Get recommendations</Typography>
 							</Button>
 						</MenuItem>
 						<MenuItem key="share" onClick={handleClose} disableGutters dense className={classes.menuItem}>
 							<Button classes={{ root: classes.textButton }} startIcon={<MuiShareIcon />}>
-								Share track
+								<Typography className={classes.menuItemText}>Share track</Typography>
 							</Button>
 						</MenuItem>
 				</Menu>)}
@@ -137,5 +176,6 @@ export default function PlaylistItemNode(props) {
 }
 
 PlaylistItemNode.propTypes = {
-	item: PropTypes.any.isRequired
+	item: PropTypes.any.isRequired,
+	vscode: PropTypes.any.isRequired
 };

@@ -8,19 +8,19 @@ import CloseIcon from "@material-ui/icons/Close";
 
 // Material UI SVG Icons
 export const MuiAlbumIcon = (props: SvgIconProps) => {
-  return <AlbumIcon style={{ color: deepPurple[400], marginLeft: 4 }} />;
+  return <AlbumIcon style={{ color: deepPurple[400], marginLeft: 5 }} />;
 }
 
 export const MuiSettingIcon = (props: SvgIconProps) => {
-  return <MuiSettingsIcon style={{ color: deepPurple[400], marginLeft: 4 }} />;
+  return <MuiSettingsIcon style={{ color: deepPurple[400], marginLeft: 5 }} />;
 };
 
 export const MuiShareIcon = (props: SvgIconProps) => {
-  return <ShareIcon style={{ color: deepPurple[400], marginLeft: 4 }} />;
+  return <ShareIcon style={{ color: deepPurple[400], marginLeft: 5 }} />;
 }
 
 export const MuiCloseIcon = (props: SvgIconProps) => {
-  return <CloseIcon style={{ color: deepPurple[400], marginLeft: 4 }} />;
+  return <CloseIcon style={{ color: deepPurple[400], marginLeft: 5 }} />;
 }
 
 // Custom SVG Icons
