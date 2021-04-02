@@ -5,7 +5,7 @@ import {
 } from "./music/MusicControlManager";
 import { launchMusicAnalytics, launchWebUrl } from "./Util";
 import { MusicPlaylistProvider, connectPlaylistTreeView } from "./music/MusicPlaylistProvider";
-import { PlaylistItem, PlayerName, PlayerDevice, playSpotifyDevice } from "cody-music";
+import { PlaylistItem, PlayerName, PlayerDevice, playSpotifyDevice, getPlaylistTracks } from "cody-music";
 import { SocialShareManager } from "./social/SocialShareManager";
 import { connectSlackWorkspace, disconnectSlack, disconnectSlackAuth } from "./managers/SlackManager";
 import { MusicManager } from "./music/MusicManager";
@@ -30,6 +30,7 @@ import { displayReadmeIfNotExists } from "./managers/FileManager";
 import { launchLogin, showLogInMenuOptions, showSignUpMenuOptions } from "./managers/UserStatusManager";
 import { MusicTimeWebviewSidebar } from './sidebar/MusicTimeWebviewSidebar';
 import { vscode_mt_issues_url } from './Constants';
+import { fetchTracksForPlaylist } from './managers/PlaylistManager';
 
 /**
  * add the commands to vscode....
@@ -527,6 +528,12 @@ export function createCommands(ctx: ExtensionContext): {
   cmds.push(
     commands.registerCommand("musictime.submitAnIssue", () => {
       launchWebUrl(vscode_mt_issues_url);
+    })
+  );
+
+  cmds.push(
+    commands.registerCommand("musictime.fetchPlaylistTracks", async (playlist_id) => {
+      fetchTracksForPlaylist(playlist_id);
     })
   );
 

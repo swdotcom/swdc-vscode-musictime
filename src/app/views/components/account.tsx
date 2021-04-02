@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
 import List from "@material-ui/core/List";
@@ -47,7 +47,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function Account(props) {
-  useEffect(() => {});
   const classes = useStyles();
   const stateData = props.stateData;
 

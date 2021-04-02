@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { makeStyles, createStyles, withStyles, Theme } from "@material-ui/core/styles";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import Paper from "@material-ui/core/Paper";
@@ -24,9 +24,9 @@ const useStyles = makeStyles((theme) => ({
     maxWidth: 200,
   },
   linkContent: {
-	textAlign: "center"
+	  textAlign: "center"
   },
-  subinfo: {
+  subInfo: {
     marginRight: 4,
     fontSize: 12,
     color: grey[200],
@@ -65,7 +65,6 @@ const BorderLinearProgress = withStyles((theme: Theme) =>
 )(LinearProgress);
 
 export default function Setup(props) {
-  useEffect(() => {});
   const classes = useStyles();
   const stateData = props.stateData;
 
@@ -104,7 +103,7 @@ export default function Setup(props) {
           </CardContent>
           {!stateData.registered && (
             <CardContent className={classes.linkContent}>
-              <Typography className={classes.subinfo} display="inline">
+              <Typography className={classes.subInfo} display="inline">
                 Already have a software account?
               </Typography>
               <Link href="#" onClick={loginClickHandler} display="inline" className={classes.link}>

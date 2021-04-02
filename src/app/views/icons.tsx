@@ -76,6 +76,14 @@ export const PlaylistIcon = (props: SvgIconProps) => {
   )
 }
 
+export const TrackIcon = (props: SvgIconProps) => {
+  return (
+    <SvgIcon style={{ color: deepPurple[300], padding: 0, marginLeft: 10, marginBottom: -10, marginRight: -4, transform: "scale(1.5)"}}>
+      <path d="M14 2.57143C14 2.57143 14 2 13.4286 2L7.00951 3.37551C6.08737 3.57311 5.42857 4.38804 5.42857 5.33112V10.4829C5.06943 10.2652 4.62714 10.1315 4.14286 10.1315C2.96171 10.1315 2 10.9003 2 11.8458C2 12.7912 2.96171 13.56 4.14286 13.56C5.324 13.56 6.28571 12.7912 6.28571 11.8458V6.61805L13.1429 5.09405V8.76862C12.7837 8.55091 12.3414 8.41719 11.8571 8.41719C10.6751 8.41719 9.71429 9.18605 9.71429 10.1315C9.71429 11.0769 10.6751 11.8458 11.8571 11.8458C13.0391 11.8458 14 11.0769 14 10.1315V2.57143Z"/>
+    </SvgIcon>
+  )
+}
+
 export const PawIcon = (props: SvgIconProps) => {
   return (
     <SvgIcon style={{ color: deepPurple[300], padding: 0, marginLeft: 10, marginBottom: -10, marginRight: -4, transform: "scale(1.5)" }}>

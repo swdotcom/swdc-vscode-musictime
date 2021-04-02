@@ -150,11 +150,11 @@ export default function SideBar(props) {
         </Grid>)}
 
         {!props.stateData.spotifyUser && (<Grid item xs={12} className={classes.gridItem}>
-          <ColdStart stateData={props.stateData}/>
+          <ColdStart vscode={props.vscode} stateData={props.stateData}/>
         </Grid>)}
 
         {props.stateData.spotifyUser && (<Grid item xs={12} className={classes.gridItem}>
-          <Playlists stateData={props.stateData}/>
+          <Playlists vscode={props.vscode} stateData={props.stateData}/>
         </Grid>)}
 
       </Grid>

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import List from "@material-ui/core/List";
@@ -11,21 +11,12 @@ import { BeakerIcon, ShareIcon, SearchIcon, PawIcon } from "../icons";
 import deepPurple from "@material-ui/core/colors/deepPurple";
 
 const useStyles = makeStyles((theme) => ({
-	setup: {
-	  width: "100%",
-	  flexGrow: 1,
-	},
-	subinfo: {
-	  marginRight: 4,
-	  fontSize: 12,
-	},
 	secondaryAction: {
     right: 0,
   },
 }));
 
 export default function ColdStart(props) {
-	useEffect(() => {});
 	const classes = useStyles();
 
   return (
