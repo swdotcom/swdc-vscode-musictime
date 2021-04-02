@@ -5,6 +5,7 @@ import { getSpotifyIntegration } from './SpotifyManager';
 let spotifyLikedSongs: Track[] = undefined;
 let spotifyPlaylists: PlaylistItem[] = undefined;
 let playlistTracks: any = {};
+let selectedPlaylistId = undefined;
 
 export async function clearSpotifyLikedSongsCache() {
 	spotifyLikedSongs = undefined;
@@ -12,6 +13,10 @@ export async function clearSpotifyLikedSongsCache() {
 
 export function getCachedPlaylistTracks() {
 	return playlistTracks;
+}
+
+export function getSelectedPlaylistId() {
+	return selectedPlaylistId;
 }
 
 export async function getSpotifyLikedSongs(): Promise<Track[]> {
@@ -49,6 +54,7 @@ function requiresSpotifyAccess() {
 }
 
 export async function fetchTracksForPlaylist(playlist_id) {
+	selectedPlaylistId = playlist_id;
 	if (!playlistTracks[playlist_id]) {
 		const results: CodyResponse = await getPlaylistTracks(PlayerName.SpotifyWeb, playlist_id);
 		const tracks: PlaylistItem[] = getPlaylistItemTracksFromCodyResponse(results);

@@ -41,6 +41,7 @@ export default function Playlists(props) {
     <TreeView
       onNodeToggle={onTreeNodeToggle}
       aria-label="gmail"
+      defaultExpanded={props.stateData.selectedPlaylistId ? [props.stateData.selectedPlaylistId] : []}
       className={classes.root}
       defaultCollapseIcon={<ArrowDropDownIcon />}
       defaultExpandIcon={<ArrowRightIcon />}
