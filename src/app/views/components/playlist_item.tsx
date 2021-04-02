@@ -9,7 +9,7 @@ export default function PlaylistItem(props) {
 		>
 			{props.playlistTracks?.length ? (
         props.playlistTracks.map((item, index) => {
-          return (<PlaylistItemNode item={item}/>)
+          return (<PlaylistItemNode item={item} key={item.id}/>)
         })) : (<TreeItem nodeId={`${props.playlistItem.id}_track_placeholder`} label="Tracks will appear here"/>)}
 		</TreeItem>
   );

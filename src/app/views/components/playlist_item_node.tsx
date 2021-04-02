@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
-import PropTypes from 'prop-types';
+import CardHeader from "@material-ui/core/CardHeader";
+import PropTypes from "prop-types";
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
 import { PlaylistIcon, TrackIcon } from "../icons";
@@ -9,8 +10,9 @@ import Box from "@material-ui/core/Box";
 import deepPurple from "@material-ui/core/colors/deepPurple";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import Fade from "@material-ui/core/Fade";
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
+import Menu from "@material-ui/core/Menu";
+import MenuItem from "@material-ui/core/MenuItem";
+import { BeakerIcon, MuiAlbumIcon, MuiShareIcon, MuiCloseIcon } from "../icons";
 
 const ITEM_HEIGHT = 48;
 
@@ -27,6 +29,10 @@ const useStyles = makeStyles((theme: Theme) =>
     },
 		trackName: {
 			margin: 0
+		},
+		menuItem: {
+			margin: 0,
+			padding: 0
 		}
   })
 );
@@ -73,13 +79,13 @@ export default function PlaylistItemNode(props) {
 			onMouseOver={showMenu}
 			onMouseOut={hideMenu}
 			key={item.id}>
-			<Grid item xs={(item.type === "playlist") ? 11 : 10}
+			<Grid item xs={10}
 				className={(item.type === "playlist") ? classes.playlistName : classes.trackName}>
 				<Button classes={{ root: classes.textButton }} startIcon={(item.type === "playlist") ? <PlaylistIcon /> : <TrackIcon />}>
 					<Box textOverflow="ellipsis" overflow="hidden">{ item.name }</Box>
 				</Button>
 			</Grid>
-			<Grid item xs={1} style={{marginRight: 5}}>
+			<Grid item xs={2}>
 				<Fade in={show}>
 					<IconButton
 						hidden={true}
@@ -102,11 +108,26 @@ export default function PlaylistItemNode(props) {
 							maxHeight: ITEM_HEIGHT * 4.5,
 						},
 					}}>
-						<MenuItem key="share" onClick={handleClose}>
-							Show album
+						<MenuItem key="menu_title" onClick={handleClose}>
+							<CardHeader
+								action={<MuiCloseIcon />}
+								title={item.name}
+								subheader={item?.albumName}/>
 						</MenuItem>
-						<MenuItem key="create" onClick={handleClose}>
-							Get recommendations
+						<MenuItem key="album" onClick={handleClose} disableGutters dense className={classes.menuItem}>
+							<Button classes={{ root: classes.textButton }} startIcon={<MuiAlbumIcon />}>
+								Show album
+							</Button>
+						</MenuItem>
+						<MenuItem key="recommendations" onClick={handleClose} disableGutters dense className={classes.menuItem}>
+							<Button classes={{ root: classes.textButton }} startIcon={<BeakerIcon />}>
+								Get recommendations
+							</Button>
+						</MenuItem>
+						<MenuItem key="share" onClick={handleClose} disableGutters dense className={classes.menuItem}>
+							<Button classes={{ root: classes.textButton }} startIcon={<MuiShareIcon />}>
+								Share track
+							</Button>
 						</MenuItem>
 				</Menu>)}
 

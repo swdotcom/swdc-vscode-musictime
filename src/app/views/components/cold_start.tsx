@@ -7,7 +7,7 @@ import IconButton from "@material-ui/core/IconButton";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import ListItemText from "@material-ui/core/ListItemText";
 import QueueIcon from "@material-ui/icons/Queue";
-import { BeakerIcon, ShareIcon, SearchIcon, PawIcon } from "../icons";
+import { BeakerIcon, MuiShareIcon, SearchIcon, PawIcon } from "../icons";
 import deepPurple from "@material-ui/core/colors/deepPurple";
 
 const useStyles = makeStyles((theme) => ({
@@ -45,7 +45,7 @@ export default function ColdStart(props) {
                 size="small"
                 edge="end"
                 aria-label="Share your top songs">
-                <ShareIcon />
+                <MuiShareIcon />
               </IconButton>
             </ListItemSecondaryAction>
           </ListItem>

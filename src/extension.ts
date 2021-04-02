@@ -51,6 +51,8 @@ export async function intializePlugin(ctx: ExtensionContext) {
   // store the activate event
   TrackerManager.getInstance().init();
 
+  activateColorKindChangeListener();
+
   try {
     initializeWebsockets();
   } catch (e) {
@@ -72,13 +74,7 @@ export function getCurrentColorKind() {
   currentColorKind = window.activeColorTheme.kind;
 
   window.onDidChangeActiveColorTheme((event) => {
-    let kindChanged = false;
-    if (event.kind !== currentColorKind) {
-      kindChanged = true;
-    }
-
     currentColorKind = event.kind;
-
     // let the sidebar know the new current color kind
     setTimeout(() => {
       commands.executeCommand("musictime.refreshMusicTimeView");
