@@ -14,7 +14,6 @@ import MediaControl from "./components/media_control";
 import {
   ACCOUNT_HEIGHT,
   MEDIA_HEIGHT,
-  RECOMMENDATIONS_MIN_HEIGHT,
   PLAYLIST_MIN_HEIGHT
 } from "../utils/view_constants";
 
@@ -65,7 +64,7 @@ function useCurrentHeight() {
 export default function SideBar(props) {
   const classes = useStyles();
 
-  const maxPlaylistHeight = useCurrentHeight() - ACCOUNT_HEIGHT - MEDIA_HEIGHT - RECOMMENDATIONS_MIN_HEIGHT;
+  const maxPlaylistHeight = useCurrentHeight() - ACCOUNT_HEIGHT - MEDIA_HEIGHT - 10;
   const playlistTreeViewHeight = Math.max(PLAYLIST_MIN_HEIGHT, maxPlaylistHeight);
 
   const currentColorKind = props.stateData.currentColorKind;

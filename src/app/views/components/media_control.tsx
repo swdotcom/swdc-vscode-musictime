@@ -70,6 +70,7 @@ const useStyles = makeStyles((theme) => ({
     display: "block"
   },
   img: {
+      // height: "100%",
       width: "100%",
       minWidth: 150
   },
@@ -106,15 +107,6 @@ export default function MediaControl(props) {
           </IconButton>
         </div>
       </div>
-      <img src="https://i.scdn.co/image/5a73a056d0af707b4119a883d87285feda543fbb" width="30" height="30"/>
-      {/* <Link className={classes.link}>
-            <img src="https://i.scdn.co/image/5a73a056d0af707b4119a883d87285feda543fbb" className={classes.img} />
-        </Link>
-      <CardMedia
-        className={classes.cover}
-        image="https://i.scdn.co/image/5a73a056d0af707b4119a883d87285feda543fbb"
-        title={props.item?.name}
-      /> */}
     </Card>
   );
 }

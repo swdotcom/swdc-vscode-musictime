@@ -112,6 +112,8 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
 			</script>
 		</head>
 		<body>
+      <img src="https://i.scdn.co/image/5a73a056d0af707b4119a883d87285feda543fbb"
+        style="position:absolute; bottom:0; right:0;"/>
 			<div id="root"></div>
 			<script src="${reactAppUri}"></script>
 		</body>
