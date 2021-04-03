@@ -5,7 +5,6 @@ import CssBaseline from "@material-ui/core/CssBaseline";
 import blue from "@material-ui/core/colors/blue";
 import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
-import grey from "@material-ui/core/colors/grey";
 import Setup from "./components/setup";
 import ColdStart from "./components/cold_start";
 import Playlists from "./components/playlists";
@@ -18,9 +17,13 @@ import BottomNavigationAction from "@material-ui/core/BottomNavigationAction";
 import {
   ACCOUNT_HEIGHT,
   MEDIA_HEIGHT,
-  PLAYLIST_MIN_HEIGHT
+  PLAYLIST_MIN_HEIGHT,
+  TOP_APP_BAR_MIN_HEIGHT,
+  BOTTOM_BAR_HEIGHT,
+  DARK_BG_COLOR
 } from "../utils/view_constants";
 import { PlaylistIcon, BeakerIcon, TrackIcon } from "./icons";
+import grey from "@material-ui/core/colors/grey";
 
 const useStyles = makeStyles((theme) => ({
   gridItem: {
@@ -34,20 +37,24 @@ const useStyles = makeStyles((theme) => ({
   },
   playlistGridItem: {
     marginLeft: 10,
-    marginRight: 10,
-    marginBottom: 55
+    marginRight: 10
   },
   bottomNav: {
+    background: "transparent",
     flexGrow: 1,
     width: "100%",
     margin: 0
   },
   topAppBar: {
+    background: DARK_BG_COLOR,
     top: 0,
     padding: 0,
-    margin: 0
+    margin: 0,
+    minHeight: `${TOP_APP_BAR_MIN_HEIGHT}px`
   },
   bottomAppBar: {
+    height: `${BOTTOM_BAR_HEIGHT}px`,
+    background: DARK_BG_COLOR,
     top: "auto",
     bottom: 0,
     padding: 0,
@@ -205,7 +212,7 @@ export default function SideBar(props) {
     <ThemeProvider theme={theme}>
       <React.Fragment>
       <CssBaseline />
-      <AppBar position="fixed" className={classes.topAppBar}>
+      <AppBar position="fixed" className={classes.topAppBar} id="top-app-bar">
         <Grid container>
           {(!props.stateData.registered || (!props.stateData.spotifyUser)) && (
             <Grid item xs={12} className={classes.gridItemSetup}>
@@ -217,7 +224,12 @@ export default function SideBar(props) {
           </Grid>)}
         </Grid>
       </AppBar>
-      <Grid container style={{overflowX: "hidden"}}>
+      <Grid container
+        style={{
+          position: "absolute",
+          overflowX: "hidden",
+          top: TOP_APP_BAR_MIN_HEIGHT,
+          bottom: BOTTOM_BAR_HEIGHT}}>
 
         {!props.stateData.spotifyUser && (<Grid item xs={12} className={classes.gridItem}>
           <ColdStart vscode={props.vscode} stateData={props.stateData}/>
@@ -228,7 +240,7 @@ export default function SideBar(props) {
           <Playlists vscode={props.vscode} stateData={props.stateData}/>
         </Grid>)}
 
-        {props.stateData.spotifyUser && (<Divider />)}
+        {/* {props.stateData.spotifyUser && (<Divider />)} */}
 
         {/* {props.stateData.spotifyUser && (<Grid item xs={12} className={classes.gridItem}>
           <MediaControl vscode={props.vscode} stateData={props.stateData}/>
@@ -238,7 +250,7 @@ export default function SideBar(props) {
 
       <AppBar position="fixed" className={classes.bottomAppBar}>
         <Typography>{value}</Typography>
-        <Toolbar variant="dense" disableGutters={true}>
+        <Toolbar variant="dense" disableGutters={true} style={{background: "transparent"}}>
           <BottomNavigation
             onChange={(event, newValue) => {
               console.log("newValue: ", newValue);

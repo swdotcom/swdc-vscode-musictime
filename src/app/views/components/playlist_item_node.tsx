@@ -17,8 +17,7 @@ import Fade from "@material-ui/core/Fade";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import { BeakerIcon, MuiAlbumIcon, MuiShareIcon, MuiCloseIcon } from "../icons";
-
-const MAX_MENU_HEIGHT = 220;
+import { DARK_BG_COLOR, MAX_MENU_HEIGHT } from "../../utils/view_constants";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -73,6 +72,7 @@ export default function PlaylistItemNode(props) {
 	let timeout = undefined;
 
 	function showMenu() {
+		if (item.type === "playlist") return;
 		if (timeout) {
 			clearTimeout(timeout);
 			timeout = undefined;
@@ -141,7 +141,7 @@ export default function PlaylistItemNode(props) {
 					PaperProps={{
 						style: {
 							maxHeight: MAX_MENU_HEIGHT,
-							backgroundColor: grey[900]
+							backgroundColor: DARK_BG_COLOR
 						},
 					}}>
 						<MenuItem key="menu_title">

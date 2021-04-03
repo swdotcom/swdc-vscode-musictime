@@ -122,11 +122,11 @@ export default function Account(props) {
                 edge="end"
                 aria-label="View account info">
                 {!stateData.registered ? null : stateData.authType === "github" ? (
-                  <GithubIcon fontSize="large" height="24" width="24"/>
+                  <GithubIcon fontSize="large"/>
                 ) : stateData.authType === "google" ? (
-                  <GoogleIcon fontSize="large" height="24" width="24"/>
+                  <GoogleIcon fontSize="large"/>
                 ) : (
-                  <EmailIcon fontSize="large" height="24" width="24"/>
+                  <EmailIcon fontSize="large"/>
                 )}
               </IconButton>
             </ListItemSecondaryAction>
@@ -138,7 +138,7 @@ export default function Account(props) {
           {!props.stateData.spotifyUser && (
             <ListItem disableGutters={true} dense={true} button onClick={connectSpotifyHandler}>
               <ListItemIcon className={classes.listItemIcon}>
-                <SpotifyIcon/>
+                <SpotifyIcon fontSize="large"/>
               </ListItemIcon>
               <ListItemText id="spotify-connect-li" primary="Connect Spotify"
                 classes={{primary: classes.primaryListText}}/>
@@ -150,8 +150,8 @@ export default function Account(props) {
               alignItems="center">
               <Grid item xs={10}>
                 <div className={classes.labelRoot}>
-                  <SpotifyIcon />
-                  <Typography style={{paddingLeft: 6}}>
+                  <SpotifyIcon fontSize="large"/>
+                  <Typography>
                     {props.stateData.spotifyUser.email}
                   </Typography>
                 </div>
@@ -174,7 +174,7 @@ export default function Account(props) {
 
           <ListItem disableGutters={true} dense={true} button onClick={documentationClickHandler}>
             <ListItemIcon className={classes.listItemIcon}>
-              <DocumentIcon/>
+              <DocumentIcon fontSize="large"/>
             </ListItemIcon>
             <ListItemText id="documentation-li" primary="Documentation"
               classes={{primary: classes.primaryListText}}/>
@@ -182,7 +182,7 @@ export default function Account(props) {
 
           <ListItem disableGutters={true} dense={true} button onClick={submitIssueClickHandler}>
             <ListItemIcon className={classes.listItemIcon}>
-              <MessageIcon/>
+              <MessageIcon fontSize="large"/>
             </ListItemIcon>
             <ListItemText id="submit-issue-li" primary="Submit an issue"
               classes={{primary: classes.primaryListText}}/>

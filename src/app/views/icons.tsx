@@ -9,33 +9,35 @@ import CloseIcon from "@material-ui/icons/Close";
 import SyncIcon from "@material-ui/icons/Sync";
 import FavoriteIcon from "@material-ui/icons/Favorite";
 
+// transform: "scale(1.5)" can change the size of the icon
+
 // Material UI SVG Icons
 export const MuiAlbumIcon = (props: SvgIconProps) => {
-  return <AlbumIcon fontSize="small"  {...props} style={{ color: deepPurple[400], marginLeft: -4 }} />;
+  return <AlbumIcon {...props} style={{ color: deepPurple[400] }} />;
 }
 
 export const MuiAccountCircleIcon = (props: SvgIconProps) => {
-  return <AccountCircleIcon fontSize="small"  {...props} style={{ color: deepPurple[400], marginLeft: -4 }} />;
+  return <AccountCircleIcon {...props} style={{ color: deepPurple[400] }} />;
 }
 
 export const MuiSyncIcon = (props: SvgIconProps) => {
-  return <SyncIcon fontSize="small"  {...props} style={{ color: deepPurple[400], marginLeft: -4 }} />;
+  return <SyncIcon {...props} style={{ color: deepPurple[400] }} />;
 }
 
 export const MuiSettingIcon = (props: SvgIconProps) => {
-  return <MuiSettingsIcon fontSize="small"  {...props} style={{ color: deepPurple[400], marginLeft: -4 }} />;
+  return <MuiSettingsIcon {...props} style={{ color: deepPurple[400] }} />;
 };
 
 export const MuiShareIcon = (props: SvgIconProps) => {
-  return <ShareIcon fontSize="small"  {...props} style={{ color: deepPurple[400], marginLeft: -4 }} />;
+  return <ShareIcon {...props} style={{ color: deepPurple[400] }} />;
 }
 
 export const MuiCloseIcon = (props: SvgIconProps) => {
-  return <CloseIcon fontSize="small"  {...props} style={{ color: deepPurple[400], marginLeft: -4 }} />;
+  return <CloseIcon {...props} style={{ color: deepPurple[400] }} />;
 }
 
 export const MuiFavoriteIcon = (props: SvgIconProps) => {
-  return <FavoriteIcon fontSize="small"  {...props} style={{ color: deepPurple[400], marginLeft: -4 }} />;
+  return <FavoriteIcon {...props} style={{ color: deepPurple[400] }} />;
 }
 
 // Custom SVG Icons
