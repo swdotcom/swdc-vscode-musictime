@@ -33,7 +33,7 @@ const useStyles = makeStyles((theme) => ({
     padding: 0,
     margin: 0,
     width: "100%",
-    height: `${(MEDIA_HEIGHT - 8)}px`
+    height: "100px"
   },
   details: {
     display: "flex",

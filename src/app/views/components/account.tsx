@@ -122,11 +122,11 @@ export default function Account(props) {
                 edge="end"
                 aria-label="View account info">
                 {!stateData.registered ? null : stateData.authType === "github" ? (
-                  <GithubIcon />
+                  <GithubIcon fontSize="large" height="24" width="24"/>
                 ) : stateData.authType === "google" ? (
-                  <GoogleIcon />
+                  <GoogleIcon fontSize="large" height="24" width="24"/>
                 ) : (
-                  <EmailIcon />
+                  <EmailIcon fontSize="large" height="24" width="24"/>
                 )}
               </IconButton>
             </ListItemSecondaryAction>
@@ -151,7 +151,7 @@ export default function Account(props) {
               <Grid item xs={10}>
                 <div className={classes.labelRoot}>
                   <SpotifyIcon />
-                  <Typography style={{paddingLeft: 5}}>
+                  <Typography style={{paddingLeft: 6}}>
                     {props.stateData.spotifyUser.email}
                   </Typography>
                 </div>

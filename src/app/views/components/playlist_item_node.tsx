@@ -117,7 +117,7 @@ export default function PlaylistItemNode(props) {
 			<Grid item xs={10}
 				className={(item.type === "playlist") ? classes.playlistName : classes.trackName}>
 				<Button classes={{ root: classes.textButton }}
-					startIcon={(item.type === "playlist") ? <PlaylistIcon /> : <TrackIcon />}>
+					startIcon={(item.type === "playlist") ? <PlaylistIcon /> : <TrackIcon/>}>
 					<Typography noWrap >{ item.name }</Typography>
 				</Button>
 			</Grid>

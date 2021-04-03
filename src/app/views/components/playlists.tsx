@@ -43,7 +43,6 @@ export default function Playlists(props) {
       aria-label="gmail"
       defaultExpanded={props.stateData.selectedPlaylistId ? [props.stateData.selectedPlaylistId] : []}
       className={classes.root}
-      style={{height: `${props.viewHeight}px`}}
       defaultCollapseIcon={<ArrowDropDownIcon />}
       defaultExpandIcon={<ArrowRightIcon />}
     >

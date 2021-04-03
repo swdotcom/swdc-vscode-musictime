@@ -10,12 +10,16 @@ import Setup from "./components/setup";
 import ColdStart from "./components/cold_start";
 import Playlists from "./components/playlists";
 import Divider from "@material-ui/core/Divider";
-import MediaControl from "./components/media_control";
+import AppBar from "@material-ui/core/AppBar";
+import Toolbar from "@material-ui/core/Toolbar";
+import BottomNavigation from "@material-ui/core/BottomNavigation";
+import BottomNavigationAction from "@material-ui/core/BottomNavigationAction";
 import {
   ACCOUNT_HEIGHT,
   MEDIA_HEIGHT,
   PLAYLIST_MIN_HEIGHT
 } from "../utils/view_constants";
+import { PlaylistIcon, BeakerIcon, TrackIcon } from "./icons";
 
 const useStyles = makeStyles((theme) => ({
   gridItem: {
@@ -29,8 +33,20 @@ const useStyles = makeStyles((theme) => ({
   },
   playlistGridItem: {
     marginLeft: 10,
-    marginRight: 10
-  }
+    marginRight: 10,
+    marginBottom: 55
+  },
+  bottomNav: {
+    flexGrow: 1,
+    width: "100%",
+    margin: 0
+  },
+  appBar: {
+    top: "auto",
+    bottom: 0,
+    padding: 0,
+    margin: 0
+  },
 }));
 
 const getHeight = () => window.innerHeight
@@ -49,12 +65,12 @@ function useCurrentHeight() {
       setHeight(getHeight())
     };
     // set resize listener
-    window.addEventListener('resize', resizeListener);
+    window.addEventListener("resize", resizeListener);
 
     // clean up function
     return () => {
       // remove resize listener
-      window.removeEventListener('resize', resizeListener);
+      window.removeEventListener("resize", resizeListener);
     }
   }, [])
 
@@ -63,6 +79,8 @@ function useCurrentHeight() {
 
 export default function SideBar(props) {
   const classes = useStyles();
+
+  const [value, setValue] = React.useState(0);
 
   const maxPlaylistHeight = useCurrentHeight() - ACCOUNT_HEIGHT - MEDIA_HEIGHT - 10;
   const playlistTreeViewHeight = Math.max(PLAYLIST_MIN_HEIGHT, maxPlaylistHeight);
@@ -179,6 +197,7 @@ export default function SideBar(props) {
 
   return (
     <ThemeProvider theme={theme}>
+      <React.Fragment>
       <CssBaseline />
       <Grid container style={{overflowX: "hidden"}}>
         {(!props.stateData.registered || (!props.stateData.spotifyUser)) && (
@@ -199,16 +218,32 @@ export default function SideBar(props) {
 
         {props.stateData.spotifyUser && (
         <Grid item xs={12} className={classes.playlistGridItem}>
-          <Playlists vscode={props.vscode} stateData={props.stateData} viewHeight={playlistTreeViewHeight}/>
+          <Playlists vscode={props.vscode} stateData={props.stateData}/>
         </Grid>)}
 
         {props.stateData.spotifyUser && (<Divider />)}
 
-        {props.stateData.spotifyUser && (<Grid item xs={12} className={classes.gridItem}>
+        {/* {props.stateData.spotifyUser && (<Grid item xs={12} className={classes.gridItem}>
           <MediaControl vscode={props.vscode} stateData={props.stateData}/>
-        </Grid>)}
+        </Grid>)} */}
 
       </Grid>
+
+      <AppBar position="fixed" className={classes.appBar}>
+        <Toolbar variant="dense" disableGutters={true}>
+          <BottomNavigation
+            value={value}
+            onChange={(event, newValue) => {
+              setValue(newValue);
+            }}
+            className={classes.bottomNav}>
+            <BottomNavigationAction label="Playlists" icon={<PlaylistIcon fontSize="large"/>} />
+            <BottomNavigationAction label="Recommendations" icon={<BeakerIcon fontSize="large"/>} />
+            <BottomNavigationAction label="Track" icon={<TrackIcon fontSize="large"/>} />
+          </BottomNavigation>
+        </Toolbar>
+      </AppBar>
+      </React.Fragment>
     </ThemeProvider>
   );
 }
