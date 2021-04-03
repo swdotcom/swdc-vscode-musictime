@@ -12,6 +12,7 @@ import Playlists from "./components/playlists";
 import Divider from "@material-ui/core/Divider";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
+import Typography from "@material-ui/core/Typography";
 import BottomNavigation from "@material-ui/core/BottomNavigation";
 import BottomNavigationAction from "@material-ui/core/BottomNavigationAction";
 import {
@@ -41,7 +42,12 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
     margin: 0
   },
-  appBar: {
+  topAppBar: {
+    top: 0,
+    padding: 0,
+    margin: 0
+  },
+  bottomAppBar: {
     top: "auto",
     bottom: 0,
     padding: 0,
@@ -199,18 +205,19 @@ export default function SideBar(props) {
     <ThemeProvider theme={theme}>
       <React.Fragment>
       <CssBaseline />
+      <AppBar position="fixed" className={classes.topAppBar}>
+        <Grid container>
+          {(!props.stateData.registered || (!props.stateData.spotifyUser)) && (
+            <Grid item xs={12} className={classes.gridItemSetup}>
+              <Setup stateData={props.stateData} vscode={props.vscode} />
+            </Grid>
+          )}
+          {props.stateData.registered && (<Grid item xs={12} className={classes.gridItem}>
+            <Account vscode={props.vscode} stateData={props.stateData} />
+          </Grid>)}
+        </Grid>
+      </AppBar>
       <Grid container style={{overflowX: "hidden"}}>
-        {(!props.stateData.registered || (!props.stateData.spotifyUser)) && (
-          <Grid item xs={12} className={classes.gridItemSetup}>
-            <Setup stateData={props.stateData} vscode={props.vscode} />
-          </Grid>
-        )}
-
-        {props.stateData.registered && (<Grid item xs={12} className={classes.gridItem}>
-          <Account vscode={props.vscode} stateData={props.stateData} />
-        </Grid>)}
-
-        <Divider />
 
         {!props.stateData.spotifyUser && (<Grid item xs={12} className={classes.gridItem}>
           <ColdStart vscode={props.vscode} stateData={props.stateData}/>
@@ -229,13 +236,16 @@ export default function SideBar(props) {
 
       </Grid>
 
-      <AppBar position="fixed" className={classes.appBar}>
+      <AppBar position="fixed" className={classes.bottomAppBar}>
+        <Typography>{value}</Typography>
         <Toolbar variant="dense" disableGutters={true}>
           <BottomNavigation
-            value={value}
             onChange={(event, newValue) => {
+              console.log("newValue: ", newValue);
+              console.log("event: ", JSON.stringify(event));
               setValue(newValue);
             }}
+            showLabels={false}
             className={classes.bottomNav}>
             <BottomNavigationAction label="Playlists" icon={<PlaylistIcon fontSize="large"/>} />
             <BottomNavigationAction label="Recommendations" icon={<BeakerIcon fontSize="large"/>} />
