@@ -25,6 +25,7 @@ const useStyles = makeStyles((theme) => ({
   },
   secondaryAction: {
     right: 0,
+    padding: "14px 20px"
   },
   gridItem: {
     marginLeft: -10
@@ -120,13 +121,14 @@ export default function Account(props) {
               <IconButton
                 size="small"
                 edge="end"
+                style={{width: "32px", height: "32px"}}
                 aria-label="View account info">
                 {!stateData.registered ? null : stateData.authType === "github" ? (
-                  <GithubIcon fontSize="large"/>
+                  <GithubIcon/>
                 ) : stateData.authType === "google" ? (
-                  <GoogleIcon fontSize="large"/>
+                  <GoogleIcon/>
                 ) : (
-                  <EmailIcon fontSize="large"/>
+                  <EmailIcon/>
                 )}
               </IconButton>
             </ListItemSecondaryAction>
@@ -138,7 +140,7 @@ export default function Account(props) {
           {!props.stateData.spotifyUser && (
             <ListItem disableGutters={true} dense={true} button onClick={connectSpotifyHandler}>
               <ListItemIcon className={classes.listItemIcon}>
-                <SpotifyIcon fontSize="large"/>
+                <SpotifyIcon/>
               </ListItemIcon>
               <ListItemText id="spotify-connect-li" primary="Connect Spotify"
                 classes={{primary: classes.primaryListText}}/>
@@ -150,7 +152,9 @@ export default function Account(props) {
               alignItems="center">
               <Grid item xs={10}>
                 <div className={classes.labelRoot}>
-                  <SpotifyIcon fontSize="large"/>
+                  <ListItemIcon className={classes.listItemIcon}>
+                    <SpotifyIcon/>
+                  </ListItemIcon>
                   <Typography>
                     {props.stateData.spotifyUser.email}
                   </Typography>
@@ -174,7 +178,7 @@ export default function Account(props) {
 
           <ListItem disableGutters={true} dense={true} button onClick={documentationClickHandler}>
             <ListItemIcon className={classes.listItemIcon}>
-              <DocumentIcon fontSize="large"/>
+              <DocumentIcon/>
             </ListItemIcon>
             <ListItemText id="documentation-li" primary="Documentation"
               classes={{primary: classes.primaryListText}}/>
@@ -182,7 +186,7 @@ export default function Account(props) {
 
           <ListItem disableGutters={true} dense={true} button onClick={submitIssueClickHandler}>
             <ListItemIcon className={classes.listItemIcon}>
-              <MessageIcon fontSize="large"/>
+              <MessageIcon/>
             </ListItemIcon>
             <ListItemText id="submit-issue-li" primary="Submit an issue"
               classes={{primary: classes.primaryListText}}/>

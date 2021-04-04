@@ -73,12 +73,32 @@ export default function PlaylistItemNode(props) {
 	let timeout = undefined;
 
 	function showMenu() {
-		if (item.type === "playlist") return;
+		if (item.type === "playlist") {
+			return;
+		}
 		if (timeout) {
 			clearTimeout(timeout);
 			timeout = undefined;
 		}
 		setShow(true);
+	}
+
+	function playTrack() {
+		const command = {
+      action: "musictime.playTrack",
+      command: "command_execute",
+			arguments: [item]
+    };
+    props.vscode.postMessage(command);
+	}
+
+	function showAlbum() {
+		const command = {
+      action: "musictime.showAlbum",
+      command: "command_execute",
+			arguments: [item]
+    };
+    props.vscode.postMessage(command);
 	}
 
 	function hideMenu() {
@@ -101,15 +121,6 @@ export default function PlaylistItemNode(props) {
 		event.preventDefault();
   }
 
-	function showAlbum() {
-		const command = {
-      action: "musictime.showAlbum",
-      command: "command_execute",
-			arguments: [item]
-    };
-    props.vscode.postMessage(command);
-	}
-
   return (
 		<Grid container direction="row" justify="space-between"
 			onMouseOver={showMenu}
@@ -118,7 +129,9 @@ export default function PlaylistItemNode(props) {
 			<Grid item xs={10}
 				className={(item.type === "playlist") ? classes.playlistName : classes.trackName}>
 				<Button classes={{ root: classes.textButton }}
-					startIcon={(item.type === "playlist") ? <PlaylistIcon /> : <TrackIcon/>}>
+					onClick={playTrack}
+					startIcon={(item.type === "playlist") ? <PlaylistIcon /> : <TrackIcon/>}
+					>
 					<Typography noWrap >{ item.name }</Typography>
 				</Button>
 			</Grid>

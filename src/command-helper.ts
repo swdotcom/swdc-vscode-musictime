@@ -30,7 +30,7 @@ import { displayReadmeIfNotExists } from "./managers/FileManager";
 import { launchLogin, showLogInMenuOptions, showSignUpMenuOptions } from "./managers/UserStatusManager";
 import { MusicTimeWebviewSidebar } from './sidebar/MusicTimeWebviewSidebar';
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID, vscode_mt_issues_url } from './Constants';
-import { fetchTracksForLikedSongs, fetchTracksForPlaylist } from './managers/PlaylistManager';
+import { fetchTracksForLikedSongs, fetchTracksForPlaylist, playSelectedItem } from './managers/PlaylistManager';
 
 /**
  * add the commands to vscode....
@@ -538,6 +538,12 @@ export function createCommands(ctx: ExtensionContext): {
       } else {
         fetchTracksForPlaylist(playlist_id);
       }
+    })
+  );
+
+  cmds.push(
+    commands.registerCommand("musictime.playTrack", async (item:PlaylistItem) => {
+      playSelectedItem(item);
     })
   );
 

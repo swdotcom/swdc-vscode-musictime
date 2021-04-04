@@ -255,9 +255,9 @@ export default function SideBar(props) {
               setTabValue(newValue);
             }}
             className={classes.bottomNav}>
-            <BottomNavigationAction label="Playlists" value="playlists" icon={<PlaylistIcon fontSize="large"/>} />
-            <BottomNavigationAction label="Recommendations" value="recommendations" icon={<BeakerIcon fontSize="large"/>} />
-            <BottomNavigationAction label="Track" value="track" icon={<TrackIcon fontSize="large"/>} />
+            <BottomNavigationAction label="Playlists" value="playlists" icon={<PlaylistIcon/>} />
+            <BottomNavigationAction label="Recommendations" value="recommendations" icon={<BeakerIcon/>} />
+            <BottomNavigationAction label="Track" value="track" icon={<TrackIcon/>} />
           </BottomNavigation>
         </Toolbar>
       </AppBar>
