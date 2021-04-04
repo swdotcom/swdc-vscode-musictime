@@ -2,28 +2,23 @@ import React, { useEffect, useState } from "react";
 import Account from "./components/account";
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
-import blue from "@material-ui/core/colors/blue";
 import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import Setup from "./components/setup";
 import ColdStart from "./components/cold_start";
 import Playlists from "./components/playlists";
-import Divider from "@material-ui/core/Divider";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
-import Typography from "@material-ui/core/Typography";
 import BottomNavigation from "@material-ui/core/BottomNavigation";
 import BottomNavigationAction from "@material-ui/core/BottomNavigationAction";
 import {
-  ACCOUNT_HEIGHT,
-  MEDIA_HEIGHT,
-  PLAYLIST_MIN_HEIGHT,
   TOP_APP_BAR_MIN_HEIGHT,
   BOTTOM_BAR_HEIGHT,
   DARK_BG_COLOR
 } from "../utils/view_constants";
 import { PlaylistIcon, BeakerIcon, TrackIcon } from "./icons";
 import grey from "@material-ui/core/colors/grey";
+import deepPurple from "@material-ui/core/colors/deepPurple";
 
 const useStyles = makeStyles((theme) => ({
   gridItem: {
@@ -93,10 +88,7 @@ function useCurrentHeight() {
 export default function SideBar(props) {
   const classes = useStyles();
 
-  const [value, setValue] = React.useState(0);
-
-  const maxPlaylistHeight = useCurrentHeight() - ACCOUNT_HEIGHT - MEDIA_HEIGHT - 10;
-  const playlistTreeViewHeight = Math.max(PLAYLIST_MIN_HEIGHT, maxPlaylistHeight);
+  const [value, setValue] = React.useState("playlists");
 
   const currentColorKind = props.stateData.currentColorKind;
   const prefersDarkMode = !!(currentColorKind === 2);
@@ -126,7 +118,7 @@ export default function SideBar(props) {
         },
         palette: {
           type: prefersDarkMode ? "dark" : "light",
-          primary: blue,
+          primary: deepPurple,
         },
         overrides: {
           MuiGrid: {
@@ -202,6 +194,12 @@ export default function SideBar(props) {
             root: {
               right: 0
             }
+          },
+          MuiBottomNavigationAction: {
+            label: {
+              color: grey[100],
+              fontWeight: 600
+            }
           }
         },
       }),
@@ -249,19 +247,17 @@ export default function SideBar(props) {
       </Grid>
 
       <AppBar position="fixed" className={classes.bottomAppBar}>
-        <Typography>{value}</Typography>
+
         <Toolbar variant="dense" disableGutters={true} style={{background: "transparent"}}>
           <BottomNavigation
+            value={value}
             onChange={(event, newValue) => {
-              console.log("newValue: ", newValue);
-              console.log("event: ", JSON.stringify(event));
               setValue(newValue);
             }}
-            showLabels={false}
             className={classes.bottomNav}>
-            <BottomNavigationAction label="Playlists" icon={<PlaylistIcon fontSize="large"/>} />
-            <BottomNavigationAction label="Recommendations" icon={<BeakerIcon fontSize="large"/>} />
-            <BottomNavigationAction label="Track" icon={<TrackIcon fontSize="large"/>} />
+            <BottomNavigationAction label="Playlists" value="playlists" icon={<PlaylistIcon fontSize="large"/>} />
+            <BottomNavigationAction label="Recommendations" value="recommendations" icon={<BeakerIcon fontSize="large"/>} />
+            <BottomNavigationAction label="Track" value="track" icon={<TrackIcon fontSize="large"/>} />
           </BottomNavigation>
         </Toolbar>
       </AppBar>

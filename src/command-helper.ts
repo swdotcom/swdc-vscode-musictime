@@ -29,8 +29,8 @@ import { connectSpotify, disconnectSpotify, switchSpotifyAccount } from "./manag
 import { displayReadmeIfNotExists } from "./managers/FileManager";
 import { launchLogin, showLogInMenuOptions, showSignUpMenuOptions } from "./managers/UserStatusManager";
 import { MusicTimeWebviewSidebar } from './sidebar/MusicTimeWebviewSidebar';
-import { vscode_mt_issues_url } from './Constants';
-import { fetchTracksForPlaylist } from './managers/PlaylistManager';
+import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID, vscode_mt_issues_url } from './Constants';
+import { fetchTracksForLikedSongs, fetchTracksForPlaylist } from './managers/PlaylistManager';
 
 /**
  * add the commands to vscode....
@@ -533,7 +533,11 @@ export function createCommands(ctx: ExtensionContext): {
 
   cmds.push(
     commands.registerCommand("musictime.fetchPlaylistTracks", async (playlist_id) => {
-      fetchTracksForPlaylist(playlist_id);
+      if (playlist_id === SPOTIFY_LIKED_SONGS_PLAYLIST_ID) {
+        fetchTracksForLikedSongs();
+      } else {
+        fetchTracksForPlaylist(playlist_id);
+      }
     })
   );
 

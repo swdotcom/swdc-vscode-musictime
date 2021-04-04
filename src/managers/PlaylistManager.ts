@@ -1,5 +1,6 @@
-import { CodyResponse, CodyResponseType, getPlaylists, getPlaylistTracks, PaginationItem, PlayerName, PlaylistItem, Track, TrackStatus } from 'cody-music';
+import { CodyResponse, CodyResponseType, getPlaylists, getPlaylistTracks, getSpotifyLikedSongs, PaginationItem, PlayerName, PlayerType, PlaylistItem, PlaylistTrackInfo, Track, TrackStatus } from 'cody-music';
 import { commands } from 'vscode';
+import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from '../Constants';
 import { getSpotifyIntegration } from './SpotifyManager';
 
 let spotifyLikedSongs: Track[] = undefined;
@@ -15,25 +16,19 @@ export function getCachedPlaylistTracks() {
 	return playlistTracks;
 }
 
-export function getSelectedPlaylistId() {
-	return selectedPlaylistId;
+export function getCachedLikedSongsTracks() {
+	return spotifyLikedSongs;
 }
 
-export async function getSpotifyLikedSongs(): Promise<Track[]> {
-	if (requiresSpotifyAccess()) {
-		return [];
-	}
-
-	if (spotifyLikedSongs) {
-		return spotifyLikedSongs;
-	}
-	spotifyLikedSongs = await getSpotifyLikedSongs();
-	return spotifyLikedSongs;
+export function getSelectedPlaylistId() {
+	return selectedPlaylistId;
 }
 
 export async function clearSpotifyPlaylistsCache() {
 	spotifyPlaylists = undefined;
 }
+
+// PLAYLIST TYPES
 
 export async function getSpotifyPlaylists(): Promise<PlaylistItem[]> {
 	if (requiresSpotifyAccess()) {
@@ -47,10 +42,30 @@ export async function getSpotifyPlaylists(): Promise<PlaylistItem[]> {
 	return spotifyPlaylists;
 }
 
-function requiresSpotifyAccess() {
-	const spotifyIntegration = getSpotifyIntegration();
-	// no spotify access token then return true, the user requires spotify access
-	return !spotifyIntegration ? true : false;
+export function getSpotifyLikedSongsPlaylist() {
+	const item: PlaylistItem = new PlaylistItem();
+	item.type = "playlist";
+	item.id = SPOTIFY_LIKED_SONGS_PLAYLIST_ID;
+	item.tracks = new PlaylistTrackInfo();
+	// set set a number so it shows up
+	item.tracks.total = 1;
+	item.playerType = PlayerType.WebSpotify;
+	item.tag = "spotify-liked-songs";
+	item.itemType = "playlist";
+	item.name = SPOTIFY_LIKED_SONGS_PLAYLIST_NAME;
+	item["icon"] = "heart-filled.svg";
+	return item;
+}
+
+// FETCH TRACKS
+
+export async function fetchTracksForLikedSongs(): Promise<Track[]> {
+	if (requiresSpotifyAccess()) {
+		return [];
+	}
+
+	spotifyLikedSongs = await getSpotifyLikedSongs();
+	return spotifyLikedSongs;
 }
 
 export async function fetchTracksForPlaylist(playlist_id) {
@@ -63,6 +78,8 @@ export async function fetchTracksForPlaylist(playlist_id) {
 	// refresh the webview
 	commands.executeCommand("musictime.refreshMusicTimeView");
 }
+
+// PRIVATE FUNCTIONS
 
 function getPlaylistItemTracksFromCodyResponse(codyResponse: CodyResponse): PlaylistItem[] {
 	let playlistItems: PlaylistItem[] = [];
@@ -127,4 +144,10 @@ function getArtist(track: any) {
 		return trackArtist.name;
 	}
 	return null;
+}
+
+function requiresSpotifyAccess() {
+	const spotifyIntegration = getSpotifyIntegration();
+	// no spotify access token then return true, the user requires spotify access
+	return !spotifyIntegration ? true : false;
 }

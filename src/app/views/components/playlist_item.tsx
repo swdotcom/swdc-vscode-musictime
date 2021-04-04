@@ -4,7 +4,8 @@ import PlaylistItemNode from "./playlist_item_node";
 
 export default function PlaylistItem(props) {
   return (
-		<TreeItem nodeId={props.playlistItem.id}
+		<TreeItem
+    nodeId={props.playlistItem.id}
       label={<PlaylistItemNode vscode={props.vscode} item={props.playlistItem}/>}
 		>
 			{props.playlistTracks?.length ? (
