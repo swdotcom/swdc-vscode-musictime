@@ -61,6 +61,7 @@ const useStyles = makeStyles((theme: Theme) =>
 		}
   })
 );
+
 export default function PlaylistItemNode(props) {
 	const classes = useStyles();
 	const [show, setShow] = useState(false);

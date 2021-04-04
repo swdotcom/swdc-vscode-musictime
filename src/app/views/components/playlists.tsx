@@ -4,8 +4,9 @@ import PlaylistItem from "./playlist_item";
 import TreeView from "@material-ui/lab/TreeView";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import ArrowRightIcon from "@material-ui/icons/ArrowRight";
-import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
+import Card from "@material-ui/core/Card";
+import CardHeader from "@material-ui/core/CardHeader";
+import Divider from "@material-ui/core/Divider";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -17,7 +18,7 @@ const useStyles = makeStyles((theme) => ({
   },
   cardHeader: {
     padding: 0,
-    margin: 0
+    marginBottom: 4
   }
 }));
 
@@ -27,19 +28,16 @@ export default function Playlists(props) {
   const classes = useStyles();
 
   playlistTracks = props.stateData.playlistTracks;
-
-  if (props.stateData.likedSongsTracks?.length) {
-    playlistTracks[props.stateData.likedSongsPlaylist.id] = props.stateData.likedSongsTracks;
-  } else {
-    playlistTracks[props.stateData.likedSongsPlaylist.id] = [];
-  }
+  playlistTracks[props.stateData.likedSongsPlaylist.id] = props.stateData.likedSongsTracks;
 
   async function onTreeNodeToggle(event, nodeIds: string[]) {
     if (nodeIds?.length) {
       // get the 1st one. the list is built up
       const playlist_id = nodeIds[0];
 
-      if (!playlistTracks[playlist_id]) {
+      const val = playlistTracks[playlist_id];
+
+      if (!val) {
         const command = {
           action: "musictime.fetchPlaylistTracks",
           command: "command_execute",
@@ -53,11 +51,13 @@ export default function Playlists(props) {
   return (
     <Card className={classes.root}>
       <CardHeader title="Playlists" className={classes.cardHeader}/>
+
       <TreeView
         onNodeToggle={onTreeNodeToggle}
         aria-label="gmail"
         defaultExpanded={props.stateData.selectedPlaylistId ? [props.stateData.selectedPlaylistId] : []}
         className={classes.root}
+        disableSelection={true}
         defaultCollapseIcon={<ArrowDropDownIcon />}
         defaultExpandIcon={<ArrowRightIcon />}>
 
@@ -65,6 +65,8 @@ export default function Playlists(props) {
               playlistItem={props.stateData.likedSongsPlaylist}
               key={props.stateData.likedSongsPlaylist.id}
               playlistTracks={props.stateData.playlistTracks[props.stateData.likedSongsPlaylist.id]}/>
+
+        <Divider />
 
         {props.stateData.spotifyPlaylists ? (
           props.stateData.spotifyPlaylists.map((item, index) => {

@@ -8,9 +8,18 @@ let spotifyPlaylists: PlaylistItem[] = undefined;
 let playlistTracks: any = {};
 let selectedPlaylistId = undefined;
 
+
+// CLEAR TRACK LISTS
+
 export async function clearSpotifyLikedSongsCache() {
 	spotifyLikedSongs = undefined;
 }
+
+export async function clearSpotifyPlaylistsCache() {
+	spotifyPlaylists = undefined;
+}
+
+// CACHE FETCH
 
 export function getCachedPlaylistTracks() {
 	return playlistTracks;
@@ -22,10 +31,6 @@ export function getCachedLikedSongsTracks() {
 
 export function getSelectedPlaylistId() {
 	return selectedPlaylistId;
-}
-
-export async function clearSpotifyPlaylistsCache() {
-	spotifyPlaylists = undefined;
 }
 
 // PLAYLIST TYPES
@@ -59,13 +64,14 @@ export function getSpotifyLikedSongsPlaylist() {
 
 // FETCH TRACKS
 
-export async function fetchTracksForLikedSongs(): Promise<Track[]> {
-	if (requiresSpotifyAccess()) {
-		return [];
+export async function fetchTracksForLikedSongs() {
+	selectedPlaylistId = SPOTIFY_LIKED_SONGS_PLAYLIST_ID;
+	if (!spotifyLikedSongs) {
+		spotifyLikedSongs = await getSpotifyLikedSongs();
 	}
 
-	spotifyLikedSongs = await getSpotifyLikedSongs();
-	return spotifyLikedSongs;
+	// refresh the webview
+	commands.executeCommand("musictime.refreshMusicTimeView");
 }
 
 export async function fetchTracksForPlaylist(playlist_id) {

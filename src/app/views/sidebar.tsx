@@ -7,6 +7,7 @@ import Grid from "@material-ui/core/Grid";
 import Setup from "./components/setup";
 import ColdStart from "./components/cold_start";
 import Playlists from "./components/playlists";
+import Recommendations from "./components/recommendations";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import BottomNavigation from "@material-ui/core/BottomNavigation";
@@ -88,7 +89,7 @@ function useCurrentHeight() {
 export default function SideBar(props) {
   const classes = useStyles();
 
-  const [value, setValue] = React.useState("playlists");
+  const [tabValue, setTabValue] = React.useState("playlists");
 
   const currentColorKind = props.stateData.currentColorKind;
   const prefersDarkMode = !!(currentColorKind === 2);
@@ -233,16 +234,15 @@ export default function SideBar(props) {
           <ColdStart vscode={props.vscode} stateData={props.stateData}/>
         </Grid>)}
 
-        {props.stateData.spotifyUser && (
+        {(tabValue === "playlists" && props.stateData.spotifyUser) && (
         <Grid item xs={12} className={classes.playlistGridItem}>
           <Playlists vscode={props.vscode} stateData={props.stateData}/>
         </Grid>)}
 
-        {/* {props.stateData.spotifyUser && (<Divider />)} */}
-
-        {/* {props.stateData.spotifyUser && (<Grid item xs={12} className={classes.gridItem}>
-          <MediaControl vscode={props.vscode} stateData={props.stateData}/>
-        </Grid>)} */}
+        {(tabValue === "recommendations" && props.stateData.spotifyUser) && (
+        <Grid item xs={12} className={classes.playlistGridItem}>
+          <Recommendations vscode={props.vscode} stateData={props.stateData}/>
+        </Grid>)}
 
       </Grid>
 
@@ -250,9 +250,9 @@ export default function SideBar(props) {
 
         <Toolbar variant="dense" disableGutters={true} style={{background: "transparent"}}>
           <BottomNavigation
-            value={value}
+            value={tabValue}
             onChange={(event, newValue) => {
-              setValue(newValue);
+              setTabValue(newValue);
             }}
             className={classes.bottomNav}>
             <BottomNavigationAction label="Playlists" value="playlists" icon={<PlaylistIcon fontSize="large"/>} />
