@@ -229,15 +229,15 @@ export function getDeviceSet() {
     return deviceData;
 }
 
-export function getDeviceId() {
+export function getBestActiveDevice() {
     const { webPlayer, desktop, activeDevice } = getDeviceSet();
 
-    const deviceId = activeDevice
-        ? activeDevice.id
+    const device = activeDevice
+        ? activeDevice
         : desktop
-            ? desktop.id
+            ? desktop
             : webPlayer
-                ? webPlayer.id
-                : "";
-    return deviceId;
+                ? webPlayer
+                : null;
+    return device;
 }

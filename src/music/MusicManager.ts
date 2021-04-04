@@ -43,8 +43,8 @@ import {
   buildTracksForRecommendations,
   requiresSpotifyAccess,
   getDeviceSet,
-  getDeviceId,
   requiresSpotifyReAuthentication,
+  getBestActiveDevice,
 } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 import { MusicCommandUtil } from "./MusicCommandUtil";
@@ -465,7 +465,7 @@ export class MusicManager {
   }
 
   async playNextLikedSong() {
-    const deviceId = getDeviceId();
+    const device = getBestActiveDevice();
 
     // play the next song
     const nextTrack: Track = this.getNextSpotifyLikedSong();
@@ -474,7 +474,7 @@ export class MusicManager {
       this.dataMgr.selectedTrackItem = playlistItem;
       if (isPremiumUser()) {
         // play the next track
-        await MusicCommandUtil.getInstance().runSpotifyCommand(playSpotifyTrack, [playlistItem.id, deviceId]);
+        await MusicCommandUtil.getInstance().runSpotifyCommand(playSpotifyTrack, [playlistItem.id, device?.id]);
       } else {
         // play it using the track id
         const trackUri = createUriFromTrackId(playlistItem.id);
@@ -485,7 +485,7 @@ export class MusicManager {
   }
 
   async playPreviousLikedSong() {
-    const deviceId = getDeviceId();
+    const device = getBestActiveDevice();
     // play the next song
     const prevTrack: Track = this.getPreviousSpotifyLikedSong();
     if (prevTrack) {
@@ -493,7 +493,7 @@ export class MusicManager {
       this.dataMgr.selectedTrackItem = playlistItem;
       if (isPremiumUser()) {
         // launch and play the next track
-        await MusicCommandUtil.getInstance().runSpotifyCommand(playSpotifyTrack, [playlistItem.id, deviceId]);
+        await MusicCommandUtil.getInstance().runSpotifyCommand(playSpotifyTrack, [playlistItem.id, device?.id]);
       } else {
         // play it using the track id
         const trackUri = createUriFromTrackId(playlistItem.id);
@@ -664,8 +664,8 @@ export class MusicManager {
         tries--;
         this.checkDeviceLaunch(playerName, tries, callback);
       } else {
-        const deviceId = getDeviceId();
-        if (!deviceId && !isMac()) {
+        const device = getBestActiveDevice();
+        if (!device && !isMac()) {
           window.showInformationMessage("Unable to detect a connected Spotify device. Please make sure you are logged into your account.");
         }
 
@@ -861,7 +861,7 @@ export class MusicManager {
     const playlistId = this.dataMgr.selectedPlaylist ? this.dataMgr.selectedPlaylist.id : null;
     let trackId = this.dataMgr.selectedTrackItem ? this.dataMgr.selectedTrackItem.id : null;
 
-    const deviceId = getDeviceId();
+    const device = getBestActiveDevice();
 
     const isLikedSong = this.dataMgr.selectedPlaylist && this.dataMgr.selectedPlaylist.name === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME ? true : false;
     const isRecommendationTrack = this.dataMgr.selectedTrackItem.type === "recommendation" ? true : false;
@@ -878,7 +878,7 @@ export class MusicManager {
       }
       if (!result || result !== "ok") {
         // try with the web player
-        result = await this.playRecommendationsOrLikedSongsByPlaylist(this.dataMgr.selectedTrackItem, deviceId);
+        result = await this.playRecommendationsOrLikedSongsByPlaylist(this.dataMgr.selectedTrackItem, device?.id);
       }
     } else if (playlistId) {
       if (isMac() && this.selectedPlayerName === PlayerName.SpotifyDesktop) {
@@ -892,7 +892,7 @@ export class MusicManager {
       }
       if (!result || result !== "ok") {
         // try with the web player
-        result = await musicCommandUtil.runSpotifyCommand(playSpotifyPlaylist, [playlistId, trackId, deviceId]);
+        result = await musicCommandUtil.runSpotifyCommand(playSpotifyPlaylist, [playlistId, trackId, device?.id]);
       }
     } else {
       if (isMac() && this.selectedPlayerName === PlayerName.SpotifyDesktop) {
@@ -905,12 +905,12 @@ export class MusicManager {
       }
       if (!result || result !== "ok") {
         // else it's not a liked or recommendation play request, just play the selected track
-        result = await musicCommandUtil.runSpotifyCommand(playSpotifyTrack, [trackId, deviceId]);
+        result = await musicCommandUtil.runSpotifyCommand(playSpotifyTrack, [trackId, device?.id]);
       }
     }
 
     setTimeout(() => {
-      this.checkPlayingState(deviceId);
+      this.checkPlayingState(device?.id);
     }, 1000);
   };
 

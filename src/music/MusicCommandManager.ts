@@ -3,8 +3,8 @@ import { getSongDisplayName } from "../Util";
 import { TrackStatus, Track } from "cody-music";
 import {
     requiresSpotifyAccess,
-    getDeviceId,
     requiresSpotifyReAuthentication,
+    getBestActiveDevice,
 } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 import { getItem, setItem } from "../managers/FileManager";
@@ -251,7 +251,7 @@ export class MusicCommandManager {
      * @param trackInfo
      */
     private static async showPlayControls(trackInfo: Track) {
-        if (!trackInfo && !getDeviceId()) {
+        if (!trackInfo && !getBestActiveDevice()) {
             this.showLaunchPlayerControls();
         } else if (!trackInfo) {
             trackInfo = new Track();
@@ -331,7 +331,7 @@ export class MusicCommandManager {
      * @param trackInfo
      */
     private static async showPauseControls(trackInfo: Track) {
-        if (!trackInfo && !getDeviceId()) {
+        if (!trackInfo && !getBestActiveDevice()) {
             this.showLaunchPlayerControls();
         } else if (!trackInfo) {
             trackInfo = new Track();

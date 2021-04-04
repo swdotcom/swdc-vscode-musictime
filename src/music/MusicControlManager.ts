@@ -50,7 +50,7 @@ import { tmpdir } from "os";
 import { connectSlackWorkspace, hasSlackWorkspaces } from "../managers/SlackManager";
 import { MusicManager } from "./MusicManager";
 import { MusicPlaylistManager } from "./MusicPlaylistManager";
-import { sortPlaylists, requiresSpotifyAccess, getDeviceSet, getDeviceId } from "./MusicUtil";
+import { sortPlaylists, requiresSpotifyAccess, getDeviceSet, getBestActiveDevice } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 import { MusicCommandUtil } from "./MusicCommandUtil";
 import {
@@ -121,7 +121,7 @@ export class MusicControlManager {
    */
   async playSong(tries = 0) {
     let result: any = null;
-    const deviceId = getDeviceId();
+    const deviceId = getBestActiveDevice();
     const controlMgr: MusicControlManager = MusicControlManager.getInstance();
     if (!deviceId && tries === 1) {
       // initiate the device selection prompt
@@ -132,11 +132,12 @@ export class MusicControlManager {
        dataMgr.runningTrack = await getTrack(PlayerName.SpotifyWeb);
         if (!dataMgr.runningTrack || !dataMgr.runningTrack.id) {
           await MusicStateManager.getInstance().updateRunningTrackToMostRecentlyPlayed();
+          const device = getBestActiveDevice();
           const result: any = await MusicCommandUtil.getInstance().runSpotifyCommand(play, [
             PlayerName.SpotifyWeb,
             {
               track_ids: [dataMgr.runningTrack.id],
-              device_id: getDeviceId(),
+              device_id: device?.id,
               offset: 0,
             },
           ]);
@@ -178,8 +179,8 @@ export class MusicControlManager {
   }
 
   async setShuffleOn() {
-    const deviceId = getDeviceId();
-    await setShuffle(PlayerName.SpotifyWeb, true, deviceId);
+    const device = getBestActiveDevice();
+    await setShuffle(PlayerName.SpotifyWeb, true, device?.id);
 
     setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
@@ -187,8 +188,8 @@ export class MusicControlManager {
   }
 
   async setShuffleOff() {
-    const deviceId = getDeviceId();
-    await setShuffle(PlayerName.SpotifyWeb, false, deviceId);
+    const device = getBestActiveDevice();
+    await setShuffle(PlayerName.SpotifyWeb, false, device?.id);
 
     setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
@@ -196,8 +197,8 @@ export class MusicControlManager {
   }
 
   async setRepeatTrackOn() {
-    const deviceId = getDeviceId();
-    await setRepeatTrack(PlayerName.SpotifyWeb, deviceId);
+    const device = getBestActiveDevice();
+    await setRepeatTrack(PlayerName.SpotifyWeb, device?.id);
 
     setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
@@ -205,8 +206,8 @@ export class MusicControlManager {
   }
 
   async setRepeatPlaylistOn() {
-    const deviceId = getDeviceId();
-    await setRepeatPlaylist(PlayerName.SpotifyWeb, deviceId);
+    const device = getBestActiveDevice();
+    await setRepeatPlaylist(PlayerName.SpotifyWeb, device?.id);
 
     setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
@@ -343,16 +344,16 @@ export class MusicControlManager {
   }
 
   async playSpotifyByTrackAndPlaylist(playlistId: string, trackId: string) {
-    const deviceId = getDeviceId();
+    const device = getBestActiveDevice();
     // just play the 1st track
-    await playSpotifyPlaylist(playlistId, trackId, deviceId);
+    await playSpotifyPlaylist(playlistId, trackId, device?.id);
   }
 
   async playSpotifyByTrack(track: PlaylistItem, devices: PlayerDevice[] = []) {
-    const deviceId = getDeviceId();
+    const device = getBestActiveDevice();
 
-    if (deviceId) {
-      playSpotifyTrack(track.id, deviceId);
+    if (device) {
+      playSpotifyTrack(track.id, device.id);
     } else if (!isWindows()) {
       // try with the desktop app
       playSpotifyMacDesktopTrack(track.id);

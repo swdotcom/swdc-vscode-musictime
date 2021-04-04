@@ -23,7 +23,7 @@ import { showDeviceSelectorMenu } from "./selector/SpotifyDeviceSelectorManager"
 import { updateRecommendations, refreshRecommendations, getRecommendationsForSelectedTrack, showAlbum } from "./music/MusicRecommendationManager";
 import { MusicCommandUtil } from "./music/MusicCommandUtil";
 import { showSearchInput } from "./selector/SearchSelectorManager";
-import { getDeviceId, requiresSpotifyAccess } from "./music/MusicUtil";
+import { getBestActiveDevice, requiresSpotifyAccess } from "./music/MusicUtil";
 import { MusicStateManager } from "./music/MusicStateManager";
 import { connectSpotify, disconnectSpotify, switchSpotifyAccount } from "./managers/SpotifyManager";
 import { displayReadmeIfNotExists } from "./managers/FileManager";
@@ -241,8 +241,8 @@ export function createCommands(ctx: ExtensionContext): {
 
   cmds.push(
     commands.registerCommand("musictime.songTitleRefresh", async () => {
-      const deviceId = getDeviceId();
-      if (!deviceId) {
+      const device = getBestActiveDevice();
+      if (!device) {
         await populateSpotifyDevices(false);
       }
       MusicStateManager.getInstance().fetchTrack();

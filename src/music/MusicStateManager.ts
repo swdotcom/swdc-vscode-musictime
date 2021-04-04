@@ -3,7 +3,7 @@ import { Track, TrackStatus, getTrack, PlayerName, CodyResponse, getSpotifyRecen
 import { MusicCommandManager } from "./MusicCommandManager";
 import { MusicDataManager } from "./MusicDataManager";
 import { commands } from "vscode";
-import { getDeviceId, requiresSpotifyAccess } from "./MusicUtil";
+import { getBestActiveDevice, requiresSpotifyAccess } from "./MusicUtil";
 import { execCmd } from '../managers/ExecManager';
 const path = require("path");
 const moment = require("moment-timezone");
@@ -77,10 +77,10 @@ export class MusicStateManager {
         return;
       }
 
-      const deviceId = getDeviceId();
+      const device = getBestActiveDevice();
 
       // check if we've set the existing device id but don't have a device
-      if ((!this.existingTrack || !this.existingTrack.id) && !deviceId && !isMac()) {
+      if ((!this.existingTrack || !this.existingTrack.id) && !device?.id && !isMac()) {
         // no existing track and no device, skip checking
         return;
       }
@@ -90,7 +90,7 @@ export class MusicStateManager {
         // fetch from the desktop
         playingTrack = await this.fetchSpotifyMacTrack();
         // applescript doesn't always return a name
-        if (deviceId && (!playingTrack || !playingTrack.name)) {
+        if (device && (!playingTrack || !playingTrack.name)) {
           playingTrack = await getTrack(PlayerName.SpotifyWeb);
         }
       } else {
