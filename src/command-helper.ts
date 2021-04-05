@@ -551,10 +551,10 @@ export function createCommands(ctx: ExtensionContext): {
 
   cmds.push(
     commands.registerCommand("musictime.updateSelectedTabView", async (tabView: string) => {
-      if (getSelectedTabView() === "recommendations" && !getCachedRecommendedTracks()) {
+      if (tabView === "recommendations" && !getCachedRecommendedTracks()) {
         // populate familiar recs
         await getFamiliarRecs();
-      } else if (getSelectedTabView() === "metrics" && !getCachedUserMusicMetrics()) {
+      } else if (tabView === "metrics" && !getCachedUserMusicMetrics()) {
         // populate the user music metrics
         await getUserMusicMetrics();
       }
