@@ -166,6 +166,14 @@ export async function getUserMusicMetrics() {
   const resp = await softwareGet("/music/metrics", getItem("jwt"));
   if (isResponseOk(resp) && resp.data) {
     userMusicMetrics = resp.data.user_music_metrics;
+    if (userMusicMetrics) {
+      userMusicMetrics = userMusicMetrics.map(n => {
+        n["keystrokes"] = n.keystrokes ? Math.ceil(n.keystrokes) : 0;
+        n["keystrokes_formatted"] = new Intl.NumberFormat().format(n.keystrokes);
+        return n;
+      });
+      userMusicMetrics = userMusicMetrics.filter(n => n.song_name);
+    }
   }
 }
 
