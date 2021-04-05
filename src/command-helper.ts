@@ -30,7 +30,8 @@ import { displayReadmeIfNotExists } from "./managers/FileManager";
 import { launchLogin, showLogInMenuOptions, showSignUpMenuOptions } from "./managers/UserStatusManager";
 import { MusicTimeWebviewSidebar } from './sidebar/MusicTimeWebviewSidebar';
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID, vscode_mt_issues_url } from './Constants';
-import { fetchTracksForLikedSongs, fetchTracksForPlaylist, playSelectedItem } from './managers/PlaylistManager';
+import { fetchTracksForLikedSongs, fetchTracksForPlaylist, getFamiliarRecs, updateSelectedTabView } from './managers/PlaylistDataManager';
+import { playSelectedItem } from './managers/PlaylistControlManager';
 
 /**
  * add the commands to vscode....
@@ -531,6 +532,7 @@ export function createCommands(ctx: ExtensionContext): {
     })
   );
 
+  // NEW COMMANDS
   cmds.push(
     commands.registerCommand("musictime.fetchPlaylistTracks", async (playlist_id) => {
       if (playlist_id === SPOTIFY_LIKED_SONGS_PLAYLIST_ID) {
@@ -544,6 +546,20 @@ export function createCommands(ctx: ExtensionContext): {
   cmds.push(
     commands.registerCommand("musictime.playTrack", async (item:PlaylistItem) => {
       playSelectedItem(item);
+    })
+  );
+
+  cmds.push(
+    commands.registerCommand("musictime.getFamiliarRecommendations", async () => {
+      updateSelectedTabView("recommendations");
+      getFamiliarRecs();
+    })
+  );
+
+  cmds.push(
+    commands.registerCommand("musictime.updateSelectedTabView", async (tabView: string) => {
+      updateSelectedTabView(tabView);
+      commands.executeCommand("musictime.fetchPlaylistTracks");
     })
   );
 

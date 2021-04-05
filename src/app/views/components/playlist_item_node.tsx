@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
+import { makeStyles, Theme, createStyles, withStyles } from "@material-ui/core/styles";
 import List from "@material-ui/core/List";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListItem from "@material-ui/core/ListItem";
@@ -16,6 +16,9 @@ import MoreVertIcon from "@material-ui/icons/MoreVert";
 import Fade from "@material-ui/core/Fade";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
+import Tooltip from "@material-ui/core/Tooltip";
+import Card from "@material-ui/core/Card";
+import CardContent from "@material-ui/core/CardContent";
 import { BeakerIcon, MuiAlbumIcon, MuiShareIcon, MuiCloseIcon } from "../icons";
 import { DARK_BG_COLOR, MAX_MENU_HEIGHT } from "../../utils/view_constants";
 
@@ -58,9 +61,18 @@ const useStyles = makeStyles((theme: Theme) =>
 		},
 		menuHeaderAction: {
 			right: -4,
-		}
+		},
   })
 );
+
+const HtmlTooltip = withStyles((theme) => ({
+  tooltip: {
+		backgroundColor: '#f5f5f9',
+    color: 'rgba(0, 0, 0, 0.87)',
+		maxWidth: 200,
+    fontSize: theme.typography.pxToRem(12),
+  },
+}))(Tooltip);
 
 export default function PlaylistItemNode(props) {
 	const classes = useStyles();
@@ -126,15 +138,30 @@ export default function PlaylistItemNode(props) {
 			onMouseOver={showMenu}
 			onMouseOut={hideMenu}
 			key={item.id}>
-			<Grid item xs={10}
-				className={(item.type === "playlist") ? classes.playlistName : classes.trackName}>
-				<Button classes={{ root: classes.textButton }}
+			{(item.type === "track")
+				? (<Grid item xs={10}
+					className={(item.type === "playlist") ? classes.playlistName : classes.trackName}>
+					<HtmlTooltip
+					  placement="bottom"
+						title={
+							<React.Fragment>
+								<Typography color="inherit">{item.name}</Typography>
+								{item.albumName}
+							</React.Fragment>
+						}>
+						<Button classes={{ root: classes.textButton }}
+							onClick={playTrack}
+							startIcon={<TrackIcon/>}>
+							<Typography noWrap>{ item.name }</Typography>
+						</Button>
+					</HtmlTooltip>
+				</Grid>)
+				: (<Button classes={{ root: classes.textButton }}
 					onClick={playTrack}
-					startIcon={(item.type === "playlist") ? <PlaylistIcon /> : <TrackIcon/>}
-					>
-					<Typography noWrap >{ item.name }</Typography>
-				</Button>
-			</Grid>
+					startIcon={<PlaylistIcon />}>
+					<Typography noWrap>{ item.name }</Typography>
+				</Button>)}
+			{(item.type === "track") && (
 			<Grid item xs={2}>
 				<Fade in={show}>
 					<IconButton
@@ -143,11 +170,11 @@ export default function PlaylistItemNode(props) {
 						style={{ color: deepPurple[300] }}
 						onMouseOver={showMenu}
 						onClick={handleClick}
-						aria-label={(item.type === "playlist") ? "Playlist menu" : "Track menu"}>
+						aria-label="Track menu">
 						<MoreVertIcon/>
 					</IconButton>
 				</Fade>
-				{(item.type === "track") && (<Menu
+				<Menu
 					id="long-menu"
 					anchorEl={anchorEl}
 					keepMounted
@@ -185,9 +212,9 @@ export default function PlaylistItemNode(props) {
 								<Typography className={classes.menuItemText}>Share track</Typography>
 							</Button>
 						</MenuItem>
-				</Menu>)}
-
+				</Menu>
 			</Grid>
+			)}
 		</Grid>
   );
 }

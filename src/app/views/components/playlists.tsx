@@ -11,6 +11,7 @@ import Divider from "@material-ui/core/Divider";
 const useStyles = makeStyles((theme) => ({
   root: {
     width: "100%",
+    height: "100%",
     flexGrow: 1,
     marginLeft: -4,
     overflowX: "hidden",

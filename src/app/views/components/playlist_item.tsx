@@ -26,7 +26,7 @@ export default function PlaylistItem(props) {
           }))
         : !props.playlistTracks
           ? (<TreeItem nodeId={`${props.playlistItem.id}_track_placeholder`} label="Loading tracks..."/>)
-          : (<TreeItem nodeId={`${props.playlistItem.id}_track_placeholder`} label="No track available"/>)}
+          : (<TreeItem nodeId={`${props.playlistItem.id}_track_placeholder`} label="No tracks available"/>)}
 		</TreeItem>
   );
 }

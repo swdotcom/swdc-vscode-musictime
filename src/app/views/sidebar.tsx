@@ -89,8 +89,6 @@ function useCurrentHeight() {
 export default function SideBar(props) {
   const classes = useStyles();
 
-  const [tabValue, setTabValue] = React.useState("playlists");
-
   const currentColorKind = props.stateData.currentColorKind;
   const prefersDarkMode = !!(currentColorKind === 2);
 
@@ -207,6 +205,26 @@ export default function SideBar(props) {
     [prefersDarkMode]
   );
 
+  function changeTabView(newValue) {
+
+    if (newValue === "recommendations" && !props.stateData.recommendationTracks) {
+      // build the recs
+      const recommendationCmd = {
+        action: "musictime.getFamiliarRecommendations",
+        command: "command_execute"
+      };
+      props.vscode.postMessage(recommendationCmd);
+    } else {
+      // update the tab view
+      const updateCmd = {
+        action: "musictime.updateSelectedTabView",
+        command: "command_execute",
+        arguments: [newValue]
+      };
+      props.vscode.postMessage(updateCmd);
+    }
+  }
+
   return (
     <ThemeProvider theme={theme}>
       <React.Fragment>
@@ -234,25 +252,24 @@ export default function SideBar(props) {
           <ColdStart vscode={props.vscode} stateData={props.stateData}/>
         </Grid>)}
 
-        {(tabValue === "playlists" && props.stateData.spotifyUser) && (
+        {(props.stateData.selectedTabView === "playlists" && props.stateData.spotifyUser) && (
         <Grid item xs={12} className={classes.playlistGridItem}>
           <Playlists vscode={props.vscode} stateData={props.stateData}/>
         </Grid>)}
 
-        {(tabValue === "recommendations" && props.stateData.spotifyUser) && (
+        {(props.stateData.selectedTabView === "recommendations" && props.stateData.spotifyUser) && (
         <Grid item xs={12} className={classes.playlistGridItem}>
           <Recommendations vscode={props.vscode} stateData={props.stateData}/>
         </Grid>)}
-
       </Grid>
 
       <AppBar position="fixed" className={classes.bottomAppBar}>
 
         <Toolbar variant="dense" disableGutters={true} style={{background: "transparent"}}>
           <BottomNavigation
-            value={tabValue}
+            value={props.stateData.selectedTabView}
             onChange={(event, newValue) => {
-              setTabValue(newValue);
+              changeTabView(newValue);
             }}
             className={classes.bottomNav}>
             <BottomNavigationAction label="Playlists" value="playlists" icon={<PlaylistIcon/>} />
