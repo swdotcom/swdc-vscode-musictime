@@ -4,6 +4,7 @@ import {
   getCachedLikedSongsTracks,
   getCachedPlaylistTracks,
   getCachedRecommendedTracks,
+  getCachedUserMusicMetrics,
   getSelectedPlaylistId,
   getSelectedTabView,
   getSpotifyLikedTracksPlaylist,
@@ -16,18 +17,30 @@ export async function getReactData() {
   const name = getItem("name");
   const authType = getItem("authType");
 
+  const selectedTabView = getSelectedTabView();
+
   const [spotifyPlaylists] = await Promise.all([getSpotifyPlaylists()]);
+  let likedSongsTracks = [];
+  let playlistTracks = [];
+  if (selectedTabView === "playlists") {
+    likedSongsTracks = getCachedLikedSongsTracks();
+    playlistTracks = getCachedPlaylistTracks();
+  }
+  const recommendationTracks = selectedTabView === "recommendations" ? getCachedRecommendedTracks() : [];
+  const userMusicMetrics = selectedTabView === "metrics" ? getCachedUserMusicMetrics() : {};
+
   const reactData = {
     authType,
     registered: !!name,
     email: name,
     spotifyPlaylists,
-    selectedTabView: getSelectedTabView(),
+    selectedTabView,
+    recommendationTracks,
+    userMusicMetrics,
+    likedSongsTracks,
+    playlistTracks,
     likedSongsPlaylist: getSpotifyLikedTracksPlaylist(),
-    likedSongsTracks: getCachedLikedSongsTracks(),
-    recommendationTracks: getCachedRecommendedTracks(),
     selectedPlaylistId: getSelectedPlaylistId(),
-    playlistTracks: getCachedPlaylistTracks(),
     spotifyUser: getConnectedSpotifyUser(),
     slackConnected: !!hasSlackWorkspaces(),
     slackWorkspaces: getSlackWorkspaces(),

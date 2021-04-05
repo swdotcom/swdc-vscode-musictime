@@ -14,16 +14,21 @@ import {
 } from "cody-music";
 import { commands } from "vscode";
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
+import { isResponseOk, softwareGet } from '../HttpClient';
+import MusicMetrics from '../model/MusicMetrics';
+import { getItem } from './FileManager';
 import { requiresSpotifyAccess } from "./PlaylistUtilManager";
 
 let spotifyLikedTracks: Track[] = undefined;
 let spotifyPlaylists: PlaylistItem[] = undefined;
 let recommendedTracks: Track[] = undefined;
 let playlistTracks: any = {};
+let userMusicMetrics: MusicMetrics[] = undefined;
+let globalMusicMetrics: MusicMetrics[] = undefined;
 let selectedPlaylistId = undefined;
 let selectedPlaylistItem: PlaylistItem = undefined;
 let selectedPlayerName = PlayerName.SpotifyWeb;
-// playlists, recommendations, ???
+// playlists, recommendations, metrics
 let selectedTabView = "playlists";
 let currentRecMeta: any = {};
 
@@ -73,6 +78,10 @@ export function getCachedLikedSongsTracks() {
 
 export function getCachedRecommendedTracks() {
   return recommendedTracks ? recommendedTracks.splice(0, 11) : undefined;
+}
+
+export function getCachedUserMusicMetrics() {
+  return userMusicMetrics;
 }
 
 export function getSelectedPlaylistId() {
@@ -151,6 +160,13 @@ export async function fetchTracksForPlaylist(playlist_id) {
   }
   // refresh the webview
   commands.executeCommand("musictime.refreshMusicTimeView");
+}
+
+export async function getUserMusicMetrics() {
+  const resp = await softwareGet("/music/metrics", getItem("jwt"));
+  if (isResponseOk(resp) && resp.data) {
+    userMusicMetrics = resp.data.user_music_metrics;
+  }
 }
 
 export function getFamiliarRecs() {

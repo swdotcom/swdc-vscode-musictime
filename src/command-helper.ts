@@ -30,7 +30,7 @@ import { displayReadmeIfNotExists } from "./managers/FileManager";
 import { launchLogin, showLogInMenuOptions, showSignUpMenuOptions } from "./managers/UserStatusManager";
 import { MusicTimeWebviewSidebar } from './sidebar/MusicTimeWebviewSidebar';
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID, vscode_mt_issues_url } from './Constants';
-import { fetchTracksForLikedSongs, fetchTracksForPlaylist, getFamiliarRecs, updateSelectedTabView } from './managers/PlaylistDataManager';
+import { fetchTracksForLikedSongs, fetchTracksForPlaylist, getCachedRecommendedTracks, getCachedUserMusicMetrics, getFamiliarRecs, getSelectedTabView, getUserMusicMetrics, updateSelectedTabView } from './managers/PlaylistDataManager';
 import { playSelectedItem } from './managers/PlaylistControlManager';
 
 /**
@@ -550,16 +550,16 @@ export function createCommands(ctx: ExtensionContext): {
   );
 
   cmds.push(
-    commands.registerCommand("musictime.getFamiliarRecommendations", async () => {
-      updateSelectedTabView("recommendations");
-      getFamiliarRecs();
-    })
-  );
-
-  cmds.push(
     commands.registerCommand("musictime.updateSelectedTabView", async (tabView: string) => {
+      if (getSelectedTabView() === "recommendations" && !getCachedRecommendedTracks()) {
+        // populate familiar recs
+        await getFamiliarRecs();
+      } else if (getSelectedTabView() === "metrics" && !getCachedUserMusicMetrics()) {
+        // populate the user music metrics
+        await getUserMusicMetrics();
+      }
       updateSelectedTabView(tabView);
-      commands.executeCommand("musictime.fetchPlaylistTracks");
+      commands.executeCommand("musictime.refreshMusicTimeView");
     })
   );
 

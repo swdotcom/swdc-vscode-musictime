@@ -7,6 +7,7 @@ import Grid from "@material-ui/core/Grid";
 import Setup from "./components/setup";
 import ColdStart from "./components/cold_start";
 import Playlists from "./components/playlists";
+import Metrics from "./components/metrics";
 import Recommendations from "./components/recommendations";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -17,7 +18,7 @@ import {
   BOTTOM_BAR_HEIGHT,
   DARK_BG_COLOR
 } from "../utils/view_constants";
-import { PlaylistIcon, BeakerIcon, TrackIcon } from "./icons";
+import { PlaylistIcon, BeakerIcon, MuiBubbleChartIcon } from "./icons";
 import grey from "@material-ui/core/colors/grey";
 import deepPurple from "@material-ui/core/colors/deepPurple";
 
@@ -206,23 +207,13 @@ export default function SideBar(props) {
   );
 
   function changeTabView(newValue) {
-
-    if (newValue === "recommendations" && !props.stateData.recommendationTracks) {
-      // build the recs
-      const recommendationCmd = {
-        action: "musictime.getFamiliarRecommendations",
-        command: "command_execute"
-      };
-      props.vscode.postMessage(recommendationCmd);
-    } else {
-      // update the tab view
-      const updateCmd = {
-        action: "musictime.updateSelectedTabView",
-        command: "command_execute",
-        arguments: [newValue]
-      };
-      props.vscode.postMessage(updateCmd);
-    }
+    // update the tab view
+    const updateCmd = {
+      action: "musictime.updateSelectedTabView",
+      command: "command_execute",
+      arguments: [newValue]
+    };
+    props.vscode.postMessage(updateCmd);
   }
 
   return (
@@ -261,6 +252,11 @@ export default function SideBar(props) {
         <Grid item xs={12} className={classes.playlistGridItem}>
           <Recommendations vscode={props.vscode} stateData={props.stateData}/>
         </Grid>)}
+
+        {(props.stateData.selectedTabView === "metrics" && props.stateData.spotifyUser) && (
+        <Grid item xs={12} className={classes.playlistGridItem}>
+          <Metrics vscode={props.vscode} stateData={props.stateData}/>
+        </Grid>)}
       </Grid>
 
       <AppBar position="fixed" className={classes.bottomAppBar}>
@@ -274,7 +270,7 @@ export default function SideBar(props) {
             className={classes.bottomNav}>
             <BottomNavigationAction label="Playlists" value="playlists" icon={<PlaylistIcon/>} />
             <BottomNavigationAction label="Recommendations" value="recommendations" icon={<BeakerIcon/>} />
-            <BottomNavigationAction label="Track" value="track" icon={<TrackIcon/>} />
+            <BottomNavigationAction label="Metrics" value="metrics" icon={<MuiBubbleChartIcon/>} />
           </BottomNavigation>
         </Toolbar>
       </AppBar>

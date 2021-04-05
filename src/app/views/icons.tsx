@@ -8,12 +8,17 @@ import ShareIcon from "@material-ui/icons/Share";
 import CloseIcon from "@material-ui/icons/Close";
 import SyncIcon from "@material-ui/icons/Sync";
 import FavoriteIcon from "@material-ui/icons/Favorite";
+import BubbleChartIcon from "@material-ui/icons/BubbleChart";
 
 // transform: "scale(1.5)" can change the size of the icon
 
 // Material UI SVG Icons
 export const MuiAlbumIcon = (props: SvgIconProps) => {
   return <AlbumIcon {...props} style={{ color: deepPurple[400], marginLeft: -4, marginRight: 2 }} />;
+}
+
+export const MuiBubbleChartIcon = (props: SvgIconProps) => {
+  return <BubbleChartIcon {...props} style={{ color: deepPurple[400], marginLeft: -4, marginRight: 2 }} />;
 }
 
 export const MuiAccountCircleIcon = (props: SvgIconProps) => {
