@@ -5,9 +5,7 @@ import CardHeader from "@material-ui/core/CardHeader";
 import MetricItemNode from "./metric_item_node"
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
-import IconButton from "@material-ui/core/IconButton";
 import MetricsSetup from "./metrics_setup";
-import { MuiTuneIcon } from "../icons";
 import { indigo } from "@material-ui/core/colors";
 
 const useStyles = makeStyles((theme) => ({
@@ -15,10 +13,8 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
     height: "100%",
     flexGrow: 1,
-    margin: 0,
-    padding: 0,
     overflowX: "hidden",
-    background: "transparent"
+    background: "transparent",
   },
   cardHeader: {
     margin: 0,
@@ -50,15 +46,9 @@ export default function Metrics(props) {
           <Typography noWrap gutterBottom={false} className={classes.cardHeaderText}>
             Code + Music
           </Typography>
-        }
-        action={
-          <IconButton aria-label="settings" className={classes.cardHeaderIcon}
-            onClick={toggleControls}>
-            <MuiTuneIcon />
-          </IconButton>
         }/>)}
 
-      <Grid container className={classes.root}>
+      <Grid container>
         {props.stateData.codeTimeInstalled
           ? (<Grid item xs={12} style={{margin: 0, padding: 0}}>
             {props.stateData.userMusicMetrics && props.stateData.userMusicMetrics.length

@@ -6,23 +6,21 @@ import PropTypes from "prop-types";
 import CardContent from "@material-ui/core/CardContent";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
+import MetricsColdStart from "./metrics_cold_start";
 import Grid from "@material-ui/core/Grid";
-import blue from "@material-ui/core/colors/blue";
-import grey from "@material-ui/core/colors/grey";
+import { blue, grey } from "@material-ui/core/colors";
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    margin: 0,
-    padding: 0,
     flexGrow: 1,
     width: "100%",
-    background: "linear-gradient(#64b5f6, #1565c0)"
+    height: "100"
   },
   setup: {
     width: "100%",
-    backgroundColor: "transparent",
     padding: 0,
-    margin: 0
+    margin: 0,
+    background: "linear-gradient(#64b5f6, #1565c0)"
   },
   setupHeader: {
     color: "#FFF",
@@ -46,17 +44,6 @@ const useStyles = makeStyles((theme) => ({
     fontSize: 12,
     color: grey[200],
 	  display: "block"
-  },
-  link: {
-    fontSize: 14,
-    color: "#ffffff",
-    background: "transparent",
-    textDecoration: "none",
-    "&:hover": {
-      fontSize: 14,
-      color: "rgb(255, 255, 255, 0.8)",
-      textDecoration: "none",
-    },
   }
 }));
 
@@ -106,6 +93,9 @@ export default function MetricsSetup(props) {
             </Button>
           </CardContent>
         </Card>
+      </Grid>
+      <Grid item xs={12}>
+        <MetricsColdStart vscode={props.vscode} stateData={props.stateData}/>
       </Grid>
     </Grid>
   );

@@ -17,8 +17,6 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
     height: "100%",
     flexGrow: 1,
-    margin: 0,
-    padding: 0,
     overflowX: "hidden",
     background: "transparent"
   },
@@ -99,13 +97,13 @@ export default function Recommendations(props) {
           <div className={classes.headerActionButtons}>
           <ButtonGroup variant="text">
             <Tooltip title="Search Spotify">
-              <Button onClick={searchClick}><SearchIcon /></Button>
+              <Button onClick={searchClick}><SearchIcon/></Button>
             </Tooltip>
             <Tooltip title="Select a mood">
-              <Button onClick={moodSelectionClick}><BeakerIcon /></Button>
+              <Button onClick={moodSelectionClick}><BeakerIcon/></Button>
             </Tooltip>
             <Tooltip title="Select a genre">
-              <Button onClick={genreSelectionClick}><FilterIcon /></Button>
+              <Button onClick={genreSelectionClick}><FilterIcon/></Button>
             </Tooltip>
           </ButtonGroup>
           </div>

@@ -8,13 +8,14 @@ import ListItemText from "@material-ui/core/ListItemText";
 import { BeakerIcon } from "../icons";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
+import Typography from "@material-ui/core/Typography";
+import { indigo } from "@material-ui/core/colors";
 
 const useStyles = makeStyles((theme) => ({
   root: {
     width: "100%",
     height: "100%",
     flexGrow: 1,
-    marginLeft: -4,
     overflowX: "hidden",
     background: "transparent"
   },
@@ -22,9 +23,15 @@ const useStyles = makeStyles((theme) => ({
     margin: 0,
     padding: 2
   },
+  cardHeaderText: {
+    color: indigo[300],
+    fontWeight: 500,
+  },
   cardHeaderIcon: {
     marginTop: 10,
     marginRight: 10
+  },
+  gridContainer: {
   },
 	secondaryAction: {
     position: "absolute",
@@ -38,8 +45,13 @@ export default function MetricsColdStart(props) {
 	const classes = useStyles();
 
   return (
-    <Card className={classes.root}>
-      <CardHeader title="Music + Coding Features" className={classes.cardHeader}/>
+    <Card className={classes.root} elevation={0}>
+      <CardHeader className={classes.cardHeader}
+      title={
+          <Typography noWrap gutterBottom={false} className={classes.cardHeaderText}>
+            Code + Music Time
+          </Typography>
+        }/>
       <Grid container>
         <Grid item xs={12}>
           <List disablePadding={true} dense={true}>
