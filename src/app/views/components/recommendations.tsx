@@ -6,7 +6,9 @@ import PlaylistItemNode from "./playlist_item_node"
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import IconButton from "@material-ui/core/IconButton";
-import { BeakerIcon } from "../icons";
+import Button from "@material-ui/core/Button";
+import ButtonGroup from "@material-ui/core/ButtonGroup";
+import { BeakerIcon, SearchIcon, FilterIcon } from "../icons";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
 const useStyles = makeStyles((theme) => ({
@@ -31,6 +33,16 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     justifyContent: "center",
     textAlign: "center"
+  },
+  headerActionButtons: {
+    marginTop: 10,
+    marginRight: 10,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    "& > *": {
+      margin: theme.spacing(1),
+    }
   }
 }));
 
@@ -45,16 +57,35 @@ export default function Recommendations(props) {
     props.vscode.postMessage(command);
   }
 
+  function searchClick() {
+    const command = {
+      action: "musictime.searchTracks",
+      command: "command_execute"
+    };
+    props.vscode.postMessage(command);
+  }
+
+  function genreSelectionClick() {
+    const command = {
+      action: "musictime.songGenreSelector",
+      command: "command_execute"
+    };
+    props.vscode.postMessage(command);
+  }
+
   return (
     <Card className={classes.root}>
       <CardHeader
         title={(props.stateData.recommendationInfo) ? props.stateData.recommendationInfo.label : "Recommendations"}
         className={classes.cardHeader}
         action={
-          <IconButton aria-label="settings" className={classes.cardHeaderIcon}
-            onClick={moodSelectionClick}>
-            <BeakerIcon />
-          </IconButton>
+          <div className={classes.headerActionButtons}>
+          <ButtonGroup variant="text" color="primary" aria-label="text primary button group">
+            <Button onClick={searchClick}><SearchIcon /></Button>
+            <Button onClick={moodSelectionClick}><BeakerIcon /></Button>
+            <Button onClick={genreSelectionClick}><FilterIcon /></Button>
+          </ButtonGroup>
+          </div>
         }/>
       <Grid container>
 			  <Grid item xs={12}>
