@@ -564,5 +564,11 @@ export function createCommands(ctx: ExtensionContext): {
     })
   );
 
+  cmds.push(
+    commands.registerCommand("musictime.installCodeTime", async (item:PlaylistItem) => {
+      launchWebUrl("vscode:extension/softwaredotcom.swdc-vscode");
+    })
+  );
+
   return Disposable.from(...cmds);
 }

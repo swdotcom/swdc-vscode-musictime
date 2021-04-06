@@ -80,15 +80,7 @@ export default function MetricsSetup(props) {
 
   function setupClickHandler() {
     const command = {
-      action: !stateData.registered ? "musictime.signUpAccount" : "musictime.connectSpotify",
-      command: "command_execute",
-    };
-    props.vscode.postMessage(command);
-  }
-
-  function loginClickHandler() {
-    const command = {
-      action: "musictime.logInAccount",
+      action: "musictime.installCodeTime",
       command: "command_execute",
     };
     props.vscode.postMessage(command);
@@ -109,16 +101,6 @@ export default function MetricsSetup(props) {
               Install Code Time
             </Button>
           </CardContent>
-          {!props.stateData.registered && (
-            <CardContent className={classes.linkContent}>
-              <Typography className={classes.subInfo} display="inline">
-                Already have a software account?
-              </Typography>
-              <Link href="#" onClick={loginClickHandler} display="inline" className={classes.link}>
-                Log in
-              </Link>
-            </CardContent>
-          )}
         </Paper>
       </Grid>
     </Grid>

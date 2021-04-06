@@ -46,7 +46,7 @@ export async function getReactData(tabView = undefined) {
     slackConnected: !!hasSlackWorkspaces(),
     slackWorkspaces: getSlackWorkspaces(),
     currentColorKind: getCurrentColorKind(),
-    codeTimeInstalled: false, //isCodeTimeTimeInstalled(),
+    codeTimeInstalled: isCodeTimeTimeInstalled(),
     skipSlackConnect: getItem("vscode_CtskipSlackConnect"),
   };
   return reactData;
