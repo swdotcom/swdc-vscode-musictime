@@ -1,24 +1,28 @@
 import React from "react";
 import { makeStyles, createStyles, withStyles, Theme } from "@material-ui/core/styles";
 import LinearProgress from "@material-ui/core/LinearProgress";
-import Paper from "@material-ui/core/Paper";
+import Card from "@material-ui/core/Card";
 import PropTypes from "prop-types";
 import CardContent from "@material-ui/core/CardContent";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
-import Link from "@material-ui/core/Link";
 import Grid from "@material-ui/core/Grid";
 import blue from "@material-ui/core/colors/blue";
 import grey from "@material-ui/core/colors/grey";
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    marginTop: 0,
+    margin: 0,
+    padding: 0,
+    flexGrow: 1,
+    width: "100%",
     background: "linear-gradient(#64b5f6, #1565c0)"
   },
   setup: {
     width: "100%",
     backgroundColor: "transparent",
+    padding: 0,
+    margin: 0
   },
   setupHeader: {
     color: "#FFF",
@@ -89,9 +93,9 @@ export default function MetricsSetup(props) {
   return (
     <Grid container className={classes.root}>
       <Grid item xs={12}>
-        <Paper className={classes.setup} elevation={0}>
+        <Card className={classes.setup}>
           <CardContent className={classes.setupHeader}>
-            <Typography>Getting Started with Music Time</Typography>
+            <Typography>Getting Started with Code Time</Typography>
           </CardContent>
           <CardContent>
             <BorderLinearProgress variant="determinate" value={progress} />
@@ -101,7 +105,7 @@ export default function MetricsSetup(props) {
               Install Code Time
             </Button>
           </CardContent>
-        </Paper>
+        </Card>
       </Grid>
     </Grid>
   );

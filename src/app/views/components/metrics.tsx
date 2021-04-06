@@ -15,7 +15,8 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
     height: "100%",
     flexGrow: 1,
-    marginLeft: -4,
+    margin: 0,
+    padding: 0,
     overflowX: "hidden",
     background: "transparent"
   },
@@ -57,9 +58,9 @@ export default function Metrics(props) {
           </IconButton>
         }/>)}
 
-      <Grid container>
+      <Grid container className={classes.root}>
         {props.stateData.codeTimeInstalled
-          ? (<Grid item xs={12}>
+          ? (<Grid item xs={12} style={{margin: 0, padding: 0}}>
             {props.stateData.userMusicMetrics && props.stateData.userMusicMetrics.length
               ? (
                 props.stateData.userMusicMetrics.map((item, index) => {

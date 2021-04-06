@@ -24,10 +24,6 @@ import grey from "@material-ui/core/colors/grey";
 import deepPurple from "@material-ui/core/colors/deepPurple";
 
 const useStyles = makeStyles((theme) => ({
-  gridItem: {
-    marginLeft: 10,
-    marginRight: 10
-  },
   bottomNav: {
     background: "transparent",
     flexGrow: 1,
@@ -237,22 +233,22 @@ export default function SideBar(props) {
             bottom: BOTTOM_BAR_HEIGHT}}>
 
           {!props.stateData.spotifyUser && (
-          <Grid item xs={12} className={classes.gridItem}>
+          <Grid item xs={12}>
             <ColdStart vscode={props.vscode} stateData={props.stateData}/>
           </Grid>)}
 
           {(props.stateData.selectedTabView === "playlists" && props.stateData.spotifyUser) && (
-          <Grid item xs={12} className={classes.gridItem}>
+          <Grid item xs={12}>
             <Playlists vscode={props.vscode} stateData={props.stateData}/>
           </Grid>)}
 
           {(props.stateData.selectedTabView === "recommendations" && props.stateData.spotifyUser) && (
-          <Grid item xs={12} className={classes.gridItem}>
+          <Grid item xs={12}>
             <Recommendations vscode={props.vscode} stateData={props.stateData}/>
           </Grid>)}
 
           {(props.stateData.selectedTabView === "metrics" && props.stateData.spotifyUser) && (
-          <Grid item xs={12} className={classes.gridItem}>
+          <Grid item xs={12}>
             <Metrics vscode={props.vscode} stateData={props.stateData}/>
           </Grid>)}
         </Grid>
