@@ -10,7 +10,7 @@ import Tooltip from "@material-ui/core/Tooltip";
 import Divider from "@material-ui/core/Divider";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
-import { amber } from "@material-ui/core/colors";
+import { indigo } from "@material-ui/core/colors";
 import { SearchIcon } from "../icons";
 
 const useStyles = makeStyles((theme) => ({
@@ -27,7 +27,7 @@ const useStyles = makeStyles((theme) => ({
     padding: 2
   },
   cardHeaderText: {
-    color: amber[500],
+    color: indigo[300],
     fontWeight: 500,
   },
   cardHeaderIcon: {

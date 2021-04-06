@@ -7,6 +7,7 @@ import {
   SOFTWARE_TOP_40_PLAYLIST_ID,
   SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
   SOFTWARE_FOLDER,
+  CODE_TIME_EXT_ID,
 } from "./Constants";
 import { PlaylistItem, TrackStatus, CodyResponse, CodyResponseType } from "cody-music";
 import * as path from "path";
@@ -55,6 +56,11 @@ export function isCodeTimeMetricsFile(fileName) {
     return true;
   }
   return false;
+}
+
+export function isCodeTimeTimeInstalled() {
+  const codeTimeExt = extensions.getExtension(CODE_TIME_EXT_ID);
+  return !!(codeTimeExt);
 }
 
 export function musicTimeExtInstalled() {

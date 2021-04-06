@@ -12,6 +12,7 @@ import {
 } from "../managers/PlaylistDataManager";
 import { getSlackWorkspaces, hasSlackWorkspaces } from "../managers/SlackManager";
 import { getConnectedSpotifyUser } from "../managers/SpotifyManager";
+import { isCodeTimeTimeInstalled } from '../Util';
 
 export async function getReactData(tabView = undefined) {
   const name = getItem("name");
@@ -45,6 +46,7 @@ export async function getReactData(tabView = undefined) {
     slackConnected: !!hasSlackWorkspaces(),
     slackWorkspaces: getSlackWorkspaces(),
     currentColorKind: getCurrentColorKind(),
+    codeTimeInstalled: false, //isCodeTimeTimeInstalled(),
     skipSlackConnect: getItem("vscode_CtskipSlackConnect"),
   };
   return reactData;

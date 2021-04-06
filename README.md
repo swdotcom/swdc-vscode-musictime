@@ -18,7 +18,7 @@
 
 **You will need the following to use Music Time:**
 
-* [Code Time](https://marketplace.visualstudio.com/items?itemName=softwaredotcom.swdc-vscode): Our Code Time extension provides automatic programming metrics and time tracking. Music Time works with Code Time to combine your music and coding data to find your most productive music. Code Time is a required dependency of Music Time.
+* [Code Time](https://marketplace.visualstudio.com/items?itemName=softwaredotcom.swdc-vscode): Our Code Time extension provides automatic programming metrics and time tracking. Music Time works with Code Time to combine your music and coding data to find your most productive music.
 * [Spotify](https://www.spotify.com): To get started, you will need a Spotify account. We currently do not support Apple Music, Google Play, or any other players, but may in a future plugin.
 
 ![Music Time features](https://assets.software.com/readme/music-time/vscode/features-2.1.15.png)
@@ -43,13 +43,13 @@
 
 ### Connect your Spotify account
 
-Click  **Connect Spotify** in the status bar or in the Music Time side panel. Music Time will prompt you to log in to your Spotify account. Once you have successfully connected your Spotify account, you can return to VS Code where you will now see your playlists and music recommendations. 
+Click  **Connect Spotify** in the status bar or in the Music Time side panel. Music Time will prompt you to log in to your Spotify account. Once you have successfully connected your Spotify account, you can return to VS Code where you will now see your playlists and music recommendations.
 
 ### Control your music and playlists
 
 Open the Music Time side panel and click on any song in your list of playlists. Music Time may prompt you to open a Spotify player—either the desktop app or web player. The song you selected should begin playing automatically.
 
-You can play, pause, rewind, and skip songs from the status bar of your editor using the Music Time player controls. You can like a song and add it to you **Liked** songs playlist in Spotify by clicking the heart icon. View the name of the currently playing song by clicking the heartbeat icon. 
+You can play, pause, rewind, and skip songs from the status bar of your editor using the Music Time player controls. You can like a song and add it to you **Liked** songs playlist in Spotify by clicking the heart icon. View the name of the currently playing song by clicking the heartbeat icon.
 
 ⚠️ Music Time requires a premium Spotify account and an internet connection to control your music on Windows and Linux. If you are using macOS, Music Time can also control the Spotify desktop app using AppleScript as either a premium or non-premium user.
 
@@ -57,9 +57,9 @@ You can play, pause, rewind, and skip songs from the status bar of your editor u
 
 ### Explore song recommendations
 
-Music Time recommends songs by genre and mood based on your listening history. You can see a list of recommended songs in thee **Recommendations** section of the Music Time side panel. 
+Music Time recommends songs by genre and mood based on your listening history. You can see a list of recommended songs in thee **Recommendations** section of the Music Time side panel.
 
-You can adjust the mood of Music Time's recommendations by hovering over **Recommendations** and clicking the beaker icon. Try happy, energetic, or danceable music for upbeat work or classical or jazz for slower, more complex tasks. For more granular controls, click the filter icon next to **Recommendations** to filter by 100+ different genres. 
+You can adjust the mood of Music Time's recommendations by hovering over **Recommendations** and clicking the beaker icon. Try happy, energetic, or danceable music for upbeat work or classical or jazz for slower, more complex tasks. For more granular controls, click the filter icon next to **Recommendations** to filter by 100+ different genres.
 
 Find something you like? You can quickly add a song to a playlist using the "**+**" button when you hover over a song name.
 
@@ -85,7 +85,7 @@ Open the Music Time view then expand the dropdown menu next to your email addres
 
 ### Explore your music metrics
 
-Open the Music Time view and click the dropdown next to your account email. Click **More data at Software.com** to see your most productive songs, artists, and genres by productivity score. 
+Open the Music Time view and click the dropdown next to your account email. Click **More data at Software.com** to see your most productive songs, artists, and genres by productivity score.
 
 Discover how the underlying [metrics of music](https://app.software.com/music/metrics) (including tempo, loudness, speechiness, energy, and valence) impact how you code.
 

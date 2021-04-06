@@ -6,8 +6,9 @@ import MetricItemNode from "./metric_item_node"
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import IconButton from "@material-ui/core/IconButton";
+import MetricsSetup from "./metrics_setup";
 import { MuiTuneIcon } from "../icons";
-import { amber } from "@material-ui/core/colors";
+import { indigo } from "@material-ui/core/colors";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -23,7 +24,7 @@ const useStyles = makeStyles((theme) => ({
     padding: 2
   },
   cardHeaderText: {
-    color: amber[500],
+    color: indigo[300],
     fontWeight: 500,
   },
   cardHeaderIcon: {
@@ -43,7 +44,7 @@ export default function Metrics(props) {
 
   return (
     <Card className={classes.root}>
-      <CardHeader className={classes.cardHeader}
+      {props.stateData.codeTimeInstalled && (<CardHeader className={classes.cardHeader}
         title={
           <Typography noWrap gutterBottom={false} className={classes.cardHeaderText}>
             Code + Music
@@ -54,18 +55,24 @@ export default function Metrics(props) {
             onClick={toggleControls}>
             <MuiTuneIcon />
           </IconButton>
-        }/>
+        }/>)}
+
       <Grid container>
-			  <Grid item xs={12}>
-        {props.stateData.userMusicMetrics && props.stateData.userMusicMetrics.length
-          ? (
-            props.stateData.userMusicMetrics.map((item, index) => {
-            return (<MetricItemNode vscode={props.vscode} item={item} key={item.id}/>)
-            }))
-          : !props.stateData.userMusicMetrics
-            ? (<Typography>Loading metrics...</Typography>)
-            : (<Typography>No metrics available</Typography>)}
-        </Grid>
+        {props.stateData.codeTimeInstalled
+          ? (<Grid item xs={12}>
+            {props.stateData.userMusicMetrics && props.stateData.userMusicMetrics.length
+              ? (
+                props.stateData.userMusicMetrics.map((item, index) => {
+                return (<MetricItemNode  vscode={props.vscode} stateData={props.stateData} item={item} key={item.id}/>)
+                }))
+              : !props.stateData.userMusicMetrics
+                ? (<Typography>Loading metrics...</Typography>)
+                : (<Typography>No metrics available</Typography>)}
+            </Grid>)
+          : (<Grid item xs={12}>
+              <MetricsSetup  vscode={props.vscode} stateData={props.stateData}/>
+            </Grid>)}
+
       </Grid>
     </Card>
   );

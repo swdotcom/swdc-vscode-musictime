@@ -74,7 +74,7 @@ export default function ColdStart(props) {
         <Grid item xs={12}>
           <List disablePadding={true} dense={true}>
             <ListItem disableGutters={true} dense={true}>
-              <ListItemText primary="Music Control" secondary="Play your liked songs, playlists, recommendations, or jump right into an album" />
+              <ListItemText primary="Integrated player controls" secondary="Play your liked songs, playlists, recommendations, or jump right into an album" />
               <ListItemSecondaryAction classes={{ root: classes.secondaryAction }}>
                 <MuiPlayCircleOutlineIcon/>
               </ListItemSecondaryAction>
@@ -84,9 +84,9 @@ export default function ColdStart(props) {
         <Grid item xs={12}>
           <List disablePadding={true} dense={true}>
             <ListItem disableGutters={true} dense={true}>
-              <ListItemText primary="Music metrics" secondary="Explore your most productive songs, artists, and genres by productivity score" />
+              <ListItemText primary="Global Top 40" secondary="Discover new music from developers around the world in our Software Top 40 playlist" />
               <ListItemSecondaryAction classes={{ root: classes.secondaryAction }}>
-                <PawIcon/>
+                <MuiSubscriptionsIcon/>
               </ListItemSecondaryAction>
             </ListItem>
           </List>
@@ -94,9 +94,9 @@ export default function ColdStart(props) {
         <Grid item xs={12}>
           <List disablePadding={true} dense={true}>
             <ListItem disableGutters={true} dense={true}>
-              <ListItemText primary="Queue songs" secondary="Queue songs into a daily or permanent playlist" />
+              <ListItemText primary="Music+Code" secondary="Explore your most productive songs, artists, and genres by productivity score" />
               <ListItemSecondaryAction classes={{ root: classes.secondaryAction }}>
-                <MuiSubscriptionsIcon/>
+                <PawIcon/>
               </ListItemSecondaryAction>
             </ListItem>
           </List>

@@ -103,5 +103,6 @@ export default function MetricItemNode(props) {
 
 MetricItemNode.propTypes = {
 	item: PropTypes.any.isRequired,
-	vscode: PropTypes.any.isRequired
+	vscode: PropTypes.any.isRequired,
+	stateData: PropTypes.any.isRequired
 };

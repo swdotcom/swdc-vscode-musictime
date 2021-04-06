@@ -10,7 +10,7 @@ import ButtonGroup from "@material-ui/core/ButtonGroup";
 import { BeakerIcon, SearchIcon, FilterIcon } from "../icons";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Tooltip from "@material-ui/core/Tooltip";
-import { amber } from "@material-ui/core/colors";
+import { indigo } from "@material-ui/core/colors";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -30,7 +30,7 @@ const useStyles = makeStyles((theme) => ({
     overflow: "hidden"
   },
   cardHeaderText: {
-    color: amber[500],
+    color: indigo[300],
     fontWeight: 500,
   },
   cardHeaderIcon: {
