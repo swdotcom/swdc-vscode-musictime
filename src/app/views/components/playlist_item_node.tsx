@@ -23,23 +23,34 @@ import { DARK_BG_COLOR, MAX_MENU_HEIGHT } from "../../utils/view_constants";
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     textButton: {
-      width: "100%",
       justifyContent: "flex-start",
-      padding: theme.spacing(0.25, 0.5),
+			marginTop: 2,
+			marginBottom: 2,
+			paddingLeft: 4,
+			paddingTop: 0,
+			paddingBottom: 1,
       fontWeight: 500,
-			marginLeft: 4
+			wrap: "nowrap",
+			overflow: "hidden",
+			textOverflow: "ellipsis"
     },
     playlistName: {
-      marginLeft: -10,
-			overflow: "hidden"
+			marginRight: 16,
+			wrap: "nowrap",
+			overflow: "hidden",
+			textOverflow: "ellipsis"
     },
 		trackName: {
-			margin: 0,
-			overflow: "hidden"
+			marginRight: 0,
+			wrap: "nowrap",
+			overflow: "hidden",
+			textOverflow: "ellipsis"
 		},
 		menuItem: {
-			margin: 0,
-			padding: 0,
+			marginLeft: 5,
+			marginBottom: 0,
+			marginTop: 0,
+			padding: 0
 		},
 		menuItemText: {
 			color: "white",
@@ -60,6 +71,10 @@ const useStyles = makeStyles((theme: Theme) =>
 		menuHeaderAction: {
 			right: -4,
 		},
+		trackItemGridItem: {
+			width: "100%",
+			flexGrow: 1
+		}
   })
 );
 
@@ -137,8 +152,7 @@ export default function PlaylistItemNode(props) {
 			onMouseOut={hideMenu}
 			key={item.id}>
 			{(item.type === "track")
-				? (<Grid item xs={10}
-					className={(item.type === "playlist") ? classes.playlistName : classes.trackName}>
+				? (<Grid item xs={11}>
 					<HtmlTooltip
 					  placement="bottom"
 						title={
@@ -150,22 +164,22 @@ export default function PlaylistItemNode(props) {
 						<Button classes={{ root: classes.textButton }}
 							onClick={playTrack}
 							startIcon={<TrackIcon/>}>
-							<Typography noWrap>{ item.name }</Typography>
+							<Typography className={classes.trackName}>{ item.name }</Typography>
 						</Button>
 					</HtmlTooltip>
 				</Grid>)
 				: (<Button classes={{ root: classes.textButton }}
 					onClick={playTrack}
 					startIcon={<PlaylistIcon />}>
-					<Typography noWrap>{ item.name }</Typography>
+					<Typography className={classes.playlistName}>{ item.name }</Typography>
 				</Button>)}
 			{(item.type === "track") && (
-			<Grid item xs={2}>
+			<Grid item xs={1} className={classes.trackItemGridItem}>
 				<Fade in={show}>
 					<IconButton
 						hidden={true}
 						size="small"
-						style={{ color: deepPurple[300] }}
+						style={{ color: deepPurple[300], float: "right" }}
 						onMouseOver={showMenu}
 						onClick={handleClick}
 						aria-label="Track menu">

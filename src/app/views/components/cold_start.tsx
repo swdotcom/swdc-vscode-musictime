@@ -23,7 +23,8 @@ const useStyles = makeStyles((theme) => ({
     padding: 2
   },
   cardHeaderIcon: {
-    marginTop: 10
+    marginTop: 10,
+    marginRight: 10
   },
 	secondaryAction: {
     position: "absolute",

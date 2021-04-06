@@ -24,7 +24,7 @@ const useStyles = makeStyles((theme) => ({
   },
   cardHeaderIcon: {
     marginTop: 10,
-    float: "right"
+    marginRight: 10
   },
   loadingIcon: {
     marginTop: 80,
@@ -37,29 +37,33 @@ const useStyles = makeStyles((theme) => ({
 export default function Recommendations(props) {
   const classes = useStyles();
 
-  let [controlsOpen, setControlsOpen] = useState(false);
-
-  function toggleControls() {
-    setControlsOpen(!controlsOpen);
+  function moodSelectionClick() {
+    const command = {
+      action: "musictime.songMoodSelector",
+      command: "command_execute"
+    };
+    props.vscode.postMessage(command);
   }
 
   return (
     <Card className={classes.root}>
-      <CardHeader title="Recommendations" className={classes.cardHeader}
+      <CardHeader
+        title={(props.stateData.recommendationInfo) ? props.stateData.recommendationInfo.label : "Recommendations"}
+        className={classes.cardHeader}
         action={
           <IconButton aria-label="settings" className={classes.cardHeaderIcon}
-            onClick={toggleControls}>
+            onClick={moodSelectionClick}>
             <BeakerIcon />
           </IconButton>
         }/>
       <Grid container>
 			  <Grid item xs={12}>
-        {props.stateData.recommendationTracks && props.stateData.recommendationTracks.length
+        {props.stateData.recommendationInfo && props.stateData.recommendationInfo.tracks?.length
           ? (
-            props.stateData.recommendationTracks.map((item, index) => {
+            props.stateData.recommendationInfo.tracks.map((item, index) => {
             return (<PlaylistItemNode vscode={props.vscode} item={item} key={item.id}/>)
             }))
-          : !props.stateData.recommendationTracks
+          : !props.stateData.recommendationInfo
             ? (<div className={classes.loadingIcon}><CircularProgress disableShrink /></div>)
             : (<Typography>No tracks available</Typography>)}
         </Grid>

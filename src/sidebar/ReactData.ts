@@ -3,7 +3,7 @@ import { getItem } from "../managers/FileManager";
 import {
   getCachedLikedSongsTracks,
   getCachedPlaylistTracks,
-  getCachedRecommendedTracks,
+  getCachedRecommendationInfo,
   getCachedUserMusicMetrics,
   getSelectedPlaylistId,
   getSelectedTabView,
@@ -26,7 +26,7 @@ export async function getReactData() {
     likedSongsTracks = getCachedLikedSongsTracks();
     playlistTracks = getCachedPlaylistTracks();
   }
-  const recommendationTracks = selectedTabView === "recommendations" ? getCachedRecommendedTracks() : [];
+  const recommendationInfo = selectedTabView === "recommendations" ? getCachedRecommendationInfo() : [];
   const userMusicMetrics = selectedTabView === "metrics" ? getCachedUserMusicMetrics() : {};
 
   const reactData = {
@@ -35,7 +35,7 @@ export async function getReactData() {
     email: name,
     spotifyPlaylists,
     selectedTabView,
-    recommendationTracks,
+    recommendationInfo,
     userMusicMetrics,
     likedSongsTracks,
     playlistTracks,

@@ -5,7 +5,7 @@ import {
 } from "./music/MusicControlManager";
 import { launchMusicAnalytics, launchWebUrl } from "./Util";
 import { MusicPlaylistProvider, connectPlaylistTreeView } from "./music/MusicPlaylistProvider";
-import { PlaylistItem, PlayerName, PlayerDevice, playSpotifyDevice, getPlaylistTracks } from "cody-music";
+import { PlaylistItem, PlayerName, PlayerDevice, playSpotifyDevice } from "cody-music";
 import { SocialShareManager } from "./social/SocialShareManager";
 import { connectSlackWorkspace, disconnectSlack, disconnectSlackAuth } from "./managers/SlackManager";
 import { MusicManager } from "./music/MusicManager";
@@ -30,7 +30,7 @@ import { displayReadmeIfNotExists } from "./managers/FileManager";
 import { launchLogin, showLogInMenuOptions, showSignUpMenuOptions } from "./managers/UserStatusManager";
 import { MusicTimeWebviewSidebar } from './sidebar/MusicTimeWebviewSidebar';
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID, vscode_mt_issues_url } from './Constants';
-import { fetchTracksForLikedSongs, fetchTracksForPlaylist, getCachedRecommendedTracks, getCachedUserMusicMetrics, getFamiliarRecs, getSelectedTabView, getUserMusicMetrics, updateSelectedTabView } from './managers/PlaylistDataManager';
+import { fetchTracksForLikedSongs, fetchTracksForPlaylist, getCachedRecommendationInfo, getCachedUserMusicMetrics, getFamiliarRecs, getUserMusicMetrics, updateSelectedTabView } from './managers/PlaylistDataManager';
 import { playSelectedItem } from './managers/PlaylistControlManager';
 
 /**
@@ -424,7 +424,7 @@ export function createCommands(ctx: ExtensionContext): {
   });
   cmds.push(genreRecListCmd);
 
-  const categoryRecListCmd = commands.registerCommand("musictime.songCategorySelector", () => {
+  const categoryRecListCmd = commands.registerCommand("musictime.songMoodSelector", () => {
     showCategorySelections();
   });
   cmds.push(categoryRecListCmd);
@@ -551,7 +551,7 @@ export function createCommands(ctx: ExtensionContext): {
 
   cmds.push(
     commands.registerCommand("musictime.updateSelectedTabView", async (tabView: string) => {
-      if (tabView === "recommendations" && !getCachedRecommendedTracks()) {
+      if (tabView === "recommendations" && !getCachedRecommendationInfo()) {
         // populate familiar recs
         await getFamiliarRecs();
       } else if (tabView === "metrics" && !getCachedUserMusicMetrics()) {

@@ -271,7 +271,7 @@
         }
       },
       {
-        "command": "musictime.songCategorySelector",
+        "command": "musictime.songMoodSelector",
         "title": "Music Time: Mood selection",
         "icon": {
           "light": "resources/light/beaker.svg",
@@ -406,7 +406,7 @@
           "when": "view =~ /.*-playlists/"
         },
         {
-          "command": "musictime.songCategorySelector",
+          "command": "musictime.songMoodSelector",
           "group": "navigation@1",
           "when": "view =~ /.*-recommendations/"
         },

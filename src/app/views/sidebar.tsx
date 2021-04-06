@@ -49,6 +49,9 @@ const useStyles = makeStyles((theme) => ({
     padding: 0,
     margin: 0
   },
+  bottomNavLabel: {
+    marginTop: 5
+  }
 }));
 
 const getHeight = () => window.innerHeight
@@ -212,13 +215,18 @@ export default function SideBar(props) {
     <ThemeProvider theme={theme}>
       <React.Fragment>
         <CssBaseline />
-        <AppBar position="fixed" className={classes.topAppBar} id="top-app-bar">
+        <AppBar position="fixed" className={classes.topAppBar} id="top-app-bar"
+          style={{margin: 0, padding: 0}}>
           <Grid container>
             {(!props.stateData.registered || (!props.stateData.spotifyUser)) && (
-            <Setup stateData={props.stateData} vscode={props.vscode} />
+              <Grid item xs={12} style={{marginLeft: 12}}>
+                <Setup stateData={props.stateData} vscode={props.vscode} />
+              </Grid>
             )}
             {props.stateData.registered && (
-            <Account vscode={props.vscode} stateData={props.stateData} />)}
+              <Grid item xs={12} style={{marginLeft: 12}}>
+                <Account vscode={props.vscode} stateData={props.stateData} />
+              </Grid>)}
           </Grid>
         </AppBar>
         <Grid container
@@ -259,9 +267,15 @@ export default function SideBar(props) {
                 changeTabView(newValue);
               }}
               className={classes.bottomNav}>
-              <BottomNavigationAction label="Playlists" value="playlists" icon={<PlaylistIcon/>} />
-              <BottomNavigationAction label="Recommendations" value="recommendations" icon={<BeakerIcon/>} />
-              <BottomNavigationAction label="Metrics" value="metrics" icon={<MuiBubbleChartIcon/>} />
+              <BottomNavigationAction
+                classes={{label: classes.bottomNavLabel}}
+                label="Playlists" value="playlists" icon={<PlaylistIcon/>} />
+              <BottomNavigationAction
+                classes={{label: classes.bottomNavLabel}}
+                label="Recommendations" value="recommendations" icon={<BeakerIcon/>} />
+              <BottomNavigationAction
+                classes={{label: classes.bottomNavLabel}}
+                label="Metrics" value="metrics" icon={<MuiBubbleChartIcon/>} />
             </BottomNavigation>
           </Toolbar>
         </AppBar>)}

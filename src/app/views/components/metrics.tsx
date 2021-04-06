@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme) => ({
   },
   cardHeaderIcon: {
     marginTop: 10,
-    float: "right"
+    marginRight: 10
   }
 }));
 

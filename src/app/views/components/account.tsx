@@ -14,9 +14,6 @@ import Collapse from "@material-ui/core/Collapse";
 import grey from "@material-ui/core/colors/grey";
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    width: "100%",
-  },
   textButton: {
     width: "100%",
     justifyContent: "flex-start",
@@ -26,9 +23,6 @@ const useStyles = makeStyles((theme) => ({
   secondaryAction: {
     right: 0,
     padding: "14px 20px"
-  },
-  gridItem: {
-    marginLeft: -10
   },
   collapseList: {
     flexGrow: 1,
@@ -47,7 +41,7 @@ const useStyles = makeStyles((theme) => ({
     color: grey[500],
     fontWeight: 300,
     fontSize: 12,
-    float: "right"
+    right: 0
   },
   listItemIcon: {
     minWidth: 26
@@ -110,6 +104,7 @@ export default function Account(props) {
   function accountClickHandler() {
     setAccountOpen(!accountOpen);
   }
+
 
   return (
     <Grid container>

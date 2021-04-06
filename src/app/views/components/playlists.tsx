@@ -9,7 +9,7 @@ import CardHeader from "@material-ui/core/CardHeader";
 import CardContent from "@material-ui/core/CardContent";
 import Divider from "@material-ui/core/Divider";
 import IconButton from "@material-ui/core/IconButton";
-import { MuiTuneIcon } from "../icons";
+import { SearchIcon } from "../icons";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme) => ({
   },
   cardHeaderIcon: {
     marginTop: 10,
-    float: "right"
+    marginRight: 10
   }
 }));
 
@@ -34,8 +34,6 @@ let playlistTracks = {};
 
 export default function Playlists(props) {
   const classes = useStyles();
-
-  let [controlsOpen, setControlsOpen] = useState(false);
 
   playlistTracks = props.stateData.playlistTracks;
   playlistTracks[props.stateData.likedSongsPlaylist.id] = props.stateData.likedSongsTracks;
@@ -58,8 +56,12 @@ export default function Playlists(props) {
     }
   }
 
-  function toggleControls() {
-    setControlsOpen(!controlsOpen);
+  function searchSongs() {
+    const command = {
+      action: "musictime.searchTracks",
+      command: "command_execute"
+    };
+    props.vscode.postMessage(command);
   }
 
   return (
@@ -67,11 +69,10 @@ export default function Playlists(props) {
       <CardHeader title="Playlists" className={classes.cardHeader}
         action={
           <IconButton aria-label="settings" className={classes.cardHeaderIcon}
-            onClick={toggleControls}>
-            <MuiTuneIcon />
+            onClick={searchSongs}>
+            <SearchIcon />
           </IconButton>
         }/>
-      {(controlsOpen) && (<CardContent></CardContent>)}
       {props.stateData.spotifyPlaylists && (
         <TreeView
           onNodeToggle={onTreeNodeToggle}

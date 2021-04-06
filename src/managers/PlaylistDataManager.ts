@@ -5,6 +5,7 @@ import {
   getPlaylistTracks,
   getRecommendationsForTracks,
   getSpotifyLikedSongs,
+  getSpotifyPlaylist,
   PaginationItem,
   PlayerName,
   PlayerType,
@@ -13,6 +14,7 @@ import {
   Track,
 } from "cody-music";
 import { commands } from "vscode";
+import { SOFTWARE_TOP_40_PLAYLIST_ID } from '../app/utils/view_constants';
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
 import { isResponseOk, softwareGet } from '../HttpClient';
 import MusicMetrics from '../model/MusicMetrics';
@@ -21,6 +23,7 @@ import { requiresSpotifyAccess } from "./PlaylistUtilManager";
 
 let spotifyLikedTracks: Track[] = undefined;
 let spotifyPlaylists: PlaylistItem[] = undefined;
+let softwareTop40Playlist: PlaylistItem = undefined;
 let recommendedTracks: Track[] = undefined;
 let playlistTracks: any = {};
 let userMusicMetrics: MusicMetrics[] = undefined;
@@ -31,6 +34,7 @@ let selectedPlayerName = PlayerName.SpotifyWeb;
 // playlists, recommendations, metrics
 let selectedTabView = "playlists";
 let currentRecMeta: any = {};
+let recommendationInfo: any = undefined;
 
 export async function clearSpotifyLikedTracksCache() {
   spotifyLikedTracks = undefined;
@@ -76,8 +80,8 @@ export function getCachedLikedSongsTracks() {
   return spotifyLikedTracks;
 }
 
-export function getCachedRecommendedTracks() {
-  return recommendedTracks ? recommendedTracks.splice(0, 11) : undefined;
+export function getCachedRecommendationInfo() {
+  return recommendationInfo;
 }
 
 export function getCachedUserMusicMetrics() {
@@ -128,6 +132,10 @@ export function getSpotifyLikedTracksPlaylist() {
   item.name = SPOTIFY_LIKED_SONGS_PLAYLIST_NAME;
   item["icon"] = "heart-filled.svg";
   return item;
+}
+
+export async function getSoftwareTop40Playlist() {
+  const softwareTop40: PlaylistItem= await getSpotifyPlaylist(SOFTWARE_TOP_40_PLAYLIST_ID);
 }
 
 // FETCH TRACKS
@@ -234,6 +242,11 @@ export async function getRecommendations(
     }
     return tracks;
   });
+
+  recommendationInfo = {
+    label,
+    tracks: recommendedTracks
+  }
 
   // refresh the webview
   commands.executeCommand("musictime.refreshMusicTimeView");
