@@ -23,12 +23,12 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
     //
   }
 
-  public async refresh() {
+  public async refresh(tabView = undefined) {
     if (!this._webview) {
       // its not available to refresh yet
       return;
     }
-    this._webview.webview.html = await this.getReactHtml();
+    this._webview.webview.html = await this.getReactHtml(tabView);
   }
 
   private _onDidClose = new EventEmitter<void>();
@@ -81,10 +81,10 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
     }
   }
 
-  private async getReactHtml(): Promise<string> {
+  private async getReactHtml(tabView = undefined): Promise<string> {
     const reactAppPathOnDisk = Uri.file(path.join(__dirname, "webviewSidebar.js"));
     const reactAppUri = reactAppPathOnDisk.with({ scheme: "vscode-resource" });
-    const stateData = JSON.stringify(await getReactData());
+    const stateData = JSON.stringify(await getReactData(tabView));
 
     return `<!DOCTYPE html>
 		<html lang="en">

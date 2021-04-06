@@ -14,7 +14,7 @@ import {
   Track,
 } from "cody-music";
 import { commands } from "vscode";
-import { SOFTWARE_TOP_40_PLAYLIST_ID } from '../app/utils/view_constants';
+import { RECOMMENDATION_LIMIT, SOFTWARE_TOP_40_PLAYLIST_ID } from '../app/utils/view_constants';
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
 import { isResponseOk, softwareGet } from '../HttpClient';
 import MusicMetrics from '../model/MusicMetrics';
@@ -222,7 +222,8 @@ export async function getRecommendations(
 	seedTracks = []
 ) {
 
-	seedLimit = Math.max(seedLimit, 5);
+  // fetching recommendations based on a set of genre requires 0 seed track IDs
+	seedLimit = seed_genres.length ? 0 : Math.max(seedLimit, 5)
 
   currentRecMeta = {
     label,
@@ -233,23 +234,27 @@ export async function getRecommendations(
   };
 
   recommendedTracks = await getTrackIdsForRecommendations(seedLimit, seedTracks).then(async (trackIds) => {
-    let tracks = await getRecommendationsForTracks(trackIds, 100, "" /*market*/, 20, 100, seed_genres, [] /*artists*/, features);
-    if (tracks?.length) {
-      tracks = tracks.map((t) => {
-        const albumName = getAlbumName(t);
-        return { ...t, albumName };
-      });
-    }
-    return tracks;
+    return getRecommendationsForTracks(trackIds, RECOMMENDATION_LIMIT, "" /*market*/, 20, 100, seed_genres, [] /*artists*/, features);
   });
+
+  populateRecommendationTracks(label, recommendedTracks);
+}
+
+export function populateRecommendationTracks(label: string, tracks: Track[]) {
+  if (tracks?.length) {
+    tracks = tracks.map((t) => {
+      const albumName = getAlbumName(t);
+      return { ...t, albumName };
+    });
+  }
 
   recommendationInfo = {
     label,
-    tracks: recommendedTracks
+    tracks
   }
 
   // refresh the webview
-  commands.executeCommand("musictime.refreshMusicTimeView");
+  commands.executeCommand("musictime.refreshMusicTimeView", "recommendations");
 }
 
 // PRIVATE FUNCTIONS
@@ -330,6 +335,10 @@ function getArtist(track: any) {
 }
 
 async function getTrackIdsForRecommendations(seedLimit: number = 5, seedTracks = []) {
+  if (seedLimit === 0) {
+    return [];
+  }
+
   if (!spotifyLikedTracks) {
     await populateLikedSongs();
   }

@@ -13,11 +13,11 @@ import {
 import { getSlackWorkspaces, hasSlackWorkspaces } from "../managers/SlackManager";
 import { getConnectedSpotifyUser } from "../managers/SpotifyManager";
 
-export async function getReactData() {
+export async function getReactData(tabView = undefined) {
   const name = getItem("name");
   const authType = getItem("authType");
 
-  const selectedTabView = getSelectedTabView();
+  const selectedTabView = tabView ? tabView : getSelectedTabView();
 
   const [spotifyPlaylists] = await Promise.all([getSpotifyPlaylists()]);
   let likedSongsTracks = [];

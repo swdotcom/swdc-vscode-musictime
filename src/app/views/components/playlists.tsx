@@ -9,6 +9,8 @@ import CardHeader from "@material-ui/core/CardHeader";
 import Tooltip from "@material-ui/core/Tooltip";
 import Divider from "@material-ui/core/Divider";
 import IconButton from "@material-ui/core/IconButton";
+import Typography from "@material-ui/core/Typography";
+import { amber } from "@material-ui/core/colors";
 import { SearchIcon } from "../icons";
 
 const useStyles = makeStyles((theme) => ({
@@ -23,6 +25,10 @@ const useStyles = makeStyles((theme) => ({
   cardHeader: {
     margin: 0,
     padding: 2
+  },
+  cardHeaderText: {
+    color: amber[500],
+    fontWeight: 500,
   },
   cardHeaderIcon: {
     marginTop: 10,
@@ -66,7 +72,12 @@ export default function Playlists(props) {
 
   return (
     <Card className={classes.root}>
-      <CardHeader title="Playlists" className={classes.cardHeader}
+      <CardHeader className={classes.cardHeader}
+        title={
+          <Typography noWrap gutterBottom={false} className={classes.cardHeaderText}>
+            Playlists
+          </Typography>
+        }
         action={
           <Tooltip title="Search Spotify">
             <IconButton aria-label="settings" className={classes.cardHeaderIcon}

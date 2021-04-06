@@ -5,10 +5,11 @@ import ListItemText from "@material-ui/core/ListItemText";
 import ListItem from "@material-ui/core/ListItem";
 import PropTypes from "prop-types";
 import Grid from "@material-ui/core/Grid";
-import blue from "@material-ui/core/colors/blue";
+import { grey, blue } from "@material-ui/core/colors";
 import { SpotifyIcon } from "../icons";
 import Tooltip from "@material-ui/core/Tooltip";
 import MetricItemTooltip from "./metric_item_tooltip";
+import { DARK_BG_COLOR } from '../../utils/view_constants';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -41,10 +42,10 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const HtmlTooltip = withStyles((theme) => ({
   tooltip: {
-		backgroundColor: '#f5f5f9',
-    color: 'rgba(0, 0, 0, 0.87)',
+		backgroundColor: DARK_BG_COLOR,
+    color: grey[500],
 		maxWidth: 200,
-    fontSize: theme.typography.pxToRem(12),
+		padding: 8
   },
 }))(Tooltip);
 
@@ -67,10 +68,8 @@ export default function MetricItemNode(props) {
 					placement="bottom"
 					title={<MetricItemTooltip vscode={props.vscode} item={props.item}/>}>
 					<List disablePadding={true} dense={true}>
-						<ListItem disableGutters={true} dense={true} button onClick={playTrack}>
-							<div style={(props.item.primary_artist_name) ? {marginTop: -6} : {marginTop: 9}}>
-								<SpotifyIcon/>
-							</div>
+						<ListItem button disableGutters={true} dense={true} onClick={playTrack}>
+							<SpotifyIcon/>
 							<ListItemText style={{whiteSpace: "nowrap"}}
 								primary={props.item.song_name} secondary={props.item.primary_artist_name}
 								classes={{primary: classes.labelText, secondary: classes.labelText}}/>

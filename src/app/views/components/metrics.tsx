@@ -7,6 +7,7 @@ import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import IconButton from "@material-ui/core/IconButton";
 import { MuiTuneIcon } from "../icons";
+import { amber } from "@material-ui/core/colors";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -20,6 +21,10 @@ const useStyles = makeStyles((theme) => ({
   cardHeader: {
     margin: 0,
     padding: 2
+  },
+  cardHeaderText: {
+    color: amber[500],
+    fontWeight: 500,
   },
   cardHeaderIcon: {
     marginTop: 10,
@@ -38,7 +43,12 @@ export default function Metrics(props) {
 
   return (
     <Card className={classes.root}>
-      <CardHeader title="Code + Music" className={classes.cardHeader}
+      <CardHeader className={classes.cardHeader}
+        title={
+          <Typography noWrap gutterBottom={false} className={classes.cardHeaderText}>
+            Code + Music
+          </Typography>
+        }
         action={
           <IconButton aria-label="settings" className={classes.cardHeaderIcon}
             onClick={toggleControls}>

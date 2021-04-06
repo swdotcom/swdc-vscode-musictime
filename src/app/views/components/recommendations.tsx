@@ -10,6 +10,7 @@ import ButtonGroup from "@material-ui/core/ButtonGroup";
 import { BeakerIcon, SearchIcon, FilterIcon } from "../icons";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Tooltip from "@material-ui/core/Tooltip";
+import { amber } from "@material-ui/core/colors";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -20,9 +21,17 @@ const useStyles = makeStyles((theme) => ({
     overflowX: "hidden",
     background: "transparent"
   },
-  cardHeader: {
+  cardHeaderRoot: {
     margin: 0,
-    padding: 2
+    padding: 2,
+    overflow: "hidden"
+  },
+  cardHeaderContent: {
+    overflow: "hidden"
+  },
+  cardHeaderText: {
+    color: amber[500],
+    fontWeight: 500,
   },
   cardHeaderIcon: {
     marginTop: 10,
@@ -76,8 +85,15 @@ export default function Recommendations(props) {
   return (
     <Card className={classes.root}>
       <CardHeader
-        title={(props.stateData.recommendationInfo) ? props.stateData.recommendationInfo.label : "Recommendations"}
-        className={classes.cardHeader}
+        classes={{
+          root: classes.cardHeaderRoot,
+          content: classes.cardHeaderContent
+        }}
+        title={
+          <Typography noWrap gutterBottom={false} className={classes.cardHeaderText}>
+            {(props.stateData.recommendationInfo) ? props.stateData.recommendationInfo.label : "Recommendations"}
+          </Typography>
+        }
         action={
           <div className={classes.headerActionButtons}>
           <ButtonGroup variant="text">

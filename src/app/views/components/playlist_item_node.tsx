@@ -24,15 +24,11 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     textButton: {
       justifyContent: "flex-start",
-			marginTop: 2,
-			marginBottom: 2,
+			margin: 0,
 			paddingLeft: 4,
 			paddingTop: 0,
 			paddingBottom: 1,
-      fontWeight: 500,
-			wrap: "nowrap",
-			overflow: "hidden",
-			textOverflow: "ellipsis"
+      fontWeight: 500
     },
     playlistName: {
 			marginRight: 16,
@@ -80,10 +76,10 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const HtmlTooltip = withStyles((theme) => ({
   tooltip: {
-		backgroundColor: '#f5f5f9',
-    color: 'rgba(0, 0, 0, 0.87)',
+		backgroundColor: DARK_BG_COLOR,
+    color: grey[500],
 		maxWidth: 200,
-    fontSize: theme.typography.pxToRem(12),
+		padding: 8
   },
 }))(Tooltip);
 

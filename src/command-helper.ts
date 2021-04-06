@@ -13,7 +13,7 @@ import {
   MusicRecommendationProvider,
   connectRecommendationPlaylistTreeView,
 } from "./music/MusicRecommendationProvider";
-import { showGenreSelections, showCategorySelections } from "./selector/RecTypeSelectorManager";
+import { showGenreSelections, showMoodSelections } from "./selector/RecTypeSelectorManager";
 import {
   showSortPlaylistMenu,
   showPlaylistOptionsMenu,
@@ -30,7 +30,7 @@ import { displayReadmeIfNotExists } from "./managers/FileManager";
 import { launchLogin, showLogInMenuOptions, showSignUpMenuOptions } from "./managers/UserStatusManager";
 import { MusicTimeWebviewSidebar } from './sidebar/MusicTimeWebviewSidebar';
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID, vscode_mt_issues_url } from './Constants';
-import { fetchTracksForLikedSongs, fetchTracksForPlaylist, getCachedRecommendationInfo, getCachedUserMusicMetrics, getFamiliarRecs, getUserMusicMetrics, updateSelectedTabView } from './managers/PlaylistDataManager';
+import { fetchTracksForLikedSongs, fetchTracksForPlaylist, getCachedRecommendationInfo, getCachedUserMusicMetrics, getFamiliarRecs, getRecommendations, getUserMusicMetrics, updateSelectedTabView } from './managers/PlaylistDataManager';
 import { playSelectedItem } from './managers/PlaylistControlManager';
 
 /**
@@ -425,7 +425,7 @@ export function createCommands(ctx: ExtensionContext): {
   cmds.push(genreRecListCmd);
 
   const categoryRecListCmd = commands.registerCommand("musictime.songMoodSelector", () => {
-    showCategorySelections();
+    showMoodSelections();
   });
   cmds.push(categoryRecListCmd);
 
@@ -456,7 +456,8 @@ export function createCommands(ctx: ExtensionContext): {
       const likedSongSeedLimit = args[1];
       const seed_genres = args[2];
       const features = args.length > 3 ? args[3] : {};
-      updateRecommendations(label, likedSongSeedLimit, seed_genres, features);
+
+      getRecommendations(label, likedSongSeedLimit, seed_genres, features);
     })
   );
 
@@ -521,8 +522,8 @@ export function createCommands(ctx: ExtensionContext): {
   );
 
   cmds.push(
-    commands.registerCommand("musictime.refreshMusicTimeView", () => {
-      mtWebviewSidebar.refresh();
+    commands.registerCommand("musictime.refreshMusicTimeView", (tabView: undefined) => {
+      mtWebviewSidebar.refresh(tabView);
     })
   );
 
