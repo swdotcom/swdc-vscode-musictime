@@ -1,15 +1,15 @@
-import React, { useState } from "react";
+import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 import PlaylistItemNode from "./playlist_item_node"
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
-import IconButton from "@material-ui/core/IconButton";
 import Button from "@material-ui/core/Button";
 import ButtonGroup from "@material-ui/core/ButtonGroup";
 import { BeakerIcon, SearchIcon, FilterIcon } from "../icons";
 import CircularProgress from "@material-ui/core/CircularProgress";
+import Tooltip from "@material-ui/core/Tooltip";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -80,10 +80,16 @@ export default function Recommendations(props) {
         className={classes.cardHeader}
         action={
           <div className={classes.headerActionButtons}>
-          <ButtonGroup variant="text" color="primary" aria-label="text primary button group">
-            <Button onClick={searchClick}><SearchIcon /></Button>
-            <Button onClick={moodSelectionClick}><BeakerIcon /></Button>
-            <Button onClick={genreSelectionClick}><FilterIcon /></Button>
+          <ButtonGroup variant="text">
+            <Tooltip title="Search Spotify">
+              <Button onClick={searchClick}><SearchIcon /></Button>
+            </Tooltip>
+            <Tooltip title="Select a mood">
+              <Button onClick={moodSelectionClick}><BeakerIcon /></Button>
+            </Tooltip>
+            <Tooltip title="Select a genre">
+              <Button onClick={genreSelectionClick}><FilterIcon /></Button>
+            </Tooltip>
           </ButtonGroup>
           </div>
         }/>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import PlaylistItem from "./playlist_item";
 import TreeView from "@material-ui/lab/TreeView";
@@ -6,7 +6,7 @@ import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import ArrowRightIcon from "@material-ui/icons/ArrowRight";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
-import CardContent from "@material-ui/core/CardContent";
+import Tooltip from "@material-ui/core/Tooltip";
 import Divider from "@material-ui/core/Divider";
 import IconButton from "@material-ui/core/IconButton";
 import { SearchIcon } from "../icons";
@@ -68,10 +68,12 @@ export default function Playlists(props) {
     <Card className={classes.root}>
       <CardHeader title="Playlists" className={classes.cardHeader}
         action={
-          <IconButton aria-label="settings" className={classes.cardHeaderIcon}
-            onClick={searchSongs}>
-            <SearchIcon />
-          </IconButton>
+          <Tooltip title="Search Spotify">
+            <IconButton aria-label="settings" className={classes.cardHeaderIcon}
+              onClick={searchSongs}>
+              <SearchIcon />
+            </IconButton>
+          </Tooltip>
         }/>
       {props.stateData.spotifyPlaylists && (
         <TreeView
