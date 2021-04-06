@@ -8,7 +8,7 @@ import Grid from "@material-ui/core/Grid";
 import blue from "@material-ui/core/colors/blue";
 import { SpotifyIcon } from "../icons";
 import Tooltip from "@material-ui/core/Tooltip";
-import Typography from "@material-ui/core/Typography";
+import MetricItemTooltip from "./metric_item_tooltip";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -51,22 +51,26 @@ const HtmlTooltip = withStyles((theme) => ({
 export default function MetricItemNode(props) {
 	const classes = useStyles();
 
+	function playTrack() {
+		const command = {
+      action: "musictime.playTrack",
+      command: "command_execute",
+			arguments: [props.item]
+    };
+    props.vscode.postMessage(command);
+	}
 
-	// maybe use justify="space-between"
   return (
-		<Grid container direction="row" wrap="nowrap" className={classes.gridContainer} key={props.item.song_uri}>
-			<Grid item xs={7} key={`${props.item.song_uri}_metrics_label`}>
+		<Grid container direction="row" wrap="nowrap" className={classes.gridContainer}>
+			<Grid item xs={7}>
 				<HtmlTooltip
 					placement="bottom"
-					title={
-						<React.Fragment key={`${props.item.song_uri}_metric_tooltip`}>
-							<Typography color="inherit" key={`${props.item.song_uri}_plays_label`}>Plays: {props.item.plays}</Typography>
-							<Typography key={`${props.item.song_uri}_productivity_label`}>Productiity: {props.item.productivity_score}</Typography>
-						</React.Fragment>
-					}>
+					title={<MetricItemTooltip vscode={props.vscode} item={props.item}/>}>
 					<List disablePadding={true} dense={true}>
-						<ListItem key={`${props.item.song_uri}_metric_name`} disableGutters={true} dense={true}>
-							<div style={(props.item.primary_artist_name) ? {marginTop: -6} : {marginTop: 10}}><SpotifyIcon/></div>
+						<ListItem disableGutters={true} dense={true} button onClick={playTrack}>
+							<div style={(props.item.primary_artist_name) ? {marginTop: -6} : {marginTop: 9}}>
+								<SpotifyIcon/>
+							</div>
 							<ListItemText style={{whiteSpace: "nowrap"}}
 								primary={props.item.song_name} secondary={props.item.primary_artist_name}
 								classes={{primary: classes.labelText, secondary: classes.labelText}}/>
@@ -76,17 +80,17 @@ export default function MetricItemNode(props) {
 			</Grid>
 			<Grid item xs={5}>
 				<Grid container direction="row" wrap="nowrap" className={classes.gridContainer}>
-					<Grid item xs key={`${props.item.song_uri}_keystrokes_stat`}>
+					<Grid item xs>
 						<List disablePadding={true} dense={true}>
-							<ListItem key={`${props.item.song_uri}_metric_keystrokes`} disableGutters={true} dense={true} className={classes.statItem}>
+							<ListItem disableGutters={true} dense={true} className={classes.statItem}>
 								<ListItemText primary="keystrokes" secondary={props.item.keystrokes_formatted}
 									classes={{primary: classes.primaryListText, secondary: classes.secondaryListText}}/>
 							</ListItem>
 						</List>
 					</Grid>
-					<Grid item xs key={`${props.item.song_uri}_rank_stat`}>
+					<Grid item xs>
 						<List disablePadding={true} dense={true}>
-							<ListItem key={`${props.item.song_uri}_metric_rank`} disableGutters={true} dense={true} className={classes.statItem}>
+							<ListItem disableGutters={true} dense={true} className={classes.statItem}>
 								<ListItemText primary="rank" secondary={props.item.song_rank}
 									classes={{primary: classes.primaryListText, secondary: classes.mainSecondaryListText}}/>
 							</ListItem>

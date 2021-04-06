@@ -1,9 +1,5 @@
-import React, { useState } from "react";
-import { makeStyles, Theme, createStyles, withStyles } from "@material-ui/core/styles";
-import List from "@material-ui/core/List";
-import ListItemText from "@material-ui/core/ListItemText";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
+import React from "react";
+import { makeStyles } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 import MetricItemNode from "./metric_item_node"
@@ -18,10 +14,6 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: -4,
     overflowX: "hidden",
     background: "transparent"
-  },
-  cardHeader: {
-    padding: 0,
-    marginBottom: 4
   }
 }));
 
@@ -30,7 +22,7 @@ export default function Metrics(props) {
 
   return (
     <Card className={classes.root}>
-      <CardHeader title="Metrics" className={classes.cardHeader}/>
+      <CardHeader title="Metrics"/>
       <Grid container>
 			  <Grid item xs={12}>
         {props.stateData.userMusicMetrics && props.stateData.userMusicMetrics.length

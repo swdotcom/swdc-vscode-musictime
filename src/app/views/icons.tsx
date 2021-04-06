@@ -9,40 +9,60 @@ import CloseIcon from "@material-ui/icons/Close";
 import SyncIcon from "@material-ui/icons/Sync";
 import FavoriteIcon from "@material-ui/icons/Favorite";
 import BubbleChartIcon from "@material-ui/icons/BubbleChart";
+import PlayCircleOutlineIcon from "@material-ui/icons/PlayCircleOutline";
+import QueueIcon from "@material-ui/icons/Queue";
+import SubscriptionsIcon from "@material-ui/icons/Subscriptions";
+import TuneIcon from "@material-ui/icons/Tune";
 
 // transform: "scale(1.5)" can change the size of the icon
 
 // Material UI SVG Icons
 export const MuiAlbumIcon = (props: SvgIconProps) => {
-  return <AlbumIcon {...props} style={{ color: deepPurple[400], marginLeft: -4, marginRight: 2 }} />;
+  return <AlbumIcon {...props} style={{ color: deepPurple[400], marginLeft: -4, marginRight: 5 }} />;
+}
+
+export const MuiPlayCircleOutlineIcon = (props: SvgIconProps) => {
+  return <PlayCircleOutlineIcon {...props} style={{ color: deepPurple[400], marginLeft: -4, marginRight: 5 }} />;
 }
 
 export const MuiBubbleChartIcon = (props: SvgIconProps) => {
-  return <BubbleChartIcon {...props} style={{ color: deepPurple[400], marginLeft: -4, marginRight: 2 }} />;
+  return <BubbleChartIcon {...props} style={{ color: deepPurple[400], marginLeft: -4, marginRight: 5 }} />;
 }
 
 export const MuiAccountCircleIcon = (props: SvgIconProps) => {
-  return <AccountCircleIcon {...props} style={{ color: deepPurple[400], marginLeft: -4, marginRight: 2 }} />;
+  return <AccountCircleIcon {...props} style={{ color: deepPurple[400], marginLeft: -4, marginRight: 5 }} />;
 }
 
 export const MuiSyncIcon = (props: SvgIconProps) => {
-  return <SyncIcon {...props} style={{ color: deepPurple[400], marginLeft: -4, marginRight: 2 }} />;
+  return <SyncIcon {...props} style={{ color: deepPurple[400], marginLeft: -4, marginRight: 5 }} />;
 }
 
 export const MuiSettingIcon = (props: SvgIconProps) => {
-  return <MuiSettingsIcon {...props} style={{ color: deepPurple[400], marginLeft: -4, marginRight: 2 }} />;
+  return <MuiSettingsIcon {...props} style={{ color: deepPurple[400], marginLeft: -4, marginRight: 5 }} />;
 };
 
 export const MuiShareIcon = (props: SvgIconProps) => {
-  return <ShareIcon {...props} style={{ color: deepPurple[400], marginLeft: -4, marginRight: 2 }} />;
+  return <ShareIcon {...props} style={{ color: deepPurple[400], marginLeft: -4, marginRight: 5 }} />;
 }
 
 export const MuiCloseIcon = (props: SvgIconProps) => {
-  return <CloseIcon {...props} style={{ color: deepPurple[400], marginRight: 10 }} />;
+  return <CloseIcon {...props} style={{ color: deepPurple[400], marginLeft: -4, marginRight: 5 }} />;
 }
 
 export const MuiFavoriteIcon = (props: SvgIconProps) => {
-  return <FavoriteIcon {...props} style={{ color: deepPurple[400], marginRight: 10 }} />;
+  return <FavoriteIcon {...props} style={{ color: deepPurple[400], marginLeft: -4, marginRight: 5 }} />;
+}
+
+export const MuiQueueIcon = (props: SvgIconProps) => {
+  return <QueueIcon {...props} style={{ color: deepPurple[400], marginLeft: -4, marginRight: 5 }} />;
+}
+
+export const MuiSubscriptionsIcon = (props: SvgIconProps) => {
+  return <SubscriptionsIcon {...props} style={{ color: deepPurple[400], marginLeft: -4, marginRight: 5 }} />;
+}
+
+export const MuiTuneIcon = (props: SvgIconProps) => {
+  return <TuneIcon {...props} style={{ color: deepPurple[400], marginLeft: -4, marginRight: 5 }} />;
 }
 
 // Custom SVG Icons

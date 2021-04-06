@@ -11,9 +11,19 @@ import blue from "@material-ui/core/colors/blue";
 import grey from "@material-ui/core/colors/grey";
 
 const useStyles = makeStyles((theme) => ({
+  root: {
+    marginTop: 0,
+    background: "linear-gradient(#6879F5, #976AF7)"
+  },
   setup: {
     width: "100%",
     backgroundColor: "transparent",
+  },
+  setupHeader: {
+    color: "#FFF",
+    display: "flex",
+    justifyContent: "center",
+    textAlign: "center"
   },
   setupButtonContent: {
     textAlign: "center",
@@ -30,7 +40,7 @@ const useStyles = makeStyles((theme) => ({
     marginRight: 4,
     fontSize: 12,
     color: grey[200],
-	display: "block"
+	  display: "block"
   },
   link: {
     fontSize: 14,
@@ -42,10 +52,7 @@ const useStyles = makeStyles((theme) => ({
       color: "rgb(255, 255, 255, 0.8)",
       textDecoration: "none",
     },
-  },
-  typography: {
-    color: "#FFF",
-  },
+  }
 }));
 
 const BorderLinearProgress = withStyles((theme: Theme) =>
@@ -87,11 +94,11 @@ export default function Setup(props) {
   }
 
   return (
-    <Grid container>
+    <Grid container className={classes.root}>
       <Grid item xs={12}>
         <Paper className={classes.setup} elevation={0}>
-          <CardContent>
-            <Typography className={classes.typography}>Getting Started with Music Time</Typography>
+          <CardContent className={classes.setupHeader}>
+            <Typography>Getting Started with Music Time</Typography>
           </CardContent>
           <CardContent>
             <BorderLinearProgress variant="determinate" value={progress} />

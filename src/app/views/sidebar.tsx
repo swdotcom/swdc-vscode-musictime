@@ -16,7 +16,8 @@ import BottomNavigationAction from "@material-ui/core/BottomNavigationAction";
 import {
   TOP_APP_BAR_MIN_HEIGHT,
   BOTTOM_BAR_HEIGHT,
-  DARK_BG_COLOR
+  DARK_BG_COLOR,
+  GETTING_STARTED_MIN_HEIGHT
 } from "../utils/view_constants";
 import { PlaylistIcon, BeakerIcon, MuiBubbleChartIcon } from "./icons";
 import grey from "@material-ui/core/colors/grey";
@@ -24,15 +25,6 @@ import deepPurple from "@material-ui/core/colors/deepPurple";
 
 const useStyles = makeStyles((theme) => ({
   gridItem: {
-    marginLeft: 10,
-    marginRight: 10
-  },
-  gridItemSetup: {
-    marginTop: 1,
-    marginButtom: 10,
-    background: "linear-gradient(#6879F5, #976AF7)"
-  },
-  playlistGridItem: {
     marginLeft: 10,
     marginRight: 10
   },
@@ -219,61 +211,60 @@ export default function SideBar(props) {
   return (
     <ThemeProvider theme={theme}>
       <React.Fragment>
-      <CssBaseline />
-      <AppBar position="fixed" className={classes.topAppBar} id="top-app-bar">
-        <Grid container>
-          {(!props.stateData.registered || (!props.stateData.spotifyUser)) && (
-            <Grid item xs={12} className={classes.gridItemSetup}>
-              <Setup stateData={props.stateData} vscode={props.vscode} />
-            </Grid>
-          )}
-          {props.stateData.registered && (<Grid item xs={12} className={classes.gridItem}>
-            <Account vscode={props.vscode} stateData={props.stateData} />
+        <CssBaseline />
+        <AppBar position="fixed" className={classes.topAppBar} id="top-app-bar">
+          <Grid container>
+            {(!props.stateData.registered || (!props.stateData.spotifyUser)) && (
+            <Setup stateData={props.stateData} vscode={props.vscode} />
+            )}
+            {props.stateData.registered && (
+            <Account vscode={props.vscode} stateData={props.stateData} />)}
+          </Grid>
+        </AppBar>
+        <Grid container
+          style={{
+            position: "absolute",
+            overflowX: "hidden",
+            top: (!props.stateData.spotifyUser) ? GETTING_STARTED_MIN_HEIGHT : TOP_APP_BAR_MIN_HEIGHT,
+            bottom: BOTTOM_BAR_HEIGHT}}>
+
+          {!props.stateData.spotifyUser && (
+          <Grid item xs={12} className={classes.gridItem}>
+            <ColdStart vscode={props.vscode} stateData={props.stateData}/>
+          </Grid>)}
+
+          {(props.stateData.selectedTabView === "playlists" && props.stateData.spotifyUser) && (
+          <Grid item xs={12} className={classes.gridItem}>
+            <Playlists vscode={props.vscode} stateData={props.stateData}/>
+          </Grid>)}
+
+          {(props.stateData.selectedTabView === "recommendations" && props.stateData.spotifyUser) && (
+          <Grid item xs={12} className={classes.gridItem}>
+            <Recommendations vscode={props.vscode} stateData={props.stateData}/>
+          </Grid>)}
+
+          {(props.stateData.selectedTabView === "metrics" && props.stateData.spotifyUser) && (
+          <Grid item xs={12} className={classes.gridItem}>
+            <Metrics vscode={props.vscode} stateData={props.stateData}/>
           </Grid>)}
         </Grid>
-      </AppBar>
-      <Grid container
-        style={{
-          position: "absolute",
-          overflowX: "hidden",
-          top: TOP_APP_BAR_MIN_HEIGHT,
-          bottom: BOTTOM_BAR_HEIGHT}}>
 
-        {!props.stateData.spotifyUser && (<Grid item xs={12} className={classes.gridItem}>
-          <ColdStart vscode={props.vscode} stateData={props.stateData}/>
-        </Grid>)}
+        {props.stateData.spotifyUser && (
+        <AppBar position="fixed" className={classes.bottomAppBar}>
 
-        {(props.stateData.selectedTabView === "playlists" && props.stateData.spotifyUser) && (
-        <Grid item xs={12} className={classes.playlistGridItem}>
-          <Playlists vscode={props.vscode} stateData={props.stateData}/>
-        </Grid>)}
-
-        {(props.stateData.selectedTabView === "recommendations" && props.stateData.spotifyUser) && (
-        <Grid item xs={12} className={classes.playlistGridItem}>
-          <Recommendations vscode={props.vscode} stateData={props.stateData}/>
-        </Grid>)}
-
-        {(props.stateData.selectedTabView === "metrics" && props.stateData.spotifyUser) && (
-        <Grid item xs={12} className={classes.playlistGridItem}>
-          <Metrics vscode={props.vscode} stateData={props.stateData}/>
-        </Grid>)}
-      </Grid>
-
-      <AppBar position="fixed" className={classes.bottomAppBar}>
-
-        <Toolbar variant="dense" disableGutters={true} style={{background: "transparent"}}>
-          <BottomNavigation
-            value={props.stateData.selectedTabView}
-            onChange={(event, newValue) => {
-              changeTabView(newValue);
-            }}
-            className={classes.bottomNav}>
-            <BottomNavigationAction label="Playlists" value="playlists" icon={<PlaylistIcon/>} />
-            <BottomNavigationAction label="Recommendations" value="recommendations" icon={<BeakerIcon/>} />
-            <BottomNavigationAction label="Metrics" value="metrics" icon={<MuiBubbleChartIcon/>} />
-          </BottomNavigation>
-        </Toolbar>
-      </AppBar>
+          <Toolbar variant="dense" disableGutters={true} style={{background: "transparent"}}>
+            <BottomNavigation
+              value={props.stateData.selectedTabView}
+              onChange={(event, newValue) => {
+                changeTabView(newValue);
+              }}
+              className={classes.bottomNav}>
+              <BottomNavigationAction label="Playlists" value="playlists" icon={<PlaylistIcon/>} />
+              <BottomNavigationAction label="Recommendations" value="recommendations" icon={<BeakerIcon/>} />
+              <BottomNavigationAction label="Metrics" value="metrics" icon={<MuiBubbleChartIcon/>} />
+            </BottomNavigation>
+          </Toolbar>
+        </AppBar>)}
       </React.Fragment>
     </ThemeProvider>
   );

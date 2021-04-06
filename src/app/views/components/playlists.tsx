@@ -7,6 +7,8 @@ import ArrowRightIcon from "@material-ui/icons/ArrowRight";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 import Divider from "@material-ui/core/Divider";
+import IconButton from "@material-ui/core/IconButton";
+import { MuiTuneIcon } from "../icons";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -17,10 +19,6 @@ const useStyles = makeStyles((theme) => ({
     overflowX: "hidden",
     background: "transparent"
   },
-  cardHeader: {
-    padding: 0,
-    marginBottom: 4
-  }
 }));
 
 let playlistTracks = {};
@@ -51,7 +49,12 @@ export default function Playlists(props) {
 
   return (
     <Card className={classes.root}>
-      <CardHeader title="Playlists" className={classes.cardHeader}/>
+      <CardHeader title="Playlists"
+        action={
+          <IconButton aria-label="settings">
+            <MuiTuneIcon />
+          </IconButton>
+        }/>
 
       <TreeView
         onNodeToggle={onTreeNodeToggle}

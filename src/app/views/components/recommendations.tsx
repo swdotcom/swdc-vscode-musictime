@@ -14,10 +14,6 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: -4,
     overflowX: "hidden",
     background: "transparent"
-  },
-  cardHeader: {
-    padding: 0,
-    marginBottom: 4
   }
 }));
 
@@ -26,7 +22,7 @@ export default function Recommendations(props) {
 
   return (
     <Card className={classes.root}>
-      <CardHeader title="Recommendations" className={classes.cardHeader}/>
+      <CardHeader title="Recommendations"/>
       <Grid container>
 			  <Grid item xs={12}>
         {props.stateData.recommendationTracks && props.stateData.recommendationTracks.length
