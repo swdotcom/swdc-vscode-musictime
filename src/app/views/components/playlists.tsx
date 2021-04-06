@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import PlaylistItem from "./playlist_item";
 import TreeView from "@material-ui/lab/TreeView";
@@ -6,6 +6,7 @@ import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import ArrowRightIcon from "@material-ui/icons/ArrowRight";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
+import CardContent from "@material-ui/core/CardContent";
 import Divider from "@material-ui/core/Divider";
 import IconButton from "@material-ui/core/IconButton";
 import { MuiTuneIcon } from "../icons";
@@ -19,12 +20,22 @@ const useStyles = makeStyles((theme) => ({
     overflowX: "hidden",
     background: "transparent"
   },
+  cardHeader: {
+    margin: 0,
+    padding: 2
+  },
+  cardHeaderIcon: {
+    marginTop: 10,
+    float: "right"
+  }
 }));
 
 let playlistTracks = {};
 
 export default function Playlists(props) {
   const classes = useStyles();
+
+  let [controlsOpen, setControlsOpen] = useState(false);
 
   playlistTracks = props.stateData.playlistTracks;
   playlistTracks[props.stateData.likedSongsPlaylist.id] = props.stateData.likedSongsTracks;
@@ -47,39 +58,44 @@ export default function Playlists(props) {
     }
   }
 
+  function toggleControls() {
+    setControlsOpen(!controlsOpen);
+  }
+
   return (
     <Card className={classes.root}>
-      <CardHeader title="Playlists"
+      <CardHeader title="Playlists" className={classes.cardHeader}
         action={
-          <IconButton aria-label="settings">
+          <IconButton aria-label="settings" className={classes.cardHeaderIcon}
+            onClick={toggleControls}>
             <MuiTuneIcon />
           </IconButton>
         }/>
+      {(controlsOpen) && (<CardContent></CardContent>)}
+      {props.stateData.spotifyPlaylists && (
+        <TreeView
+          onNodeToggle={onTreeNodeToggle}
+          aria-label="gmail"
+          defaultExpanded={props.stateData.selectedPlaylistId ? [props.stateData.selectedPlaylistId] : []}
+          className={classes.root}
+          disableSelection={true}
+          defaultCollapseIcon={<ArrowDropDownIcon />}
+          defaultExpandIcon={<ArrowRightIcon />}>
 
-      <TreeView
-        onNodeToggle={onTreeNodeToggle}
-        aria-label="gmail"
-        defaultExpanded={props.stateData.selectedPlaylistId ? [props.stateData.selectedPlaylistId] : []}
-        className={classes.root}
-        disableSelection={true}
-        defaultCollapseIcon={<ArrowDropDownIcon />}
-        defaultExpandIcon={<ArrowRightIcon />}>
+          <PlaylistItem vscode={props.vscode}
+                playlistItem={props.stateData.likedSongsPlaylist}
+                key={props.stateData.likedSongsPlaylist.id}
+                playlistTracks={props.stateData.playlistTracks[props.stateData.likedSongsPlaylist.id]}/>
 
-        <PlaylistItem vscode={props.vscode}
-              playlistItem={props.stateData.likedSongsPlaylist}
-              key={props.stateData.likedSongsPlaylist.id}
-              playlistTracks={props.stateData.playlistTracks[props.stateData.likedSongsPlaylist.id]}/>
+          <Divider />
 
-        <Divider />
-
-        {props.stateData.spotifyPlaylists ? (
-          props.stateData.spotifyPlaylists.map((item, index) => {
-            return (<PlaylistItem vscode={props.vscode}
-              playlistItem={item}
-              key={index}
-              playlistTracks={props.stateData.playlistTracks[item.id]}/>)
-          })) : (null)}
-      </TreeView>
+          {props.stateData.spotifyPlaylists.map((item, index) => {
+              return (<PlaylistItem vscode={props.vscode}
+                playlistItem={item}
+                key={index}
+                playlistTracks={props.stateData.playlistTracks[item.id]}/>)
+              })}
+        </TreeView>)}
     </Card>
   );
 }

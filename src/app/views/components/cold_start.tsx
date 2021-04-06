@@ -19,15 +19,18 @@ const useStyles = makeStyles((theme) => ({
     background: "transparent"
   },
   cardHeader: {
-    padding: 0,
-    marginBottom: 4
+    margin: 0,
+    padding: 2
+  },
+  cardHeaderIcon: {
+    marginTop: 10
   },
 	secondaryAction: {
     position: "absolute",
     right: 0,
     padding: 0,
     margin: 0
-  },
+  }
 }));
 
 export default function ColdStart(props) {
@@ -35,7 +38,7 @@ export default function ColdStart(props) {
 
   return (
     <Card className={classes.root}>
-      <CardHeader title="Things to expect" className={classes.cardHeader}/>
+      <CardHeader title="Music Time Features" className={classes.cardHeader}/>
       <Grid container>
         <Grid item xs={12}>
           <List disablePadding={true} dense={true}>

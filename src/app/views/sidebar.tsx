@@ -156,7 +156,7 @@ export default function SideBar(props) {
               "&:last-child": {
                 paddingBottom: 24,
               }
-            },
+            }
           },
           MuiDivider: {
             root: {
