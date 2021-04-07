@@ -312,7 +312,7 @@ function getMuiIconStyle(props: SvgIconProps) {
 }
 
 function getCustomIconStyle(props: SvgIconProps) {
-  const style = { color: deepPurple[400], marginLeft: 8, marginBottom: -8, transform: "scale(1.5)" };
+  const style = { color: deepPurple[400], marginLeft: 8, marginTop: 6, transform: "scale(1.5)" };
   if (props.color) {
     delete style.color;
   }

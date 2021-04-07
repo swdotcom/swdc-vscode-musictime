@@ -48,35 +48,36 @@ const useStyles = makeStyles((theme: Theme) =>
       overflow: "hidden",
       textOverflow: "ellipsis",
     },
-    menuItem: {
-      marginLeft: 5,
-      marginBottom: 0,
-      marginTop: 0,
-      padding: 0,
-    },
-    menuItemText: {
-      color: "white",
-      fontWeight: 300,
-      fontSize: 12,
-    },
-    menuList: {
-      overflow: "hidden",
-    },
     menuHeaderPrimary: {
-      color: deepPurple[200],
+      color: deepPurple[200]
     },
     menuHeaderSecondary: {
       color: grey[500],
       fontWeight: 300,
-      fontSize: 12,
+      fontSize: 12
     },
     menuHeaderAction: {
-      right: -4,
+      justifyContent: "flex-end",
+      alignItems: "flex-start"
     },
     trackItemGridItem: {
       width: "100%",
       flexGrow: 1,
     },
+    gridIconItem: {
+			display: "flex",
+			justifyContent: "center",
+			textAlign: "center",
+      marginTop: theme.spacing(1),
+      marginBottom: theme.spacing(1)
+		},
+    gridTextItem: {
+      color: "white",
+      fontWeight: 300,
+      fontSize: 12,
+      marginTop: theme.spacing(1),
+      marginBottom: theme.spacing(1)
+    }
   })
 );
 
@@ -210,9 +211,9 @@ export default function PlaylistItemNode(props) {
               },
             }}
           >
-            <MenuItem key="menu_title">
+            <MenuItem key="menu_title" style={{paddingLeft: 4, paddingRight: 4}}>
               <List disablePadding={true} dense={true}>
-                <ListItem disableGutters={true} dense={true} className={classes.menuList}>
+                <ListItem disableGutters={true} dense={true}>
                   <ListItemText
                     primary={
                       <Typography noWrap className={classes.menuHeaderPrimary}>
@@ -225,42 +226,32 @@ export default function PlaylistItemNode(props) {
                       </Typography>
                     }
                   />
-                  <ListItemSecondaryAction classes={{ root: classes.menuHeaderAction }} onClick={handleClose}>
+                  <ListItemSecondaryAction onClick={handleClose} className={classes.menuHeaderAction}>
                     <MuiCloseIcon />
                   </ListItemSecondaryAction>
                 </ListItem>
               </List>
             </MenuItem>
-            <MenuItem key="album" onClick={handleClose} disableGutters dense>
-              <Grid container onClick={showAlbum}>
-                <Grid item xs={2}>
+              <Grid container>
+                <Grid item xs={2} className={classes.gridIconItem}>
                   <MuiAlbumIcon />
                 </Grid>
-                <Grid item xs={10}>
-                  <Typography className={classes.menuItemText}>Show album</Typography>
+                <Grid item xs={10} className={classes.gridTextItem}>
+                  <Typography>Show album</Typography>
                 </Grid>
-              </Grid>
-            </MenuItem>
-            <MenuItem key="recommendations" onClick={handleClose} disableGutters dense>
-              <Grid container onClick={getTrackRecommendations}>
-                <Grid item xs={2}>
+                <Grid item xs={2} className={classes.gridIconItem}>
                   <BeakerIcon />
                 </Grid>
-                <Grid item xs={10}>
-                  <Typography className={classes.menuItemText}>Get recommendations</Typography>
+                <Grid item xs={10} className={classes.gridTextItem}>
+                  <Typography>Get recommendations</Typography>
                 </Grid>
-              </Grid>
-            </MenuItem>
-            <MenuItem key="share" onClick={handleClose} disableGutters dense>
-              <Grid container onClick={getTrackRecommendations}>
-                <Grid item xs={2}>
+                <Grid item xs={2} className={classes.gridIconItem}>
                   <MuiShareIcon />
                 </Grid>
-                <Grid item xs={10}>
-                  <Typography className={classes.menuItemText}>Share track</Typography>
+                <Grid item xs={10} className={classes.gridTextItem}>
+                  <Typography>Share track</Typography>
                 </Grid>
               </Grid>
-            </MenuItem>
           </Menu>
         </Grid>
       )}
