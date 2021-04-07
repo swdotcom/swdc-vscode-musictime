@@ -4,8 +4,12 @@ import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
-import { indigo } from "@material-ui/core/colors";
 import Slider from "@material-ui/core/Slider";
+import IconButton from "@material-ui/core/IconButton";
+import Tooltip from "@material-ui/core/Tooltip";
+import Divider from "@material-ui/core/Divider";
+import { MuiMusicNoteIcon } from "../icons";
+import { indigo } from "@material-ui/core/colors";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -14,6 +18,11 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
     overflow: "hidden",
     background: "transparent",
+  },
+  headerText: {
+    display: "flex",
+    justifyContent: "center",
+    textAlign: "center",
   },
   cardHeaderRoot: {
     margin: 0,
@@ -36,16 +45,6 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     justifyContent: "center",
     textAlign: "center",
-  },
-  headerActionButtons: {
-    marginTop: 10,
-    marginRight: 10,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    "& > *": {
-      margin: theme.spacing(1),
-    },
   },
 }));
 
@@ -106,52 +105,70 @@ const featuresInfo = [
   },
 ];
 
-export default function Recommendations(props) {
+export default function MetricAudioDashboard(props) {
   const classes = useStyles();
 
+  function sliderText(value) {
+    return value.toFixed(2);
+  }
+
+  function generateRecommendations() {
+    const command = {
+      action: "musictime.generateFeatureRecommendations",
+      command: "command_execute",
+    };
+    props.vscode.postMessage(command);
+  }
+
   return (
-    <Card className={classes.root}>
+    <Card className={classes.root} elevation={0}>
       <CardHeader
         classes={{
           root: classes.cardHeaderRoot,
           content: classes.cardHeaderContent,
         }}
+        action={
+          <Tooltip title="Generate recommendations">
+            <IconButton aria-label="recommendations" onClick={generateRecommendations}>
+              <MuiMusicNoteIcon />
+            </IconButton>
+          </Tooltip>
+        }
+        title={
+          <Typography noWrap gutterBottom={false} className={classes.cardHeaderText}>
+            Your audio features
+          </Typography>
+        }
+        subheader="Generate recommendations"
       />
+      <Divider />
       <Grid container>
-          {props.stateData.averageMusicMetrics && props.stateData.averageMusicMetrics.valence ? (
-            Object.keys(props.stateData.averageMusicMetrics).map((key) => {
-              const featureInfo: any = featuresInfo.find(n => n.key === key);
-              const marks = [
-                {
-                  value: featureInfo.min,
-                  label: `${featureInfo.min}`,
-                },
-                {
-                  value: featureInfo.max,
-                  label: `${featureInfo.max}`
-                }
-              ];
-
-              return (
+        {props.stateData.averageMusicMetrics && props.stateData.averageMusicMetrics.valence && (
+          Object.keys(props.stateData.averageMusicMetrics).map((key, index) => {
+            const featureInfo: any = featuresInfo.find(n => n.key === key);
+            const defaultVal = parseFloat(props.stateData.averageMusicMetrics[key].toFixed(2));
+            return (
+              <Grid item xs={12}>
                 <Grid container>
                   <Grid item xs={6}>
                     <Typography style={{fontWeight: 400}}>{key}</Typography>
                   </Grid>
                   <Grid item xs={5}>
                     <Slider
-                      defaultValue={props.stateData.averageMusicMetrics[key]}
+                      defaultValue={defaultVal}
+                      getAriaValueText={sliderText}
                       min={featureInfo.min}
                       max={featureInfo.max}
                       step={featureInfo.step}
-                      marks={marks}
+                      valueLabelDisplay="auto"
+                      marks
                     />
                   </Grid>
                 </Grid>
-              );
-            })
-          ) : (
-            <Typography>No features available</Typography>
-          )}
+              </Grid>
+            );
+          })
+        )}
       </Grid>
     </Card>
   );

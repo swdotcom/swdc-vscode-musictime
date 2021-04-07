@@ -82,7 +82,7 @@ export default function Recommendations(props) {
   }
 
   return (
-    <Card className={classes.root}>
+    <Card className={classes.root} elevation={0}>
       <CardHeader
         classes={{
           root: classes.cardHeaderRoot,

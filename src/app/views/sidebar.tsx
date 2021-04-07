@@ -14,7 +14,7 @@ import Toolbar from "@material-ui/core/Toolbar";
 import BottomNavigation from "@material-ui/core/BottomNavigation";
 import BottomNavigationAction from "@material-ui/core/BottomNavigationAction";
 import { TOP_APP_BAR_MIN_HEIGHT, BOTTOM_BAR_HEIGHT, DARK_BG_COLOR, GETTING_STARTED_MIN_HEIGHT } from "../utils/view_constants";
-import { PlaylistIcon, BeakerIcon, MuiBubbleChartIcon } from "./icons";
+import { PlaylistIcon, BeakerIcon, MuiBarChartIcon } from "./icons";
 import { deepPurple, grey, lime } from "@material-ui/core/colors";
 
 const useStyles = makeStyles((theme) => ({
@@ -270,7 +270,7 @@ export default function SideBar(props) {
                   value="recommendations"
                   icon={<BeakerIcon />}
                 />
-                <BottomNavigationAction classes={{ label: classes.bottomNavLabel }} label="Metrics" value="metrics" icon={<MuiBubbleChartIcon />} />
+                <BottomNavigationAction classes={{ label: classes.bottomNavLabel }} label="Metrics" value="metrics" icon={<MuiBarChartIcon />} />
               </BottomNavigation>
             </Toolbar>
           </AppBar>

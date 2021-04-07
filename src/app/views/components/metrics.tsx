@@ -1,4 +1,5 @@
 import React, { useState }  from "react";
+import clsx from "clsx";
 import PropTypes from "prop-types";
 import { makeStyles } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
@@ -7,47 +8,47 @@ import MetricItemNode from "./metric_item_node"
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import MetricsSetup from "./metrics_setup";
-import { MuiBarChartIcon, MuiEmojiEventsIconIcon } from "../icons";
+import { MuiTuneIcon, MuiEmojiEventsIcon } from "../icons";
 import { indigo } from "@material-ui/core/colors";
 import Tooltip from "@material-ui/core/Tooltip";
 import ButtonGroup from "@material-ui/core/ButtonGroup";
 import Button from "@material-ui/core/Button";
 import Box from "@material-ui/core/Box";
 import MetricAudioDashboard from "./metric_audio_dashboard";
+import { fade } from "@material-ui/core/styles/colorManipulator";
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    width: "100%",
-    height: "100%",
-    flexGrow: 1,
-    padding: 0,
-    margin: 0,
-    overflow: "hidden",
-    background: "transparent",
-  },
-  cardHeader: {
-    margin: 0,
-    padding: 2
-  },
-  cardHeaderText: {
-    color: indigo[300],
-    fontWeight: 500,
-  },
-  cardHeaderIcon: {
-    marginTop: 10,
-    marginRight: 10
-  },
-  headerActionButtons: {
-    marginTop: 10,
-    marginRight: 10,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    "& > *": {
-      margin: theme.spacing(1),
+const useStyles = makeStyles((theme) => {
+  const selectedBg = fade(theme.palette.text.primary, theme.palette.action.hoverOpacity);
+  return {
+    root: {
+      width: "100%",
+      height: "100%",
+      flexGrow: 1,
+      padding: 0,
+      margin: 0,
+      background: "transparent",
+    },
+    cardHeader: {
+      margin: 0,
+      padding: theme.spacing(1)
+    },
+    cardHeaderText: {
+      color: indigo[300],
+      fontWeight: 500,
+    },
+    cardHeaderIcon: {
+      marginTop: 10,
+      marginRight: 10
+    },
+    headerActionButtons: {
+      marginTop: 10,
+      marginRight: 10
+    },
+    selected: {
+      backgroundColor: selectedBg
     }
   }
-}));
+});
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -87,31 +88,42 @@ export default function Metrics(props) {
     setTabView(1);
   }
 
+  const rankingButtonClass = clsx({
+    [classes.selected]: tabView === 0
+  });
+
+  const dashboardButtonClass = clsx({
+    [classes.selected]: tabView === 1
+  });
+
   return (
-    <Card className={classes.root}>
-      {props.stateData.codeTimeInstalled && (<CardHeader className={classes.cardHeader}
-        title={
-          <Typography noWrap gutterBottom={false} className={classes.cardHeaderText}>
-            Code + Music
-          </Typography>
-        }
-        action={
-          <div className={classes.headerActionButtons}>
-            <ButtonGroup variant="text">
-              <Tooltip title="Ranking">
-                <Button onClick={showRanking}><MuiEmojiEventsIconIcon/></Button>
-              </Tooltip>
-              <Tooltip title="Dashboard">
-                <Button onClick={showDashboard}><MuiBarChartIcon/></Button>
-              </Tooltip>
-            </ButtonGroup>
-          </div>
-        }/>)}
+    <Card className={classes.root} elevation={0}>
+      {props.stateData.codeTimeInstalled && (
+        <CardHeader className={classes.cardHeader}
+          title={
+            <Typography noWrap gutterBottom={false} className={classes.cardHeaderText}>
+              Code + Music
+            </Typography>
+          }
+          action={
+            <div className={classes.headerActionButtons}>
+              <ButtonGroup variant="text">
+                <Tooltip title="Ranking">
+                  <Button onClick={showRanking} className={rankingButtonClass}>
+                    <MuiEmojiEventsIcon/>
+                  </Button>
+                </Tooltip>
+                <Tooltip title="Dashboard" className={dashboardButtonClass}>
+                  <Button onClick={showDashboard}><MuiTuneIcon/></Button>
+                </Tooltip>
+              </ButtonGroup>
+            </div>
+          }/>)}
 
       {props.stateData.codeTimeInstalled ? (
-        <div className={classes.root}>
+        <div>
           {tabView === 0 ? (
-            <Grid container className={classes.root}>
+            <Grid container>
               <Grid item xs={12}>
               {props.stateData.userMusicMetrics && props.stateData.userMusicMetrics.length
                 ? (
@@ -123,18 +135,18 @@ export default function Metrics(props) {
                   : (<Typography>No metrics available</Typography>)}
               </Grid>
             </Grid>)
-            : (<Grid container className={classes.root}>
+            : (<Grid container>
                 <Grid item xs={12}>
                   <MetricAudioDashboard vscode={props.vscode} stateData={props.stateData} />
                 </Grid>
               </Grid>)}
-        </div>
-      ) : (
-        <Grid container>
-          <Grid item xs={12}>
-            <MetricsSetup  vscode={props.vscode} stateData={props.stateData}/>
-          </Grid>
-        </Grid>)}
+          </div>)
+        : (
+          <Grid container>
+            <Grid item xs={12}>
+              <MetricsSetup  vscode={props.vscode} stateData={props.stateData}/>
+            </Grid>
+          </Grid>)}
     </Card>
   );
 }

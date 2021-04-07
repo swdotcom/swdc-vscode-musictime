@@ -570,5 +570,11 @@ export function createCommands(ctx: ExtensionContext): {
     })
   );
 
+  cmds.push(
+    commands.registerCommand("musictime.generateFeatureRecommendations", async (item:PlaylistItem) => {
+      //
+    })
+  );
+
   return Disposable.from(...cmds);
 }

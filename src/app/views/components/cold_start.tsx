@@ -38,7 +38,7 @@ export default function ColdStart(props) {
 	const classes = useStyles();
 
   return (
-    <Card className={classes.root}>
+    <Card className={classes.root} elevation={0}>
       <CardHeader title="Music Time Features" className={classes.cardHeader}/>
       <Grid container>
         <Grid item xs={12}>

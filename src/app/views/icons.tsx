@@ -15,6 +15,7 @@ import SubscriptionsIcon from "@material-ui/icons/Subscriptions";
 import TuneIcon from "@material-ui/icons/Tune";
 import BarChartIcon from "@material-ui/icons/BarChart";
 import EmojiEventsIcon from "@material-ui/icons/EmojiEvents";
+import MusicNoteIcon from "@material-ui/icons/MusicNote";
 
 // transform: "scale(1.5)" can change the size of the icon
 
@@ -71,10 +72,13 @@ export const MuiBarChartIcon = (props: SvgIconProps) => {
   return <BarChartIcon {...props} style={{ color: deepPurple[400], marginLeft: -4, marginRight: 5 }} />;
 }
 
-export const MuiEmojiEventsIconIcon = (props: SvgIconProps) => {
+export const MuiEmojiEventsIcon = (props: SvgIconProps) => {
   return <EmojiEventsIcon {...props} style={{ color: deepPurple[400], marginLeft: -4, marginRight: 5 }} />;
 }
 
+export const MuiMusicNoteIcon = (props: SvgIconProps) => {
+  return <MusicNoteIcon {...props} style={{ color: deepPurple[400], marginLeft: -4, marginRight: 5 }} />;
+}
 
 // Custom SVG Icons
 export const DashboardIcon = (props: SvgIconProps) => {

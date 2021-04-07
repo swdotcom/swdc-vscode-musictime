@@ -70,7 +70,7 @@ export default function Playlists(props) {
   }
 
   return (
-    <Card className={classes.root}>
+    <Card className={classes.root} elevation={0}>
       <CardHeader
         className={classes.cardHeader}
         title={
