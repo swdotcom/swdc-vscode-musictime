@@ -13,7 +13,7 @@ import grey from "@material-ui/core/colors/grey";
 const useStyles = makeStyles((theme) => ({
   root: {
     marginTop: 0,
-    background: "linear-gradient(#6879F5, #976AF7)"
+    background: "linear-gradient(#6879F5, #976AF7)",
   },
   setup: {
     width: "100%",
@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme) => ({
     color: "#FFF",
     display: "flex",
     justifyContent: "center",
-    textAlign: "center"
+    textAlign: "center",
   },
   setupButtonContent: {
     textAlign: "center",
@@ -34,13 +34,13 @@ const useStyles = makeStyles((theme) => ({
     maxWidth: 200,
   },
   linkContent: {
-	  textAlign: "center"
+    textAlign: "center",
   },
   subInfo: {
     marginRight: 4,
     fontSize: 12,
     color: grey[200],
-	  display: "block"
+    display: "block",
   },
   link: {
     fontSize: 14,
@@ -52,7 +52,7 @@ const useStyles = makeStyles((theme) => ({
       color: "rgb(255, 255, 255, 0.8)",
       textDecoration: "none",
     },
-  }
+  },
 }));
 
 const BorderLinearProgress = withStyles((theme: Theme) =>

@@ -13,6 +13,8 @@ import PlayCircleOutlineIcon from "@material-ui/icons/PlayCircleOutline";
 import QueueIcon from "@material-ui/icons/Queue";
 import SubscriptionsIcon from "@material-ui/icons/Subscriptions";
 import TuneIcon from "@material-ui/icons/Tune";
+import BarChartIcon from "@material-ui/icons/BarChart";
+import EmojiEventsIcon from "@material-ui/icons/EmojiEvents";
 
 // transform: "scale(1.5)" can change the size of the icon
 
@@ -64,6 +66,15 @@ export const MuiSubscriptionsIcon = (props: SvgIconProps) => {
 export const MuiTuneIcon = (props: SvgIconProps) => {
   return <TuneIcon {...props} style={{ color: deepPurple[400], marginLeft: -4, marginRight: 5 }} />;
 }
+
+export const MuiBarChartIcon = (props: SvgIconProps) => {
+  return <BarChartIcon {...props} style={{ color: deepPurple[400], marginLeft: -4, marginRight: 5 }} />;
+}
+
+export const MuiEmojiEventsIconIcon = (props: SvgIconProps) => {
+  return <EmojiEventsIcon {...props} style={{ color: deepPurple[400], marginLeft: -4, marginRight: 5 }} />;
+}
+
 
 // Custom SVG Icons
 export const DashboardIcon = (props: SvgIconProps) => {

@@ -9,14 +9,17 @@ import Typography from "@material-ui/core/Typography";
 import MetricsColdStart from "./metrics_cold_start";
 import Grid from "@material-ui/core/Grid";
 import { blue, grey } from "@material-ui/core/colors";
+import Link from "@material-ui/core/Link";
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    flexGrow: 1,
     width: "100%",
-    height: "100"
+    height: "100%",
+    flexGrow: 1,
+    overflowX: "hidden",
+    background: "transparent"
   },
-  setup: {
+  setupCardItem: {
     width: "100%",
     padding: 0,
     margin: 0,
@@ -39,11 +42,30 @@ const useStyles = makeStyles((theme) => ({
   linkContent: {
 	  textAlign: "center"
   },
+  subInfoContent: {
+    justifyContent: "center",
+    textAlign: "center"
+  },
   subInfo: {
     marginRight: 4,
     fontSize: 12,
     color: grey[200],
-	  display: "block"
+    display: "inline"
+  },
+  link: {
+    fontSize: 14,
+    color: "#ffffff",
+    background: "transparent",
+    textDecoration: "none",
+    display: "inline",
+    "&:hover": {
+      fontSize: 14,
+      color: "rgb(255, 255, 255, 0.8)",
+      textDecoration: "none",
+    },
+  },
+  coldStartView: {
+    padding: theme.spacing(1)
   }
 }));
 
@@ -59,7 +81,7 @@ const BorderLinearProgress = withStyles((theme: Theme) =>
     bar: {
       borderRadius: 4,
       backgroundColor: "#ffffff",
-    },
+    }
   })
 )(LinearProgress);
 
@@ -77,10 +99,18 @@ export default function MetricsSetup(props) {
     props.vscode.postMessage(command);
   }
 
+  function refreshClick() {
+    const command = {
+      action: "musictime.refreshMusicTimeView",
+      command: "command_execute",
+    };
+    props.vscode.postMessage(command);
+  }
+
   return (
     <Grid container className={classes.root}>
       <Grid item xs={12}>
-        <Card className={classes.setup}>
+        <Card className={classes.setupCardItem}>
           <CardContent className={classes.setupHeader}>
             <Typography>Getting Started with Code Time</Typography>
           </CardContent>
@@ -92,9 +122,17 @@ export default function MetricsSetup(props) {
               Install Code Time
             </Button>
           </CardContent>
+          <CardContent className={classes.subInfoContent}>
+            <Typography className={classes.subInfo}>
+              Already installed?
+            </Typography>
+            <Link href="#" onClick={refreshClick} className={classes.link}>
+              Refresh
+            </Link>
+          </CardContent>
         </Card>
       </Grid>
-      <Grid item xs={12}>
+      <Grid item xs={12} className={classes.coldStartView}>
         <MetricsColdStart vscode={props.vscode} stateData={props.stateData}/>
       </Grid>
     </Grid>

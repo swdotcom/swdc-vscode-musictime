@@ -13,6 +13,9 @@ import { DARK_BG_COLOR } from '../../utils/view_constants';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
+		root: {
+			padding: theme.spacing(1)
+		},
 		labelText: {
 			wrap: "nowrap",
 			overflow: "hidden",
@@ -27,10 +30,6 @@ const useStyles = makeStyles((theme: Theme) =>
 		mainSecondaryListText: {
 			fontWeight: 600,
 			color: blue[500],
-		},
-		gridContainer: {
-			margin: 0,
-			adding: 0
 		},
 		statItem: {
 			display: "flex",
@@ -62,7 +61,7 @@ export default function MetricItemNode(props) {
 	}
 
   return (
-		<Grid container direction="row" wrap="nowrap" className={classes.gridContainer}>
+		<Grid container direction="row" wrap="nowrap" className={classes.root}>
 			<Grid item xs={7}>
 				<HtmlTooltip
 					placement="bottom"
@@ -78,7 +77,7 @@ export default function MetricItemNode(props) {
 				</HtmlTooltip>
 			</Grid>
 			<Grid item xs={5}>
-				<Grid container direction="row" wrap="nowrap" className={classes.gridContainer}>
+				<Grid container direction="row" wrap="nowrap">
 					<Grid item xs>
 						<List disablePadding={true} dense={true}>
 							<ListItem disableGutters={true} dense={true} className={classes.statItem}>

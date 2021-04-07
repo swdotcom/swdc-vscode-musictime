@@ -1,6 +1,7 @@
 import { getCurrentColorKind } from "../extension";
 import { getItem } from "../managers/FileManager";
 import {
+  getCachedAverageMusicMetrics,
   getCachedLikedSongsTracks,
   getCachedPlaylistTracks,
   getCachedRecommendationInfo,
@@ -28,7 +29,8 @@ export async function getReactData(tabView = undefined) {
     playlistTracks = getCachedPlaylistTracks();
   }
   const recommendationInfo = selectedTabView === "recommendations" ? getCachedRecommendationInfo() : [];
-  const userMusicMetrics = selectedTabView === "metrics" ? getCachedUserMusicMetrics() : {};
+  const userMusicMetrics = selectedTabView === "metrics" ? getCachedUserMusicMetrics() : [];
+  const averageMusicMetrics = selectedTabView === "metrics" ? getCachedAverageMusicMetrics() : {};
 
   const reactData = {
     authType,
@@ -38,6 +40,7 @@ export async function getReactData(tabView = undefined) {
     selectedTabView,
     recommendationInfo,
     userMusicMetrics,
+    averageMusicMetrics,
     likedSongsTracks,
     playlistTracks,
     likedSongsPlaylist: getSpotifyLikedTracksPlaylist(),

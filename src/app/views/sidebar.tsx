@@ -13,29 +13,23 @@ import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import BottomNavigation from "@material-ui/core/BottomNavigation";
 import BottomNavigationAction from "@material-ui/core/BottomNavigationAction";
-import {
-  TOP_APP_BAR_MIN_HEIGHT,
-  BOTTOM_BAR_HEIGHT,
-  DARK_BG_COLOR,
-  GETTING_STARTED_MIN_HEIGHT
-} from "../utils/view_constants";
+import { TOP_APP_BAR_MIN_HEIGHT, BOTTOM_BAR_HEIGHT, DARK_BG_COLOR, GETTING_STARTED_MIN_HEIGHT } from "../utils/view_constants";
 import { PlaylistIcon, BeakerIcon, MuiBubbleChartIcon } from "./icons";
-import grey from "@material-ui/core/colors/grey";
-import deepPurple from "@material-ui/core/colors/deepPurple";
+import { deepPurple, grey, lime } from "@material-ui/core/colors";
 
 const useStyles = makeStyles((theme) => ({
   bottomNav: {
     background: "transparent",
     flexGrow: 1,
     width: "100%",
-    margin: 0
+    margin: 0,
   },
   topAppBar: {
     background: DARK_BG_COLOR,
     top: 0,
     padding: 0,
     margin: 0,
-    minHeight: `${TOP_APP_BAR_MIN_HEIGHT}px`
+    minHeight: `${TOP_APP_BAR_MIN_HEIGHT}px`,
   },
   bottomAppBar: {
     height: `${BOTTOM_BAR_HEIGHT}px`,
@@ -43,16 +37,15 @@ const useStyles = makeStyles((theme) => ({
     top: "auto",
     bottom: 0,
     padding: 0,
-    margin: 0
+    margin: 0,
   },
   bottomNavLabel: {
-    marginTop: 5
-  }
+    marginTop: 5,
+    fontWeight: 400,
+  },
 }));
 
-const getHeight = () => window.innerHeight
-  || document.documentElement.clientHeight
-  || document.body.clientHeight;
+const getHeight = () => window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 
 function useCurrentHeight() {
   // save current window width in the state object
@@ -63,7 +56,7 @@ function useCurrentHeight() {
   useEffect(() => {
     const resizeListener = () => {
       // change width from the state object
-      setHeight(getHeight())
+      setHeight(getHeight());
     };
     // set resize listener
     window.addEventListener("resize", resizeListener);
@@ -72,8 +65,8 @@ function useCurrentHeight() {
     return () => {
       // remove resize listener
       window.removeEventListener("resize", resizeListener);
-    }
-  }, [])
+    };
+  }, []);
 
   return height;
 }
@@ -110,6 +103,7 @@ export default function SideBar(props) {
         palette: {
           type: prefersDarkMode ? "dark" : "light",
           primary: deepPurple,
+          secondary: lime,
         },
         overrides: {
           MuiGrid: {
@@ -119,7 +113,7 @@ export default function SideBar(props) {
               margin: 0,
               padding: 0,
               backgroundColor: "transparent",
-            }
+            },
           },
           MuiButton: {
             root: {
@@ -154,8 +148,8 @@ export default function SideBar(props) {
               paddingRight: 16,
               "&:last-child": {
                 paddingBottom: 24,
-              }
-            }
+              },
+            },
           },
           MuiDivider: {
             root: {
@@ -166,8 +160,8 @@ export default function SideBar(props) {
           },
           MuiList: {
             root: {
-              width: "100%"
-            }
+              width: "100%",
+            },
           },
           MuiListItemText: {
             root: {
@@ -183,15 +177,15 @@ export default function SideBar(props) {
           },
           MuiListItemSecondaryAction: {
             root: {
-              right: 0
-            }
+              right: 0,
+            },
           },
           MuiBottomNavigationAction: {
             label: {
               color: grey[100],
-              fontWeight: 600
-            }
-          }
+              fontWeight: 600,
+            },
+          },
         },
       }),
     [prefersDarkMode]
@@ -202,7 +196,7 @@ export default function SideBar(props) {
     const updateCmd = {
       action: "musictime.updateSelectedTabView",
       command: "command_execute",
-      arguments: [newValue]
+      arguments: [newValue],
     };
     props.vscode.postMessage(updateCmd);
   }
@@ -211,70 +205,76 @@ export default function SideBar(props) {
     <ThemeProvider theme={theme}>
       <React.Fragment>
         <CssBaseline />
-        <AppBar position="fixed" className={classes.topAppBar} id="top-app-bar"
-          style={{margin: 0, padding: 0}}>
+        <AppBar position="fixed" className={classes.topAppBar} id="top-app-bar" style={{ margin: 0, padding: 0 }}>
           <Grid container>
-            {(!props.stateData.registered || (!props.stateData.spotifyUser)) && (
-              <Grid item xs={12} style={{marginLeft: 12}}>
+            {(!props.stateData.registered || !props.stateData.spotifyUser) && (
+              <Grid item xs={12} style={{ marginLeft: 12 }}>
                 <Setup stateData={props.stateData} vscode={props.vscode} />
               </Grid>
             )}
             {props.stateData.registered && (
-              <Grid item xs={12} style={{marginLeft: 12}}>
+              <Grid item xs={12} style={{ marginLeft: 12 }}>
                 <Account vscode={props.vscode} stateData={props.stateData} />
-              </Grid>)}
+              </Grid>
+            )}
           </Grid>
         </AppBar>
-        <Grid container
+        <Grid
+          container
           style={{
             position: "absolute",
             overflowX: "hidden",
-            top: (!props.stateData.spotifyUser) ? GETTING_STARTED_MIN_HEIGHT : TOP_APP_BAR_MIN_HEIGHT,
-            bottom: BOTTOM_BAR_HEIGHT}}>
-
+            top: !props.stateData.spotifyUser ? GETTING_STARTED_MIN_HEIGHT : TOP_APP_BAR_MIN_HEIGHT,
+            bottom: BOTTOM_BAR_HEIGHT,
+          }}
+        >
           {!props.stateData.spotifyUser && (
-          <Grid item xs={12}>
-            <ColdStart vscode={props.vscode} stateData={props.stateData}/>
-          </Grid>)}
+            <Grid item xs={12}>
+              <ColdStart vscode={props.vscode} stateData={props.stateData} />
+            </Grid>
+          )}
 
-          {(props.stateData.selectedTabView === "playlists" && props.stateData.spotifyUser) && (
-          <Grid item xs={12}>
-            <Playlists vscode={props.vscode} stateData={props.stateData}/>
-          </Grid>)}
+          {props.stateData.selectedTabView === "playlists" && props.stateData.spotifyUser && (
+            <Grid item xs={12}>
+              <Playlists vscode={props.vscode} stateData={props.stateData} />
+            </Grid>
+          )}
 
-          {(props.stateData.selectedTabView === "recommendations" && props.stateData.spotifyUser) && (
-          <Grid item xs={12}>
-            <Recommendations vscode={props.vscode} stateData={props.stateData}/>
-          </Grid>)}
+          {props.stateData.selectedTabView === "recommendations" && props.stateData.spotifyUser && (
+            <Grid item xs={12}>
+              <Recommendations vscode={props.vscode} stateData={props.stateData} />
+            </Grid>
+          )}
 
-          {(props.stateData.selectedTabView === "metrics" && props.stateData.spotifyUser) && (
-          <Grid item xs={12}>
-            <Metrics vscode={props.vscode} stateData={props.stateData}/>
-          </Grid>)}
+          {props.stateData.selectedTabView === "metrics" && props.stateData.spotifyUser && (
+            <Grid item xs={12}>
+              <Metrics vscode={props.vscode} stateData={props.stateData} />
+            </Grid>
+          )}
         </Grid>
 
         {props.stateData.spotifyUser && (
-        <AppBar position="fixed" className={classes.bottomAppBar}>
-
-          <Toolbar variant="dense" disableGutters={true} style={{background: "transparent"}}>
-            <BottomNavigation
-              value={props.stateData.selectedTabView}
-              onChange={(event, newValue) => {
-                changeTabView(newValue);
-              }}
-              className={classes.bottomNav}>
-              <BottomNavigationAction
-                classes={{label: classes.bottomNavLabel}}
-                label="Playlists" value="playlists" icon={<PlaylistIcon/>} />
-              <BottomNavigationAction
-                classes={{label: classes.bottomNavLabel}}
-                label="Recommendations" value="recommendations" icon={<BeakerIcon/>} />
-              <BottomNavigationAction
-                classes={{label: classes.bottomNavLabel}}
-                label="Metrics" value="metrics" icon={<MuiBubbleChartIcon/>} />
-            </BottomNavigation>
-          </Toolbar>
-        </AppBar>)}
+          <AppBar position="fixed" className={classes.bottomAppBar}>
+            <Toolbar variant="dense" disableGutters={true} style={{ background: "transparent" }}>
+              <BottomNavigation
+                value={props.stateData.selectedTabView}
+                onChange={(event, newValue) => {
+                  changeTabView(newValue);
+                }}
+                className={classes.bottomNav}
+              >
+                <BottomNavigationAction classes={{ label: classes.bottomNavLabel }} label="Playlists" value="playlists" icon={<PlaylistIcon />} />
+                <BottomNavigationAction
+                  classes={{ label: classes.bottomNavLabel }}
+                  label="Recommendations"
+                  value="recommendations"
+                  icon={<BeakerIcon />}
+                />
+                <BottomNavigationAction classes={{ label: classes.bottomNavLabel }} label="Metrics" value="metrics" icon={<MuiBubbleChartIcon />} />
+              </BottomNavigation>
+            </Toolbar>
+          </AppBar>
+        )}
       </React.Fragment>
     </ThemeProvider>
   );

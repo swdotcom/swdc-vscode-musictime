@@ -16,6 +16,8 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
     height: "100%",
     flexGrow: 1,
+    padding: 0,
+    margin: 0,
     overflowX: "hidden",
     background: "transparent"
   },
@@ -49,7 +51,7 @@ export default function MetricsColdStart(props) {
       <CardHeader className={classes.cardHeader}
       title={
           <Typography noWrap gutterBottom={false} className={classes.cardHeaderText}>
-            Code + Music Time
+            Code + Music Features
           </Typography>
         }/>
       <Grid container>

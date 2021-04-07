@@ -28,6 +28,7 @@ let recommendedTracks: Track[] = undefined;
 let playlistTracks: any = {};
 let userMusicMetrics: MusicMetrics[] = undefined;
 let globalMusicMetrics: MusicMetrics[] = undefined;
+let averageMusicMetrics: MusicMetrics = undefined;
 let selectedPlaylistId = undefined;
 let selectedPlaylistItem: PlaylistItem = undefined;
 let selectedPlayerName = PlayerName.SpotifyWeb;
@@ -86,6 +87,10 @@ export function getCachedRecommendationInfo() {
 
 export function getCachedUserMusicMetrics() {
   return userMusicMetrics;
+}
+
+export function getCachedAverageMusicMetrics() {
+  return averageMusicMetrics;
 }
 
 export function getSelectedPlaylistId() {
@@ -175,9 +180,11 @@ export async function getUserMusicMetrics() {
   if (isResponseOk(resp) && resp.data) {
     userMusicMetrics = resp.data.user_music_metrics;
     if (userMusicMetrics) {
-      userMusicMetrics = userMusicMetrics.map(n => {
+      averageMusicMetrics = new MusicMetrics();
+      userMusicMetrics = userMusicMetrics.map((n, index) => {
         n["keystrokes"] = n.keystrokes ? Math.ceil(n.keystrokes) : 0;
         n["keystrokes_formatted"] = new Intl.NumberFormat().format(n.keystrokes);
+        averageMusicMetrics.updateAverage(n, (index + 1));
         return n;
       });
       userMusicMetrics = userMusicMetrics.filter(n => n.song_name);

@@ -19,11 +19,11 @@ const useStyles = makeStyles((theme) => ({
     height: "100%",
     flexGrow: 1,
     overflowX: "hidden",
-    background: "transparent"
+    background: "transparent",
   },
   cardHeader: {
     margin: 0,
-    padding: 2
+    padding: 2,
   },
   cardHeaderText: {
     color: indigo[300],
@@ -31,8 +31,8 @@ const useStyles = makeStyles((theme) => ({
   },
   cardHeaderIcon: {
     marginTop: 10,
-    marginRight: 10
-  }
+    marginRight: 10,
+  },
 }));
 
 let playlistTracks = {};
@@ -54,7 +54,7 @@ export default function Playlists(props) {
         const command = {
           action: "musictime.fetchPlaylistTracks",
           command: "command_execute",
-          arguments: [playlist_id]
+          arguments: [playlist_id],
         };
         props.vscode.postMessage(command);
       }
@@ -64,14 +64,15 @@ export default function Playlists(props) {
   function searchSongs() {
     const command = {
       action: "musictime.searchTracks",
-      command: "command_execute"
+      command: "command_execute",
     };
     props.vscode.postMessage(command);
   }
 
   return (
     <Card className={classes.root}>
-      <CardHeader className={classes.cardHeader}
+      <CardHeader
+        className={classes.cardHeader}
         title={
           <Typography noWrap gutterBottom={false} className={classes.cardHeaderText}>
             Playlists
@@ -79,12 +80,12 @@ export default function Playlists(props) {
         }
         action={
           <Tooltip title="Search Spotify">
-            <IconButton aria-label="settings" className={classes.cardHeaderIcon}
-              onClick={searchSongs}>
+            <IconButton aria-label="settings" className={classes.cardHeaderIcon} onClick={searchSongs}>
               <SearchIcon />
             </IconButton>
           </Tooltip>
-        }/>
+        }
+      />
       {props.stateData.spotifyPlaylists && (
         <TreeView
           onNodeToggle={onTreeNodeToggle}
@@ -93,22 +94,22 @@ export default function Playlists(props) {
           className={classes.root}
           disableSelection={true}
           defaultCollapseIcon={<ArrowDropDownIcon />}
-          defaultExpandIcon={<ArrowRightIcon />}>
-
-          <PlaylistItem vscode={props.vscode}
-                playlistItem={props.stateData.likedSongsPlaylist}
-                key={props.stateData.likedSongsPlaylist.id}
-                playlistTracks={props.stateData.playlistTracks[props.stateData.likedSongsPlaylist.id]}/>
+          defaultExpandIcon={<ArrowRightIcon />}
+        >
+          <PlaylistItem
+            vscode={props.vscode}
+            playlistItem={props.stateData.likedSongsPlaylist}
+            key={props.stateData.likedSongsPlaylist.id}
+            playlistTracks={props.stateData.playlistTracks[props.stateData.likedSongsPlaylist.id]}
+          />
 
           <Divider />
 
           {props.stateData.spotifyPlaylists.map((item, index) => {
-              return (<PlaylistItem vscode={props.vscode}
-                playlistItem={item}
-                key={index}
-                playlistTracks={props.stateData.playlistTracks[item.id]}/>)
-              })}
-        </TreeView>)}
+            return <PlaylistItem vscode={props.vscode} playlistItem={item} key={index} playlistTracks={props.stateData.playlistTracks[item.id]} />;
+          })}
+        </TreeView>
+      )}
     </Card>
   );
 }
