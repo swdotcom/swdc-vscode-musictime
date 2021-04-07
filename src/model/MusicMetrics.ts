@@ -22,21 +22,33 @@ export default class MusicMetrics {
 	public user_id: number;
 	public valence: number;
 
-	public updateAverage(metrics: MusicMetrics, index: number): void {
-		this.acousticness = this.getAvg(this.acousticness, metrics.acousticness, index);
-		this.danceability = this.getAvg(this.danceability, metrics.danceability, index);
-		this.energy = this.getAvg(this.energy, metrics.energy, index);
-		this.instrumentalness = this.getAvg(this.instrumentalness, metrics.instrumentalness, index);
-		this.liveness = this.getAvg(this.liveness, metrics.liveness, index);
-		this.loudness = this.getAvg(this.loudness, metrics.loudness, index);
-		this.speechiness = this.getAvg(this.speechiness, metrics.speechiness, index);
-		this.tempo = this.getAvg(this.tempo, metrics.tempo, index);
-		this.valence = this.getAvg(this.valence, metrics.valence, index);
+	public increment(metrics: MusicMetrics): void {
+		this.acousticness = this.incrementVals(this.acousticness, metrics.acousticness);
+		this.danceability = this.incrementVals(this.danceability, metrics.danceability);
+		this.energy = this.incrementVals(this.energy, metrics.energy);
+		this.instrumentalness = this.incrementVals(this.instrumentalness, metrics.instrumentalness);
+		this.liveness = this.incrementVals(this.liveness, metrics.liveness);
+		this.loudness = this.incrementVals(this.loudness, metrics.loudness);
+		this.speechiness = this.incrementVals(this.speechiness, metrics.speechiness);
+		this.tempo = this.incrementVals(this.tempo, metrics.tempo);
+		this.valence = this.incrementVals(this.valence, metrics.valence);
 	}
 
-	private getAvg(thisVal, thatVal, index) {
+	private incrementVals(thisVal, thatVal) {
 		thisVal = thisVal ?? 0;
 		thatVal = thatVal ?? 0;
-		return (thisVal + thatVal) / index;
+		return (thisVal + thatVal);
+	}
+
+	public setAverages(count: number) {
+		this.acousticness = this.acousticness / count;
+		this.danceability = this.danceability / count;
+		this.energy = this.energy / count;
+		this.instrumentalness = this.instrumentalness / count;
+		this.liveness = this.liveness / count;
+		this.loudness = this.loudness / count;
+		this.speechiness = this.speechiness / count;
+		this.tempo = this.tempo / count;
+		this.valence = this.valence / count;
 	}
 }

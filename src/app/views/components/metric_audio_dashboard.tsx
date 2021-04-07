@@ -118,7 +118,6 @@ export default function Recommendations(props) {
         }}
       />
       <Grid container>
-        <Grid item xs={12}>
           {props.stateData.averageMusicMetrics && props.stateData.averageMusicMetrics.valence ? (
             Object.keys(props.stateData.averageMusicMetrics).map((key) => {
               const featureInfo: any = featuresInfo.find(n => n.key === key);
@@ -134,11 +133,11 @@ export default function Recommendations(props) {
               ];
 
               return (
-                <Grid container spacing={1}>
+                <Grid container>
                   <Grid item xs={6}>
                     <Typography style={{fontWeight: 400}}>{key}</Typography>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={5}>
                     <Slider
                       defaultValue={props.stateData.averageMusicMetrics[key]}
                       min={featureInfo.min}
@@ -153,7 +152,6 @@ export default function Recommendations(props) {
           ) : (
             <Typography>No features available</Typography>
           )}
-        </Grid>
       </Grid>
     </Card>
   );

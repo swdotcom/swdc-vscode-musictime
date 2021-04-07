@@ -22,7 +22,7 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
     padding: 0,
     margin: 0,
-    overflowX: "hidden",
+    overflow: "hidden",
     background: "transparent",
   },
   cardHeader: {
@@ -123,7 +123,11 @@ export default function Metrics(props) {
                   : (<Typography>No metrics available</Typography>)}
               </Grid>
             </Grid>)
-            : (<MetricAudioDashboard vscode={props.vscode} stateData={props.stateData} />)}
+            : (<Grid container className={classes.root}>
+                <Grid item xs={12}>
+                  <MetricAudioDashboard vscode={props.vscode} stateData={props.stateData} />
+                </Grid>
+              </Grid>)}
         </div>
       ) : (
         <Grid container>

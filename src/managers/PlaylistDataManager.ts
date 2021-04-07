@@ -184,9 +184,10 @@ export async function getUserMusicMetrics() {
       userMusicMetrics = userMusicMetrics.map((n, index) => {
         n["keystrokes"] = n.keystrokes ? Math.ceil(n.keystrokes) : 0;
         n["keystrokes_formatted"] = new Intl.NumberFormat().format(n.keystrokes);
-        averageMusicMetrics.updateAverage(n, (index + 1));
+        averageMusicMetrics.increment(n);
         return n;
       });
+      averageMusicMetrics.setAverages(userMusicMetrics.length);
       userMusicMetrics = userMusicMetrics.filter(n => n.song_name);
     }
   }
