@@ -5,8 +5,7 @@ import CardHeader from "@material-ui/core/CardHeader";
 import PlaylistItemNode from "./playlist_item_node";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
-import Button from "@material-ui/core/Button";
-import ButtonGroup from "@material-ui/core/ButtonGroup";
+import IconButton from "@material-ui/core/IconButton";
 import { BeakerIcon, SearchIcon, FilterIcon } from "../icons";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Tooltip from "@material-ui/core/Tooltip";
@@ -44,13 +43,7 @@ const useStyles = makeStyles((theme) => ({
   },
   headerActionButtons: {
     marginTop: 10,
-    marginRight: 10,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    "& > *": {
-      margin: theme.spacing(1),
-    },
+    marginRight: 10
   },
 }));
 
@@ -95,23 +88,21 @@ export default function Recommendations(props) {
         }
         action={
           <div className={classes.headerActionButtons}>
-            <ButtonGroup variant="text">
               <Tooltip title="Search Spotify">
-                <Button onClick={searchClick}>
+                <IconButton onClick={searchClick}>
                   <SearchIcon />
-                </Button>
+                </IconButton>
               </Tooltip>
               <Tooltip title="Select a mood">
-                <Button onClick={moodSelectionClick}>
+                <IconButton onClick={moodSelectionClick}>
                   <BeakerIcon />
-                </Button>
+                </IconButton>
               </Tooltip>
               <Tooltip title="Select a genre">
-                <Button onClick={genreSelectionClick}>
+                <IconButton onClick={genreSelectionClick}>
                   <FilterIcon />
-                </Button>
+                </IconButton>
               </Tooltip>
-            </ButtonGroup>
           </div>
         }
       />

@@ -2,7 +2,7 @@ import React from "react";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import TreeItem from "@material-ui/lab/TreeItem";
 import PlaylistItemNode from "./playlist_item_node";
-import CircularProgress from "@material-ui/core/CircularProgress";
+import Typography from "@material-ui/core/Typography";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -21,18 +21,21 @@ export default function PlaylistItem(props) {
   const classes = useStyles();
 
   return (
-    <TreeItem nodeId={props.playlistItem.id} className={classes.root} label={<PlaylistItemNode vscode={props.vscode} item={props.playlistItem} />}>
+    <TreeItem
+      nodeId={props.playlistItem.id}
+      className={classes.root}
+      label={<PlaylistItemNode vscode={props.vscode} item={props.playlistItem} />}>
+
       {props.playlistTracks && props.playlistTracks.length ? (
         props.playlistTracks.map((item, index) => {
           return <PlaylistItemNode vscode={props.vscode} item={item} key={item.id} />;
         })
       ) : !props.playlistTracks ? (
-        <div className={classes.loadingIcon}>
-          <CircularProgress disableShrink style={{ width: 24, height: 24, marginTop: 4, marginBottom: 4 }} />
-        </div>
+        <Typography>Loading tracks...</Typography>
       ) : (
         <TreeItem nodeId={`${props.playlistItem.id}_track_placeholder`} label="No tracks available" />
       )}
+
     </TreeItem>
   );
 }

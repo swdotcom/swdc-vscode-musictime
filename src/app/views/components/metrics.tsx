@@ -1,5 +1,4 @@
 import React, { useState }  from "react";
-import clsx from "clsx";
 import PropTypes from "prop-types";
 import { makeStyles } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
@@ -9,16 +8,13 @@ import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import MetricsSetup from "./metrics_setup";
 import { MuiTuneIcon, MuiEmojiEventsIcon } from "../icons";
-import { indigo } from "@material-ui/core/colors";
+import { indigo, blue } from "@material-ui/core/colors";
 import Tooltip from "@material-ui/core/Tooltip";
-import ButtonGroup from "@material-ui/core/ButtonGroup";
-import Button from "@material-ui/core/Button";
+import IconButton from "@material-ui/core/IconButton";
 import Box from "@material-ui/core/Box";
 import MetricAudioDashboard from "./metric_audio_dashboard";
-import { fade } from "@material-ui/core/styles/colorManipulator";
 
 const useStyles = makeStyles((theme) => {
-  const selectedBg = fade(theme.palette.text.primary, theme.palette.action.hoverOpacity);
   return {
     root: {
       width: "100%",
@@ -43,9 +39,6 @@ const useStyles = makeStyles((theme) => {
     headerActionButtons: {
       marginTop: 10,
       marginRight: 10
-    },
-    selected: {
-      backgroundColor: selectedBg
     }
   }
 });
@@ -88,14 +81,6 @@ export default function Metrics(props) {
     setTabView(1);
   }
 
-  const rankingButtonClass = clsx({
-    [classes.selected]: tabView === 0
-  });
-
-  const dashboardButtonClass = clsx({
-    [classes.selected]: tabView === 1
-  });
-
   return (
     <Card className={classes.root} elevation={0}>
       {props.stateData.codeTimeInstalled && (
@@ -107,16 +92,16 @@ export default function Metrics(props) {
           }
           action={
             <div className={classes.headerActionButtons}>
-              <ButtonGroup variant="text">
                 <Tooltip title="Ranking">
-                  <Button onClick={showRanking} className={rankingButtonClass}>
-                    <MuiEmojiEventsIcon/>
-                  </Button>
+                  <IconButton onClick={showRanking}>
+                    <MuiEmojiEventsIcon color={tabView === 0 ? "primary" : "disabled"}/>
+                  </IconButton>
                 </Tooltip>
-                <Tooltip title="Dashboard" className={dashboardButtonClass}>
-                  <Button onClick={showDashboard}><MuiTuneIcon/></Button>
+                <Tooltip title="Dashboard">
+                  <IconButton onClick={showDashboard}>
+                    <MuiTuneIcon color={tabView === 1 ? "primary" : "disabled"}/>
+                  </IconButton>
                 </Tooltip>
-              </ButtonGroup>
             </div>
           }/>)}
 

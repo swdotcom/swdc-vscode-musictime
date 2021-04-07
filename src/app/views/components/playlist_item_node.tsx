@@ -22,12 +22,18 @@ import { DARK_BG_COLOR, MAX_MENU_HEIGHT } from "../../utils/view_constants";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    textButton: {
+    trackButton: {
       justifyContent: "flex-start",
       margin: 0,
       paddingLeft: 4,
       paddingTop: 0,
       paddingBottom: 1,
+      fontWeight: 500,
+    },
+    playlistButton: {
+      justifyContent: "flex-start",
+      margin: 0,
+      padding: 0,
       fontWeight: 500,
     },
     playlistName: {
@@ -122,6 +128,15 @@ export default function PlaylistItemNode(props) {
     props.vscode.postMessage(command);
   }
 
+  function getTrackRecommendations() {
+    const command = {
+      action: "musictime.showAlbum",
+      command: "command_execute",
+      arguments: [item],
+    };
+    props.vscode.postMessage(command);
+  }
+
   function hideMenu() {
     if (timeout) {
       clearTimeout(timeout);
@@ -155,13 +170,17 @@ export default function PlaylistItemNode(props) {
               </React.Fragment>
             }
           >
-            <Button classes={{ root: classes.textButton }} onClick={playTrack} startIcon={<TrackIcon />}>
+            <Button
+              classes={{ root: (item.type === "track") ? classes.trackButton : classes.playlistButton }}
+              onClick={playTrack} startIcon={<TrackIcon />}>
               <Typography className={classes.trackName}>{item.name}</Typography>
             </Button>
           </HtmlTooltip>
         </Grid>
       ) : (
-        <Button classes={{ root: classes.textButton }} onClick={playTrack} startIcon={<PlaylistIcon />}>
+        <Button
+          classes={{ root: (item.type === "track") ? classes.trackButton : classes.playlistButton }}
+          onClick={playTrack} startIcon={<PlaylistIcon />}>
           <Typography className={classes.playlistName}>{item.name}</Typography>
         </Button>
       )}
@@ -212,20 +231,35 @@ export default function PlaylistItemNode(props) {
                 </ListItem>
               </List>
             </MenuItem>
-            <MenuItem key="album" onClick={handleClose} disableGutters dense className={classes.menuItem}>
-              <Button classes={{ root: classes.textButton }} startIcon={<MuiAlbumIcon />} onClick={showAlbum}>
-                <Typography className={classes.menuItemText}>Show album</Typography>
-              </Button>
+            <MenuItem key="album" onClick={handleClose} disableGutters dense>
+              <Grid container onClick={showAlbum}>
+                <Grid item xs={2}>
+                  <MuiAlbumIcon />
+                </Grid>
+                <Grid item xs={10}>
+                  <Typography className={classes.menuItemText}>Show album</Typography>
+                </Grid>
+              </Grid>
             </MenuItem>
-            <MenuItem key="recommendations" onClick={handleClose} disableGutters dense className={classes.menuItem}>
-              <Button classes={{ root: classes.textButton }} startIcon={<BeakerIcon />}>
-                <Typography className={classes.menuItemText}>Get recommendations</Typography>
-              </Button>
+            <MenuItem key="recommendations" onClick={handleClose} disableGutters dense>
+              <Grid container onClick={getTrackRecommendations}>
+                <Grid item xs={2}>
+                  <BeakerIcon />
+                </Grid>
+                <Grid item xs={10}>
+                  <Typography className={classes.menuItemText}>Get recommendations</Typography>
+                </Grid>
+              </Grid>
             </MenuItem>
-            <MenuItem key="share" onClick={handleClose} disableGutters dense className={classes.menuItem}>
-              <Button classes={{ root: classes.textButton }} startIcon={<MuiShareIcon />}>
-                <Typography className={classes.menuItemText}>Share track</Typography>
-              </Button>
+            <MenuItem key="share" onClick={handleClose} disableGutters dense>
+              <Grid container onClick={getTrackRecommendations}>
+                <Grid item xs={2}>
+                  <MuiShareIcon />
+                </Grid>
+                <Grid item xs={10}>
+                  <Typography className={classes.menuItemText}>Share track</Typography>
+                </Grid>
+              </Grid>
             </MenuItem>
           </Menu>
         </Grid>
