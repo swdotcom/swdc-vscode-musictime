@@ -5,7 +5,7 @@ import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import ListItemText from "@material-ui/core/ListItemText";
-import { BeakerIcon, MuiShareIcon, SearchIcon, PawIcon, MuiPlayCircleOutlineIcon, MuiSubscriptionsIcon } from "../icons";
+import { BeakerIcon, MuiShareIcon, MuiSearchIcon, PawIcon, MuiPlayCircleOutlineIcon, MuiSubscriptionsIcon } from "../icons";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 
@@ -66,7 +66,7 @@ export default function ColdStart(props) {
             <ListItem disableGutters={true} dense={true}>
               <ListItemText primary="Search" secondary="Search for a song or recommendations" />
               <ListItemSecondaryAction classes={{ root: classes.secondaryAction }}>
-                <SearchIcon/>
+                <MuiSearchIcon/>
               </ListItemSecondaryAction>
             </ListItem>
           </List>

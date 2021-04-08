@@ -20,7 +20,7 @@ import {
 } from "./selector/SortPlaylistSelectorManager";
 import { populateSpotifyPlaylists, populateSpotifyDevices } from "./DataController";
 import { showDeviceSelectorMenu } from "./selector/SpotifyDeviceSelectorManager";
-import { updateRecommendations, refreshRecommendations, getRecommendationsForSelectedTrack, showAlbum } from "./music/MusicRecommendationManager";
+import { refreshRecommendations } from "./music/MusicRecommendationManager";
 import { MusicCommandUtil } from "./music/MusicCommandUtil";
 import { showSearchInput } from "./selector/SearchSelectorManager";
 import { getBestActiveDevice, requiresSpotifyAccess } from "./music/MusicUtil";
@@ -30,7 +30,7 @@ import { displayReadmeIfNotExists } from "./managers/FileManager";
 import { launchLogin, showLogInMenuOptions, showSignUpMenuOptions } from "./managers/UserStatusManager";
 import { MusicTimeWebviewSidebar } from './sidebar/MusicTimeWebviewSidebar';
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID, vscode_mt_issues_url } from './Constants';
-import { fetchTracksForLikedSongs, fetchTracksForPlaylist, getCachedRecommendationInfo, getCachedUserMusicMetrics, getFamiliarRecs, getRecommendations, getUserMusicMetrics, updateSelectedTabView } from './managers/PlaylistDataManager';
+import { fetchTracksForLikedSongs, fetchTracksForPlaylist, getAlbumForTrack, getCachedRecommendationInfo, getCachedUserMusicMetrics, getFamiliarRecs, getRecommendations, getTrackRecommendations, getUserMusicMetrics, updateSelectedTabView } from './managers/PlaylistDataManager';
 import { playSelectedItem } from './managers/PlaylistControlManager';
 
 /**
@@ -499,18 +499,6 @@ export function createCommands(ctx: ExtensionContext): {
     })
   );
 
-  cmds.push(
-    commands.registerCommand("musictime.getTrackRecommendations", async (node: PlaylistItem) => {
-      getRecommendationsForSelectedTrack(node);
-    })
-  );
-
-  cmds.push(
-    commands.registerCommand("musictime.showAlbum", async (node: PlaylistItem) => {
-      showAlbum(node);
-    })
-  );
-
   // WEB VIEW PROVIDER
   const mtWebviewSidebar: MusicTimeWebviewSidebar = new MusicTimeWebviewSidebar(ctx.extensionUri);
   cmds.push(
@@ -534,6 +522,18 @@ export function createCommands(ctx: ExtensionContext): {
   );
 
   // NEW COMMANDS
+  cmds.push(
+    commands.registerCommand("musictime.getTrackRecommendations", async (node: PlaylistItem) => {
+      getTrackRecommendations(node);
+    })
+  );
+
+  cmds.push(
+    commands.registerCommand("musictime.showAlbum", async (node: PlaylistItem) => {
+      getAlbumForTrack(node);
+    })
+  );
+
   cmds.push(
     commands.registerCommand("musictime.fetchPlaylistTracks", async (playlist_id) => {
       if (playlist_id === SPOTIFY_LIKED_SONGS_PLAYLIST_ID) {

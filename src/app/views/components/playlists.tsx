@@ -11,7 +11,7 @@ import Divider from "@material-ui/core/Divider";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
 import { indigo } from "@material-ui/core/colors";
-import { SearchIcon } from "../icons";
+import { MuiSearchIcon } from "../icons";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -81,7 +81,7 @@ export default function Playlists(props) {
         action={
           <Tooltip title="Search Spotify">
             <IconButton aria-label="settings" className={classes.cardHeaderIcon} onClick={searchSongs}>
-              <SearchIcon />
+              <MuiSearchIcon />
             </IconButton>
           </Tooltip>
         }

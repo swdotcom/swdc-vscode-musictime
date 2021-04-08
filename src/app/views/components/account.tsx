@@ -5,7 +5,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import { makeStyles } from "@material-ui/core/styles";
-import { GoogleIcon, GithubIcon, EmailIcon } from "../icons";
+import { GoogleIcon, MuiGitHubIcon, EmailIcon } from "../icons";
 import { MessageIcon, DocumentIcon, SpotifyIcon, MuiSyncIcon } from "../icons";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
@@ -119,7 +119,7 @@ export default function Account(props) {
                 style={{width: "32px", height: "32px"}}
                 aria-label="View account info">
                 {!stateData.registered ? null : stateData.authType === "github" ? (
-                  <GithubIcon/>
+                  <MuiGitHubIcon/>
                 ) : stateData.authType === "google" ? (
                   <GoogleIcon/>
                 ) : (

@@ -6,7 +6,7 @@ import PlaylistItemNode from "./playlist_item_node";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import IconButton from "@material-ui/core/IconButton";
-import { BeakerIcon, SearchIcon, FilterIcon } from "../icons";
+import { BeakerIcon, MuiSearchIcon, FilterIcon } from "../icons";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Tooltip from "@material-ui/core/Tooltip";
 import { indigo } from "@material-ui/core/colors";
@@ -90,7 +90,7 @@ export default function Recommendations(props) {
           <div className={classes.headerActionButtons}>
               <Tooltip title="Search Spotify">
                 <IconButton onClick={searchClick}>
-                  <SearchIcon />
+                  <MuiSearchIcon />
                 </IconButton>
               </Tooltip>
               <Tooltip title="Select a mood">

@@ -17,6 +17,7 @@ import Fade from "@material-ui/core/Fade";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import Tooltip from "@material-ui/core/Tooltip";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
 import { BeakerIcon, MuiAlbumIcon, MuiShareIcon, MuiCloseIcon } from "../icons";
 import { DARK_BG_COLOR, MAX_MENU_HEIGHT } from "../../utils/view_constants";
 
@@ -49,34 +50,24 @@ const useStyles = makeStyles((theme: Theme) =>
       textOverflow: "ellipsis",
     },
     menuHeaderPrimary: {
-      color: deepPurple[200]
+      color: deepPurple[200],
+      marginRight: 10
     },
     menuHeaderSecondary: {
       color: grey[500],
       fontWeight: 300,
       fontSize: 12
     },
-    menuHeaderAction: {
-      justifyContent: "flex-end",
-      alignItems: "flex-start"
-    },
     trackItemGridItem: {
       width: "100%",
       flexGrow: 1,
     },
-    gridIconItem: {
-			display: "flex",
+    listItemIcon: {
+      display: "flex",
 			justifyContent: "center",
 			textAlign: "center",
-      marginTop: theme.spacing(1),
-      marginBottom: theme.spacing(1)
-		},
-    gridTextItem: {
-      color: "white",
-      fontWeight: 300,
-      fontSize: 12,
-      marginTop: theme.spacing(1),
-      marginBottom: theme.spacing(1)
+      margin: 0,
+      padding: 0
     }
   })
 );
@@ -131,7 +122,16 @@ export default function PlaylistItemNode(props) {
 
   function getTrackRecommendations() {
     const command = {
-      action: "musictime.showAlbum",
+      action: "musictime.getTrackRecommendations",
+      command: "command_execute",
+      arguments: [item],
+    };
+    props.vscode.postMessage(command);
+  }
+
+  function shareTrack() {
+    const command = {
+      action: "musictime.shareTrack",
       command: "command_execute",
       arguments: [item],
     };
@@ -211,8 +211,9 @@ export default function PlaylistItemNode(props) {
               },
             }}
           >
-            <MenuItem key="menu_title" style={{paddingLeft: 4, paddingRight: 4}}>
-              <List disablePadding={true} dense={true}>
+            <MenuItem key="menu_title" style={{padding: 0, margin: 0}}>
+              <List disablePadding={true} dense={true}
+                style={{marginLeft: 10, marginRight: 10, marginBottom: 0, marginTop: 0}}>
                 <ListItem disableGutters={true} dense={true}>
                   <ListItemText
                     primary={
@@ -226,32 +227,33 @@ export default function PlaylistItemNode(props) {
                       </Typography>
                     }
                   />
-                  <ListItemSecondaryAction onClick={handleClose} className={classes.menuHeaderAction}>
+                  <ListItemSecondaryAction onClick={handleClose}>
                     <MuiCloseIcon />
                   </ListItemSecondaryAction>
                 </ListItem>
               </List>
             </MenuItem>
-              <Grid container>
-                <Grid item xs={2} className={classes.gridIconItem}>
+            <List component="nav" disablePadding={true} dense={true}
+              aria-labelledby="track-selections">
+              <ListItem button onClick={showAlbum} disableGutters={true} dense={true}>
+                <ListItemIcon className={classes.listItemIcon}>
                   <MuiAlbumIcon />
-                </Grid>
-                <Grid item xs={10} className={classes.gridTextItem}>
-                  <Typography>Show album</Typography>
-                </Grid>
-                <Grid item xs={2} className={classes.gridIconItem}>
+                </ListItemIcon>
+                <ListItemText primary="Show album" style={{margin: 0, padding: 0}}/>
+              </ListItem>
+              <ListItem button onClick={getTrackRecommendations} disableGutters={true} dense={true}>
+                <ListItemIcon className={classes.listItemIcon}>
                   <BeakerIcon />
-                </Grid>
-                <Grid item xs={10} className={classes.gridTextItem}>
-                  <Typography>Get recommendations</Typography>
-                </Grid>
-                <Grid item xs={2} className={classes.gridIconItem}>
+                </ListItemIcon>
+                <ListItemText primary="Get recommendations" style={{margin: 0, padding: 0}}/>
+              </ListItem>
+              <ListItem button onClick={shareTrack} disableGutters={true} dense={true}>
+                <ListItemIcon className={classes.listItemIcon}>
                   <MuiShareIcon />
-                </Grid>
-                <Grid item xs={10} className={classes.gridTextItem}>
-                  <Typography>Share track</Typography>
-                </Grid>
-              </Grid>
+                </ListItemIcon>
+                <ListItemText primary="Share track" style={{margin: 0, padding: 0}}/>
+              </ListItem>
+            </List>
           </Menu>
         </Grid>
       )}

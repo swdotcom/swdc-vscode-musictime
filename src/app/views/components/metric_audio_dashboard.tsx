@@ -8,7 +8,7 @@ import Slider from "@material-ui/core/Slider";
 import IconButton from "@material-ui/core/IconButton";
 import Tooltip from "@material-ui/core/Tooltip";
 import Divider from "@material-ui/core/Divider";
-import { MuiMusicNoteIcon } from "../icons";
+import { BeakerIcon } from "../icons";
 import { indigo } from "@material-ui/core/colors";
 
 const useStyles = makeStyles((theme) => ({
@@ -130,7 +130,7 @@ export default function MetricAudioDashboard(props) {
         action={
           <Tooltip title="Generate recommendations">
             <IconButton aria-label="recommendations" onClick={generateRecommendations}>
-              <MuiMusicNoteIcon />
+              <BeakerIcon />
             </IconButton>
           </Tooltip>
         }

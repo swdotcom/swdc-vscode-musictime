@@ -4,6 +4,7 @@ import {
   getPlaylists,
   getPlaylistTracks,
   getRecommendationsForTracks,
+  getSpotifyAlbumTracks,
   getSpotifyLikedSongs,
   getSpotifyPlaylist,
   PaginationItem,
@@ -217,8 +218,19 @@ export function getQuietMusicRecs() {
 	return getRecommendations("Quiet music", 5, [], { max_loudness: -10, target_loudness: -50 });
 }
 
-export function getTrackRecs(playlistItem: PlaylistItem) {
+export function getMixedAudioFeatureRecs(features) {
+  return getRecommendations("Audio mix", 5, [], features);
+}
+
+export function getTrackRecommendations(playlistItem: PlaylistItem) {
 	return getRecommendations(playlistItem.name, 4, [], {}, 0, [playlistItem]);
+}
+
+export async function getAlbumForTrack(playlistItem: PlaylistItem) {
+  if (playlistItem["albumId"]) {
+    const albumTracks: Track[] = await getSpotifyAlbumTracks(playlistItem["albumId"]);
+    populateRecommendationTracks(playlistItem["albumName"], albumTracks);
+  }
 }
 
 export async function getRecommendations(
