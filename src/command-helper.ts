@@ -30,7 +30,7 @@ import { displayReadmeIfNotExists } from "./managers/FileManager";
 import { launchLogin, showLogInMenuOptions, showSignUpMenuOptions } from "./managers/UserStatusManager";
 import { MusicTimeWebviewSidebar } from './sidebar/MusicTimeWebviewSidebar';
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID, vscode_mt_issues_url } from './Constants';
-import { fetchTracksForLikedSongs, fetchTracksForPlaylist, getAlbumForTrack, getCachedRecommendationInfo, getCachedUserMusicMetrics, getFamiliarRecs, getRecommendations, getTrackRecommendations, getUserMusicMetrics, updateSelectedTabView } from './managers/PlaylistDataManager';
+import { fetchTracksForLikedSongs, fetchTracksForPlaylist, getAlbumForTrack, getCachedRecommendationInfo, getCachedUserMusicMetrics, getFamiliarRecs, getMixedAudioFeatureRecs, getRecommendations, getTrackRecommendations, getUserMusicMetrics, updateSelectedTabView } from './managers/PlaylistDataManager';
 import { playSelectedItem } from './managers/PlaylistControlManager';
 
 /**
@@ -525,6 +525,12 @@ export function createCommands(ctx: ExtensionContext): {
   cmds.push(
     commands.registerCommand("musictime.getTrackRecommendations", async (node: PlaylistItem) => {
       getTrackRecommendations(node);
+    })
+  );
+
+  cmds.push(
+    commands.registerCommand("musictime.getAudioFeatureRecommendations", async (features: any) => {
+      getMixedAudioFeatureRecs(features);
     })
   );
 

@@ -219,6 +219,11 @@ export function getQuietMusicRecs() {
 }
 
 export function getMixedAudioFeatureRecs(features) {
+  if (!features) {
+    // fetch familiar
+    getFamiliarRecs();
+    return;
+  }
   return getRecommendations("Audio mix", 5, [], features);
 }
 

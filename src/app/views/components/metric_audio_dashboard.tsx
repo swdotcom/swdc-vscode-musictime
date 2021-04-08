@@ -105,17 +105,56 @@ const featuresInfo = [
   },
 ];
 
+let features: any = {};
+
 export default function MetricAudioDashboard(props) {
   const classes = useStyles();
+
+  const metrics = props.stateData.averageMusicMetrics;
+  if (metrics && metrics.valence) {
+    Object.keys(metrics).forEach(key => {
+      updateFeature(key, metrics[key]);
+    });
+  }
+
+  const handleChange = (e, newValue) => {
+    const dataId = e.target.attributes.getNamedItem("data-id");
+    if (dataId) {
+      const key = dataId.value;
+
+      updateFeature(key, newValue);
+    }
+  };
+
+  function updateFeature(key, value) {
+    const featureInfo: any = featuresInfo.find(n => n.key === key);
+    if (!featureInfo) {
+      return;
+    }
+    if (featureInfo.max/2 > value) {
+      // use the min
+      features[`max_${key}`] = featureInfo.max/2;
+      features[`target_${key}`] = value;
+      delete features[`min_${key}`];
+    } else {
+      // use the max
+      features[`min_${key}`] = featureInfo.max/2;
+      features[`target_${key}`] = value;
+      delete features[`max_${key}`];
+    }
+  }
 
   function sliderText(value) {
     return value.toFixed(2);
   }
 
   function generateRecommendations() {
+    // gather the features
+    // features = { max_loudness: -10, target_loudness: -50 };
     const command = {
-      action: "musictime.generateFeatureRecommendations",
+      action: "musictime.getAudioFeatureRecommendations",
       command: "command_execute",
+      arguments: [features]
     };
     props.vscode.postMessage(command);
   }
@@ -148,13 +187,16 @@ export default function MetricAudioDashboard(props) {
             const featureInfo: any = featuresInfo.find(n => n.key === key);
             const defaultVal = parseFloat(props.stateData.averageMusicMetrics[key].toFixed(2));
             return (
-              <Grid item xs={12}>
+              <Grid item xs={12} key={`grid-${key}`}>
                 <Grid container>
                   <Grid item xs={6}>
                     <Typography style={{fontWeight: 400}}>{key}</Typography>
                   </Grid>
                   <Grid item xs={5}>
                     <Slider
+                      key={`slider-${key}`}
+                      data-id={key}
+                      onChange={handleChange}
                       defaultValue={defaultVal}
                       getAriaValueText={sliderText}
                       min={featureInfo.min}
