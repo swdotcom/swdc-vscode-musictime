@@ -77,7 +77,7 @@ export class MusicCommandManager {
         this.createButton(
             "🎧",
             musictimeMenuTooltip,
-            "musictime.revealTree",
+            "musictime.displaySidebar",
             1000
         );
         this.createButton(
@@ -224,7 +224,7 @@ export class MusicCommandManager {
         this._buttons = this._buttons.map((button) => {
             const btnCmd = button.statusBarItem.command;
 
-            const isMusicTimeMenuButton = btnCmd === "musictime.revealTree";
+            const isMusicTimeMenuButton = btnCmd === "musictime.displaySidebar";
             const isConnectButton = btnCmd === "musictime.connectSpotify";
 
             if (isMusicTimeMenuButton) {
@@ -273,7 +273,7 @@ export class MusicCommandManager {
 
         this._buttons.map((button) => {
             const btnCmd = button.statusBarItem.command;
-            const isMusicTimeMenuButton = btnCmd === "musictime.revealTree";
+            const isMusicTimeMenuButton = btnCmd === "musictime.displaySidebar";
             const isPlayButton = btnCmd === "musictime.play";
             const isLikedButton = btnCmd === "musictime.like";
             const isUnLikedButton = btnCmd === "musictime.unlike";
@@ -353,7 +353,7 @@ export class MusicCommandManager {
 
         this._buttons.map((button) => {
             const btnCmd = button.statusBarItem.command;
-            const isMusicTimeMenuButton = btnCmd === "musictime.revealTree";
+            const isMusicTimeMenuButton = btnCmd === "musictime.displaySidebar";
             const isPauseButton = btnCmd === "musictime.pause";
             const isLikedButton = btnCmd === "musictime.like";
             const isUnLikedButton = btnCmd === "musictime.unlike";
@@ -408,7 +408,7 @@ export class MusicCommandManager {
     private static showProgress(progressLabel: string) {
         this._buttons.map((button) => {
             const btnCmd = button.statusBarItem.command;
-            const isMusicTimeMenuButton = btnCmd === "musictime.revealTree";
+            const isMusicTimeMenuButton = btnCmd === "musictime.displaySidebar";
             const isMusicTimeProgress = btnCmd === "musictime.progress";
 
             if (isMusicTimeMenuButton || isMusicTimeProgress) {

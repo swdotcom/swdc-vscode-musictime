@@ -99,7 +99,7 @@ export class MusicDataManager {
 
         if (this.recommendationTracks.length < 2) {
             // refresh
-            commands.executeCommand("musictime.refreshRecommendations");
+            commands.executeCommand("musictime.refreshMusicTimeView");
         }
     }
 

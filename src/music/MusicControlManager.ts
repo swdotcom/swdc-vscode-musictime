@@ -30,8 +30,8 @@ import { window, ViewColumn, Uri, commands } from "vscode";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { showQuickPick } from "../MenuManager";
 import {
-  populateSpotifyPlaylists,
-} from "../DataController";
+  playInitialization,
+} from "../managers/PlaylistControlManager";
 import {
   createSpotifyIdFromUri,
   createUriFromTrackId,
@@ -50,7 +50,7 @@ import { tmpdir } from "os";
 import { connectSlackWorkspace, hasSlackWorkspaces } from "../managers/SlackManager";
 import { MusicManager } from "./MusicManager";
 import { MusicPlaylistManager } from "./MusicPlaylistManager";
-import { sortPlaylists, requiresSpotifyAccess, getDeviceSet, getBestActiveDevice } from "./MusicUtil";
+import { requiresSpotifyAccess, getDeviceSet, getBestActiveDevice } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 import { MusicCommandUtil } from "./MusicCommandUtil";
 import {
@@ -59,6 +59,7 @@ import {
   getSoftwareDir,
 } from "../managers/FileManager";
 import { connectSpotify, isPremiumUser } from "../managers/SpotifyManager";
+import { getSpotifyPlaylists, sortPlaylists } from '../managers/PlaylistDataManager';
 
 const fileIt = require("file-it");
 const clipboardy = require("clipboardy");
@@ -125,7 +126,7 @@ export class MusicControlManager {
     const controlMgr: MusicControlManager = MusicControlManager.getInstance();
     if (!deviceId && tries === 1) {
       // initiate the device selection prompt
-      await MusicManager.getInstance().playInitialization(controlMgr.playSong);
+      await playInitialization(controlMgr.playSong);
     } else {
       const dataMgr: MusicDataManager = MusicDataManager.getInstance();
       if (!dataMgr.runningTrack || !dataMgr.runningTrack.id) {
@@ -404,11 +405,10 @@ export class MusicControlManager {
 
     if (foundRecTrack) {
       dataMgr.removeTrackFromRecommendations(track.id);
-      commands.executeCommand("musictime.refreshRecommendationsTree");
     }
 
     // refresh
-    commands.executeCommand("musictime.refreshPlaylist");
+    commands.executeCommand("musictime.refreshMusicTimeView");
 
     setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
@@ -585,12 +585,7 @@ export class MusicControlManager {
       ],
       placeholder: "Select or Create a playlist",
     };
-    let playlists: PlaylistItem[] = MusicManager.getInstance().currentPlaylists;
-
-    // filter out the ones with itemType = playlist
-    playlists = playlists
-      .filter((n: PlaylistItem) => n.itemType === "playlist" && n.name !== "Software Top 40")
-      .map((n: PlaylistItem) => n);
+    let playlists: PlaylistItem[] = await getSpotifyPlaylists();
 
     sortPlaylists(playlists);
 
@@ -624,7 +619,7 @@ export class MusicControlManager {
             errMsg = getCodyErrorMessage(codyResponse);
 
             // populate the spotify playlists
-            await populateSpotifyPlaylists();
+            await getSpotifyPlaylists(true);
           } else {
             // it's a liked songs playlist update
             let track: Track = dataMgr.runningTrack;
@@ -643,8 +638,7 @@ export class MusicControlManager {
             window.showInformationMessage(`Added ${playlistItem.name} to ${playlistName}`);
             // refresh the playlist and clear the current recommendation metadata
             dataMgr.removeTrackFromRecommendations(trackId);
-            commands.executeCommand("musictime.refreshPlaylist");
-            commands.executeCommand("musictime.refreshRecommendationsTree");
+            commands.executeCommand("musictime.refreshMusicTimeView");
           } else {
             if (errMsg) {
               window.showErrorMessage(

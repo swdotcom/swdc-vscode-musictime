@@ -11,7 +11,7 @@ import Divider from "@material-ui/core/Divider";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
 import { indigo } from "@material-ui/core/colors";
-import { MuiSearchIcon } from "../icons";
+import { MuiSearchIcon, MuiSortByAlphaIcon } from "../icons";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme) => ({
   cardHeaderIcon: {
     marginTop: 10,
     marginRight: 10,
-  },
+  }
 }));
 
 let playlistTracks = {};
@@ -61,6 +61,14 @@ export default function Playlists(props) {
     }
   }
 
+  function sortPlaylist() {
+    const command = {
+      action: "musictime.sortIcon",
+      command: "command_execute",
+    };
+    props.vscode.postMessage(command);
+  }
+
   function searchSongs() {
     const command = {
       action: "musictime.searchTracks",
@@ -79,11 +87,18 @@ export default function Playlists(props) {
           </Typography>
         }
         action={
-          <Tooltip title="Search Spotify">
-            <IconButton aria-label="settings" className={classes.cardHeaderIcon} onClick={searchSongs}>
-              <MuiSearchIcon />
-            </IconButton>
-          </Tooltip>
+          <div className={classes.cardHeaderIcon}>
+              <Tooltip title="Ranking">
+                <IconButton onClick={sortPlaylist}>
+                  <MuiSortByAlphaIcon/>
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Search Spotify">
+                <IconButton onClick={searchSongs}>
+                  <MuiSearchIcon/>
+                </IconButton>
+              </Tooltip>
+          </div>
         }
       />
       {props.stateData.spotifyPlaylists && (
@@ -96,6 +111,16 @@ export default function Playlists(props) {
           defaultCollapseIcon={<ArrowDropDownIcon />}
           defaultExpandIcon={<ArrowRightIcon />}
         >
+
+          {(props.stateData.softwareTop40Playlist && props.stateData.softwareTop40Playlist.tracks) && (
+            <PlaylistItem
+              vscode={props.vscode}
+              playlistItem={props.stateData.softwareTop40Playlist}
+              key={props.stateData.softwareTop40Playlist.id}
+              playlistTracks={props.stateData.softwareTop40Playlist.tracks.items}
+            />
+          )}
+
           <PlaylistItem
             vscode={props.vscode}
             playlistItem={props.stateData.likedSongsPlaylist}

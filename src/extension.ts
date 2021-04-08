@@ -9,11 +9,11 @@ import {
   getPluginName,
 } from "./Util";
 import { createCommands } from "./command-helper";
-import { MusicManager } from "./music/MusicManager";
 import { TrackerManager } from "./managers/TrackerManager";
 import { displayReadmeIfNotExists } from "./managers/FileManager";
 import { migrateAccessInfo } from "./managers/SpotifyManager";
 import { clearWebsocketConnectionRetryTimeout, initializeWebsockets } from './websockets';
+import { initializeSpotify } from './managers/PlaylistUtilManager';
 
 let currentColorKind: number = undefined;
 
@@ -46,7 +46,7 @@ export async function intializePlugin(ctx: ExtensionContext) {
 
   // This will initialize the user and spotify
   // this needs to happen first to enable spotify playlist and control logic
-  await MusicManager.getInstance().initializeSpotify();
+  await initializeSpotify();
 
   // store the activate event
   TrackerManager.getInstance().init();

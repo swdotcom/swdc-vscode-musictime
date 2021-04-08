@@ -9,10 +9,8 @@ import {
 } from "cody-music";
 import { OK_LABEL, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
 import { getCodyErrorMessage } from "../Util";
-import {
-    populateSpotifyPlaylists
-} from "../DataController";
 import { MusicDataManager } from "./MusicDataManager";
+import { getSpotifyPlaylists } from '../managers/PlaylistDataManager';
 
 export class MusicPlaylistManager {
     private static instance: MusicPlaylistManager;
@@ -81,9 +79,9 @@ export class MusicPlaylistManager {
                     if (playlist_id === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME) {
                         MusicDataManager.getInstance().spotifyLikedSongs = await getSpotifyLikedSongs();
                     } else {
-                        await populateSpotifyPlaylists();
+                        await getSpotifyPlaylists(true);
                     }
-                    commands.executeCommand("musictime.refreshPlaylist");
+                    commands.executeCommand("musictime.refreshMusicTimeView");
                 }, 1000);
             } else {
                 window.showErrorMessage(

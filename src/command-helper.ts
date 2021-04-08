@@ -1,26 +1,19 @@
-import { commands, Disposable, window, TreeView, ExtensionContext } from "vscode";
+import { commands, Disposable, window, ExtensionContext } from "vscode";
 import {
   MusicControlManager,
   displayMusicTimeMetricsMarkdownDashboard,
 } from "./music/MusicControlManager";
 import { launchMusicAnalytics, launchWebUrl } from "./Util";
-import { MusicPlaylistProvider, connectPlaylistTreeView } from "./music/MusicPlaylistProvider";
 import { PlaylistItem, PlayerName, PlayerDevice, playSpotifyDevice } from "cody-music";
 import { SocialShareManager } from "./social/SocialShareManager";
 import { connectSlackWorkspace, disconnectSlack, disconnectSlackAuth } from "./managers/SlackManager";
 import { MusicManager } from "./music/MusicManager";
-import {
-  MusicRecommendationProvider,
-  connectRecommendationPlaylistTreeView,
-} from "./music/MusicRecommendationProvider";
 import { showGenreSelections, showMoodSelections } from "./selector/RecTypeSelectorManager";
 import {
   showSortPlaylistMenu,
   showPlaylistOptionsMenu,
 } from "./selector/SortPlaylistSelectorManager";
-import { populateSpotifyPlaylists, populateSpotifyDevices } from "./DataController";
 import { showDeviceSelectorMenu } from "./selector/SpotifyDeviceSelectorManager";
-import { refreshRecommendations } from "./music/MusicRecommendationManager";
 import { MusicCommandUtil } from "./music/MusicCommandUtil";
 import { showSearchInput } from "./selector/SearchSelectorManager";
 import { getBestActiveDevice, requiresSpotifyAccess } from "./music/MusicUtil";
@@ -30,8 +23,8 @@ import { displayReadmeIfNotExists } from "./managers/FileManager";
 import { launchLogin, showLogInMenuOptions, showSignUpMenuOptions } from "./managers/UserStatusManager";
 import { MusicTimeWebviewSidebar } from './sidebar/MusicTimeWebviewSidebar';
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID, vscode_mt_issues_url } from './Constants';
-import { fetchTracksForLikedSongs, fetchTracksForPlaylist, getAlbumForTrack, getCachedRecommendationInfo, getCachedUserMusicMetrics, getFamiliarRecs, getMixedAudioFeatureRecs, getRecommendations, getTrackRecommendations, getUserMusicMetrics, updateSelectedTabView } from './managers/PlaylistDataManager';
-import { playSelectedItem } from './managers/PlaylistControlManager';
+import { fetchTracksForLikedSongs, fetchTracksForPlaylist, getAlbumForTrack, getCachedRecommendationInfo, getCachedUserMusicMetrics, getFamiliarRecs, getMixedAudioFeatureRecs, getRecommendations, getTrackRecommendations, getUserMusicMetrics, populateSpotifyDevices, updateSelectedTabView, updateSort } from './managers/PlaylistDataManager';
+import { launchTrackPlayer, playSelectedItem } from './managers/PlaylistControlManager';
 
 /**
  * add the commands to vscode....
@@ -44,33 +37,6 @@ export function createCommands(ctx: ExtensionContext): {
   const controller: MusicControlManager = MusicControlManager.getInstance();
   const musicMgr: MusicManager = MusicManager.getInstance();
 
-  // playlist tree view
-  const treePlaylistProvider = new MusicPlaylistProvider();
-  const playlistTreeView: TreeView<PlaylistItem> = window.createTreeView("my-playlists", {
-    treeDataProvider: treePlaylistProvider,
-    showCollapseAll: false,
-  });
-  treePlaylistProvider.bindView(playlistTreeView);
-  cmds.push(connectPlaylistTreeView(playlistTreeView));
-
-  // recommended tracks tree view
-  const recTreePlaylistProvider = new MusicRecommendationProvider();
-  const recPlaylistTreeView: TreeView<PlaylistItem> = window.createTreeView(
-    "track-recommendations",
-    {
-      treeDataProvider: recTreePlaylistProvider,
-      showCollapseAll: false,
-    }
-  );
-  recTreePlaylistProvider.bindView(recPlaylistTreeView);
-  cmds.push(connectRecommendationPlaylistTreeView(recPlaylistTreeView));
-
-  // REVEAL TREE CMD
-  cmds.push(
-    commands.registerCommand("musictime.revealTree", () => {
-      treePlaylistProvider.revealTree();
-    })
-  );
 
   // DISPLAY README CMD
   cmds.push(
@@ -236,7 +202,7 @@ export function createCommands(ctx: ExtensionContext): {
   // DISPLAY CURRENT SONG CMD
   cmds.push(
     commands.registerCommand("musictime.currentSong", () => {
-      musicMgr.launchTrackPlayer();
+      launchTrackPlayer();
     })
   );
 
@@ -304,18 +270,6 @@ export function createCommands(ctx: ExtensionContext): {
     })
   );
 
-  // HARD REFRESH PLAYLIST
-  // this should only be attached to the refresh button
-  cmds.push(
-    commands.registerCommand("musictime.hardRefreshPlaylist", async () => {
-      await populateSpotifyPlaylists();
-      commands.executeCommand("musictime.refreshPlaylist");
-      setTimeout(() => {
-        refreshRecommendations();
-      }, 3000);
-    })
-  );
-
   // this should only be attached to the refresh button
   const refreshDeviceInfoCommand = commands.registerCommand(
     "musictime.refreshDeviceInfo",
@@ -327,22 +281,6 @@ export function createCommands(ctx: ExtensionContext): {
   );
   cmds.push(refreshDeviceInfoCommand);
 
-  const refreshPlaylistCommand = commands.registerCommand("musictime.refreshPlaylist", async () => {
-    await musicMgr.clearPlaylists();
-    await musicMgr.refreshPlaylists();
-    treePlaylistProvider.refresh();
-
-    commands.executeCommand("musictime.refreshMusicTimeView");
-  });
-  cmds.push(refreshPlaylistCommand);
-
-  // SORT TITLE COMMAND
-  cmds.push(
-    commands.registerCommand("musictime.sortIcon", () => {
-      showSortPlaylistMenu();
-    })
-  );
-
   // OPTIONS TITLE COMMAND
   cmds.push(
     commands.registerCommand("musictime.optionsIcon", () => {
@@ -350,49 +288,24 @@ export function createCommands(ctx: ExtensionContext): {
     })
   );
 
-  const sortPlaylistAlphabeticallyCommand = commands.registerCommand(
-    "musictime.sortAlphabetically",
-    async () => {
-      musicMgr.updateSort(true);
-    }
-  );
-  cmds.push(sortPlaylistAlphabeticallyCommand);
 
-  const sortPlaylistToOriginalCommand = commands.registerCommand(
-    "musictime.sortToOriginal",
-    async () => {
-      musicMgr.updateSort(false);
-    }
+  cmds.push(
+    commands.registerCommand("musictime.launchSpotify", () => {
+      launchTrackPlayer(PlayerName.SpotifyWeb);
+    })
   );
-  cmds.push(sortPlaylistToOriginalCommand);
 
-  const launchSpotifyCommand = commands.registerCommand("musictime.launchSpotify", async () => {
-    musicMgr.launchTrackPlayer(PlayerName.SpotifyWeb);
-  });
-  cmds.push(launchSpotifyCommand);
-
-  const launchSpotifyDesktopCommand = commands.registerCommand(
-    "musictime.launchSpotifyDesktop",
-    async () => {
-      await musicMgr.launchTrackPlayer(PlayerName.SpotifyDesktop);
-    }
+  cmds.push(
+    commands.registerCommand("musictime.spotifyPlaylist", () => {
+      launchTrackPlayer(PlayerName.SpotifyWeb);
+    })
   );
-  cmds.push(launchSpotifyDesktopCommand);
 
-  const launchSpotifyPlaylistCommand = commands.registerCommand("musictime.spotifyPlaylist", () =>
-    musicMgr.launchTrackPlayer(PlayerName.SpotifyWeb)
+  cmds.push(
+    commands.registerCommand("musictime.laulaunchSpotifyDesktopnchSpotify", () => {
+      launchTrackPlayer(PlayerName.SpotifyDesktop);
+    })
   );
-  cmds.push(launchSpotifyPlaylistCommand);
-
-  const launchItunesCommand = commands.registerCommand("musictime.launchItunes", () =>
-    musicMgr.launchTrackPlayer(PlayerName.ItunesDesktop)
-  );
-  cmds.push(launchItunesCommand);
-
-  const launchItunesPlaylistCommand = commands.registerCommand("musictime.itunesPlaylist", () =>
-    musicMgr.launchTrackPlayer(PlayerName.ItunesDesktop)
-  );
-  cmds.push(launchItunesPlaylistCommand);
 
   const launchMusicAnalyticsCommand = commands.registerCommand("musictime.launchAnalytics", () =>
     launchMusicAnalytics()
@@ -433,20 +346,6 @@ export function createCommands(ctx: ExtensionContext): {
     showDeviceSelectorMenu();
   });
   cmds.push(deviceSelectorCmd);
-
-  cmds.push(
-    commands.registerCommand("musictime.refreshRecommendations", async () => {
-      refreshRecommendations();
-    })
-  );
-
-  const refreshRecPlaylistCommand = commands.registerCommand(
-    "musictime.refreshRecommendationsTree",
-    async () => {
-      recTreePlaylistProvider.refresh();
-    }
-  );
-  cmds.push(refreshRecPlaylistCommand);
 
   // UPDATE RECOMMENDATIONS CMD
   cmds.push(
@@ -521,7 +420,25 @@ export function createCommands(ctx: ExtensionContext): {
     })
   );
 
-  // NEW COMMANDS
+  // SORT TITLE COMMAND
+  cmds.push(
+    commands.registerCommand("musictime.sortIcon", () => {
+      showSortPlaylistMenu();
+    })
+  );
+
+  cmds.push(
+    commands.registerCommand("musictime.sortAlphabetically", async () => {
+      updateSort(true);
+    })
+  );
+
+  cmds.push(
+    commands.registerCommand("musictime.sortToOriginal", async () => {
+      updateSort(false);
+    })
+  );
+
   cmds.push(
     commands.registerCommand("musictime.getTrackRecommendations", async (node: PlaylistItem) => {
       getTrackRecommendations(node);
@@ -577,8 +494,9 @@ export function createCommands(ctx: ExtensionContext): {
   );
 
   cmds.push(
-    commands.registerCommand("musictime.generateFeatureRecommendations", async (item:PlaylistItem) => {
-      //
+    commands.registerCommand("musictime.displaySidebar", () => {
+      // logic to open the sidebar (need to figure out how to reveal the sidebar webview)
+      commands.executeCommand("workbench.view.extension.music-time-sidebar");
     })
   );
 

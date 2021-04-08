@@ -21,6 +21,7 @@ import SearchIcon from "@material-ui/icons/Search";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import RemoveCircleTwoToneIcon from "@material-ui/icons/RemoveCircleTwoTone";
 import ControlPointTwoToneIcon from "@material-ui/icons/ControlPointTwoTone";
+import SortByAlphaIcon from "@material-ui/icons/SortByAlpha";
 
 // Material UI SVG Icons
 export const MuiAlbumIcon = (props: SvgIconProps) => {
@@ -101,6 +102,10 @@ export const MuiRemoveCircleTwoToneIcon = (props: SvgIconProps) => {
 
 export const MuiControlPointTwoToneIcon = (props: SvgIconProps) => {
   return <ControlPointTwoToneIcon {...props} style={getMuiIconStyle(props)} />;
+}
+
+export const MuiSortByAlphaIcon = (props: SvgIconProps) => {
+  return <SortByAlphaIcon {...props} style={getMuiIconStyle(props)} />;
 }
 
 // Custom SVG Icons

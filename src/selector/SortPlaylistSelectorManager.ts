@@ -1,8 +1,8 @@
 import { showQuickPick } from "../MenuManager";
-import { MusicManager } from "../music/MusicManager";
 import { MusicDataManager } from "../music/MusicDataManager";
 import { Track, PlayerContext, TrackStatus } from "cody-music";
 import { getDeviceSet } from "../music/MusicUtil";
+import { showPlayerLaunchConfirmation } from '../managers/PlaylistControlManager';
 
 export async function showSortPlaylistMenu() {
   const items = getSortItems();
@@ -22,7 +22,7 @@ export async function showPlaylistOptionsMenu() {
   const { webPlayer, desktop, activeDevice, activeComputerDevice, activeWebPlayerDevice } = getDeviceSet();
 
   if (!webPlayer && !desktop) {
-    return MusicManager.getInstance().showPlayerLaunchConfirmation();
+    return showPlayerLaunchConfirmation();
   }
 
   /**

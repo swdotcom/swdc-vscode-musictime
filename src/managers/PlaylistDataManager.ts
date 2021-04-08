@@ -5,9 +5,11 @@ import {
   getPlaylistTracks,
   getRecommendationsForTracks,
   getSpotifyAlbumTracks,
+  getSpotifyDevices,
   getSpotifyLikedSongs,
   getSpotifyPlaylist,
   PaginationItem,
+  PlayerDevice,
   PlayerName,
   PlayerType,
   PlaylistItem,
@@ -15,13 +17,16 @@ import {
   Track,
 } from "cody-music";
 import { commands } from "vscode";
-import { RECOMMENDATION_LIMIT, SOFTWARE_TOP_40_PLAYLIST_ID } from '../app/utils/view_constants';
+import { RECOMMENDATION_LIMIT, SOFTWARE_TOP_40_PLAYLIST_ID } from "../app/utils/view_constants";
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
-import { isResponseOk, softwareGet } from '../HttpClient';
-import MusicMetrics from '../model/MusicMetrics';
-import { getItem } from './FileManager';
+import { isResponseOk, softwareGet } from "../HttpClient";
+import MusicMetrics from "../model/MusicMetrics";
+import { MusicCommandUtil } from '../music/MusicCommandUtil';
+import { MusicStateManager } from '../music/MusicStateManager';
+import { getItem } from "./FileManager";
 import { requiresSpotifyAccess } from "./PlaylistUtilManager";
 
+let currentDevices: PlayerDevice[] = [];
 let spotifyLikedTracks: Track[] = undefined;
 let spotifyPlaylists: PlaylistItem[] = undefined;
 let softwareTop40Playlist: PlaylistItem = undefined;
@@ -37,6 +42,7 @@ let selectedPlayerName = PlayerName.SpotifyWeb;
 let selectedTabView = "playlists";
 let currentRecMeta: any = {};
 let recommendationInfo: any = undefined;
+let sortAlphabetically: boolean = false;
 
 export async function clearSpotifyLikedTracksCache() {
   spotifyLikedTracks = undefined;
@@ -70,6 +76,12 @@ export function updateSelectedPlayer(player: PlayerName) {
 
 export function updateSelectedTabView(tabView: string) {
   selectedTabView = tabView;
+}
+
+export function updateSort(alphabetically: boolean) {
+  sortAlphabetically = alphabetically;
+  sortPlaylists(spotifyPlaylists, alphabetically);
+  commands.executeCommand("musictime.refreshMusicTimeView");
 }
 
 // GETTERS
@@ -118,17 +130,24 @@ export function getSelectedTabView() {
   return selectedTabView;
 }
 
+export function getPlaylistById(playlist_id) {
+  return spotifyPlaylists ? spotifyPlaylists.find(n => n.id === playlist_id) : null;
+}
+
 // PLAYLISTS
 // all playlists except for liked songs
-export async function getSpotifyPlaylists(): Promise<PlaylistItem[]> {
+export async function getSpotifyPlaylists(clear = false): Promise<PlaylistItem[]> {
   if (requiresSpotifyAccess()) {
     return [];
   }
 
-  if (spotifyPlaylists) {
+  if (!clear && spotifyPlaylists) {
     return spotifyPlaylists;
   }
   spotifyPlaylists = await getPlaylists(PlayerName.SpotifyWeb, { all: true });
+  spotifyPlaylists = spotifyPlaylists?.map((n, index) => {
+    return {...n, index}
+  })
   return spotifyPlaylists;
 }
 
@@ -150,6 +169,14 @@ export function getSpotifyLikedTracksPlaylist() {
 
 export async function getSoftwareTop40Playlist() {
   softwareTop40Playlist = await getSpotifyPlaylist(SOFTWARE_TOP_40_PLAYLIST_ID);
+  if (softwareTop40Playlist && softwareTop40Playlist.tracks && softwareTop40Playlist.tracks["items"]) {
+    softwareTop40Playlist.tracks["items"] = softwareTop40Playlist.tracks["items"].map((n) => {
+      const albumName = getAlbumName(n.track);
+      n.track = { ...n.track, albumName };
+      return { ...n };
+    });
+  }
+  return softwareTop40Playlist;
 }
 
 // FETCH TRACKS
@@ -197,33 +224,33 @@ export async function getUserMusicMetrics() {
         return n;
       });
       averageMusicMetrics.setAverages(userMusicMetrics.length);
-      userMusicMetrics = userMusicMetrics.filter(n => n.song_name);
+      userMusicMetrics = userMusicMetrics.filter((n) => n.song_name);
     }
   }
 }
 
 export function getFamiliarRecs() {
-	return getRecommendations("Familiar", 5);
+  return getRecommendations("Familiar", 5);
 }
 
 export function getHappyRecs() {
-	return getRecommendations("Happy", 5, [], { min_valence: 0.7, target_valence: 1 });
+  return getRecommendations("Happy", 5, [], { min_valence: 0.7, target_valence: 1 });
 }
 
 export function getEnergeticRecs() {
-	return getRecommendations("Energetic", 5, [], { min_energy: 0.7, target_energy: 1 });
+  return getRecommendations("Energetic", 5, [], { min_energy: 0.7, target_energy: 1 });
 }
 
 export function getDanceableRecs() {
-	return getRecommendations("Danceable", 5, [], { min_danceability: 0.5, target_danceability: 1 });
+  return getRecommendations("Danceable", 5, [], { min_danceability: 0.5, target_danceability: 1 });
 }
 
 export function getInstrumentalRecs() {
-	return getRecommendations("Instrumental", 5, [], { min_instrumentalness: 0.6, target_instrumentalness: 1 })
+  return getRecommendations("Instrumental", 5, [], { min_instrumentalness: 0.6, target_instrumentalness: 1 });
 }
 
 export function getQuietMusicRecs() {
-	return getRecommendations("Quiet music", 5, [], { max_loudness: -10, target_loudness: -50 });
+  return getRecommendations("Quiet music", 5, [], { max_loudness: -10, target_loudness: -50 });
 }
 
 export function getMixedAudioFeatureRecs(features) {
@@ -236,12 +263,17 @@ export function getMixedAudioFeatureRecs(features) {
 }
 
 export function getTrackRecommendations(playlistItem: PlaylistItem) {
-	return getRecommendations(playlistItem.name, 4, [], {}, 0, [playlistItem]);
+  return getRecommendations(playlistItem.name, 4, [], {}, 0, [playlistItem]);
 }
 
 export async function getAlbumForTrack(playlistItem: PlaylistItem) {
-  if (playlistItem["albumId"]) {
-    const albumTracks: Track[] = await getSpotifyAlbumTracks(playlistItem["albumId"]);
+  let albumId = playlistItem["albumId"];
+  if (!albumId && playlistItem["album"]) {
+    albumId = playlistItem["album"]["id"];
+  }
+
+  if (albumId) {
+    const albumTracks: Track[] = await getSpotifyAlbumTracks(albumId);
     populateRecommendationTracks(playlistItem["albumName"], albumTracks);
   }
 }
@@ -252,11 +284,10 @@ export async function getRecommendations(
   seed_genres: string[] = [],
   features: any = {},
   offset: number = 0,
-	seedTracks = []
+  seedTracks = []
 ) {
-
   // fetching recommendations based on a set of genre requires 0 seed track IDs
-	seedLimit = seed_genres.length ? 0 : Math.max(seedLimit, 5)
+  seedLimit = seed_genres.length ? 0 : Math.max(seedLimit, 5);
 
   currentRecMeta = {
     label,
@@ -283,11 +314,59 @@ export function populateRecommendationTracks(label: string, tracks: Track[]) {
 
   recommendationInfo = {
     label,
-    tracks
-  }
+    tracks,
+  };
 
   // refresh the webview
   commands.executeCommand("musictime.refreshMusicTimeView", "recommendations");
+}
+
+export async function populateSpotifyDevices(tryAgain = false) {
+  const devices = await MusicCommandUtil.getInstance().runSpotifyCommand(
+      getSpotifyDevices
+  );
+
+  if (devices.status && devices.status === 429 && tryAgain) {
+      // try one more time in lazily since its not a device launch request.
+      // the device launch requests retries a few times every couple seconds.
+      setTimeout(() => {
+          // use true to specify its a device launch so this doens't try continuously
+          populateSpotifyDevices(false);
+      }, 5000);
+      return;
+  }
+
+  const fetchedDeviceIds = [];
+  if (devices.length) {
+      devices.forEach((el: PlayerDevice) => {
+          fetchedDeviceIds.push(el.id);
+      });
+  }
+
+  let diffDevices = [];
+  if (currentDevices.length) {
+      // get any differences from the fetched devices if any
+      diffDevices = currentDevices.filter((n: PlayerDevice) => !fetchedDeviceIds.includes(n.id));
+  } else if (fetchedDeviceIds.length) {
+      // no current devices, set diff to whatever we fetched
+      diffDevices = [
+          ...devices
+      ]
+  }
+
+  if (diffDevices.length || currentDevices.length !== diffDevices.length) {
+      // new devices available or setting to empty
+      currentDevices = devices;
+
+      setTimeout(() => {
+          // refresh the playlist to show the device button update
+          commands.executeCommand("musictime.refreshMusicTimeView");
+      }, 1000);
+
+      setTimeout(() => {
+          MusicStateManager.getInstance().fetchTrack();
+      }, 3000);
+  }
 }
 
 // PRIVATE FUNCTIONS
@@ -400,4 +479,42 @@ function getAlbumName(track) {
     albumName = track["album"].name;
   }
   return albumName;
+}
+
+export function sortPlaylists(playlists, alphabetically = sortAlphabetically) {
+  if (playlists && playlists.length > 0) {
+    playlists.sort((a: PlaylistItem, b: PlaylistItem) => {
+      if (alphabetically) {
+        const nameA = a.name.toLowerCase(),
+          nameB = b.name.toLowerCase();
+        if (nameA < nameB)
+          //sort string ascending
+          return -1;
+        if (nameA > nameB) return 1;
+        return 0; // default return value (no sorting)
+      } else {
+        const indexA = a["index"],
+          indexB = b["index"];
+        if (indexA < indexB)
+          // sort ascending
+          return -1;
+        if (indexA > indexB) return 1;
+        return 0; // default return value (no sorting)
+      }
+    });
+  }
+}
+
+function sortTracks(tracks) {
+  if (tracks && tracks.length > 0) {
+    tracks.sort((a: Track, b: Track) => {
+      const nameA = a.name.toLowerCase(),
+        nameB = b.name.toLowerCase();
+      if (nameA < nameB)
+        //sort string ascending
+        return -1;
+      if (nameA > nameB) return 1;
+      return 0; //default return value (no sorting)
+    });
+  }
 }

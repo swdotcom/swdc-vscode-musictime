@@ -2,11 +2,11 @@ import { commands, window } from "vscode";
 import { api_endpoint, launch_url } from "../Constants";
 import { isResponseOk, softwareGet } from "../HttpClient";
 import { showQuickPick } from "../MenuManager";
-import { MusicManager } from '../music/MusicManager';
 import { launchWebUrl, getPluginType, getVersion, getPluginId } from "../Util";
 import { initializeWebsockets } from '../websockets';
 import { getAuthCallbackState, getItem, getPluginUuid, setAuthCallbackState, setItem } from "./FileManager";
 import { updateSlackIntegrations, updateSpotifyIntegration } from './IntegrationManager';
+import { initializeSpotify } from './PlaylistUtilManager';
 
 const queryString = require("query-string");
 
@@ -149,7 +149,7 @@ export async function authenticationCompleteHandler(user) {
       // refresh the tree view
 	    setTimeout(() => {
         // refresh the playlist to show the device button update
-        commands.executeCommand("musictime.refreshPlaylist");
+        commands.executeCommand("musictime.refreshMusicTimeView");
       }, 1000);
     }
   }
@@ -167,7 +167,7 @@ export async function processNewSpotifyIntegration() {
 	window.showInformationMessage(`Successfully connected to Spotify. Loading playlists...`);
 
 	// initialize spotify and playlists
-	await MusicManager.getInstance().initializeSpotify(true /*refreshUser*/);
+	await initializeSpotify(true /*refreshUser*/);
 
 	// initiate the playlist build
 	setTimeout(() => {

@@ -24,7 +24,7 @@ export async function handleIntegrationConnectionSocketEvent(body: any) {
 	  // refresh the tree view
 	  setTimeout(() => {
 		// refresh the playlist to show the device button update
-		commands.executeCommand("musictime.refreshPlaylist");
+		commands.executeCommand("musictime.refreshMusicTimeView");
 	  }, 1000);
 	}
 

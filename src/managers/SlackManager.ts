@@ -67,7 +67,7 @@ export async function disconnectSlack() {
       // refresh the tree view
       setTimeout(() => {
         // refresh the playlist to show the device button update
-        commands.executeCommand("musictime.refreshPlaylist");
+        commands.executeCommand("musictime.refreshMusicTimeView");
       }, 1000);
     }
   }
@@ -92,7 +92,7 @@ export async function disconnectSlackAuth(authId) {
     // disconnected, remove it from the integrations
     removeSlackIntegration(authId);
 
-    commands.executeCommand("musictime.refreshPlaylist");
+    commands.executeCommand("musictime.refreshMusicTimeView");
   }
 }
 

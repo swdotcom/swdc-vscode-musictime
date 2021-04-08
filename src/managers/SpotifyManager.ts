@@ -158,8 +158,7 @@ export async function disconnectSpotify(confirmDisconnect = true) {
     MusicDataManager.getInstance().disconnect();
 
     setTimeout(() => {
-      commands.executeCommand("musictime.refreshPlaylist");
-      commands.executeCommand("musictime.refreshRecommendations");
+      commands.executeCommand("musictime.refreshMusicTimeView");
     }, 1000);
 
     // update the status bar

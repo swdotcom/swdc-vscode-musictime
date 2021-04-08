@@ -9,66 +9,46 @@ import {
   PaginationItem,
   CodyResponseType,
   addTracksToPlaylist,
-  launchPlayer,
   PlayerDevice,
   getSpotifyPlaylist,
   followPlaylist,
   playSpotifyDevice,
   playSpotifyTrack,
   PlayerContext,
-  playSpotifyPlaylist,
-  play,
   playTrackInContext,
   accessExpired,
   removeTracksFromPlaylist,
-  getSpotifyLikedSongs,
-  transferSpotifyDevice
 } from "cody-music";
 import {
   SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
   SOFTWARE_TOP_40_PLAYLIST_ID,
-  SHOW_ITUNES_LAUNCH_BUTTON,
   OK_LABEL,
   YES_LABEL,
 } from "../Constants";
 import { commands, window } from "vscode";
-import { populateSpotifyPlaylists, populateSpotifyDevices } from "../DataController";
-import { isMac, getCodyErrorMessage, createUriFromTrackId, createUriFromPlaylistId, isWindows } from "../Util";
+import { isMac, getCodyErrorMessage, createUriFromTrackId } from "../Util";
 import { isResponseOk, softwareGet } from "../HttpClient";
-import { MusicCommandManager } from "./MusicCommandManager";
 import { MusicControlManager } from "./MusicControlManager";
-import { ProviderItemManager } from "./ProviderItemManager";
 import {
-  sortPlaylists,
-  buildTracksForRecommendations,
-  requiresSpotifyAccess,
   getDeviceSet,
-  requiresSpotifyReAuthentication,
   getBestActiveDevice,
 } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 import { MusicCommandUtil } from "./MusicCommandUtil";
-import { refreshRecommendations } from "./MusicRecommendationManager";
-import { MusicStateManager } from "./MusicStateManager";
 import {
-  populateSpotifyUser,
-  updateCodyConfig,
   getSpotifyIntegration,
   isPremiumUser,
-  hasSpotifyUser,
-  updateSpotifyClientInfo,
 } from "../managers/SpotifyManager";
 import { getItem, setItem } from "../managers/FileManager";
+import { getPlaylistById, getSpotifyPlaylists } from '../managers/PlaylistDataManager';
 
 export class MusicManager {
   private static instance: MusicManager;
 
-  private providerItemMgr: ProviderItemManager;
   private dataMgr: MusicDataManager;
   private selectedPlayerName: PlayerName;
 
   private constructor() {
-    this.providerItemMgr = ProviderItemManager.getInstance();
     this.dataMgr = MusicDataManager.getInstance();
   }
   static getInstance(): MusicManager {
@@ -79,219 +59,12 @@ export class MusicManager {
     return MusicManager.instance;
   }
 
-  get currentPlaylists(): PlaylistItem[] {
-    if (this.dataMgr.currentPlayerName === PlayerName.ItunesDesktop) {
-      // go through each playlist and find out it's state
-      if (this.dataMgr.itunesPlaylists && this.dataMgr.itunesPlaylists.length) {
-        this.dataMgr.itunesPlaylists.forEach((item: PlaylistItem) => {
-          if (item.type === "playlist") {
-            this.dataMgr.playlistMap[item.id] = item;
-          }
-        });
-      }
-      return this.dataMgr.itunesPlaylists;
-    }
-    if (this.dataMgr.spotifyPlaylists && this.dataMgr.spotifyPlaylists.length) {
-      this.dataMgr.spotifyPlaylists.forEach((item: PlaylistItem) => {
-        if (item.type === "playlist") {
-          this.dataMgr.playlistMap[item.id] = item;
-        }
-      });
-    }
-    return this.dataMgr.spotifyPlaylists;
-  }
-
   //
   // Clear all of the playlists and tracks
   //
   clearPlaylists() {
     this.dataMgr.playlistMap = {};
     this.dataMgr.playlistTrackMap = {};
-  }
-
-  updateSort(sortAlpha) {
-    if (!requiresSpotifyAccess()) {
-      this.dataMgr.rawPlaylists = [...this.dataMgr.origRawPlaylistOrder];
-      this.dataMgr.sortAlphabetically = sortAlpha;
-      commands.executeCommand("musictime.refreshPlaylist");
-    }
-  }
-
-  async refreshPlaylists() {
-    if (this.dataMgr.buildingPlaylists) {
-      return;
-    }
-    this.dataMgr.buildingPlaylists = true;
-
-    await this.refreshPlaylistForPlayer();
-
-    await MusicCommandManager.syncControls(this.dataMgr.runningTrack);
-
-    this.dataMgr.buildingPlaylists = false;
-  }
-
-  getPlaylistById(playlist_id: string) {
-    return this.dataMgr.playlistMap[playlist_id];
-  }
-
-  //
-  // Fetch the playlist names for a specific player
-  //
-  private async refreshPlaylistForPlayer() {
-    const playerName = this.dataMgr.currentPlayerName;
-    let items: PlaylistItem[] = [];
-
-    // states: [NOT_CONNECTED, MAC_PREMIUM, MAC_NON_PREMIUM, PC_PREMIUM, PC_NON_PREMIUM]
-    const CONNECTED = !!!requiresSpotifyAccess();
-    const IS_PREMIUM = !!isPremiumUser();
-    const HAS_SPOTIFY_USER = !!hasSpotifyUser();
-    const REGISTERED = !!getItem("name");
-
-    const type = playerName === PlayerName.ItunesDesktop ? "itunes" : "spotify";
-
-    // ! very important !
-    // We need the spotify user if we're connected
-    if (CONNECTED && !HAS_SPOTIFY_USER) {
-      // get it
-      await populateSpotifyUser();
-    }
-
-    // ! most important part !
-    let playlists: PlaylistItem[] = this.dataMgr.rawPlaylists || [];
-    let hasPlaylists = playlists.length ? true : false;
-    let hasLikedSongs: boolean = this.dataMgr.spotifyLikedSongs && this.dataMgr.spotifyLikedSongs.length ? true : false;
-
-    // fetch the playlists
-    if (!hasPlaylists && CONNECTED) {
-      await populateSpotifyPlaylists();
-      playlists = this.dataMgr.rawPlaylists;
-      hasPlaylists = playlists.length > 0 ? true : false;
-    }
-
-    if (!hasLikedSongs && CONNECTED) {
-      MusicDataManager.getInstance().spotifyLikedSongs = await getSpotifyLikedSongs();
-    }
-
-    // sort
-    if (this.dataMgr.sortAlphabetically) {
-      sortPlaylists(playlists);
-    }
-
-    // update each playlist itemType and tag
-    if (hasPlaylists) {
-      playlists.forEach((playlist) => {
-        this.dataMgr.playlistMap[playlist.id] = playlist;
-        playlist.itemType = "playlist";
-        playlist.tag = type;
-      });
-    }
-
-    if (REGISTERED) {
-      items.push(this.providerItemMgr.getLoggedInButton());
-    }
-
-    // show the spotify connect premium button if they're connected and a non-premium account
-    if (CONNECTED && !IS_PREMIUM) {
-      // show the spotify premium account required button
-      items.push(this.providerItemMgr.getSpotifyPremiumAccountRequiredButton());
-    }
-
-    // add the connect to spotify if they still need to connect
-    if (!CONNECTED || requiresSpotifyReAuthentication()) {
-      items.push(this.providerItemMgr.getConnectToSpotifyButton());
-    }
-
-    if (CONNECTED && !REGISTERED) {
-      // show the signup and login button if the user is not registered
-      items.push(this.providerItemMgr.getSignupButton());
-      items.push(this.providerItemMgr.getLoginButton());
-      items.push(this.providerItemMgr.getReadmeButton());
-    }
-
-    if (CONNECTED) {
-      items.push(this.providerItemMgr.getSlackIntegrationsTree());
-    }
-
-    if (playerName === PlayerName.ItunesDesktop) {
-      // add the action items specific to itunes
-      items.push(this.providerItemMgr.getSwitchToSpotifyButton());
-
-      if (playlists.length > 0) {
-        items.push(this.providerItemMgr.getLineBreakButton());
-      }
-
-      playlists.forEach((item) => {
-        items.push(item);
-      });
-
-      this.dataMgr.itunesPlaylists = items;
-    } else {
-      // check to see if they have this device available, if not, show a button
-      // to switch to this device
-      const switchToThisDeviceButton = await this.providerItemMgr.getSwitchToThisDeviceButton();
-      if (switchToThisDeviceButton) {
-        // add it
-        items.push(switchToThisDeviceButton);
-      }
-
-      // show the devices button
-      if (CONNECTED) {
-        const devicesButton = await this.providerItemMgr.getActiveSpotifyDevicesButton();
-        items.push(devicesButton);
-      }
-
-      if (isMac() && SHOW_ITUNES_LAUNCH_BUTTON) {
-        items.push(this.providerItemMgr.getSwitchToItunesButton());
-      }
-
-      // add the rest only if they don't need spotify access
-      if (CONNECTED || hasPlaylists) {
-        // line break between actions and software playlist section
-        items.push(this.providerItemMgr.getLineBreakButton());
-
-        // get the Software Top 40 Playlist and add it to the playlist
-        const softwareTop40: PlaylistItem = await this.getSoftwareTop40(playlists);
-        if (softwareTop40) {
-          // add it to music time playlist
-          items.push(softwareTop40);
-        }
-
-        // LIKED SONGS folder
-        // get the folder
-        const likedSongsPlaylist = this.providerItemMgr.getSpotifyLikedPlaylistFolder();
-        this.dataMgr.playlistMap[likedSongsPlaylist.id] = likedSongsPlaylist;
-        items.push(likedSongsPlaylist);
-
-        // build tracks for recommendations if none found
-        const hasTracksForRecs = this.dataMgr.trackIdsForRecommendations && this.dataMgr.trackIdsForRecommendations.length ? true : false;
-        if (!hasTracksForRecs) {
-          await buildTracksForRecommendations(playlists);
-          // only refresh recommendations if we need to build them
-          refreshRecommendations();
-        }
-
-        // line break between software playlist section and normal playlists
-        if (playlists.length > 0) {
-          items.push(this.providerItemMgr.getLineBreakButton());
-        }
-
-        // build the set of playlists that are not the ai, top 40, and liked songs
-        playlists.forEach((item: PlaylistItem) => {
-          // add all playlists except for the software top 40.
-          // this one will get displayed in the top section
-          if (item.id !== SOFTWARE_TOP_40_PLAYLIST_ID) {
-            items.push(item);
-          } else if (softwareTop40) {
-            // set the top 40 playlist to loved
-            softwareTop40.loved = true;
-          }
-        });
-      }
-
-      this.dataMgr.spotifyPlaylists = items;
-    }
-
-    this.dataMgr.ready = true;
   }
 
   async getSoftwareTop40(playlists): Promise<PlaylistItem> {
@@ -571,22 +344,6 @@ export class MusicManager {
     }
   }
 
-  async initializeSpotify(refreshUser = false) {
-    // get the client id and secret
-    await updateSpotifyClientInfo();
-
-    // update cody music with all access info
-    updateCodyConfig();
-
-    // first get the spotify user
-    await populateSpotifyUser(refreshUser);
-
-    await populateSpotifyDevices(false);
-
-    // initialize the status bar music controls
-    MusicCommandManager.initialize();
-  }
-
   async requiresReAuthentication(): Promise<boolean> {
     const spotifyIntegration = getSpotifyIntegration();
     if (spotifyIntegration) {
@@ -598,84 +355,6 @@ export class MusicManager {
       return expired;
     }
     return false;
-  }
-
-  async launchTrackPlayer(playerName: PlayerName = null, callback: any = null) {
-    const { webPlayer, desktop, activeDevice, activeComputerDevice, activeWebPlayerDevice, activeDesktopPlayerDevice } = getDeviceSet();
-
-    const hasDesktopDevice = activeDesktopPlayerDevice || desktop ? true : false;
-
-    const requiresDesktopLaunch = !isPremiumUser() && isMac() && !hasDesktopDevice ? true : false;
-
-    if (requiresDesktopLaunch && playerName !== PlayerName.SpotifyDesktop) {
-      window.showInformationMessage("Launching Spotify desktop instead of the web player to allow playback as a non-premium account");
-    }
-
-    if (requiresDesktopLaunch || playerName === PlayerName.SpotifyDesktop) {
-      playerName = PlayerName.SpotifyDesktop;
-    } else {
-      playerName = PlayerName.SpotifyWeb;
-    }
-
-    // {playlist_id | album_id | track_id, quietly }
-    const options = {
-      quietly: false,
-    };
-
-    const hasSelectedTrackItem = this.dataMgr.selectedTrackItem && this.dataMgr.selectedTrackItem.id ? true : false;
-    const hasSelectedPlaylistItem = this.dataMgr.selectedPlaylist && this.dataMgr.selectedPlaylist.id ? true : false;
-
-    if (!isPremiumUser() && (hasSelectedTrackItem || hasSelectedPlaylistItem)) {
-      // show the track or playlist
-      const isRecommendationTrack = this.dataMgr.selectedTrackItem.type === "recommendation" ? true : false;
-      const isLikedSong = this.dataMgr.selectedPlaylist && this.dataMgr.selectedPlaylist.name === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME ? true : false;
-      if (hasSelectedTrackItem && (isRecommendationTrack || isLikedSong)) {
-        options["track_id"] = this.dataMgr.selectedTrackItem.id;
-      } else {
-        options["playlist_id"] = this.dataMgr.selectedPlaylist.id;
-      }
-    }
-
-    // spotify device launch error would look like this...
-    // error:"Command failed: open -a spotify\nUnable to find application named 'spotify'\n"
-    const result = await launchPlayer(playerName, options);
-
-    // test if there was an error, fallback to the web player
-    if (playerName === PlayerName.SpotifyDesktop && result && result.error && result.error.includes("failed")) {
-      // start the process of launching the web player
-      playerName = PlayerName.SpotifyWeb;
-      await launchPlayer(playerName, options);
-    }
-
-    setTimeout(() => {
-      this.checkDeviceLaunch(playerName, 5, callback);
-    }, 1500);
-  }
-
-  async checkDeviceLaunch(playerName: PlayerName, tries: number = 5, callback: any = null) {
-    setTimeout(async () => {
-      await populateSpotifyDevices(true /*retry*/);
-      const devices = this.dataMgr.currentDevices;
-      if ((!devices || devices.length == 0) && tries >= 0) {
-        if (!isWindows() && tries === 1) {
-          // play it to get spotify to update the device ID
-          await play(this.selectedPlayerName);
-        }
-        tries--;
-        this.checkDeviceLaunch(playerName, tries, callback);
-      } else {
-        const device = getBestActiveDevice();
-        if (!device && !isMac()) {
-          window.showInformationMessage("Unable to detect a connected Spotify device. Please make sure you are logged into your account.");
-        }
-
-        commands.executeCommand("musictime.refreshDeviceInfo");
-
-        if (callback) {
-          callback();
-        }
-      }
-    }, 1500);
   }
 
   async isLikedSong() {
@@ -699,65 +378,15 @@ export class MusicManager {
     return this.dataMgr.currentPlayerName;
   }
 
-  async showPlayerLaunchConfirmation(callback: any = null) {
-    // if they're a mac non-premium user, just launch the desktop player
-
-    if (isMac() && !isPremiumUser()) {
-      return this.launchTrackPlayer(PlayerName.SpotifyDesktop, callback);
-    } else {
-      const buttons = ["Web Player", "Desktop Player"];
-
-      // no devices found at all OR no active devices and a computer device is not found in the list
-      const selectedButton = await window.showInformationMessage(
-        `Music Time requires a running Spotify player. Choose a player to launch.`,
-        ...buttons
-      );
-
-      if (selectedButton === "Desktop Player" || selectedButton === "Web Player") {
-        this.selectedPlayerName = selectedButton === "Desktop Player" ? PlayerName.SpotifyDesktop : PlayerName.SpotifyWeb;
-
-        // start the launch process and pass the callback when complete
-        return this.launchTrackPlayer(this.selectedPlayerName, callback);
-      }
-    }
-    return;
-  }
-
-  async playInitialization(callback: any = null) {
-    const devices: PlayerDevice[] = this.dataMgr.currentDevices;
-
-    const { webPlayer, desktop, activeDevice, activeComputerDevice, activeWebPlayerDevice, activeDesktopPlayerDevice } = getDeviceSet();
-
-    if (!hasSpotifyUser()) {
-      // try again
-      await populateSpotifyUser();
-    }
-
-    const hasDesktopLaunched = desktop || activeDesktopPlayerDevice ? true : false;
-
-    const hasDesktopOrWebLaunched = hasDesktopLaunched || webPlayer || activeWebPlayerDevice ? true : false;
-
-    const requiresDesktopLaunch = !isPremiumUser() && isMac() && !hasDesktopLaunched ? true : false;
-
-    if (!hasDesktopOrWebLaunched || requiresDesktopLaunch) {
-      return await this.showPlayerLaunchConfirmation(callback);
-    }
-
-    // we have a device, continue to the callback if we have it
-    if (callback) {
-      callback();
-    }
-  }
-
   async followSpotifyPlaylist(playlist: PlaylistItem) {
     const codyResp: CodyResponse = await followPlaylist(playlist.id);
     if (codyResp.state === CodyResponseType.Success) {
       window.showInformationMessage(`Successfully following the '${playlist.name}' playlist.`);
 
       // repopulate the playlists since we've changed the state of the playlist
-      await populateSpotifyPlaylists();
+      await getSpotifyPlaylists();
 
-      commands.executeCommand("musictime.refreshPlaylist");
+      commands.executeCommand("musictime.refreshMusicTimeView");
     } else {
       window.showInformationMessage(`Unable to follow ${playlist.name}. ${codyResp.message}`, ...[OK_LABEL]);
     }
@@ -766,7 +395,7 @@ export class MusicManager {
   async removeTrackFromPlaylist(trackItem: PlaylistItem) {
     // get the playlist it's in
     const currentPlaylistId = trackItem["playlist_id"];
-    const foundPlaylist = await this.getPlaylistById(currentPlaylistId);
+    const foundPlaylist = getPlaylistById(currentPlaylistId);
     if (foundPlaylist) {
       // if it's the liked songs, then send it to the setLiked(false) api
       if (foundPlaylist.id === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME) {
@@ -781,7 +410,7 @@ export class MusicManager {
           track.playerType = PlayerType.WebSpotify;
           track.state = TrackStatus.NotAssigned;
           await MusicControlManager.getInstance().setLiked(false, track);
-          commands.executeCommand("musictime.refreshPlaylist");
+          commands.executeCommand("musictime.refreshMusicTimeView");
         }
       } else {
         // remove it from a playlist
@@ -793,7 +422,7 @@ export class MusicManager {
           window.showInformationMessage(`Error removing the selected track. ${errMsg}`);
         } else {
           window.showInformationMessage("Song removed successfully");
-          commands.executeCommand("musictime.refreshPlaylist");
+          commands.executeCommand("musictime.refreshMusicTimeView");
         }
       }
     }
@@ -838,133 +467,4 @@ export class MusicManager {
     }
     return TrackStatus.NotAssigned;
   }
-
-  async playSelectedItem(playlistItem: PlaylistItem) {
-    // set the selected track and/or playlist
-    if (playlistItem.type !== "playlist") {
-      this.dataMgr.selectedTrackItem = playlistItem;
-      const currentPlaylistId = playlistItem["playlist_id"];
-      const playlist: PlaylistItem = await this.getPlaylistById(currentPlaylistId);
-      this.dataMgr.selectedPlaylist = playlist;
-    } else {
-      // set the selected playlist
-      this.dataMgr.selectedPlaylist = playlistItem;
-    }
-
-    // ask to launch web or desktop if neither are running
-    await this.playInitialization(this.playMusicSelection);
-  }
-
-  playMusicSelection = async () => {
-    const musicCommandUtil: MusicCommandUtil = MusicCommandUtil.getInstance();
-    // get the playlist id, track id, and device id
-    const playlistId = this.dataMgr.selectedPlaylist ? this.dataMgr.selectedPlaylist.id : null;
-    let trackId = this.dataMgr.selectedTrackItem ? this.dataMgr.selectedTrackItem.id : null;
-
-    const device = getBestActiveDevice();
-
-    const isLikedSong = this.dataMgr.selectedPlaylist && this.dataMgr.selectedPlaylist.name === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME ? true : false;
-    const isRecommendationTrack = this.dataMgr.selectedTrackItem.type === "recommendation" ? true : false;
-
-    let result = null;
-    if (isRecommendationTrack || isLikedSong) {
-      if (isMac() && this.selectedPlayerName === PlayerName.SpotifyDesktop) {
-        // play it using applescript prevent 502 or 499s
-        const trackUri = createUriFromTrackId(this.dataMgr.selectedTrackItem.id);
-        const params = [trackUri];
-        try {
-          result = await playTrackInContext(PlayerName.SpotifyDesktop, params);
-        } catch (e) {}
-      }
-      if (!result || result !== "ok") {
-        // try with the web player
-        result = await this.playRecommendationsOrLikedSongsByPlaylist(this.dataMgr.selectedTrackItem, device?.id);
-      }
-    } else if (playlistId) {
-      if (isMac() && this.selectedPlayerName === PlayerName.SpotifyDesktop) {
-        // play it using applescript
-        const trackUri = createUriFromTrackId(trackId);
-        const playlistUri = createUriFromPlaylistId(playlistId);
-        const params = [trackUri, playlistUri];
-        try {
-          result = await playTrackInContext(PlayerName.SpotifyDesktop, params);
-        } catch (e) {}
-      }
-      if (!result || result !== "ok") {
-        // try with the web player
-        result = await musicCommandUtil.runSpotifyCommand(playSpotifyPlaylist, [playlistId, trackId, device?.id]);
-      }
-    } else {
-      if (isMac() && this.selectedPlayerName === PlayerName.SpotifyDesktop) {
-        // play it using applescript
-        const trackUri = createUriFromTrackId(trackId);
-        const params = [trackUri];
-        try {
-          result = await playTrackInContext(PlayerName.SpotifyDesktop, params);
-        } catch (e) {}
-      }
-      if (!result || result !== "ok") {
-        // else it's not a liked or recommendation play request, just play the selected track
-        result = await musicCommandUtil.runSpotifyCommand(playSpotifyTrack, [trackId, device?.id]);
-      }
-    }
-
-    setTimeout(() => {
-      this.checkPlayingState(device?.id);
-    }, 1000);
-  };
-
-  checkPlayingState = async (deviceId: string, tries = 3) => {
-    tries--;
-    const track:Track = await MusicStateManager.getInstance().fetchPlayingTrack();
-    if (!track || track.state !== TrackStatus.Playing) {
-      if (tries >= 0) {
-        setTimeout(() => {
-          this.checkPlayingState(deviceId, tries);
-        }, 2000);
-      } else {
-        // try to play it
-        await transferSpotifyDevice(deviceId, true);
-        play(this.selectedPlayerName);
-      }
-    }
-  };
-
-  playRecommendationsOrLikedSongsByPlaylist = async (playlistItem: PlaylistItem, deviceId: string) => {
-    const trackId = playlistItem.id;
-    const isRecommendationTrack = playlistItem.type === "recommendation" ? true : false;
-
-    let offset = 0;
-    let track_ids = [];
-    if (isRecommendationTrack) {
-      // RECOMMENDATION track request
-      // get the offset of this track
-      offset = this.dataMgr.recommendationTracks.findIndex((t: Track) => trackId === t.id);
-      // play the list of recommendation tracks
-      track_ids = this.dataMgr.recommendationTracks.map((t: Track) => t.id);
-
-      // make it a list of 50, so get the rest from trackIdsForRecommendations
-      const otherTrackIds = this.dataMgr.trackIdsForRecommendations.filter((t: string) => !track_ids.includes(t));
-      const spliceLimit = 50 - track_ids.length;
-      const addtionalTrackIds = otherTrackIds.splice(0, spliceLimit);
-      track_ids.push(...addtionalTrackIds);
-    } else {
-      offset = this.dataMgr.spotifyLikedSongs.findIndex((t: Track) => trackId === t.id);
-      // play the list of recommendation tracks
-      track_ids = this.dataMgr.spotifyLikedSongs.map((t: Track) => t.id);
-      // trim it down to 50
-      track_ids = track_ids.splice(0, 50);
-    }
-
-    const result: any = await MusicCommandUtil.getInstance().runSpotifyCommand(play, [
-      PlayerName.SpotifyWeb,
-      {
-        track_ids,
-        device_id: deviceId,
-        offset,
-      },
-    ]);
-
-    return result;
-  };
 }

@@ -10,6 +10,7 @@ import {
   getCachedUserMusicMetrics,
   getSelectedPlaylistId,
   getSelectedTabView,
+  getSoftwareTop40Playlist,
   getSpotifyLikedTracksPlaylist,
   getSpotifyPlaylists,
 } from "../managers/PlaylistDataManager";
@@ -30,7 +31,12 @@ export async function getReactData(tabView = undefined) {
   if (selectedTabView === "playlists") {
     likedSongsTracks = getCachedLikedSongsTracks();
     playlistTracks = getCachedPlaylistTracks();
+
     softwareTop40Playlist = getCachedSoftwareTop40Playlist();
+    if (!softwareTop40Playlist) {
+      softwareTop40Playlist = await getSoftwareTop40Playlist();
+    }
+
     spotifyPlaylists = getCachedSpotifyPlaylists();
     if (!spotifyPlaylists) {
       spotifyPlaylists = await getSpotifyPlaylists();

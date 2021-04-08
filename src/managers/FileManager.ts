@@ -253,7 +253,7 @@ export function displayReadmeIfNotExists(override = false) {
 
   if (!vscode_musictime_initialized || override) {
     setTimeout(() => {
-      commands.executeCommand("musictime.revealTree");
+      commands.executeCommand("musictime.displaySidebar");
     }, 1000);
 
     const readmeUri = Uri.file(getLocalREADMEFile());

@@ -11,7 +11,6 @@ import {
 } from "cody-music";
 import { commands, window } from "vscode";
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
-import { populateSpotifyDevices } from "../DataController";
 import { MusicCommandUtil } from "../music/MusicCommandUtil";
 import { MusicDataManager } from "../music/MusicDataManager";
 import { MusicStateManager } from "../music/MusicStateManager";
@@ -21,6 +20,7 @@ import {
   getSelectedPlayerName,
   getSelectedPlaylistId,
   getSelectedPlaylistItem,
+  populateSpotifyDevices,
   updateSelectedPlayer,
   updateSelectedPlaylistItem,
 } from "./PlaylistDataManager";
@@ -90,7 +90,7 @@ export async function launchTrackPlayer(playerName: PlayerName = null, callback:
 
 // PRIVATE FUNCTIONS
 
-async function playInitialization(callback: any = null) {
+export async function playInitialization(callback: any = null) {
   const { desktop } = getDeviceSet();
   const device = getBestActiveDevice();
 
@@ -116,7 +116,7 @@ async function playInitialization(callback: any = null) {
   }
 }
 
-async function showPlayerLaunchConfirmation(callback: any = null) {
+export async function showPlayerLaunchConfirmation(callback: any = null) {
   // if they're a mac non-premium user, just launch the desktop player
 
   if (isMac() && !isPremiumUser()) {
@@ -181,45 +181,6 @@ async function checkPlayingState(deviceId: string, tries = 3) {
     }
   }
 }
-
-// async function playRecommendationsOrLikedSongsByPlaylist(playlistItem: PlaylistItem, deviceId: string) {
-//   const dataMgr: MusicDataManager = MusicDataManager.getInstance();
-//   const trackId = playlistItem.id;
-//   const isRecommendationTrack = playlistItem.type === "recommendation" ? true : false;
-
-//   let offset = 0;
-//   let track_ids = [];
-//   if (isRecommendationTrack) {
-//     // RECOMMENDATION track request
-//     // get the offset of this track
-//     offset = dataMgr.recommendationTracks.findIndex((t: Track) => trackId === t.id);
-//     // play the list of recommendation tracks
-//     track_ids = dataMgr.recommendationTracks.map((t: Track) => t.id);
-
-//     // make it a list of 50, so get the rest from trackIdsForRecommendations
-//     const otherTrackIds = dataMgr.trackIdsForRecommendations.filter((t: string) => !track_ids.includes(t));
-//     const spliceLimit = 50 - track_ids.length;
-//     const addtionalTrackIds = otherTrackIds.splice(0, spliceLimit);
-//     track_ids.push(...addtionalTrackIds);
-//   } else {
-//     offset = dataMgr.spotifyLikedSongs.findIndex((t: Track) => trackId === t.id);
-//     // play the list of recommendation tracks
-//     track_ids = dataMgr.spotifyLikedSongs.map((t: Track) => t.id);
-//     // trim it down to 50
-//     track_ids = track_ids.splice(0, 50);
-//   }
-
-//   const result: any = await MusicCommandUtil.getInstance().runSpotifyCommand(play, [
-//     PlayerName.SpotifyWeb,
-//     {
-//       track_ids,
-//       device_id: deviceId,
-//       offset,
-//     },
-//   ]);
-
-//   return result;
-// }
 
 async function playMusicSelection() {
   const selectedPlaylistItem = getSelectedPlaylistItem();
