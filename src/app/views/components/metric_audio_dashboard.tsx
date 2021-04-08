@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
@@ -8,8 +8,12 @@ import Slider from "@material-ui/core/Slider";
 import IconButton from "@material-ui/core/IconButton";
 import Tooltip from "@material-ui/core/Tooltip";
 import Divider from "@material-ui/core/Divider";
+import Checkbox from '@material-ui/core/Checkbox';
 import { BeakerIcon } from "../icons";
 import { indigo } from "@material-ui/core/colors";
+import FormGroup from '@material-ui/core/FormGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormControl from '@material-ui/core/FormControl';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -109,6 +113,8 @@ let features: any = {};
 
 export default function MetricAudioDashboard(props) {
   const classes = useStyles();
+  const featureNames = featuresInfo.map(n => n.key);
+  const [checked, setChecked] = useState(featureNames);
 
   const metrics = props.stateData.averageMusicMetrics;
   if (metrics && metrics.valence) {
@@ -151,13 +157,38 @@ export default function MetricAudioDashboard(props) {
   function generateRecommendations() {
     // gather the features
     // features = { max_loudness: -10, target_loudness: -50 };
+    const selectedFeatureData = {};
+    for (const feature of checked) {
+      if (features[`min_${feature}`]) {
+        selectedFeatureData[`min_${feature}`] = features[`min_${feature}`];
+      }
+      if (features[`max_${feature}`]) {
+        selectedFeatureData[`max_${feature}`] = features[`max_${feature}`];
+      }
+      if (features[`target_${feature}`]) {
+        selectedFeatureData[`target_${feature}`] = features[`target_${feature}`];
+      }
+    }
     const command = {
       action: "musictime.getAudioFeatureRecommendations",
       command: "command_execute",
-      arguments: [features]
+      arguments: [selectedFeatureData]
     };
     props.vscode.postMessage(command);
   }
+
+  const handleToggle = (value) => () => {
+    const currentIndex = checked.indexOf(value);
+    const newChecked = [...checked];
+
+    if (currentIndex === -1) {
+      newChecked.push(value);
+    } else {
+      newChecked.splice(currentIndex, 1);
+    }
+
+    setChecked(newChecked);
+  };
 
   return (
     <Card className={classes.root} elevation={0}>
@@ -187,12 +218,29 @@ export default function MetricAudioDashboard(props) {
             const featureInfo: any = featuresInfo.find(n => n.key === key);
             const defaultVal = parseFloat(props.stateData.averageMusicMetrics[key].toFixed(2));
             return (
-              <Grid item xs={12} key={`grid-${key}`}>
+              <Grid item xs={12} key={`grid-${key}`} spacing={1}>
                 <Grid container>
-                  <Grid item xs={6}>
-                    <Typography style={{fontWeight: 400}}>{key}</Typography>
+                  <Grid item xs={7}>
+                    <FormControl component="fieldset">
+                      <FormGroup aria-label="position" row>
+                        <FormControlLabel
+                            style={{marginLeft: 4}}
+                            value="end"
+                            control={<Checkbox
+                              edge="start"
+                              onClick={handleToggle(key)}
+                              checked={checked.indexOf(key) !== -1}
+                              tabIndex={-1}
+                              disableRipple
+                              inputProps={{ 'aria-labelledby': key }}
+                            />}
+                            label={key}
+                            labelPlacement="end"
+                          />
+                      </FormGroup>
+                    </FormControl>
                   </Grid>
-                  <Grid item xs={5}>
+                  <Grid item xs={4} style={{marginTop: 4}}>
                     <Slider
                       key={`slider-${key}`}
                       data-id={key}

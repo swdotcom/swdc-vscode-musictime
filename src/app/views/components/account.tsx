@@ -111,7 +111,7 @@ export default function Account(props) {
       <Grid item xs={12}>
         <List disablePadding={true} dense={true}>
           <ListItem disableGutters={true} dense={true}>
-            <ListItemText primary="Account" secondary={!stateData.registered ? "Manage your account" : stateData.email} />
+            <ListItemText key="account_manage" primary="Account" secondary={!stateData.registered ? "Manage your account" : stateData.email} />
             <ListItemSecondaryAction classes={{ root: classes.secondaryAction }} onClick={accountClickHandler}>
               <IconButton
                 size="small"
@@ -133,7 +133,7 @@ export default function Account(props) {
       <Collapse in={accountOpen} timeout="auto" unmountOnExit>
         <List className={classes.collapseList} disablePadding={true} dense={true}>
           {!props.stateData.spotifyUser && (
-            <ListItem disableGutters={true} dense={true} button onClick={connectSpotifyHandler}>
+            <ListItem key="spotify-connect" disableGutters={true} dense={true} button onClick={connectSpotifyHandler}>
               <ListItemIcon className={classes.listItemIcon}>
                 <SpotifyIcon/>
               </ListItemIcon>
@@ -162,7 +162,7 @@ export default function Account(props) {
           )}
 
           {props.stateData.spotifyUser && (
-            <ListItem disableGutters={true} dense={true} button onClick={switchSpotifyHandler}>
+            <ListItem key="switch-spotify" disableGutters={true} dense={true} button onClick={switchSpotifyHandler}>
               <ListItemIcon className={classes.listItemIcon}>
                 <MuiSyncIcon/>
               </ListItemIcon>
@@ -171,7 +171,7 @@ export default function Account(props) {
             </ListItem>
           )}
 
-          <ListItem disableGutters={true} dense={true} button onClick={documentationClickHandler}>
+          <ListItem key="documentation" disableGutters={true} dense={true} button onClick={documentationClickHandler}>
             <ListItemIcon className={classes.listItemIcon}>
               <DocumentIcon/>
             </ListItemIcon>
@@ -179,7 +179,7 @@ export default function Account(props) {
               classes={{primary: classes.primaryListText}}/>
           </ListItem>
 
-          <ListItem disableGutters={true} dense={true} button onClick={submitIssueClickHandler}>
+          <ListItem key="submit-issue" disableGutters={true} dense={true} button onClick={submitIssueClickHandler}>
             <ListItemIcon className={classes.listItemIcon}>
               <MessageIcon/>
             </ListItemIcon>

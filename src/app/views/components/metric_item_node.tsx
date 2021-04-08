@@ -67,7 +67,7 @@ export default function MetricItemNode(props) {
 					placement="bottom"
 					title={<MetricItemTooltip vscode={props.vscode} item={props.item}/>}>
 					<List disablePadding={true} dense={true}>
-						<ListItem button disableGutters={true} dense={true} onClick={playTrack}>
+						<ListItem key={props.item.song_name} button disableGutters={true} dense={true} onClick={playTrack}>
 							<SpotifyIcon/>
 							<ListItemText style={{whiteSpace: "nowrap"}}
 								primary={props.item.song_name} secondary={props.item.primary_artist_name}
@@ -80,7 +80,7 @@ export default function MetricItemNode(props) {
 				<Grid container direction="row" wrap="nowrap">
 					<Grid item xs>
 						<List disablePadding={true} dense={true}>
-							<ListItem disableGutters={true} dense={true} className={classes.statItem}>
+							<ListItem key={props.item.keystrokes_formatted} disableGutters={true} dense={true} className={classes.statItem}>
 								<ListItemText primary="keystrokes" secondary={props.item.keystrokes_formatted}
 									classes={{primary: classes.primaryListText, secondary: classes.secondaryListText}}/>
 							</ListItem>
@@ -88,7 +88,7 @@ export default function MetricItemNode(props) {
 					</Grid>
 					<Grid item xs>
 						<List disablePadding={true} dense={true}>
-							<ListItem disableGutters={true} dense={true} className={classes.statItem}>
+							<ListItem key={props.item.song_rank} disableGutters={true} dense={true} className={classes.statItem}>
 								<ListItemText primary="rank" secondary={props.item.song_rank}
 									classes={{primary: classes.primaryListText, secondary: classes.mainSecondaryListText}}/>
 							</ListItem>

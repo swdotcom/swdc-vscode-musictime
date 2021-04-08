@@ -57,7 +57,7 @@ export default function MetricsColdStart(props) {
       <Grid container>
         <Grid item xs={12}>
           <List disablePadding={true} dense={true}>
-            <ListItem disableGutters={true} dense={true}>
+            <ListItem key="productivity-ranking" disableGutters={true} dense={true}>
               <ListItemText primary="Productivity ranking"
 								secondary="Music Time works with Code Time to combine your music and coding data to find your most productive music" />
               <ListItemSecondaryAction classes={{ root: classes.secondaryAction }}>

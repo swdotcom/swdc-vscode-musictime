@@ -8,7 +8,7 @@ import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import MetricsSetup from "./metrics_setup";
 import { MuiTuneIcon, MuiEmojiEventsIcon } from "../icons";
-import { indigo, blue } from "@material-ui/core/colors";
+import { indigo } from "@material-ui/core/colors";
 import Tooltip from "@material-ui/core/Tooltip";
 import IconButton from "@material-ui/core/IconButton";
 import Box from "@material-ui/core/Box";

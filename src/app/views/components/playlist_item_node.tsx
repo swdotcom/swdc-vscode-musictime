@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { makeStyles, Theme, createStyles, withStyles } from "@material-ui/core/styles";
+import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import List from "@material-ui/core/List";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
 import PropTypes from "prop-types";
 import Typography from "@material-ui/core/Typography";
 import Button from "@material-ui/core/Button";
@@ -16,8 +17,6 @@ import MoreVertIcon from "@material-ui/icons/MoreVert";
 import Fade from "@material-ui/core/Fade";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
-import Tooltip from "@material-ui/core/Tooltip";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
 import { BeakerIcon, MuiAlbumIcon, MuiShareIcon, MuiCloseIcon } from "../icons";
 import { DARK_BG_COLOR, MAX_MENU_HEIGHT } from "../../utils/view_constants";
 
@@ -30,6 +29,26 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingTop: 0,
       paddingBottom: 1,
       fontWeight: 500,
+    },
+    playlistPrimaryText: {
+      justifyContent: "flex-start",
+      margin: 0,
+      padding: 0,
+      fontWeight: 500,
+      wrap: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+    },
+    playlistSecondaryText: {
+      justifyContent: "flex-start",
+      margin: 0,
+      padding: 0,
+      wrap: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      color: grey[500],
+      fontWeight: 300,
+      fontSize: 12
     },
     playlistButton: {
       justifyContent: "flex-start",
@@ -71,15 +90,6 @@ const useStyles = makeStyles((theme: Theme) =>
     }
   })
 );
-
-const HtmlTooltip = withStyles((theme) => ({
-  tooltip: {
-    backgroundColor: DARK_BG_COLOR,
-    color: grey[500],
-    maxWidth: 200,
-    padding: 8,
-  },
-}))(Tooltip);
 
 export default function PlaylistItemNode(props) {
   const classes = useStyles();
@@ -161,22 +171,27 @@ export default function PlaylistItemNode(props) {
   return (
     <Grid container direction="row" justify="space-between" onMouseOver={showMenu} onMouseOut={hideMenu} key={item.id}>
       {item.type === "track" ? (
-        <Grid item xs={11}>
-          <HtmlTooltip
-            placement="bottom"
-            title={
-              <React.Fragment>
-                <Typography color="inherit">{item.name}</Typography>
-                {item.albumName}
-              </React.Fragment>
-            }
-          >
-            <Button
-              classes={{ root: (item.type === "track") ? classes.trackButton : classes.playlistButton }}
-              onClick={playTrack} startIcon={<TrackIcon />}>
-              <Typography className={classes.trackName}>{item.name}</Typography>
-            </Button>
-          </HtmlTooltip>
+        <Grid item xs={10}>
+          <List disablePadding={true} dense
+            style={{width: "100%", flexGrow: 1, marginLeft: 10, marginRight: 10, marginBottom: 0, marginTop: 0, padding: 0}}>
+            <ListItem key={`track-${item.name}`} disableGutters={true} dense={true} button onClick={playTrack} style={{margin: 0, padding: 0}}>
+              <TrackIcon />
+              <ListItemText
+                style={{marginRight: 4}}
+                primary={
+                  <Typography noWrap className={classes.playlistPrimaryText}>
+                    {item.name}
+                  </Typography>
+                }
+                secondary={item.albumName ?
+                  (<Typography noWrap className={classes.playlistSecondaryText}>
+                    {item?.albumName}
+                  </Typography>)
+                  : null
+                }
+              />
+            </ListItem>
+          </List>
         </Grid>
       ) : (
         <Button
@@ -214,7 +229,7 @@ export default function PlaylistItemNode(props) {
             <MenuItem key="menu_title" style={{padding: 0, margin: 0}}>
               <List disablePadding={true} dense={true}
                 style={{marginLeft: 10, marginRight: 10, marginBottom: 0, marginTop: 0}}>
-                <ListItem disableGutters={true} dense={true}>
+                <ListItem key={`track-menu-${item.name}`} disableGutters={true} dense={true}>
                   <ListItemText
                     primary={
                       <Typography noWrap className={classes.menuHeaderPrimary}>
@@ -235,19 +250,19 @@ export default function PlaylistItemNode(props) {
             </MenuItem>
             <List component="nav" disablePadding={true} dense={true}
               aria-labelledby="track-selections">
-              <ListItem button onClick={showAlbum} disableGutters={true} dense={true}>
+              <ListItem key="show-album" button onClick={showAlbum} disableGutters={true} dense={true}>
                 <ListItemIcon className={classes.listItemIcon}>
                   <MuiAlbumIcon />
                 </ListItemIcon>
                 <ListItemText primary="Show album" style={{margin: 0, padding: 0}}/>
               </ListItem>
-              <ListItem button onClick={getTrackRecommendations} disableGutters={true} dense={true}>
+              <ListItem key="get-recs" button onClick={getTrackRecommendations} disableGutters={true} dense={true}>
                 <ListItemIcon className={classes.listItemIcon}>
                   <BeakerIcon />
                 </ListItemIcon>
                 <ListItemText primary="Get recommendations" style={{margin: 0, padding: 0}}/>
               </ListItem>
-              <ListItem button onClick={shareTrack} disableGutters={true} dense={true}>
+              <ListItem key="share-track" button onClick={shareTrack} disableGutters={true} dense={true}>
                 <ListItemIcon className={classes.listItemIcon}>
                   <MuiShareIcon />
                 </ListItemIcon>

@@ -26,22 +26,21 @@ export default function MetricItemTooltip(props) {
 	const classes = useStyles();
 
 
-	// maybe use justify="space-between"
   return (
 		<Grid container direction="row">
 			<Grid item xs={12}>
 				<Grid container direction="row">
 					<Grid item xs>
-						<List>
-							<ListItem className={classes.statItem}>
+						<List dense>
+							<ListItem key="plays-info" className={classes.statItem}>
 								<ListItemText primary="plays" secondary={props.item.plays}
 									classes={{primary: classes.primaryListText, secondary: classes.secondaryListText}}/>
 							</ListItem>
 						</List>
 					</Grid>
 					<Grid item xs>
-						<List>
-							<ListItem className={classes.statItem}>
+						<List dense>
+							<ListItem key="productivity-info" className={classes.statItem}>
 								<ListItemText primary="productiity" secondary={props.item.productivity_score}
 									classes={{primary: classes.primaryListText, secondary: classes.secondaryListText}}/>
 							</ListItem>
