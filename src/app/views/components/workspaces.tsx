@@ -11,16 +11,8 @@ import { SlackWorkspaceIcon, SlackFolderIcon, MuiRemoveCircleTwoToneIcon, MuiCon
 
 let vscode = null;
 
-declare module "csstype" {
-  interface Properties {
-    "--tree-view-bg-color"?: string;
-  }
-}
-
 type StyledTreeItemProps = TreeItemProps & {
-  bgColor?: string;
   labelIcon?: React.ElementType<SvgIconProps>;
-  labelInfo?: string;
   labelText: string;
   isWorkspace?: boolean;
   isLeaf?: boolean;
@@ -30,8 +22,10 @@ type StyledTreeItemProps = TreeItemProps & {
 const useTreeItemStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      margin: 0,
-      padding: theme.spacing(0.25, 0.5),
+      width: "100%",
+			height: "100%",
+			flexGrow: 1,
+			padding: 0
     },
     content: {
       width: "100%",
@@ -40,10 +34,8 @@ const useTreeItemStyles = makeStyles((theme: Theme) =>
     labelRoot: {
       display: "flex",
       alignItems: "center",
-      padding: theme.spacing(0.25, 0.5),
-    },
-    labelIcon: {
-      marginRight: theme.spacing(1),
+      padding: 0,
+			margin: 0
     },
     labelText: {
       fontWeight: "inherit",
@@ -63,19 +55,17 @@ function removeWorkspaceClickHandler(authId: string) {
 
 function StyledTreeItem(props: StyledTreeItemProps) {
   const classes = useTreeItemStyles();
-  const { labelText, labelIcon: LabelIcon, labelInfo, bgColor, isWorkspace, isLeaf, authId, ...other } = props;
+  const { labelText, labelIcon: LabelIcon, isWorkspace, isLeaf, authId, ...other } = props;
 
   return (
     <TreeItem
-      icon={isLeaf && LabelIcon && <LabelIcon className={classes.labelIcon} />}
+      icon={isLeaf && LabelIcon && <LabelIcon />}
+			style={isLeaf && {marginLeft: 10}}
       label={
         <div className={classes.labelRoot}>
-          {!isLeaf && LabelIcon && <LabelIcon className={classes.labelIcon} />}
+          {!isLeaf && LabelIcon && <LabelIcon />}
           <Typography variant="body2" className={classes.labelText}>
             {labelText}
-          </Typography>
-          <Typography variant="caption">
-            {labelInfo}
           </Typography>
           {isWorkspace && (
             <IconButton
@@ -86,12 +76,6 @@ function StyledTreeItem(props: StyledTreeItemProps) {
           )}
         </div>
       }
-      style={{
-        "--tree-view-bg-color": bgColor,
-      }}
-      classes={{
-        root: classes.root
-      }}
       {...other}
     />
   );
@@ -121,7 +105,11 @@ export default function Workspaces(props) {
   }
 
   return (
-    <TreeView className={classes.root} defaultCollapseIcon={<ArrowDropDownIcon />} defaultExpandIcon={<ArrowRightIcon />}>
+    <TreeView
+			className={classes.root}
+			disableSelection={true}
+			defaultCollapseIcon={<ArrowDropDownIcon />}
+			defaultExpandIcon={<ArrowRightIcon />}>
       <StyledTreeItem nodeId="workspaces" labelText="Workspaces" key="workspaces" labelIcon={SlackFolderIcon}>
         {workspaces.map((value, index) => {
           return (

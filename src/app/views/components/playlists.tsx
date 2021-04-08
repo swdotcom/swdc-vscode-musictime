@@ -89,7 +89,7 @@ export default function Playlists(props) {
       {props.stateData.spotifyPlaylists && (
         <TreeView
           onNodeToggle={onTreeNodeToggle}
-          aria-label="gmail"
+          aria-label="playlists"
           defaultExpanded={props.stateData.selectedPlaylistId ? [props.stateData.selectedPlaylistId] : []}
           className={classes.root}
           disableSelection={true}
