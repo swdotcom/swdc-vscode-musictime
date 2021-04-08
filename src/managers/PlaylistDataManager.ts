@@ -74,12 +74,20 @@ export function updateSelectedTabView(tabView: string) {
 
 // GETTERS
 
+export function getCachedSpotifyPlaylists() {
+  return spotifyPlaylists;
+}
+
 export function getCachedPlaylistTracks() {
   return playlistTracks;
 }
 
 export function getCachedLikedSongsTracks() {
   return spotifyLikedTracks;
+}
+
+export function getCachedSoftwareTop40Playlist() {
+  return softwareTop40Playlist;
 }
 
 export function getCachedRecommendationInfo() {
@@ -141,7 +149,7 @@ export function getSpotifyLikedTracksPlaylist() {
 }
 
 export async function getSoftwareTop40Playlist() {
-  const softwareTop40: PlaylistItem= await getSpotifyPlaylist(SOFTWARE_TOP_40_PLAYLIST_ID);
+  softwareTop40Playlist = await getSpotifyPlaylist(SOFTWARE_TOP_40_PLAYLIST_ID);
 }
 
 // FETCH TRACKS

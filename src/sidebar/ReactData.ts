@@ -5,6 +5,8 @@ import {
   getCachedLikedSongsTracks,
   getCachedPlaylistTracks,
   getCachedRecommendationInfo,
+  getCachedSoftwareTop40Playlist,
+  getCachedSpotifyPlaylists,
   getCachedUserMusicMetrics,
   getSelectedPlaylistId,
   getSelectedTabView,
@@ -21,12 +23,18 @@ export async function getReactData(tabView = undefined) {
 
   const selectedTabView = tabView ? tabView : getSelectedTabView();
 
-  const [spotifyPlaylists] = await Promise.all([getSpotifyPlaylists()]);
+  let spotifyPlaylists = [];
   let likedSongsTracks = [];
   let playlistTracks = [];
+  let softwareTop40Playlist = {};
   if (selectedTabView === "playlists") {
     likedSongsTracks = getCachedLikedSongsTracks();
     playlistTracks = getCachedPlaylistTracks();
+    softwareTop40Playlist = getCachedSoftwareTop40Playlist();
+    spotifyPlaylists = getCachedSpotifyPlaylists();
+    if (!spotifyPlaylists) {
+      spotifyPlaylists = await getSpotifyPlaylists();
+    }
   }
   const recommendationInfo = selectedTabView === "recommendations" ? getCachedRecommendationInfo() : [];
   const userMusicMetrics = selectedTabView === "metrics" ? getCachedUserMusicMetrics() : [];
@@ -43,6 +51,7 @@ export async function getReactData(tabView = undefined) {
     averageMusicMetrics,
     likedSongsTracks,
     playlistTracks,
+    softwareTop40Playlist,
     likedSongsPlaylist: getSpotifyLikedTracksPlaylist(),
     selectedPlaylistId: getSelectedPlaylistId(),
     spotifyUser: getConnectedSpotifyUser(),
