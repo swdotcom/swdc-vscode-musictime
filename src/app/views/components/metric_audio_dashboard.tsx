@@ -9,8 +9,8 @@ import IconButton from "@material-ui/core/IconButton";
 import Tooltip from "@material-ui/core/Tooltip";
 import Divider from "@material-ui/core/Divider";
 import Checkbox from '@material-ui/core/Checkbox';
-import { BeakerIcon } from "../icons";
-import { indigo } from "@material-ui/core/colors";
+import { BeakerIcon, MuiRefreshIcon } from "../icons";
+import { indigo, grey } from "@material-ui/core/colors";
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
@@ -20,6 +20,7 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
     height: "100%",
     flexGrow: 1,
+    margin: 0,
     overflow: "hidden",
     background: "transparent",
   },
@@ -40,6 +41,11 @@ const useStyles = makeStyles((theme) => ({
     color: indigo[300],
     fontWeight: 500,
   },
+  cardSubHeaderText: {
+    fontWeight: 300,
+    color: grey[500],
+    fontSize: 12
+  },
   cardHeaderIcon: {
     marginTop: 10,
     marginRight: 10,
@@ -50,6 +56,10 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: "center",
     textAlign: "center",
   },
+  headerActionButtons: {
+    marginTop: 10,
+    marginRight: 10
+  }
 }));
 
 const featuresInfo = [
@@ -111,10 +121,12 @@ const featuresInfo = [
 
 let features: any = {};
 
+
 export default function MetricAudioDashboard(props) {
   const classes = useStyles();
   const featureNames = featuresInfo.map(n => n.key);
   const [checked, setChecked] = useState(featureNames);
+  const [musicMetricData, setMusicMetricData] = useState({...props.stateData.averageMusicMetrics});
 
   const metrics = props.stateData.averageMusicMetrics;
   if (metrics && metrics.valence) {
@@ -123,14 +135,21 @@ export default function MetricAudioDashboard(props) {
     });
   }
 
-  const handleChange = (e, newValue) => {
-    const dataId = e.target.attributes.getNamedItem("data-id");
-    if (dataId) {
-      const key = dataId.value;
-
-      updateFeature(key, newValue);
+  const handleSliderChange = (e, newValue) => {
+    let selectedKey = null;
+    if (e.target.dataset.index) {
+      const keys = Object.keys(musicMetricData);
+      selectedKey = keys[e.target.dataset.index];
+    } else if (e.target.dataset.id) {
+      selectedKey = e.target.dataset.id;
+    } else if (e.target.dataset.tag) {
+      selectedKey = e.target.dataset.tag;
     }
-  };
+
+    updateFeature(selectedKey, newValue);
+    musicMetricData[selectedKey] = newValue;
+    setMusicMetricData(musicMetricData);
+  }
 
   function updateFeature(key, value) {
     const featureInfo: any = featuresInfo.find(n => n.key === key);
@@ -148,6 +167,10 @@ export default function MetricAudioDashboard(props) {
       features[`target_${key}`] = value;
       delete features[`max_${key}`];
     }
+  }
+
+  function refreshFeatureData() {
+    setMusicMetricData({...props.stateData.averageMusicMetrics});
   }
 
   function sliderText(value) {
@@ -169,6 +192,7 @@ export default function MetricAudioDashboard(props) {
         selectedFeatureData[`target_${feature}`] = features[`target_${feature}`];
       }
     }
+
     const command = {
       action: "musictime.getAudioFeatureRecommendations",
       command: "command_execute",
@@ -198,27 +222,37 @@ export default function MetricAudioDashboard(props) {
           content: classes.cardHeaderContent,
         }}
         action={
-          <Tooltip title="Generate recommendations">
-            <IconButton aria-label="recommendations" onClick={generateRecommendations}>
-              <BeakerIcon />
-            </IconButton>
-          </Tooltip>
+          <div className={classes.headerActionButtons}>
+            <IconButton aria-label="recommendations" onClick={refreshFeatureData}>
+                <MuiRefreshIcon/>
+              </IconButton>
+            <Tooltip title="Generate recommendations">
+              <IconButton aria-label="recommendations" onClick={generateRecommendations}>
+                <BeakerIcon />
+              </IconButton>
+            </Tooltip>
+          </div>
         }
         title={
           <Typography noWrap gutterBottom={false} className={classes.cardHeaderText}>
             Your audio features
           </Typography>
         }
-        subheader="Generate recommendations"
+        subheader={
+          <Typography noWrap gutterBottom={false} className={classes.cardSubHeaderText}>
+            Generate recommendations
+          </Typography>
+        }
       />
       <Divider />
-      <Grid container>
-        {props.stateData.averageMusicMetrics && props.stateData.averageMusicMetrics.valence && (
-          Object.keys(props.stateData.averageMusicMetrics).map((key, index) => {
+      <Grid container spacing={1}>
+        <Grid item xs={12} zeroMinWidth={true}>
+        {musicMetricData && musicMetricData.valence && (
+          Object.keys(musicMetricData).map((key, index) => {
             const featureInfo: any = featuresInfo.find(n => n.key === key);
-            const defaultVal = parseFloat(props.stateData.averageMusicMetrics[key].toFixed(2));
+            const defaultVal = parseFloat(musicMetricData[key].toFixed(2));
             return (
-              <Grid item xs={12} key={`grid-${key}`} spacing={1}>
+              <Grid item xs={12} key={`grid-${key}`}>
                 <Grid container>
                   <Grid item xs={7}>
                     <FormControl component="fieldset">
@@ -240,11 +274,12 @@ export default function MetricAudioDashboard(props) {
                       </FormGroup>
                     </FormControl>
                   </Grid>
-                  <Grid item xs={4} style={{marginTop: 4}}>
+                  <Grid item xs={4} style={{marginTop: 6, marginRight: 0}}>
                     <Slider
                       key={`slider-${key}`}
                       data-id={key}
-                      onChange={handleChange}
+                      data-tag={key}
+                      onChange={handleSliderChange}
                       defaultValue={defaultVal}
                       getAriaValueText={sliderText}
                       min={featureInfo.min}
@@ -259,7 +294,9 @@ export default function MetricAudioDashboard(props) {
             );
           })
         )}
+        </Grid>
       </Grid>
+
     </Card>
   );
 }

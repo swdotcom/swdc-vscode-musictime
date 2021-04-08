@@ -18,7 +18,9 @@ import EmojiEventsIcon from "@material-ui/icons/EmojiEvents";
 import MusicNoteIcon from "@material-ui/icons/MusicNote";
 import GitHubIcon from "@material-ui/icons/GitHub";
 import SearchIcon from "@material-ui/icons/Search";
-
+import RefreshIcon from "@material-ui/icons/Refresh";
+import RemoveCircleTwoToneIcon from "@material-ui/icons/RemoveCircleTwoTone";
+import ControlPointTwoToneIcon from "@material-ui/icons/ControlPointTwoTone";
 
 // Material UI SVG Icons
 export const MuiAlbumIcon = (props: SvgIconProps) => {
@@ -87,6 +89,18 @@ export const MuiGitHubIcon = (props: SvgIconProps) => {
 
 export const MuiSearchIcon = (props: SvgIconProps) => {
   return <SearchIcon {...props} style={getMuiIconStyle(props)} />;
+}
+
+export const MuiRefreshIcon = (props: SvgIconProps) => {
+  return <RefreshIcon {...props} style={getMuiIconStyle(props)} />;
+}
+
+export const MuiRemoveCircleTwoToneIcon = (props: SvgIconProps) => {
+  return <RemoveCircleTwoToneIcon {...props} style={getMuiIconStyle(props)} />;
+}
+
+export const MuiControlPointTwoToneIcon = (props: SvgIconProps) => {
+  return <ControlPointTwoToneIcon {...props} style={getMuiIconStyle(props)} />;
 }
 
 // Custom SVG Icons

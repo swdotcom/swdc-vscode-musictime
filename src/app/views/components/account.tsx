@@ -5,13 +5,13 @@ import ListItemText from "@material-ui/core/ListItemText";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import { makeStyles } from "@material-ui/core/styles";
-import { GoogleIcon, MuiGitHubIcon, EmailIcon } from "../icons";
-import { MessageIcon, DocumentIcon, SpotifyIcon, MuiSyncIcon } from "../icons";
+import { GoogleIcon, MuiGitHubIcon, EmailIcon, MessageIcon, DocumentIcon, SpotifyIcon, MuiSyncIcon } from "../icons";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import Collapse from "@material-ui/core/Collapse";
 import grey from "@material-ui/core/colors/grey";
+import Workspaces from "./workspaces";
 
 const useStyles = makeStyles((theme) => ({
   textButton: {
@@ -185,6 +185,10 @@ export default function Account(props) {
             </ListItemIcon>
             <ListItemText id="submit-issue-li" primary="Submit an issue"
               classes={{primary: classes.primaryListText}}/>
+          </ListItem>
+
+          <ListItem key="slack-workspaces" disableGutters={true} dense={true}>
+            <Workspaces vscode={props.vscode} stateData={props.stateData} />
           </ListItem>
 
         </List>
