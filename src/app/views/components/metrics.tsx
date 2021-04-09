@@ -1,9 +1,9 @@
-import React, { useState }  from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { makeStyles } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
-import MetricItemNode from "./metric_item_node"
+import MetricItemNode from "./metric_item_node";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import MetricsSetup from "./metrics_setup";
@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme) => {
     },
     cardHeader: {
       margin: 0,
-      padding: theme.spacing(1)
+      padding: theme.spacing(1),
     },
     cardHeaderText: {
       color: indigo[300],
@@ -34,26 +34,20 @@ const useStyles = makeStyles((theme) => {
     },
     cardHeaderIcon: {
       marginTop: 10,
-      marginRight: 10
+      marginRight: 10,
     },
     headerActionButtons: {
       marginTop: 10,
-      marginRight: 10
-    }
-  }
+      marginRight: 10,
+    },
+  };
 });
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
 
   return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
+    <div role="tabpanel" hidden={value !== index} id={`simple-tabpanel-${index}`} aria-labelledby={`simple-tab-${index}`} {...other}>
       {value === index && (
         <Box p={3}>
           <Typography>{children}</Typography>
@@ -84,7 +78,8 @@ export default function Metrics(props) {
   return (
     <Card className={classes.root} elevation={0}>
       {props.stateData.codeTimeInstalled && (
-        <CardHeader className={classes.cardHeader}
+        <CardHeader
+          className={classes.cardHeader}
           title={
             <Typography noWrap gutterBottom={false} className={classes.cardHeaderText}>
               Code + Music
@@ -92,46 +87,52 @@ export default function Metrics(props) {
           }
           action={
             <div className={classes.headerActionButtons}>
-                <Tooltip title="Ranking">
-                  <IconButton onClick={showRanking}>
-                    <MuiEmojiEventsIcon color={tabView === 0 ? "primary" : "disabled"}/>
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Dashboard">
-                  <IconButton onClick={showDashboard}>
-                    <MuiTuneIcon color={tabView === 1 ? "primary" : "disabled"}/>
-                  </IconButton>
-                </Tooltip>
+              <Tooltip title="Ranking">
+                <IconButton onClick={showRanking}>
+                  <MuiEmojiEventsIcon color={tabView === 0 ? "primary" : "disabled"} />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Dashboard">
+                <IconButton onClick={showDashboard}>
+                  <MuiTuneIcon color={tabView === 1 ? "primary" : "disabled"} />
+                </IconButton>
+              </Tooltip>
             </div>
-          }/>)}
+          }
+        />
+      )}
 
       {props.stateData.codeTimeInstalled ? (
         <div>
           {tabView === 0 ? (
             <Grid container>
-              <Grid item xs={12}>
-              {props.stateData.userMusicMetrics && props.stateData.userMusicMetrics.length
-                ? (
+              <Grid item key={`metrics-grid-time-metrics-container`} xs={12}>
+                {props.stateData.userMusicMetrics && props.stateData.userMusicMetrics.length ? (
                   props.stateData.userMusicMetrics.map((item, index) => {
-                  return (<MetricItemNode vscode={props.vscode} stateData={props.stateData} item={item} key={item.id}/>)
-                  }))
-                : !props.stateData.userMusicMetrics
-                  ? (<Typography>Loading metrics...</Typography>)
-                  : (<Typography>No metrics available</Typography>)}
+                    return <MetricItemNode key={`metric-item-node-idx-${index}`} vscode={props.vscode} stateData={props.stateData} item={item} />;
+                  })
+                ) : !props.stateData.userMusicMetrics ? (
+                  <Typography>Loading metrics...</Typography>
+                ) : (
+                  <Typography>No metrics available</Typography>
+                )}
               </Grid>
-            </Grid>)
-            : (<Grid container>
-                <Grid item xs={12}>
-                  <MetricAudioDashboard vscode={props.vscode} stateData={props.stateData} />
-                </Grid>
-              </Grid>)}
-          </div>)
-        : (
-          <Grid container>
-            <Grid item xs={12}>
-              <MetricsSetup  vscode={props.vscode} stateData={props.stateData}/>
             </Grid>
-          </Grid>)}
+          ) : (
+            <Grid container>
+              <Grid item key={`metrics-grid-time-metric-dashboard-container`} xs={12}>
+                <MetricAudioDashboard vscode={props.vscode} stateData={props.stateData} />
+              </Grid>
+            </Grid>
+          )}
+        </div>
+      ) : (
+        <Grid container>
+          <Grid item key={`metrics-grid-time-metric-setup-container`} xs={12}>
+            <MetricsSetup vscode={props.vscode} stateData={props.stateData} />
+          </Grid>
+        </Grid>
+      )}
     </Card>
   );
 }

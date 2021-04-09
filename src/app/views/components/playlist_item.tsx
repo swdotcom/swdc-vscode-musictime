@@ -21,11 +21,7 @@ export default function PlaylistItem(props) {
   const classes = useStyles();
 
   return (
-    <TreeItem
-      nodeId={props.playlistItem.id}
-      className={classes.root}
-      label={<PlaylistItemNode vscode={props.vscode} item={props.playlistItem} />}>
-
+    <TreeItem nodeId={props.playlistItem.id} className={classes.root} label={<PlaylistItemNode vscode={props.vscode} item={props.playlistItem} />}>
       {props.playlistTracks && props.playlistTracks.length ? (
         props.playlistTracks.map((item, index) => {
           if (item.track) {
@@ -40,7 +36,6 @@ export default function PlaylistItem(props) {
       ) : (
         <TreeItem nodeId={`${props.playlistItem.id}_track_placeholder`} label="No tracks available" />
       )}
-
     </TreeItem>
   );
 }

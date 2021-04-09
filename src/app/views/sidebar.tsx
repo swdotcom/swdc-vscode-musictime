@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Account from "./components/account";
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
@@ -45,31 +45,31 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const getHeight = () => window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+// const getHeight = () => window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 
-function useCurrentHeight() {
-  // save current window width in the state object
-  let [height, setHeight] = useState(getHeight());
+// function useCurrentHeight() {
+//   // save current window width in the state object
+//   let [height, setHeight] = useState(getHeight());
 
-  // in this case useEffect will execute only once because
-  // it does not have any dependencies.
-  useEffect(() => {
-    const resizeListener = () => {
-      // change width from the state object
-      setHeight(getHeight());
-    };
-    // set resize listener
-    window.addEventListener("resize", resizeListener);
+//   // in this case useEffect will execute only once because
+//   // it does not have any dependencies.
+//   useEffect(() => {
+//     const resizeListener = () => {
+//       // change width from the state object
+//       setHeight(getHeight());
+//     };
+//     // set resize listener
+//     window.addEventListener("resize", resizeListener);
 
-    // clean up function
-    return () => {
-      // remove resize listener
-      window.removeEventListener("resize", resizeListener);
-    };
-  }, []);
+//     // clean up function
+//     return () => {
+//       // remove resize listener
+//       window.removeEventListener("resize", resizeListener);
+//     };
+//   }, []);
 
-  return height;
-}
+//   return height;
+// }
 
 export default function SideBar(props) {
   const classes = useStyles();
@@ -208,12 +208,12 @@ export default function SideBar(props) {
         <AppBar position="fixed" className={classes.topAppBar} id="top-app-bar" style={{ margin: 0, padding: 0 }}>
           <Grid container>
             {(!props.stateData.registered || !props.stateData.spotifyUser) && (
-              <Grid item xs={12} style={{ marginLeft: 12 }}>
+              <Grid item key="setup-user-grid-item" xs={12} style={{ marginLeft: 12 }}>
                 <Setup stateData={props.stateData} vscode={props.vscode} />
               </Grid>
             )}
             {props.stateData.registered && (
-              <Grid item xs={12} style={{ marginLeft: 12 }}>
+              <Grid item key="account-user-grid-item" xs={12} style={{ marginLeft: 12 }}>
                 <Account vscode={props.vscode} stateData={props.stateData} />
               </Grid>
             )}
@@ -229,25 +229,25 @@ export default function SideBar(props) {
           }}
         >
           {!props.stateData.spotifyUser && (
-            <Grid item xs={12}>
+            <Grid item key="cold-start-grid-item" xs={12}>
               <ColdStart vscode={props.vscode} stateData={props.stateData} />
             </Grid>
           )}
 
           {props.stateData.selectedTabView === "playlists" && props.stateData.spotifyUser && (
-            <Grid item xs={12}>
+            <Grid item key="playlists-grid-item" xs={12}>
               <Playlists vscode={props.vscode} stateData={props.stateData} />
             </Grid>
           )}
 
           {props.stateData.selectedTabView === "recommendations" && props.stateData.spotifyUser && (
-            <Grid item xs={12}>
+            <Grid item key="recommendations-grid-item" xs={12}>
               <Recommendations vscode={props.vscode} stateData={props.stateData} />
             </Grid>
           )}
 
           {props.stateData.selectedTabView === "metrics" && props.stateData.spotifyUser && (
-            <Grid item xs={12}>
+            <Grid item key="metrics-grid-item" xs={12}>
               <Metrics vscode={props.vscode} stateData={props.stateData} />
             </Grid>
           )}

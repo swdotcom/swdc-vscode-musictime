@@ -9,7 +9,6 @@ import {
   getPluginName,
 } from "./Util";
 import { createCommands } from "./command-helper";
-import { TrackerManager } from "./managers/TrackerManager";
 import { displayReadmeIfNotExists } from "./managers/FileManager";
 import { migrateAccessInfo } from "./managers/SpotifyManager";
 import { clearWebsocketConnectionRetryTimeout, initializeWebsockets } from './websockets';
@@ -20,9 +19,6 @@ let currentColorKind: number = undefined;
 export function deactivate(ctx: ExtensionContext) {
 
   clearWebsocketConnectionRetryTimeout();
-
-  // store the deactivate event
-  TrackerManager.getInstance().trackEditorAction("editor", "deactivate");
 }
 
 export async function activate(ctx: ExtensionContext) {
@@ -47,9 +43,6 @@ export async function intializePlugin(ctx: ExtensionContext) {
   // This will initialize the user and spotify
   // this needs to happen first to enable spotify playlist and control logic
   await initializeSpotify();
-
-  // store the activate event
-  TrackerManager.getInstance().init();
 
   activateColorKindChangeListener();
 

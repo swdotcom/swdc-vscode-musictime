@@ -16,87 +16,90 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
     marginLeft: -4,
     overflowX: "hidden",
-    background: "transparent"
+    background: "transparent",
   },
   cardHeader: {
     margin: 0,
-    padding: 2
+    padding: 2,
   },
   cardHeaderIcon: {
     marginTop: 10,
-    marginRight: 10
+    marginRight: 10,
   },
-	secondaryAction: {
+  secondaryAction: {
     position: "absolute",
     right: 0,
     padding: 0,
-    margin: 0
-  }
+    margin: 0,
+  },
 }));
 
 export default function ColdStart(props) {
-	const classes = useStyles();
+  const classes = useStyles();
 
   return (
     <Card className={classes.root} elevation={0}>
-      <CardHeader title="Music Time Features" className={classes.cardHeader}/>
+      <CardHeader title="Music Time Features" className={classes.cardHeader} />
       <Grid container>
         <Grid item xs={12}>
           <List disablePadding={true} dense={true}>
-            <ListItem disableGutters={true} dense={true}>
+            <ListItem key="mood-info-item" disableGutters={true} dense={true}>
               <ListItemText primary="Mood & Genre recomendations" secondary="Explore songs by mood or genre" />
               <ListItemSecondaryAction classes={{ root: classes.secondaryAction }}>
-                <BeakerIcon/>
+                <BeakerIcon />
               </ListItemSecondaryAction>
             </ListItem>
           </List>
         </Grid>
         <Grid item xs={12}>
           <List disablePadding={true} dense={true}>
-            <ListItem disableGutters={true} dense={true}>
+            <ListItem key="share-info-item" disableGutters={true} dense={true}>
               <ListItemText primary="Share music" secondary="Share your top songs" />
               <ListItemSecondaryAction classes={{ root: classes.secondaryAction }}>
-                <MuiShareIcon/>
+                <MuiShareIcon />
               </ListItemSecondaryAction>
             </ListItem>
           </List>
         </Grid>
         <Grid item xs={12}>
           <List disablePadding={true} dense={true}>
-            <ListItem disableGutters={true} dense={true}>
+            <ListItem key="search-info-item" disableGutters={true} dense={true}>
               <ListItemText primary="Search" secondary="Search for a song or recommendations" />
               <ListItemSecondaryAction classes={{ root: classes.secondaryAction }}>
-                <MuiSearchIcon/>
+                <MuiSearchIcon />
               </ListItemSecondaryAction>
             </ListItem>
           </List>
         </Grid>
         <Grid item xs={12}>
           <List disablePadding={true} dense={true}>
-            <ListItem disableGutters={true} dense={true}>
-              <ListItemText primary="Integrated player controls" secondary="Play your liked songs, playlists, recommendations, or jump right into an album" />
+            <ListItem key="play-info-item" disableGutters={true} dense={true}>
+              <ListItemText
+                primary="Integrated player controls"
+                secondary="Play your liked songs, playlists, recommendations, or jump right into an album"
+              />
               <ListItemSecondaryAction classes={{ root: classes.secondaryAction }}>
-                <MuiPlayCircleOutlineIcon/>
+                <MuiPlayCircleOutlineIcon />
               </ListItemSecondaryAction>
             </ListItem>
           </List>
         </Grid>
         <Grid item xs={12}>
           <List disablePadding={true} dense={true}>
-            <ListItem disableGutters={true} dense={true}>
+            <ListItem key="global-info-item" disableGutters={true} dense={true}>
               <ListItemText primary="Global Top 40" secondary="Discover new music from developers around the world in our Software Top 40 playlist" />
               <ListItemSecondaryAction classes={{ root: classes.secondaryAction }}>
-                <MuiSubscriptionsIcon/>
+                <MuiSubscriptionsIcon />
               </ListItemSecondaryAction>
             </ListItem>
           </List>
         </Grid>
         <Grid item xs={12}>
           <List disablePadding={true} dense={true}>
-            <ListItem disableGutters={true} dense={true}>
+            <ListItem key="productivity-info-item" disableGutters={true} dense={true}>
               <ListItemText primary="Music+Code" secondary="Explore your most productive songs, artists, and genres by productivity score" />
               <ListItemSecondaryAction classes={{ root: classes.secondaryAction }}>
-                <PawIcon/>
+                <PawIcon />
               </ListItemSecondaryAction>
             </ListItem>
           </List>

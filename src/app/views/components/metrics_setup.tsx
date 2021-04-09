@@ -17,19 +17,19 @@ const useStyles = makeStyles((theme) => ({
     height: "100%",
     flexGrow: 1,
     overflowX: "hidden",
-    background: "transparent"
+    background: "transparent",
   },
   setupCardItem: {
     width: "100%",
     padding: 0,
     margin: 0,
-    background: "linear-gradient(#64b5f6, #1565c0)"
+    background: "linear-gradient(#64b5f6, #1565c0)",
   },
   setupHeader: {
     color: "#FFF",
     display: "flex",
     justifyContent: "center",
-    textAlign: "center"
+    textAlign: "center",
   },
   setupButtonContent: {
     textAlign: "center",
@@ -40,17 +40,17 @@ const useStyles = makeStyles((theme) => ({
     maxWidth: 200,
   },
   linkContent: {
-	  textAlign: "center"
+    textAlign: "center",
   },
   subInfoContent: {
     justifyContent: "center",
-    textAlign: "center"
+    textAlign: "center",
   },
   subInfo: {
     marginRight: 4,
     fontSize: 12,
     color: grey[200],
-    display: "inline"
+    display: "inline",
   },
   link: {
     fontSize: 14,
@@ -65,8 +65,8 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   coldStartView: {
-    padding: theme.spacing(1)
-  }
+    padding: theme.spacing(1),
+  },
 }));
 
 const BorderLinearProgress = withStyles((theme: Theme) =>
@@ -81,7 +81,7 @@ const BorderLinearProgress = withStyles((theme: Theme) =>
     bar: {
       borderRadius: 4,
       backgroundColor: "#ffffff",
-    }
+    },
   })
 )(LinearProgress);
 
@@ -109,7 +109,7 @@ export default function MetricsSetup(props) {
 
   return (
     <Grid container className={classes.root}>
-      <Grid item xs={12}>
+      <Grid item key={`metrics-setup-getting-started`} xs={12}>
         <Card className={classes.setupCardItem}>
           <CardContent className={classes.setupHeader}>
             <Typography>Getting Started with Code Time</Typography>
@@ -123,24 +123,22 @@ export default function MetricsSetup(props) {
             </Button>
           </CardContent>
           <CardContent className={classes.subInfoContent}>
-            <Typography className={classes.subInfo}>
-              Already installed?
-            </Typography>
+            <Typography className={classes.subInfo}>Already installed?</Typography>
             <Link href="#" onClick={refreshClick} className={classes.link}>
               Refresh
             </Link>
           </CardContent>
         </Card>
       </Grid>
-      <Grid item xs={12} className={classes.coldStartView}>
-        <MetricsColdStart vscode={props.vscode} stateData={props.stateData}/>
+      <Grid item key={`metrics-setup-cold-start-container`} xs={12} className={classes.coldStartView}>
+        <MetricsColdStart vscode={props.vscode} stateData={props.stateData} />
       </Grid>
     </Grid>
   );
 }
 
 MetricsSetup.propTypes = {
-	item: PropTypes.any.isRequired,
-	vscode: PropTypes.any.isRequired,
-	stateData: PropTypes.any.isRequired
+  item: PropTypes.any.isRequired,
+  vscode: PropTypes.any.isRequired,
+  stateData: PropTypes.any.isRequired,
 };

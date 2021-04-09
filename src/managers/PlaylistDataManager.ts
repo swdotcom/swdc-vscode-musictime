@@ -21,8 +21,8 @@ import { RECOMMENDATION_LIMIT, SOFTWARE_TOP_40_PLAYLIST_ID } from "../app/utils/
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
 import { isResponseOk, softwareGet } from "../HttpClient";
 import MusicMetrics from "../model/MusicMetrics";
-import { MusicCommandUtil } from '../music/MusicCommandUtil';
-import { MusicStateManager } from '../music/MusicStateManager';
+import { MusicCommandUtil } from "../music/MusicCommandUtil";
+import { MusicStateManager } from "../music/MusicStateManager";
 import { getItem } from "./FileManager";
 import { requiresSpotifyAccess } from "./PlaylistUtilManager";
 
@@ -131,7 +131,7 @@ export function getSelectedTabView() {
 }
 
 export function getPlaylistById(playlist_id) {
-  return spotifyPlaylists ? spotifyPlaylists.find(n => n.id === playlist_id) : null;
+  return spotifyPlaylists ? spotifyPlaylists.find((n) => n.id === playlist_id) : null;
 }
 
 // PLAYLISTS
@@ -146,8 +146,8 @@ export async function getSpotifyPlaylists(clear = false): Promise<PlaylistItem[]
   }
   spotifyPlaylists = await getPlaylists(PlayerName.SpotifyWeb, { all: true });
   spotifyPlaylists = spotifyPlaylists?.map((n, index) => {
-    return {...n, index}
-  })
+    return { ...n, index };
+  });
   return spotifyPlaylists;
 }
 
@@ -163,7 +163,6 @@ export function getSpotifyLikedTracksPlaylist() {
   item.tag = "spotify-liked-songs";
   item.itemType = "playlist";
   item.name = SPOTIFY_LIKED_SONGS_PLAYLIST_NAME;
-  item["icon"] = "heart-filled.svg";
   return item;
 }
 
@@ -322,50 +321,46 @@ export function populateRecommendationTracks(label: string, tracks: Track[]) {
 }
 
 export async function populateSpotifyDevices(tryAgain = false) {
-  const devices = await MusicCommandUtil.getInstance().runSpotifyCommand(
-      getSpotifyDevices
-  );
+  const devices = await MusicCommandUtil.getInstance().runSpotifyCommand(getSpotifyDevices);
 
   if (devices.status && devices.status === 429 && tryAgain) {
-      // try one more time in lazily since its not a device launch request.
-      // the device launch requests retries a few times every couple seconds.
-      setTimeout(() => {
-          // use true to specify its a device launch so this doens't try continuously
-          populateSpotifyDevices(false);
-      }, 5000);
-      return;
+    // try one more time in lazily since its not a device launch request.
+    // the device launch requests retries a few times every couple seconds.
+    setTimeout(() => {
+      // use true to specify its a device launch so this doens't try continuously
+      populateSpotifyDevices(false);
+    }, 5000);
+    return;
   }
 
   const fetchedDeviceIds = [];
   if (devices.length) {
-      devices.forEach((el: PlayerDevice) => {
-          fetchedDeviceIds.push(el.id);
-      });
+    devices.forEach((el: PlayerDevice) => {
+      fetchedDeviceIds.push(el.id);
+    });
   }
 
   let diffDevices = [];
   if (currentDevices.length) {
-      // get any differences from the fetched devices if any
-      diffDevices = currentDevices.filter((n: PlayerDevice) => !fetchedDeviceIds.includes(n.id));
+    // get any differences from the fetched devices if any
+    diffDevices = currentDevices.filter((n: PlayerDevice) => !fetchedDeviceIds.includes(n.id));
   } else if (fetchedDeviceIds.length) {
-      // no current devices, set diff to whatever we fetched
-      diffDevices = [
-          ...devices
-      ]
+    // no current devices, set diff to whatever we fetched
+    diffDevices = [...devices];
   }
 
   if (diffDevices.length || currentDevices.length !== diffDevices.length) {
-      // new devices available or setting to empty
-      currentDevices = devices;
+    // new devices available or setting to empty
+    currentDevices = devices;
 
-      setTimeout(() => {
-          // refresh the playlist to show the device button update
-          commands.executeCommand("musictime.refreshMusicTimeView");
-      }, 1000);
+    setTimeout(() => {
+      // refresh the playlist to show the device button update
+      commands.executeCommand("musictime.refreshMusicTimeView");
+    }, 1000);
 
-      setTimeout(() => {
-          MusicStateManager.getInstance().fetchTrack();
-      }, 3000);
+    setTimeout(() => {
+      MusicStateManager.getInstance().fetchTrack();
+    }, 3000);
   }
 }
 
@@ -423,7 +418,6 @@ function createPlaylistItemFromTrack(track: Track, position: number) {
   playlistItem.artist = artistName;
   playlistItem.playerType = track.playerType;
   playlistItem.itemType = "track";
-  playlistItem["icon"] = "track.svg";
   playlistItem["albumId"] = track?.album?.id;
   playlistItem["albumName"] = track?.album?.name;
 

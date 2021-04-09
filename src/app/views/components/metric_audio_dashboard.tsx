@@ -8,12 +8,12 @@ import Slider from "@material-ui/core/Slider";
 import IconButton from "@material-ui/core/IconButton";
 import Tooltip from "@material-ui/core/Tooltip";
 import Divider from "@material-ui/core/Divider";
-import Checkbox from '@material-ui/core/Checkbox';
+import Checkbox from "@material-ui/core/Checkbox";
 import { BeakerIcon, MuiRefreshIcon } from "../icons";
 import { indigo, grey } from "@material-ui/core/colors";
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormControl from '@material-ui/core/FormControl';
+import FormGroup from "@material-ui/core/FormGroup";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import FormControl from "@material-ui/core/FormControl";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -44,7 +44,7 @@ const useStyles = makeStyles((theme) => ({
   cardSubHeaderText: {
     fontWeight: 300,
     color: grey[500],
-    fontSize: 12
+    fontSize: 12,
   },
   cardHeaderIcon: {
     marginTop: 10,
@@ -58,8 +58,8 @@ const useStyles = makeStyles((theme) => ({
   },
   headerActionButtons: {
     marginTop: 10,
-    marginRight: 10
-  }
+    marginRight: 10,
+  },
 }));
 
 const featuresInfo = [
@@ -67,70 +67,69 @@ const featuresInfo = [
     key: "acousticness",
     min: 0,
     max: 1,
-    step: .1
+    step: 0.1,
   },
   {
     key: "danceability",
     min: 0,
     max: 1,
-    step: .1
+    step: 0.1,
   },
   {
     key: "energy",
     min: 0,
     max: 1,
-    step: .1
+    step: 0.1,
   },
   {
     key: "instrumentalness",
     min: 0,
     max: 1,
-    step: .1
+    step: 0.1,
   },
   {
     key: "liveness",
     min: 0,
     max: 1,
-    step: .1
+    step: 0.1,
   },
   {
     key: "loudness",
     min: -200,
     max: 200,
-    step: 10
+    step: 10,
   },
   {
     key: "speechiness",
     min: 0,
     max: 1,
-    step: .1
+    step: 0.1,
   },
   {
     key: "tempo",
     min: 0,
     max: 200,
-    step: 10
+    step: 10,
   },
   {
     key: "valence",
     min: 0,
     max: 1,
-    step: .1
+    step: 0.1,
   },
 ];
 
 let features: any = {};
 
-
 export default function MetricAudioDashboard(props) {
   const classes = useStyles();
-  const featureNames = featuresInfo.map(n => n.key);
+  const featureNames = featuresInfo.map((n) => n.key);
   const [checked, setChecked] = useState(featureNames);
-  const [musicMetricData, setMusicMetricData] = useState({...props.stateData.averageMusicMetrics});
+  const [musicMetricData, setMusicMetricData] = useState({ ...props.stateData.averageMusicMetrics });
 
   const metrics = props.stateData.averageMusicMetrics;
   if (metrics && metrics.valence) {
-    Object.keys(metrics).forEach(key => {
+    Object.keys(metrics).forEach((key) => {
       updateFeature(key, metrics[key]);
     });
   }
@@ -149,28 +148,28 @@ export default function MetricAudioDashboard(props) {
     updateFeature(selectedKey, newValue);
     musicMetricData[selectedKey] = newValue;
     setMusicMetricData(musicMetricData);
-  }
+  };
 
   function updateFeature(key, value) {
-    const featureInfo: any = featuresInfo.find(n => n.key === key);
+    const featureInfo: any = featuresInfo.find((n) => n.key === key);
     if (!featureInfo) {
       return;
     }
-    if (featureInfo.max/2 > value) {
+    if (featureInfo.max / 2 > value) {
       // use the min
-      features[`max_${key}`] = featureInfo.max/2;
+      features[`max_${key}`] = featureInfo.max / 2;
       features[`target_${key}`] = value;
       delete features[`min_${key}`];
     } else {
       // use the max
-      features[`min_${key}`] = featureInfo.max/2;
+      features[`min_${key}`] = featureInfo.max / 2;
       features[`target_${key}`] = value;
       delete features[`max_${key}`];
     }
   }
 
   function refreshFeatureData() {
-    setMusicMetricData({...props.stateData.averageMusicMetrics});
+    setMusicMetricData({ ...props.stateData.averageMusicMetrics });
   }
 
   function sliderText(value) {
@@ -196,7 +195,7 @@ export default function MetricAudioDashboard(props) {
     const command = {
       action: "musictime.getAudioFeatureRecommendations",
       command: "command_execute",
-      arguments: [selectedFeatureData]
+      arguments: [selectedFeatureData],
     };
     props.vscode.postMessage(command);
   }
@@ -224,8 +223,8 @@ export default function MetricAudioDashboard(props) {
         action={
           <div className={classes.headerActionButtons}>
             <IconButton aria-label="recommendations" onClick={refreshFeatureData}>
-                <MuiRefreshIcon/>
-              </IconButton>
+              <MuiRefreshIcon />
+            </IconButton>
             <Tooltip title="Generate recommendations">
               <IconButton aria-label="recommendations" onClick={generateRecommendations}>
                 <BeakerIcon />
@@ -246,57 +245,60 @@ export default function MetricAudioDashboard(props) {
       />
       <Divider />
       <Grid container spacing={1}>
-        <Grid item xs={12} zeroMinWidth={true}>
-        {musicMetricData && musicMetricData.valence && (
-          Object.keys(musicMetricData).map((key, index) => {
-            const featureInfo: any = featuresInfo.find(n => n.key === key);
-            const defaultVal = parseFloat(musicMetricData[key].toFixed(2));
-            return (
-              <Grid item xs={12} key={`grid-${key}`}>
-                <Grid container>
-                  <Grid item xs={7}>
-                    <FormControl component="fieldset">
-                      <FormGroup aria-label="position" row>
-                        <FormControlLabel
-                            style={{marginLeft: 4}}
+        <Grid item key="audio-container-grid-item" xs={12} zeroMinWidth={true}>
+          {musicMetricData &&
+            musicMetricData.valence &&
+            Object.keys(musicMetricData).map((key, index) => {
+              const featureInfo: any = featuresInfo.find((n) => n.key === key);
+              const defaultVal = parseFloat(musicMetricData[key].toFixed(2));
+              return (
+                <Grid item xs={12} key={`audio-grid-item-${key}`}>
+                  <Grid container>
+                    <Grid item key={`audio-grid-form-item-${key}`} xs={7}>
+                      <FormControl component="fieldset">
+                        <FormGroup aria-label="position" row>
+                          <FormControlLabel
+                            key={`audio-form-control-${key}`}
+                            style={{ marginLeft: 4 }}
                             value="end"
-                            control={<Checkbox
-                              edge="start"
-                              onClick={handleToggle(key)}
-                              checked={checked.indexOf(key) !== -1}
-                              tabIndex={-1}
-                              disableRipple
-                              inputProps={{ 'aria-labelledby': key }}
-                            />}
+                            control={
+                              <Checkbox
+                                key={`audio-form-control-checkbox-${key}`}
+                                edge="start"
+                                onClick={handleToggle(key)}
+                                checked={checked.indexOf(key) !== -1}
+                                tabIndex={-1}
+                                disableRipple
+                                inputProps={{ "aria-labelledby": key }}
+                              />
+                            }
                             label={key}
                             labelPlacement="end"
                           />
-                      </FormGroup>
-                    </FormControl>
-                  </Grid>
-                  <Grid item xs={4} style={{marginTop: 6, marginRight: 0}}>
-                    <Slider
-                      key={`slider-${key}`}
-                      data-id={key}
-                      data-tag={key}
-                      onChange={handleSliderChange}
-                      defaultValue={defaultVal}
-                      getAriaValueText={sliderText}
-                      min={featureInfo.min}
-                      max={featureInfo.max}
-                      step={featureInfo.step}
-                      valueLabelDisplay="auto"
-                      marks
-                    />
+                        </FormGroup>
+                      </FormControl>
+                    </Grid>
+                    <Grid item key={`audio-grid-slider-item-${key}`} xs={4} style={{ marginTop: 6, marginRight: 0 }}>
+                      <Slider
+                        key={`slider-${key}`}
+                        data-id={key}
+                        data-tag={key}
+                        onChange={handleSliderChange}
+                        defaultValue={defaultVal}
+                        getAriaValueText={sliderText}
+                        min={featureInfo.min}
+                        max={featureInfo.max}
+                        step={featureInfo.step}
+                        valueLabelDisplay="auto"
+                        marks
+                      />
+                    </Grid>
                   </Grid>
                 </Grid>
-              </Grid>
-            );
-          })
-        )}
+              );
+            })}
         </Grid>
       </Grid>
-
     </Card>
   );
 }

@@ -4,17 +4,15 @@
         "target": "es6",
         "outDir": "./dist/",
         "lib": [
-            "es6",
-            "dom"
+            "es6"
         ],
         "sourceMap": true,
-        "rootDir": ".",
-        "jsx": "react",
-        "allowSyntheticDefaultImports": true
+        "rootDir": "."
     },
     "exclude": [
         "node_modules",
-        ".vscode-test"
+        ".vscode-test",
+        "**/src/app/**"
     ],
     "plugins": [
         {

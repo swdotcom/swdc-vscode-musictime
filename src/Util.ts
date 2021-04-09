@@ -12,8 +12,8 @@ import {
 import { PlaylistItem, TrackStatus, CodyResponse, CodyResponseType } from "cody-music";
 import * as path from "path";
 import { getItem } from "./managers/FileManager";
-import { isGitProject } from './repo/GitUtil';
-import { execCmd } from './managers/ExecManager';
+import { isGitProject } from "./repo/GitUtil";
+import { execCmd } from "./managers/ExecManager";
 
 const fileIt = require("file-it");
 const moment = require("moment-timezone");
@@ -60,7 +60,7 @@ export function isCodeTimeMetricsFile(fileName) {
 
 export function isCodeTimeTimeInstalled() {
   const codeTimeExt = extensions.getExtension(CODE_TIME_EXT_ID);
-  return !!(codeTimeExt);
+  return !!codeTimeExt;
 }
 
 export function musicTimeExtInstalled() {
@@ -464,81 +464,6 @@ export function createSpotifyIdFromUri(id: string) {
     return id.substring(id.lastIndexOf(":") + 1);
   }
   return id;
-}
-
-export function getPlaylistIcon(treeItem: PlaylistItem) {
-  const stateVal = treeItem.state !== TrackStatus.Playing ? "notplaying" : "playing";
-  let contextValue = treeItem["contextValue"] ?? "";
-
-  // itemType will be either: track | playlist
-  // type will be either: connected | action | recommendation | label | track | playlist | itunes | spotify
-  // tag will be either: action | paw | spotify | spotify-liked-songs | active
-
-  // track/playlist/action hover contextValue matching...
-  // musictime.sharePlaylist =~ /spotify-playlist-item.*/
-  // musictime.shareTrack =~ /track-item.*/ || /spotify-recommendation.*/
-  // musictime.addToPlaylist =~ /spotify-recommendation.*/
-  // musictime.highPopularity =~ /.*-highpopularity/
-
-  if (treeItem.tag === "action") {
-    this.contextValue = "treeitem-action";
-  } else if (treeItem["itemType"] === "track" || treeItem["itemType"] === "playlist") {
-    if (treeItem.tag === "paw") {
-      // we use the paw to show as the music time playlist, but
-      // make sure the contextValue has spotify in it
-      contextValue = `spotify-${treeItem.type}-item-${stateVal}`;
-    } else {
-      if (treeItem.tag) {
-        contextValue = `${treeItem.tag}-${treeItem.type}-item-${stateVal}`;
-      } else {
-        contextValue = `${treeItem.type}-item-${stateVal}`;
-      }
-    }
-  }
-
-  if (treeItem.id === SOFTWARE_TOP_40_PLAYLIST_ID && !treeItem.loved) {
-    contextValue += "-softwaretop40";
-  } else if (treeItem["playlist_id"] == SPOTIFY_LIKED_SONGS_PLAYLIST_NAME) {
-    contextValue += "-isliked";
-  }
-
-  let lightPath = null;
-  let darkPath = null;
-
-  if (treeItem["icon"]) {
-    lightPath = path.join(resourcePath, "light", treeItem["icon"]);
-    darkPath = path.join(resourcePath, "dark", treeItem["icon"]);
-  } else if (treeItem.type.includes("spotify") || (treeItem.tag.includes("spotify") && treeItem.itemType !== "playlist")) {
-    const spotifySvg = treeItem.tag === "disabled" ? "spotify-disconnected.svg" : "spotify.svg";
-    lightPath = path.join(resourcePath, "light", spotifySvg);
-    darkPath = path.join(resourcePath, "dark", spotifySvg);
-  } else if (treeItem.itemType === "playlist" && treeItem.tag !== "paw") {
-    const playlistSvg = "playlist.svg";
-    lightPath = path.join(resourcePath, "light", playlistSvg);
-    darkPath = path.join(resourcePath, "dark", playlistSvg);
-  } else if (treeItem.tag === "itunes" || treeItem.type === "itunes") {
-    lightPath = path.join(resourcePath, "light", "itunes-logo.svg");
-    darkPath = path.join(resourcePath, "dark", "itunes-logo.svg");
-  } else if (treeItem.tag === "paw") {
-    lightPath = path.join(resourcePath, "light", "paw.svg");
-    darkPath = path.join(resourcePath, "dark", "paw.svg");
-  } else if (treeItem.type === "connected") {
-    lightPath = path.join(resourcePath, "light", "radio-tower.svg");
-    darkPath = path.join(resourcePath, "dark", "radio-tower.svg");
-  } else if (treeItem.type === "offline") {
-    lightPath = path.join(resourcePath, "light", "nowifi.svg");
-    darkPath = path.join(resourcePath, "dark", "nowifi.svg");
-  } else if (treeItem.type === "action" || treeItem.tag === "action") {
-    lightPath = path.join(resourcePath, "light", "generate.svg");
-    darkPath = path.join(resourcePath, "dark", "generate.svg");
-  } else if (treeItem.type === "login" || treeItem.tag === "login") {
-    lightPath = path.join(resourcePath, "light", "sign-in.svg");
-    darkPath = path.join(resourcePath, "dark", "sign-in.svg");
-  } else if (treeItem.type === "divider") {
-    lightPath = path.join(resourcePath, "light", "line.svg");
-    darkPath = path.join(resourcePath, "dark", "line.svg");
-  }
-  return { lightPath, darkPath, contextValue };
 }
 
 export function getCodyErrorMessage(response: CodyResponse) {

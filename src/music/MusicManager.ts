@@ -19,28 +19,17 @@ import {
   accessExpired,
   removeTracksFromPlaylist,
 } from "cody-music";
-import {
-  SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
-  SOFTWARE_TOP_40_PLAYLIST_ID,
-  OK_LABEL,
-  YES_LABEL,
-} from "../Constants";
+import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME, SOFTWARE_TOP_40_PLAYLIST_ID, OK_LABEL, YES_LABEL } from "../Constants";
 import { commands, window } from "vscode";
 import { isMac, getCodyErrorMessage, createUriFromTrackId } from "../Util";
 import { isResponseOk, softwareGet } from "../HttpClient";
 import { MusicControlManager } from "./MusicControlManager";
-import {
-  getDeviceSet,
-  getBestActiveDevice,
-} from "./MusicUtil";
+import { getDeviceSet, getBestActiveDevice } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 import { MusicCommandUtil } from "./MusicCommandUtil";
-import {
-  getSpotifyIntegration,
-  isPremiumUser,
-} from "../managers/SpotifyManager";
+import { getSpotifyIntegration, isPremiumUser } from "../managers/SpotifyManager";
 import { getItem, setItem } from "../managers/FileManager";
-import { getPlaylistById, getSpotifyPlaylists } from '../managers/PlaylistDataManager';
+import { getPlaylistById, getSpotifyPlaylists } from "../managers/PlaylistDataManager";
 
 export class MusicManager {
   private static instance: MusicManager;
@@ -221,10 +210,8 @@ export class MusicManager {
     playlistItem.artist = artistName;
     playlistItem.playerType = track.playerType;
     playlistItem.itemType = "track";
-    playlistItem["icon"] = "track.svg";
     playlistItem["albumId"] = track?.album?.id;
     playlistItem["albumName"] = track?.album?.name;
-
 
     delete playlistItem.tracks;
 

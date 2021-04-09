@@ -19,11 +19,11 @@ const useStyles = makeStyles((theme) => ({
     padding: 0,
     margin: 0,
     overflowX: "hidden",
-    background: "transparent"
+    background: "transparent",
   },
   cardHeader: {
     margin: 0,
-    padding: 2
+    padding: 2,
   },
   cardHeaderText: {
     color: indigo[300],
@@ -31,37 +31,40 @@ const useStyles = makeStyles((theme) => ({
   },
   cardHeaderIcon: {
     marginTop: 10,
-    marginRight: 10
+    marginRight: 10,
   },
-  gridContainer: {
-  },
-	secondaryAction: {
+  gridContainer: {},
+  secondaryAction: {
     position: "absolute",
     right: 0,
     padding: 0,
-    margin: 0
-  }
+    margin: 0,
+  },
 }));
 
 export default function MetricsColdStart(props) {
-	const classes = useStyles();
+  const classes = useStyles();
 
   return (
     <Card className={classes.root} elevation={0}>
-      <CardHeader className={classes.cardHeader}
-      title={
+      <CardHeader
+        className={classes.cardHeader}
+        title={
           <Typography noWrap gutterBottom={false} className={classes.cardHeaderText}>
             Code + Music Features
           </Typography>
-        }/>
+        }
+      />
       <Grid container>
-        <Grid item xs={12}>
+        <Grid item key={`metrics-cold-start-icon-container`} xs={12}>
           <List disablePadding={true} dense={true}>
             <ListItem key="productivity-ranking" disableGutters={true} dense={true}>
-              <ListItemText primary="Productivity ranking"
-								secondary="Music Time works with Code Time to combine your music and coding data to find your most productive music" />
+              <ListItemText
+                primary="Productivity ranking"
+                secondary="Music Time works with Code Time to combine your music and coding data to find your most productive music"
+              />
               <ListItemSecondaryAction classes={{ root: classes.secondaryAction }}>
-                <BeakerIcon/>
+                <BeakerIcon />
               </ListItemSecondaryAction>
             </ListItem>
           </List>
