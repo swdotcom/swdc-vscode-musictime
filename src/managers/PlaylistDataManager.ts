@@ -201,7 +201,7 @@ export async function fetchTracksForPlaylist(playlist_id) {
     if (tracks?.length) {
       tracks = tracks.map((t) => {
         const albumName = getAlbumName(t);
-        return { ...t, playlist_id, albumName };
+        return { ...t, playlist_id, albumName, liked: false };
       });
     }
     playlistTracks[playlist_id] = tracks;
@@ -307,7 +307,7 @@ export function populateRecommendationTracks(label: string, tracks: Track[]) {
   if (tracks?.length) {
     tracks = tracks.map((t) => {
       const albumName = getAlbumName(t);
-      return { ...t, albumName };
+      return { ...t, albumName, liked: false };
     });
   }
 
@@ -372,7 +372,7 @@ async function populateLikedSongs() {
   if (spotifyLikedTracks?.length) {
     spotifyLikedTracks = spotifyLikedTracks.map((t) => {
       const albumName = getAlbumName(t);
-      return { ...t, playlist_id: SPOTIFY_LIKED_SONGS_PLAYLIST_ID, albumName };
+      return { ...t, playlist_id: SPOTIFY_LIKED_SONGS_PLAYLIST_ID, albumName, liked: true };
     });
   }
 }

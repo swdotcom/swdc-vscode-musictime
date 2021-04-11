@@ -22,27 +22,28 @@ import RefreshIcon from "@material-ui/icons/Refresh";
 import RemoveCircleTwoToneIcon from "@material-ui/icons/RemoveCircleTwoTone";
 import ControlPointTwoToneIcon from "@material-ui/icons/ControlPointTwoTone";
 import SortByAlphaIcon from "@material-ui/icons/SortByAlpha";
+import FavoriteBorderIcon from "@material-ui/icons/FavoriteBorder";
 
 // Material UI SVG Icons
 export const MuiAlbumIcon = (props: SvgIconProps) => {
   return <AlbumIcon {...props} style={getMuiIconStyle(props)} />;
-}
+};
 
 export const MuiPlayCircleOutlineIcon = (props: SvgIconProps) => {
   return <PlayCircleOutlineIcon {...props} style={getMuiIconStyle(props)} />;
-}
+};
 
 export const MuiBubbleChartIcon = (props: SvgIconProps) => {
   return <BubbleChartIcon {...props} style={getMuiIconStyle(props)} />;
-}
+};
 
 export const MuiAccountCircleIcon = (props: SvgIconProps) => {
   return <AccountCircleIcon {...props} style={getMuiIconStyle(props)} />;
-}
+};
 
 export const MuiSyncIcon = (props: SvgIconProps) => {
   return <SyncIcon {...props} style={getMuiIconStyle(props)} />;
-}
+};
 
 export const MuiSettingIcon = (props: SvgIconProps) => {
   return <MuiSettingsIcon {...props} style={getMuiIconStyle(props)} />;
@@ -50,63 +51,67 @@ export const MuiSettingIcon = (props: SvgIconProps) => {
 
 export const MuiShareIcon = (props: SvgIconProps) => {
   return <ShareIcon {...props} style={getMuiIconStyle(props)} />;
-}
+};
 
 export const MuiCloseIcon = (props: SvgIconProps) => {
   return <CloseIcon {...props} style={getMuiIconStyle(props)} />;
-}
+};
 
 export const MuiFavoriteIcon = (props: SvgIconProps) => {
   return <FavoriteIcon {...props} style={getMuiIconStyle(props)} />;
-}
+};
+
+export const MuiFavoriteBorderIcon = (props: SvgIconProps) => {
+  return <FavoriteBorderIcon {...props} style={getMuiIconStyle(props)} />;
+};
 
 export const MuiQueueIcon = (props: SvgIconProps) => {
   return <QueueIcon {...props} style={getMuiIconStyle(props)} />;
-}
+};
 
 export const MuiSubscriptionsIcon = (props: SvgIconProps) => {
   return <SubscriptionsIcon {...props} style={getMuiIconStyle(props)} />;
-}
+};
 
 export const MuiTuneIcon = (props: SvgIconProps) => {
   return <TuneIcon {...props} style={getMuiIconStyle(props)} />;
-}
+};
 
 export const MuiBarChartIcon = (props: SvgIconProps) => {
   return <BarChartIcon {...props} style={getMuiIconStyle(props)} />;
-}
+};
 
 export const MuiEmojiEventsIcon = (props: SvgIconProps) => {
   return <EmojiEventsIcon {...props} style={getMuiIconStyle(props)} />;
-}
+};
 
 export const MuiMusicNoteIcon = (props: SvgIconProps) => {
   return <MusicNoteIcon {...props} style={getMuiIconStyle(props)} />;
-}
+};
 
 export const MuiGitHubIcon = (props: SvgIconProps) => {
   return <GitHubIcon {...props} style={getMuiIconStyle(props)} />;
-}
+};
 
 export const MuiSearchIcon = (props: SvgIconProps) => {
   return <SearchIcon {...props} style={getMuiIconStyle(props)} />;
-}
+};
 
 export const MuiRefreshIcon = (props: SvgIconProps) => {
   return <RefreshIcon {...props} style={getMuiIconStyle(props)} />;
-}
+};
 
 export const MuiRemoveCircleTwoToneIcon = (props: SvgIconProps) => {
   return <RemoveCircleTwoToneIcon {...props} style={getMuiIconStyle(props)} />;
-}
+};
 
 export const MuiControlPointTwoToneIcon = (props: SvgIconProps) => {
   return <ControlPointTwoToneIcon {...props} style={getMuiIconStyle(props)} />;
-}
+};
 
 export const MuiSortByAlphaIcon = (props: SvgIconProps) => {
   return <SortByAlphaIcon {...props} style={getMuiIconStyle(props)} />;
-}
+};
 
 // Custom SVG Icons
 export const DashboardIcon = (props: SvgIconProps) => {
@@ -128,7 +133,7 @@ export const ProjectSummaryIcon = (props: SvgIconProps) => {
 export const SpotifyIcon = (props: SvgIconProps) => {
   return (
     <SvgIcon {...props} style={getCustomIconStyle(props)}>
-      <path d="M8 2C4.6879 2 2 4.6879 2 8C2 11.3121 4.6879 14 8 14C11.3121 14 14 11.3121 14 8C14 4.6879 11.3121 2 8 2ZM10.4363 10.8282C10.3347 10.8282 10.2718 10.7968 10.1774 10.7411C8.66774 9.83145 6.91129 9.79274 5.17661 10.1484C5.08226 10.1726 4.95887 10.2113 4.88871 10.2113C4.65403 10.2113 4.50645 10.025 4.50645 9.82903C4.50645 9.57984 4.65403 9.46129 4.83548 9.42258C6.81694 8.98468 8.84194 9.02339 10.5694 10.0565C10.7169 10.1508 10.804 10.2355 10.804 10.4556C10.804 10.6758 10.6323 10.8282 10.4363 10.8282ZM11.0871 9.24113C10.9613 9.24113 10.8766 9.18548 10.7895 9.13952C9.27742 8.24435 7.02258 7.88387 5.01694 8.42823C4.90081 8.45968 4.8379 8.49113 4.72903 8.49113C4.47016 8.49113 4.25968 8.28064 4.25968 8.02177C4.25968 7.7629 4.38548 7.59113 4.63468 7.52097C5.30726 7.33226 5.99435 7.19194 7.00081 7.19194C8.57097 7.19194 10.0879 7.58145 11.2831 8.29274C11.479 8.40887 11.5565 8.55887 11.5565 8.76935C11.554 9.03064 11.3508 9.24113 11.0871 9.24113ZM11.8371 7.39758C11.7113 7.39758 11.6339 7.36613 11.525 7.30323C9.80242 6.275 6.72258 6.02823 4.72903 6.58468C4.64194 6.60887 4.53306 6.64758 4.41694 6.64758C4.09758 6.64758 3.85323 6.39839 3.85323 6.07661C3.85323 5.74758 4.05645 5.56129 4.27419 5.49839C5.12581 5.24919 6.07903 5.13065 7.11694 5.13065C8.88306 5.13065 10.7339 5.49839 12.0863 6.2871C12.275 6.39597 12.3984 6.54597 12.3984 6.83387C12.3984 7.1629 12.1323 7.39758 11.8371 7.39758Z"/>
+      <path d="M8 2C4.6879 2 2 4.6879 2 8C2 11.3121 4.6879 14 8 14C11.3121 14 14 11.3121 14 8C14 4.6879 11.3121 2 8 2ZM10.4363 10.8282C10.3347 10.8282 10.2718 10.7968 10.1774 10.7411C8.66774 9.83145 6.91129 9.79274 5.17661 10.1484C5.08226 10.1726 4.95887 10.2113 4.88871 10.2113C4.65403 10.2113 4.50645 10.025 4.50645 9.82903C4.50645 9.57984 4.65403 9.46129 4.83548 9.42258C6.81694 8.98468 8.84194 9.02339 10.5694 10.0565C10.7169 10.1508 10.804 10.2355 10.804 10.4556C10.804 10.6758 10.6323 10.8282 10.4363 10.8282ZM11.0871 9.24113C10.9613 9.24113 10.8766 9.18548 10.7895 9.13952C9.27742 8.24435 7.02258 7.88387 5.01694 8.42823C4.90081 8.45968 4.8379 8.49113 4.72903 8.49113C4.47016 8.49113 4.25968 8.28064 4.25968 8.02177C4.25968 7.7629 4.38548 7.59113 4.63468 7.52097C5.30726 7.33226 5.99435 7.19194 7.00081 7.19194C8.57097 7.19194 10.0879 7.58145 11.2831 8.29274C11.479 8.40887 11.5565 8.55887 11.5565 8.76935C11.554 9.03064 11.3508 9.24113 11.0871 9.24113ZM11.8371 7.39758C11.7113 7.39758 11.6339 7.36613 11.525 7.30323C9.80242 6.275 6.72258 6.02823 4.72903 6.58468C4.64194 6.60887 4.53306 6.64758 4.41694 6.64758C4.09758 6.64758 3.85323 6.39839 3.85323 6.07661C3.85323 5.74758 4.05645 5.56129 4.27419 5.49839C5.12581 5.24919 6.07903 5.13065 7.11694 5.13065C8.88306 5.13065 10.7339 5.49839 12.0863 6.2871C12.275 6.39597 12.3984 6.54597 12.3984 6.83387C12.3984 7.1629 12.1323 7.39758 11.8371 7.39758Z" />
     </SvgIcon>
   );
 };
@@ -136,40 +141,40 @@ export const SpotifyIcon = (props: SvgIconProps) => {
 export const BeakerIcon = (props: SvgIconProps) => {
   return (
     <SvgIcon {...props} style={getCustomIconStyle(props)}>
-      <path d="M13.2467 11.457L10.4998 7.03906V3.5H10.6873C10.999 3.5 11.2498 3.24922 11.2498 2.9375V2.5625C11.2498 2.25078 10.999 2 10.6873 2H5.81228C5.50056 2 5.24978 2.25078 5.24978 2.5625V2.9375C5.24978 3.24922 5.50056 3.5 5.81228 3.5H5.99978V7.03906L3.25291 11.457C2.56619 12.5609 3.35837 14 4.6615 14H11.8381C13.1435 14 13.9334 12.5586 13.2467 11.457V11.457ZM6.23181 9.5L7.3615 7.68125C7.44822 7.55937 7.49744 7.40938 7.49744 7.25V3.5H8.99744V7.25C8.99744 7.41172 9.049 7.55937 9.13337 7.68125L10.2631 9.5H6.23181V9.5Z"/>
+      <path d="M13.2467 11.457L10.4998 7.03906V3.5H10.6873C10.999 3.5 11.2498 3.24922 11.2498 2.9375V2.5625C11.2498 2.25078 10.999 2 10.6873 2H5.81228C5.50056 2 5.24978 2.25078 5.24978 2.5625V2.9375C5.24978 3.24922 5.50056 3.5 5.81228 3.5H5.99978V7.03906L3.25291 11.457C2.56619 12.5609 3.35837 14 4.6615 14H11.8381C13.1435 14 13.9334 12.5586 13.2467 11.457V11.457ZM6.23181 9.5L7.3615 7.68125C7.44822 7.55937 7.49744 7.40938 7.49744 7.25V3.5H8.99744V7.25C8.99744 7.41172 9.049 7.55937 9.13337 7.68125L10.2631 9.5H6.23181V9.5Z" />
     </SvgIcon>
-  )
-}
+  );
+};
 
 export const FilterIcon = (props: SvgIconProps) => {
   return (
     <SvgIcon style={getCustomIconStyle(props)}>
-      <path d="M13.4369 2H2.56315C2.06351 2 1.8114 2.60623 2.16542 2.96026L6.5 7.29549V12.125C6.5 12.3085 6.58955 12.4805 6.73993 12.5858L8.61492 13.8979C8.98484 14.1568 9.49999 13.8944 9.49999 13.437V7.29549L13.8347 2.96026C14.188 2.60694 13.9376 2 13.4369 2Z"/>
+      <path d="M13.4369 2H2.56315C2.06351 2 1.8114 2.60623 2.16542 2.96026L6.5 7.29549V12.125C6.5 12.3085 6.58955 12.4805 6.73993 12.5858L8.61492 13.8979C8.98484 14.1568 9.49999 13.8944 9.49999 13.437V7.29549L13.8347 2.96026C14.188 2.60694 13.9376 2 13.4369 2Z" />
     </SvgIcon>
-  )
-}
+  );
+};
 
 export const PlaylistIcon = (props: SvgIconProps) => {
   return (
     <SvgIcon {...props} style={getCustomIconStyle(props)}>
-      <path d="M5.02738 3.5721C5.02738 3.44045 5.13411 3.33373 5.26576 3.33373H11.7734C11.9051 3.33373 12.0118 3.44045 12.0118 3.5721V4.81166C12.0118 4.94331 11.9051 5.05004 11.7734 5.05004H5.26576C5.13411 5.05004 5.02738 4.94331 5.02738 4.81166V3.5721Z"/>
-      <path d="M5.02738 7.38613C5.02738 7.25448 5.13411 7.14775 5.26576 7.14775H11.7734C11.9051 7.14775 12.0118 7.25448 12.0118 7.38613V8.62569C12.0118 8.75734 11.9051 8.86407 11.7734 8.86407H5.26576C5.13411 8.86407 5.02738 8.75734 5.02738 8.62569V7.38613Z"/>
-      <path d="M5.02738 11.2002C5.02738 11.0685 5.13411 10.9618 5.26576 10.9618H8.41233C8.54398 10.9618 8.65071 11.0685 8.65071 11.2002V12.4397C8.65071 12.5714 8.54398 12.6781 8.41233 12.6781H5.26576C5.13411 12.6781 5.02738 12.5714 5.02738 12.4397V11.2002Z"/>
-      <path d="M4.38377 11.8199C4.38377 12.4782 3.85014 13.0118 3.19188 13.0118C2.53362 13.0118 2 12.4782 2 11.8199C2 11.1617 2.53362 10.6281 3.19188 10.6281C3.85014 10.6281 4.38377 11.1617 4.38377 11.8199Z"/>
-      <path d="M4.38377 8.00591C4.38377 8.66417 3.85014 9.19779 3.19188 9.19779C2.53362 9.19779 2 8.66417 2 8.00591C2 7.34765 2.53362 6.81403 3.19188 6.81403C3.85014 6.81403 4.38377 7.34765 4.38377 8.00591Z"/>
-      <path d="M4.38377 4.19188C4.38377 4.85014 3.85014 5.38377 3.19188 5.38377C2.53362 5.38377 2 4.85014 2 4.19188C2 3.53362 2.53362 3 3.19188 3C3.85014 3 4.38377 3.53362 4.38377 4.19188Z"/>
-      <path d="M14.0001 3.66608C14.0001 3.60164 13.9377 3.55557 13.8765 3.57576C13.5084 3.69717 12.8559 3.94299 12.8559 4.23941V10.5469C12.5197 10.4181 12.1288 10.3419 11.7117 10.3419C10.4483 10.3419 9.42324 11.026 9.42324 11.8675C9.42324 12.7089 10.4483 13.3931 11.7117 13.3931C12.9751 13.3931 14.0001 12.7089 14.0001 11.8675V3.66608Z"/>
+      <path d="M5.02738 3.5721C5.02738 3.44045 5.13411 3.33373 5.26576 3.33373H11.7734C11.9051 3.33373 12.0118 3.44045 12.0118 3.5721V4.81166C12.0118 4.94331 11.9051 5.05004 11.7734 5.05004H5.26576C5.13411 5.05004 5.02738 4.94331 5.02738 4.81166V3.5721Z" />
+      <path d="M5.02738 7.38613C5.02738 7.25448 5.13411 7.14775 5.26576 7.14775H11.7734C11.9051 7.14775 12.0118 7.25448 12.0118 7.38613V8.62569C12.0118 8.75734 11.9051 8.86407 11.7734 8.86407H5.26576C5.13411 8.86407 5.02738 8.75734 5.02738 8.62569V7.38613Z" />
+      <path d="M5.02738 11.2002C5.02738 11.0685 5.13411 10.9618 5.26576 10.9618H8.41233C8.54398 10.9618 8.65071 11.0685 8.65071 11.2002V12.4397C8.65071 12.5714 8.54398 12.6781 8.41233 12.6781H5.26576C5.13411 12.6781 5.02738 12.5714 5.02738 12.4397V11.2002Z" />
+      <path d="M4.38377 11.8199C4.38377 12.4782 3.85014 13.0118 3.19188 13.0118C2.53362 13.0118 2 12.4782 2 11.8199C2 11.1617 2.53362 10.6281 3.19188 10.6281C3.85014 10.6281 4.38377 11.1617 4.38377 11.8199Z" />
+      <path d="M4.38377 8.00591C4.38377 8.66417 3.85014 9.19779 3.19188 9.19779C2.53362 9.19779 2 8.66417 2 8.00591C2 7.34765 2.53362 6.81403 3.19188 6.81403C3.85014 6.81403 4.38377 7.34765 4.38377 8.00591Z" />
+      <path d="M4.38377 4.19188C4.38377 4.85014 3.85014 5.38377 3.19188 5.38377C2.53362 5.38377 2 4.85014 2 4.19188C2 3.53362 2.53362 3 3.19188 3C3.85014 3 4.38377 3.53362 4.38377 4.19188Z" />
+      <path d="M14.0001 3.66608C14.0001 3.60164 13.9377 3.55557 13.8765 3.57576C13.5084 3.69717 12.8559 3.94299 12.8559 4.23941V10.5469C12.5197 10.4181 12.1288 10.3419 11.7117 10.3419C10.4483 10.3419 9.42324 11.026 9.42324 11.8675C9.42324 12.7089 10.4483 13.3931 11.7117 13.3931C12.9751 13.3931 14.0001 12.7089 14.0001 11.8675V3.66608Z" />
     </SvgIcon>
-  )
-}
+  );
+};
 
 export const TrackIcon = (props: SvgIconProps) => {
   return (
     <SvgIcon {...props} style={getCustomIconStyle(props)}>
-      <path d="M14 2.57143C14 2.57143 14 2 13.4286 2L7.00951 3.37551C6.08737 3.57311 5.42857 4.38804 5.42857 5.33112V10.4829C5.06943 10.2652 4.62714 10.1315 4.14286 10.1315C2.96171 10.1315 2 10.9003 2 11.8458C2 12.7912 2.96171 13.56 4.14286 13.56C5.324 13.56 6.28571 12.7912 6.28571 11.8458V6.61805L13.1429 5.09405V8.76862C12.7837 8.55091 12.3414 8.41719 11.8571 8.41719C10.6751 8.41719 9.71429 9.18605 9.71429 10.1315C9.71429 11.0769 10.6751 11.8458 11.8571 11.8458C13.0391 11.8458 14 11.0769 14 10.1315V2.57143Z"/>
+      <path d="M14 2.57143C14 2.57143 14 2 13.4286 2L7.00951 3.37551C6.08737 3.57311 5.42857 4.38804 5.42857 5.33112V10.4829C5.06943 10.2652 4.62714 10.1315 4.14286 10.1315C2.96171 10.1315 2 10.9003 2 11.8458C2 12.7912 2.96171 13.56 4.14286 13.56C5.324 13.56 6.28571 12.7912 6.28571 11.8458V6.61805L13.1429 5.09405V8.76862C12.7837 8.55091 12.3414 8.41719 11.8571 8.41719C10.6751 8.41719 9.71429 9.18605 9.71429 10.1315C9.71429 11.0769 10.6751 11.8458 11.8571 11.8458C13.0391 11.8458 14 11.0769 14 10.1315V2.57143Z" />
     </SvgIcon>
-  )
-}
+  );
+};
 
 export const PawIcon = (props: SvgIconProps) => {
   return (
@@ -287,33 +292,49 @@ export const LoadingIcon = (props: SvgIconProps) => {
     <SvgIcon {...props} style={getCustomIconStyle(props)}>
       <g transform="matrix(1 0 0 -1 0 80)">
         <rect width="10" height="20" rx="3">
-            <animate attributeName="height"
-                 begin="0s" dur="2s"
-                 values="20;45;57;80;64;32;66;45;64;23;66;13;64;56;34;34;2;23;76;79;20" calcMode="linear"
-                 repeatCount="indefinite" />
+          <animate
+            attributeName="height"
+            begin="0s"
+            dur="2s"
+            values="20;45;57;80;64;32;66;45;64;23;66;13;64;56;34;34;2;23;76;79;20"
+            calcMode="linear"
+            repeatCount="indefinite"
+          />
         </rect>
         <rect x="15" width="10" height="80" rx="3">
-            <animate attributeName="height"
-                 begin="0s" dur="4.5s"
-                 values="80;55;33;5;75;23;73;33;12;14;60;80" calcMode="linear"
-                 repeatCount="indefinite" />
+          <animate
+            attributeName="height"
+            begin="0s"
+            dur="4.5s"
+            values="80;55;33;5;75;23;73;33;12;14;60;80"
+            calcMode="linear"
+            repeatCount="indefinite"
+          />
         </rect>
         <rect x="30" width="10" height="50" rx="3">
-            <animate attributeName="height"
-                 begin="0s" dur="3s"
-                 values="50;34;78;23;56;23;34;76;80;54;21;50" calcMode="linear"
-                 repeatCount="indefinite" />
+          <animate
+            attributeName="height"
+            begin="0s"
+            dur="3s"
+            values="50;34;78;23;56;23;34;76;80;54;21;50"
+            calcMode="linear"
+            repeatCount="indefinite"
+          />
         </rect>
         <rect x="45" width="10" height="30" rx="3">
-            <animate attributeName="height"
-                 begin="0s" dur="2.5s"
-                 values="30;45;13;80;56;72;45;76;34;23;67;30" calcMode="linear"
-                 repeatCount="indefinite" />
+          <animate
+            attributeName="height"
+            begin="0s"
+            dur="2.5s"
+            values="30;45;13;80;56;72;45;76;34;23;67;30"
+            calcMode="linear"
+            repeatCount="indefinite"
+          />
         </rect>
       </g>
     </SvgIcon>
   );
-}
+};
 
 function getMuiIconStyle(props: SvgIconProps) {
   const style = { color: deepPurple[400] };

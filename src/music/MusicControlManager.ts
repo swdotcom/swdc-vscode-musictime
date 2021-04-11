@@ -24,26 +24,13 @@ import {
   mute,
   unmute,
   getTrack,
-  getSpotifyLikedSongs,
 } from "cody-music";
 import { window, ViewColumn, Uri, commands } from "vscode";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { showQuickPick } from "../MenuManager";
-import {
-  playInitialization,
-} from "../managers/PlaylistControlManager";
-import {
-  createSpotifyIdFromUri,
-  createUriFromTrackId,
-  isMac,
-  getCodyErrorMessage,
-  isWindows,
-  checkRegistration,
-} from "../Util";
-import {
-  SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
-  OK_LABEL,
-} from "../Constants";
+import { playInitialization } from "../managers/PlaylistControlManager";
+import { createSpotifyIdFromUri, createUriFromTrackId, isMac, getCodyErrorMessage, isWindows, checkRegistration } from "../Util";
+import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME, OK_LABEL } from "../Constants";
 import { MusicStateManager } from "./MusicStateManager";
 import { SocialShareManager } from "../social/SocialShareManager";
 import { tmpdir } from "os";
@@ -53,13 +40,9 @@ import { MusicPlaylistManager } from "./MusicPlaylistManager";
 import { requiresSpotifyAccess, getDeviceSet, getBestActiveDevice } from "./MusicUtil";
 import { MusicDataManager } from "./MusicDataManager";
 import { MusicCommandUtil } from "./MusicCommandUtil";
-import {
-  fetchMusicTimeMetricsMarkdownDashboard,
-  getMusicTimeMarkdownFile,
-  getSoftwareDir,
-} from "../managers/FileManager";
+import { fetchMusicTimeMetricsMarkdownDashboard, getMusicTimeMarkdownFile, getSoftwareDir } from "../managers/FileManager";
 import { connectSpotify, isPremiumUser } from "../managers/SpotifyManager";
-import { getSpotifyPlaylists, sortPlaylists } from '../managers/PlaylistDataManager';
+import { clearSpotifyLikedTracksCache, getSpotifyPlaylists, sortPlaylists } from "../managers/PlaylistDataManager";
 
 const fileIt = require("file-it");
 const clipboardy = require("clipboardy");
@@ -83,10 +66,7 @@ export class MusicControlManager {
 
   isLikedSongPlaylist() {
     const dataMgr: MusicDataManager = MusicDataManager.getInstance();
-    return dataMgr.selectedPlaylist &&
-     dataMgr.selectedPlaylist.id === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME
-      ? true
-      : false;
+    return dataMgr.selectedPlaylist && dataMgr.selectedPlaylist.id === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME ? true : false;
   }
 
   async nextSong() {
@@ -130,7 +110,7 @@ export class MusicControlManager {
     } else {
       const dataMgr: MusicDataManager = MusicDataManager.getInstance();
       if (!dataMgr.runningTrack || !dataMgr.runningTrack.id) {
-       dataMgr.runningTrack = await getTrack(PlayerName.SpotifyWeb);
+        dataMgr.runningTrack = await getTrack(PlayerName.SpotifyWeb);
         if (!dataMgr.runningTrack || !dataMgr.runningTrack.id) {
           await MusicStateManager.getInstance().updateRunningTrackToMostRecentlyPlayed();
           const device = getBestActiveDevice();
@@ -237,14 +217,7 @@ export class MusicControlManager {
   }
 
   useSpotifyDesktop() {
-    const {
-      webPlayer,
-      desktop,
-      activeDevice,
-      activeComputerDevice,
-      activeWebPlayerDevice,
-      activeDesktopPlayerDevice,
-    } = getDeviceSet();
+    const { webPlayer, desktop, activeDevice, activeComputerDevice, activeWebPlayerDevice, activeDesktopPlayerDevice } = getDeviceSet();
 
     if (isMac() && (desktop || activeDesktopPlayerDevice)) {
       return true;
@@ -364,16 +337,9 @@ export class MusicControlManager {
     }
   }
 
-  async setLiked(liked: boolean, overrideTrack: Track = null) {
-    const dataMgr: MusicDataManager = MusicDataManager.getInstance();
-    const runningTrack: Track = dataMgr.runningTrack;
-
-    const track: Track = !overrideTrack ? runningTrack : overrideTrack;
-
+  async setLiked(track: PlaylistItem, liked: boolean) {
     if (!track || !track.id) {
-      window.showInformationMessage(
-        `No track currently playing. Please play a track to use this feature.`
-      );
+      window.showInformationMessage(`No track currently playing. Please play a track to use this feature.`);
       return;
     }
 
@@ -391,20 +357,7 @@ export class MusicControlManager {
         await removeFromSpotifyLiked([track.id]);
       }
       // clear the liked songs
-      MusicDataManager.getInstance().spotifyLikedSongs = [];
-      // repopulate the liked songs
-      MusicDataManager.getInstance().spotifyLikedSongs = await getSpotifyLikedSongs();
-    }
-
-    runningTrack.loved = liked;
-    dataMgr.runningTrack = runningTrack;
-    MusicCommandManager.syncControls(runningTrack, false);
-
-    // check if it's in the recommendation list
-    const foundRecTrack = dataMgr.recommendationTracks.find((t: Track) => t.id === track.id);
-
-    if (foundRecTrack) {
-      dataMgr.removeTrackFromRecommendations(track.id);
+      clearSpotifyLikedTracksCache();
     }
 
     // refresh
@@ -531,7 +484,7 @@ export class MusicControlManager {
           label: "Disconnect Slack",
           detail: "Disconnect your Slack oauth integration",
           url: null,
-          command: "musictime.disconnectSlack"
+          command: "musictime.disconnectSlack",
         });
       }
     }
@@ -544,9 +497,7 @@ export class MusicControlManager {
       value: placeHolder,
       placeHolder: "New Playlist",
       validateInput: (text) => {
-        return !text || text.trim().length === 0
-          ? "Please enter a playlist name to continue."
-          : null;
+        return !text || text.trim().length === 0 ? "Please enter a playlist name to continue." : null;
       },
     });
   }
@@ -600,9 +551,7 @@ export class MusicControlManager {
     const dataMgr: MusicDataManager = MusicDataManager.getInstance();
     if (pick && pick.label) {
       // add it to this playlist
-      const matchingPlaylists = playlists
-        .filter((n: PlaylistItem) => n.name === pick.label)
-        .map((n: PlaylistItem) => n);
+      const matchingPlaylists = playlists.filter((n: PlaylistItem) => n.name === pick.label).map((n: PlaylistItem) => n);
       if (matchingPlaylists.length) {
         const matchingPlaylist = matchingPlaylists[0];
         if (matchingPlaylist) {
@@ -629,7 +578,7 @@ export class MusicControlManager {
               track.playerType = playlistItem.playerType;
               track.state = playlistItem.state;
             }
-            await this.setLiked(true, track);
+            await this.setLiked(playlistItem, true);
 
             // add to the trackIdsForRecommendations
             dataMgr.trackIdsForRecommendations.push(trackId);
@@ -641,10 +590,7 @@ export class MusicControlManager {
             commands.executeCommand("musictime.refreshMusicTimeView");
           } else {
             if (errMsg) {
-              window.showErrorMessage(
-                `Failed to add '${playlistItem.name}' to '${playlistName}'. ${errMsg}`,
-                ...[OK_LABEL]
-              );
+              window.showErrorMessage(`Failed to add '${playlistItem.name}' to '${playlistName}'. ${errMsg}`, ...[OK_LABEL]);
             }
           }
         }
@@ -679,16 +625,11 @@ export async function displayMusicTimeMetricsMarkdownDashboard() {
     preserveFocus: false,
   };
   const localResourceRoots = [Uri.file(getSoftwareDir()), Uri.file(tmpdir())];
-  const panel = window.createWebviewPanel(
-    "music-time-preview",
-    `Music Time Dashboard`,
-    viewOptions,
-    {
-      enableFindWidget: true,
-      localResourceRoots,
-      enableScripts: true, // enables javascript that may be in the content
-    }
-  );
+  const panel = window.createWebviewPanel("music-time-preview", `Music Time Dashboard`, viewOptions, {
+    enableFindWidget: true,
+    localResourceRoots,
+    enableScripts: true, // enables javascript that may be in the content
+  });
 
   const content = fileIt.readContentFileSync(musicTimeFile);
   panel.webview.html = content;

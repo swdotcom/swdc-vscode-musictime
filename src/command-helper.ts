@@ -1,18 +1,12 @@
 import { commands, Disposable, window, ExtensionContext } from "vscode";
-import {
-  MusicControlManager,
-  displayMusicTimeMetricsMarkdownDashboard,
-} from "./music/MusicControlManager";
+import { MusicControlManager, displayMusicTimeMetricsMarkdownDashboard } from "./music/MusicControlManager";
 import { launchMusicAnalytics, launchWebUrl } from "./Util";
-import { PlaylistItem, PlayerName, PlayerDevice, playSpotifyDevice } from "cody-music";
+import { PlaylistItem, PlayerName, PlayerDevice, playSpotifyDevice, Track } from "cody-music";
 import { SocialShareManager } from "./social/SocialShareManager";
 import { connectSlackWorkspace, disconnectSlack, disconnectSlackAuth } from "./managers/SlackManager";
 import { MusicManager } from "./music/MusicManager";
 import { showGenreSelections, showMoodSelections } from "./selector/RecTypeSelectorManager";
-import {
-  showSortPlaylistMenu,
-  showPlaylistOptionsMenu,
-} from "./selector/SortPlaylistSelectorManager";
+import { showSortPlaylistMenu, showPlaylistOptionsMenu } from "./selector/SortPlaylistSelectorManager";
 import { showDeviceSelectorMenu } from "./selector/SpotifyDeviceSelectorManager";
 import { MusicCommandUtil } from "./music/MusicCommandUtil";
 import { showSearchInput } from "./selector/SearchSelectorManager";
@@ -21,22 +15,37 @@ import { MusicStateManager } from "./music/MusicStateManager";
 import { connectSpotify, disconnectSpotify, switchSpotifyAccount } from "./managers/SpotifyManager";
 import { displayReadmeIfNotExists } from "./managers/FileManager";
 import { launchLogin, showLogInMenuOptions, showSignUpMenuOptions } from "./managers/UserStatusManager";
-import { MusicTimeWebviewSidebar } from './sidebar/MusicTimeWebviewSidebar';
-import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID, vscode_mt_issues_url } from './Constants';
-import { fetchTracksForLikedSongs, fetchTracksForPlaylist, getAlbumForTrack, getCachedRecommendationInfo, getCachedUserMusicMetrics, getFamiliarRecs, getMixedAudioFeatureRecs, getRecommendations, getTrackRecommendations, getUserMusicMetrics, populateSpotifyDevices, updateSelectedTabView, updateSort } from './managers/PlaylistDataManager';
-import { launchTrackPlayer, playSelectedItem } from './managers/PlaylistControlManager';
+import { MusicTimeWebviewSidebar } from "./sidebar/MusicTimeWebviewSidebar";
+import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID, vscode_mt_issues_url } from "./Constants";
+import {
+  fetchTracksForLikedSongs,
+  fetchTracksForPlaylist,
+  getAlbumForTrack,
+  getCachedRecommendationInfo,
+  getCachedUserMusicMetrics,
+  getFamiliarRecs,
+  getMixedAudioFeatureRecs,
+  getRecommendations,
+  getTrackRecommendations,
+  getUserMusicMetrics,
+  populateSpotifyDevices,
+  updateSelectedTabView,
+  updateSort,
+} from "./managers/PlaylistDataManager";
+import { launchTrackPlayer, playSelectedItem } from "./managers/PlaylistControlManager";
 
 /**
  * add the commands to vscode....
  */
-export function createCommands(ctx: ExtensionContext): {
+export function createCommands(
+  ctx: ExtensionContext
+): {
   dispose: () => void;
 } {
   let cmds = [];
 
   const controller: MusicControlManager = MusicControlManager.getInstance();
   const musicMgr: MusicManager = MusicManager.getInstance();
-
 
   // DISPLAY README CMD
   cmds.push(
@@ -123,15 +132,15 @@ export function createCommands(ctx: ExtensionContext): {
 
   // LIKE CMD
   cmds.push(
-    commands.registerCommand("musictime.like", () => {
-      controller.setLiked(true);
+    commands.registerCommand("musictime.like", (track: PlaylistItem) => {
+      controller.setLiked(track, true);
     })
   );
 
   // UNLIKE CMD
   cmds.push(
-    commands.registerCommand("musictime.unlike", () => {
-      controller.setLiked(false);
+    commands.registerCommand("musictime.unlike", (track: PlaylistItem) => {
+      controller.setLiked(track, false);
     })
   );
 
@@ -246,7 +255,7 @@ export function createCommands(ctx: ExtensionContext): {
 
   // DISCONNECT SLACK
   cmds.push(
-    commands.registerCommand("musictime.disconnectSlack", (item:any) => {
+    commands.registerCommand("musictime.disconnectSlack", (item: any) => {
       if (!item) {
         disconnectSlack();
       } else {
@@ -260,10 +269,7 @@ export function createCommands(ctx: ExtensionContext): {
   cmds.push(
     commands.registerCommand("musictime.refreshButton", async () => {
       // no devices found at all OR no active devices and a computer device is not found in the list
-      const selectedButton = await window.showInformationMessage(
-        `Reload your playlists?`,
-        ...["Yes"]
-      );
+      const selectedButton = await window.showInformationMessage(`Reload your playlists?`, ...["Yes"]);
       if (selectedButton && selectedButton === "Yes") {
         commands.executeCommand("musictime.hardRefreshPlaylist");
       }
@@ -271,14 +277,11 @@ export function createCommands(ctx: ExtensionContext): {
   );
 
   // this should only be attached to the refresh button
-  const refreshDeviceInfoCommand = commands.registerCommand(
-    "musictime.refreshDeviceInfo",
-    async () => {
-      if (!requiresSpotifyAccess()) {
-        await populateSpotifyDevices(false);
-      }
+  const refreshDeviceInfoCommand = commands.registerCommand("musictime.refreshDeviceInfo", async () => {
+    if (!requiresSpotifyAccess()) {
+      await populateSpotifyDevices(false);
     }
-  );
+  });
   cmds.push(refreshDeviceInfoCommand);
 
   // OPTIONS TITLE COMMAND
@@ -287,7 +290,6 @@ export function createCommands(ctx: ExtensionContext): {
       showPlaylistOptionsMenu();
     })
   );
-
 
   cmds.push(
     commands.registerCommand("musictime.launchSpotify", () => {
@@ -307,29 +309,21 @@ export function createCommands(ctx: ExtensionContext): {
     })
   );
 
-  const launchMusicAnalyticsCommand = commands.registerCommand("musictime.launchAnalytics", () =>
-    launchMusicAnalytics()
-  );
+  const launchMusicAnalyticsCommand = commands.registerCommand("musictime.launchAnalytics", () => launchMusicAnalytics());
   cmds.push(launchMusicAnalyticsCommand);
 
-  const addToPlaylistCommand = commands.registerCommand(
-    "musictime.addToPlaylist",
-    (item: PlaylistItem) => controller.addToPlaylistMenu(item)
-  );
+  const addToPlaylistCommand = commands.registerCommand("musictime.addToPlaylist", (item: PlaylistItem) => controller.addToPlaylistMenu(item));
   cmds.push(addToPlaylistCommand);
 
-  const deviceSelectTransferCmd = commands.registerCommand(
-    "musictime.transferToDevice",
-    async (d: PlayerDevice) => {
-      // transfer to this device
-      window.showInformationMessage(`Connected to ${d.name}`);
-      await MusicCommandUtil.getInstance().runSpotifyCommand(playSpotifyDevice, [d.id]);
-      setTimeout(() => {
-        // refresh the tree, no need to refresh playlists
-        commands.executeCommand("musictime.refreshDeviceInfo");
-      }, 3000);
-    }
-  );
+  const deviceSelectTransferCmd = commands.registerCommand("musictime.transferToDevice", async (d: PlayerDevice) => {
+    // transfer to this device
+    window.showInformationMessage(`Connected to ${d.name}`);
+    await MusicCommandUtil.getInstance().runSpotifyCommand(playSpotifyDevice, [d.id]);
+    setTimeout(() => {
+      // refresh the tree, no need to refresh playlists
+      commands.executeCommand("musictime.refreshDeviceInfo");
+    }, 3000);
+  });
   cmds.push(deviceSelectTransferCmd);
 
   const genreRecListCmd = commands.registerCommand("musictime.songGenreSelector", () => {
@@ -371,7 +365,7 @@ export function createCommands(ctx: ExtensionContext): {
     commands.registerCommand("musictime.logInAccount", async () => {
       showLogInMenuOptions();
     })
-  )
+  );
 
   // login button click
   cmds.push(
@@ -468,7 +462,7 @@ export function createCommands(ctx: ExtensionContext): {
   );
 
   cmds.push(
-    commands.registerCommand("musictime.playTrack", async (item:PlaylistItem) => {
+    commands.registerCommand("musictime.playTrack", async (item: PlaylistItem) => {
       playSelectedItem(item);
     })
   );
@@ -488,7 +482,7 @@ export function createCommands(ctx: ExtensionContext): {
   );
 
   cmds.push(
-    commands.registerCommand("musictime.installCodeTime", async (item:PlaylistItem) => {
+    commands.registerCommand("musictime.installCodeTime", async (item: PlaylistItem) => {
       launchWebUrl("vscode:extension/softwaredotcom.swdc-vscode");
     })
   );

@@ -392,12 +392,7 @@ export class MusicManager {
         );
 
         if (buttonSelection === YES_LABEL) {
-          let track: Track = new Track();
-          track.id = trackItem.id;
-          track.playerType = PlayerType.WebSpotify;
-          track.state = TrackStatus.NotAssigned;
-          await MusicControlManager.getInstance().setLiked(false, track);
-          commands.executeCommand("musictime.refreshMusicTimeView");
+          await MusicControlManager.getInstance().setLiked(trackItem, false);
         }
       } else {
         // remove it from a playlist
