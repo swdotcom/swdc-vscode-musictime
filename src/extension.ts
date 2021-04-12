@@ -4,20 +4,16 @@
 // Import the module and reference it with the alias vscode in your code below
 import { commands, ExtensionContext, window } from "vscode";
 import { onboardPlugin } from "./OnboardManager";
-import {
-  getVersion,
-  getPluginName,
-} from "./Util";
+import { getVersion, getPluginName } from "./Util";
 import { createCommands } from "./command-helper";
 import { displayReadmeIfNotExists } from "./managers/FileManager";
 import { migrateAccessInfo } from "./managers/SpotifyManager";
-import { clearWebsocketConnectionRetryTimeout, initializeWebsockets } from './websockets';
-import { initializeSpotify } from './managers/PlaylistUtilManager';
+import { clearWebsocketConnectionRetryTimeout, initializeWebsockets } from "./websockets";
+import { initializeSpotify } from "./managers/PlaylistDataManager";
 
 let currentColorKind: number = undefined;
 
 export function deactivate(ctx: ExtensionContext) {
-
   clearWebsocketConnectionRetryTimeout();
 }
 
@@ -63,7 +59,7 @@ export function getCurrentColorKind() {
 /**
  * Active color theme listener
  */
- function activateColorKindChangeListener() {
+function activateColorKindChangeListener() {
   currentColorKind = window.activeColorTheme.kind;
 
   window.onDidChangeActiveColorTheme((event) => {

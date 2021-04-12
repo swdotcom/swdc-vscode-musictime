@@ -1,16 +1,14 @@
 import { commands, Disposable, window, ExtensionContext } from "vscode";
 import { MusicControlManager, displayMusicTimeMetricsMarkdownDashboard } from "./music/MusicControlManager";
 import { launchMusicAnalytics, launchWebUrl } from "./Util";
-import { PlaylistItem, PlayerName, PlayerDevice, playSpotifyDevice, Track } from "cody-music";
+import { PlaylistItem, PlayerName, PlayerDevice, playSpotifyDevice } from "cody-music";
 import { SocialShareManager } from "./social/SocialShareManager";
 import { connectSlackWorkspace, disconnectSlack, disconnectSlackAuth } from "./managers/SlackManager";
-import { MusicManager } from "./music/MusicManager";
 import { showGenreSelections, showMoodSelections } from "./selector/RecTypeSelectorManager";
 import { showSortPlaylistMenu, showPlaylistOptionsMenu } from "./selector/SortPlaylistSelectorManager";
 import { showDeviceSelectorMenu } from "./selector/SpotifyDeviceSelectorManager";
 import { MusicCommandUtil } from "./music/MusicCommandUtil";
 import { showSearchInput } from "./selector/SearchSelectorManager";
-import { getBestActiveDevice, requiresSpotifyAccess } from "./music/MusicUtil";
 import { MusicStateManager } from "./music/MusicStateManager";
 import { connectSpotify, disconnectSpotify, switchSpotifyAccount } from "./managers/SpotifyManager";
 import { displayReadmeIfNotExists } from "./managers/FileManager";
@@ -20,7 +18,9 @@ import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID, vscode_mt_issues_url } from "./Constan
 import {
   fetchTracksForLikedSongs,
   fetchTracksForPlaylist,
+  followSpotifyPlaylist,
   getAlbumForTrack,
+  getBestActiveDevice,
   getCachedRecommendationInfo,
   getCachedUserMusicMetrics,
   getFamiliarRecs,
@@ -29,6 +29,8 @@ import {
   getTrackRecommendations,
   getUserMusicMetrics,
   populateSpotifyDevices,
+  removeTrackFromPlaylist,
+  requiresSpotifyAccess,
   updateSelectedTabView,
   updateSort,
 } from "./managers/PlaylistDataManager";
@@ -45,7 +47,6 @@ export function createCommands(
   let cmds = [];
 
   const controller: MusicControlManager = MusicControlManager.getInstance();
-  const musicMgr: MusicManager = MusicManager.getInstance();
 
   // DISPLAY README CMD
   cmds.push(
@@ -104,7 +105,7 @@ export function createCommands(
   // REMOVE TRACK CMD
   cmds.push(
     commands.registerCommand("musictime.removeTrack", async (p: PlaylistItem) => {
-      musicMgr.removeTrackFromPlaylist(p);
+      removeTrackFromPlaylist(p);
     })
   );
 
@@ -204,7 +205,7 @@ export function createCommands(
   // FOLLOW PLAYLIST CMD
   cmds.push(
     commands.registerCommand("musictime.follow", (p: PlaylistItem) => {
-      musicMgr.followSpotifyPlaylist(p);
+      followSpotifyPlaylist(p);
     })
   );
 

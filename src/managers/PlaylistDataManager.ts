@@ -1,30 +1,37 @@
 import {
   CodyResponse,
   CodyResponseType,
+  followPlaylist,
   getPlaylists,
   getPlaylistTracks,
   getRecommendationsForTracks,
   getSpotifyAlbumTracks,
   getSpotifyDevices,
   getSpotifyLikedSongs,
+  getSpotifyPlayerContext,
   getSpotifyPlaylist,
   PaginationItem,
+  PlayerContext,
   PlayerDevice,
   PlayerName,
   PlayerType,
   PlaylistItem,
   PlaylistTrackInfo,
+  removeTracksFromPlaylist,
   Track,
 } from "cody-music";
-import { commands } from "vscode";
+import { commands, window } from "vscode";
 import { RECOMMENDATION_LIMIT, SOFTWARE_TOP_40_PLAYLIST_ID } from "../app/utils/view_constants";
-import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
+import { OK_LABEL, SPOTIFY_LIKED_SONGS_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME, YES_LABEL } from "../Constants";
 import { isResponseOk, softwareGet } from "../HttpClient";
 import MusicMetrics from "../model/MusicMetrics";
+import { MusicCommandManager } from "../music/MusicCommandManager";
 import { MusicCommandUtil } from "../music/MusicCommandUtil";
+import { MusicControlManager } from "../music/MusicControlManager";
 import { MusicStateManager } from "../music/MusicStateManager";
+import { getCodyErrorMessage } from "../Util";
 import { getItem } from "./FileManager";
-import { requiresSpotifyAccess } from "./PlaylistUtilManager";
+import { connectSpotify, getSpotifyIntegration, populateSpotifyUser, updateCodyConfig, updateSpotifyClientInfo } from "./SpotifyManager";
 
 let currentDevices: PlayerDevice[] = [];
 let spotifyLikedTracks: Track[] = undefined;
@@ -36,23 +43,48 @@ let userMusicMetrics: MusicMetrics[] = undefined;
 let globalMusicMetrics: MusicMetrics[] = undefined;
 let averageMusicMetrics: MusicMetrics = undefined;
 let selectedPlaylistId = undefined;
-let selectedPlaylistItem: PlaylistItem = undefined;
+let selectedTrackItem: PlaylistItem = undefined;
+let runningTrack: Track = undefined;
+let spotifyContext: PlayerContext = undefined;
 let selectedPlayerName = PlayerName.SpotifyWeb;
 // playlists, recommendations, metrics
 let selectedTabView = "playlists";
-let currentRecMeta: any = {};
+let recommendationMetadata: any = {};
 let recommendationInfo: any = undefined;
 let sortAlphabetically: boolean = false;
 
-export async function clearSpotifyLikedTracksCache() {
+////////////////////////////////////////////////////////////////
+// CLEAR DATA EXPORTS
+////////////////////////////////////////////////////////////////
+
+export function clearAllData() {
+  clearSpotifyLikedTracksCache();
+  clearSpotifyPlaylistsCache();
+  clearSpotifyDevicesCache();
+
+  selectedPlaylistId = undefined;
+  selectedTrackItem = undefined;
+}
+
+export function clearSpotifyLikedTracksCache() {
   spotifyLikedTracks = undefined;
 }
 
-export async function clearSpotifyPlaylistsCache() {
+export function clearSpotifyPlaylistsCache() {
   spotifyPlaylists = undefined;
 }
 
-// UPDATES
+export function clearSpotifyDevicesCache() {
+  currentDevices = undefined;
+}
+
+export function clearSpotifyPlayerContext() {
+  spotifyContext = null;
+}
+
+////////////////////////////////////////////////////////////////
+// UPDATE EXPORTS
+////////////////////////////////////////////////////////////////
 
 export function updateSpotifyPlaylists(playlists) {
   spotifyPlaylists = playlists;
@@ -66,8 +98,9 @@ export function updateSpotifyPlaylistTracks(id, songs) {
   playlistTracks[id] = songs;
 }
 
-export function updateSelectedPlaylistItem(item) {
-  selectedPlaylistItem = item;
+export function updateSelectedTrackItem(item) {
+  selectedTrackItem = item;
+  selectedPlaylistId = item["playlist_id"];
 }
 
 export function updateSelectedPlayer(player: PlayerName) {
@@ -84,7 +117,13 @@ export function updateSort(alphabetically: boolean) {
   commands.executeCommand("musictime.refreshMusicTimeView");
 }
 
-// GETTERS
+export function updateRunningTrack(track: Track) {
+  runningTrack = track;
+}
+
+////////////////////////////////////////////////////////////////
+// CACHE GETTERS
+////////////////////////////////////////////////////////////////
 
 export function getCachedSpotifyPlaylists() {
   return spotifyPlaylists;
@@ -114,6 +153,18 @@ export function getCachedAverageMusicMetrics() {
   return averageMusicMetrics;
 }
 
+export function getCachedRecommendationMetadata() {
+  return recommendationMetadata;
+}
+
+export function getCachedSpotifyPlayerContext() {
+  return spotifyContext;
+}
+
+export function getRunningTrack() {
+  return runningTrack;
+}
+
 export function getSelectedPlaylistId() {
   return selectedPlaylistId;
 }
@@ -122,20 +173,31 @@ export function getSelectedPlayerName() {
   return selectedPlayerName;
 }
 
-export function getSelectedPlaylistItem() {
-  return selectedPlaylistItem;
+export function getSelectedTrackItem() {
+  return selectedTrackItem;
 }
 
 export function getSelectedTabView() {
   return selectedTabView;
 }
 
+// only playlists (not liked or recommendations)
 export function getPlaylistById(playlist_id) {
-  return spotifyPlaylists ? spotifyPlaylists.find((n) => n.id === playlist_id) : null;
+  if (SOFTWARE_TOP_40_PLAYLIST_ID === playlist_id) {
+    return softwareTop40Playlist;
+  }
+  return spotifyPlaylists.find((n) => n.id === playlist_id);
 }
 
+export function isLikedSongPlaylistSelected() {
+  return !!(selectedPlaylistId === SPOTIFY_LIKED_SONGS_PLAYLIST_ID);
+}
+
+////////////////////////////////////////////////////////////////
+// PLAYLIST AND TRACK EXPORTS
+////////////////////////////////////////////////////////////////
+
 // PLAYLISTS
-// all playlists except for liked songs
 export async function getSpotifyPlaylists(clear = false): Promise<PlaylistItem[]> {
   if (requiresSpotifyAccess()) {
     return [];
@@ -151,8 +213,8 @@ export async function getSpotifyPlaylists(clear = false): Promise<PlaylistItem[]
   return spotifyPlaylists;
 }
 
-// liked songs playlist
-export function getSpotifyLikedTracksPlaylist() {
+// LIKED SONGS
+export function getSpotifyLikedPlaylist() {
   const item: PlaylistItem = new PlaylistItem();
   item.type = "playlist";
   item.id = SPOTIFY_LIKED_SONGS_PLAYLIST_ID;
@@ -166,6 +228,7 @@ export function getSpotifyLikedTracksPlaylist() {
   return item;
 }
 
+// SOFTWARE TOP 40
 export async function getSoftwareTop40Playlist() {
   softwareTop40Playlist = await getSpotifyPlaylist(SOFTWARE_TOP_40_PLAYLIST_ID);
   if (softwareTop40Playlist && softwareTop40Playlist.tracks && softwareTop40Playlist.tracks["items"]) {
@@ -178,9 +241,7 @@ export async function getSoftwareTop40Playlist() {
   return softwareTop40Playlist;
 }
 
-// FETCH TRACKS
-
-// liked songs
+// LIKED PLAYLIST TRACKS
 export async function fetchTracksForLikedSongs() {
   selectedPlaylistId = SPOTIFY_LIKED_SONGS_PLAYLIST_ID;
   if (!spotifyLikedTracks) {
@@ -191,7 +252,7 @@ export async function fetchTracksForLikedSongs() {
   commands.executeCommand("musictime.refreshMusicTimeView");
 }
 
-// songs for a specified non-liked songs playlist
+// TRACKS FOR A SPECIFIED PLAYLIST
 export async function fetchTracksForPlaylist(playlist_id) {
   selectedPlaylistId = playlist_id;
   if (!playlistTracks[playlist_id]) {
@@ -210,6 +271,10 @@ export async function fetchTracksForPlaylist(playlist_id) {
   commands.executeCommand("musictime.refreshMusicTimeView");
 }
 
+////////////////////////////////////////////////////////////////
+// METRICS EXPORTS
+////////////////////////////////////////////////////////////////
+
 export async function getUserMusicMetrics() {
   const resp = await softwareGet("/music/metrics", getItem("jwt"));
   if (isResponseOk(resp) && resp.data) {
@@ -227,6 +292,21 @@ export async function getUserMusicMetrics() {
     }
   }
 }
+
+export async function populateLikedSongs() {
+  spotifyLikedTracks = (await getSpotifyLikedSongs()) || [];
+  // add the playlist id to the tracks
+  if (spotifyLikedTracks?.length) {
+    spotifyLikedTracks = spotifyLikedTracks.map((t) => {
+      const albumName = getAlbumName(t);
+      return { ...t, playlist_id: SPOTIFY_LIKED_SONGS_PLAYLIST_ID, albumName, liked: true };
+    });
+  }
+}
+
+////////////////////////////////////////////////////////////////
+// RECOMMENDATION TRACKS EXPORTS
+////////////////////////////////////////////////////////////////
 
 export function getFamiliarRecs() {
   return getRecommendations("Familiar", 5);
@@ -288,7 +368,7 @@ export async function getRecommendations(
   // fetching recommendations based on a set of genre requires 0 seed track IDs
   seedLimit = seed_genres.length ? 0 : Math.max(seedLimit, 5);
 
-  currentRecMeta = {
+  recommendationMetadata = {
     label,
     seedLimit,
     seed_genres,
@@ -320,7 +400,31 @@ export function populateRecommendationTracks(label: string, tracks: Track[]) {
   commands.executeCommand("musictime.refreshMusicTimeView", "recommendations");
 }
 
-export async function populateSpotifyDevices(tryAgain = false) {
+export function removeTracksFromRecommendations(trackId) {
+  let foundIdx = -1;
+  for (let i = 0; i < recommendationInfo.tracks.length; i++) {
+    if (recommendationInfo.tracks[i].id === trackId) {
+      foundIdx = i;
+      break;
+    }
+  }
+  if (foundIdx > -1) {
+    // splice it out
+    recommendationInfo.tracks.splice(foundIdx, 1);
+  }
+
+  if (recommendationInfo.tracks.length < 2) {
+    // refresh
+    commands.executeCommand("musictime.refreshMusicTimeView");
+  }
+}
+
+export ////////////////////////////////////////////////////////////////
+// DEVICE EXPORTS
+////////////////////////////////////////////////////////////////
+
+// POPULATE
+async function populateSpotifyDevices(tryAgain = false) {
   const devices = await MusicCommandUtil.getInstance().runSpotifyCommand(getSpotifyDevices);
 
   if (devices.status && devices.status === 429 && tryAgain) {
@@ -364,18 +468,160 @@ export async function populateSpotifyDevices(tryAgain = false) {
   }
 }
 
-// PRIVATE FUNCTIONS
+export function getCurrentDevices() {
+  return currentDevices;
+}
 
-async function populateLikedSongs() {
-  spotifyLikedTracks = (await getSpotifyLikedSongs()) || [];
-  // add the playlist id to the tracks
-  if (spotifyLikedTracks?.length) {
-    spotifyLikedTracks = spotifyLikedTracks.map((t) => {
-      const albumName = getAlbumName(t);
-      return { ...t, playlist_id: SPOTIFY_LIKED_SONGS_PLAYLIST_ID, albumName, liked: true };
-    });
+export function requiresSpotifyReAuthentication() {
+  const requiresSpotifyReAuth = getItem("requiresSpotifyReAuth");
+  return requiresSpotifyReAuth ? true : false;
+}
+
+export async function showReconnectPrompt(email) {
+  const reconnectButtonLabel = "Reconnect";
+  const msg = `To continue using Music Time, please reconnect your Spotify account (${email}).`;
+  const selection = await window.showInformationMessage(msg, ...[reconnectButtonLabel]);
+
+  if (selection === reconnectButtonLabel) {
+    // now launch re-auth
+    await connectSpotify();
   }
 }
+
+/**
+ * returns { webPlayer, desktop, activeDevice, activeComputerDevice, activeWebPlayerDevice }
+ * Either of these values can be null
+ */
+export function getDeviceSet() {
+  const webPlayer = currentDevices.find((d: PlayerDevice) => d.name.toLowerCase().includes("web player"));
+
+  const desktop = currentDevices.find((d: PlayerDevice) => d.type.toLowerCase() === "computer" && !d.name.toLowerCase().includes("web player"));
+
+  const activeDevice = currentDevices.find((d: PlayerDevice) => d.is_active);
+
+  const activeComputerDevice = currentDevices.find((d: PlayerDevice) => d.is_active && d.type.toLowerCase() === "computer");
+
+  const activeWebPlayerDevice = currentDevices.find(
+    (d: PlayerDevice) => d.is_active && d.type.toLowerCase() === "computer" && d.name.toLowerCase().includes("web player")
+  );
+
+  const activeDesktopPlayerDevice = currentDevices.find(
+    (d: PlayerDevice) => d.is_active && d.type.toLowerCase() === "computer" && !d.name.toLowerCase().includes("web player")
+  );
+
+  const deviceData = {
+    webPlayer,
+    desktop,
+    activeDevice,
+    activeComputerDevice,
+    activeWebPlayerDevice,
+    activeDesktopPlayerDevice,
+  };
+  return deviceData;
+}
+
+export function getBestActiveDevice() {
+  const { webPlayer, desktop, activeDevice } = getDeviceSet();
+
+  const device = activeDevice ? activeDevice : desktop ? desktop : webPlayer ? webPlayer : null;
+  return device;
+}
+
+////////////////////////////////////////////////////////////////
+// PLAYER CONTEXT FUNCTIONS
+////////////////////////////////////////////////////////////////
+
+export async function populatePlayerContext() {
+  spotifyContext = await getSpotifyPlayerContext();
+  MusicCommandManager.syncControls(runningTrack, false);
+}
+
+////////////////////////////////////////////////////////////////
+// UTIL FUNCTIONS
+////////////////////////////////////////////////////////////////
+
+export function requiresSpotifyAccess() {
+  const spotifyIntegration = getSpotifyIntegration();
+  // no spotify access token then return true, the user requires spotify access
+  return !spotifyIntegration ? true : false;
+}
+
+export async function initializeSpotify(refreshUser = false) {
+  // get the client id and secret
+  await updateSpotifyClientInfo();
+
+  // update cody music with all access info
+  updateCodyConfig();
+
+  // first get the spotify user
+  await populateSpotifyUser(refreshUser);
+
+  await populateSpotifyDevices(false);
+
+  // initialize the status bar music controls
+  MusicCommandManager.initialize();
+}
+
+export async function isTrackRepeating(): Promise<boolean> {
+  // get the current repeat state
+  let spotifyContext: PlayerContext = getCachedSpotifyPlayerContext();
+  if (!spotifyContext && getRunningTrack()) {
+    await populatePlayerContext();
+    spotifyContext = getCachedSpotifyPlayerContext();
+  }
+  // "off", "track", "context", ""
+  const repeatState = spotifyContext ? spotifyContext.repeat_state : "";
+  return repeatState && repeatState === "track" ? true : false;
+}
+
+export async function removeTrackFromPlaylist(trackItem: PlaylistItem) {
+  // get the playlist it's in
+  const currentPlaylistId = trackItem["playlist_id"];
+  const foundPlaylist = getPlaylistById(currentPlaylistId);
+  if (foundPlaylist) {
+    // if it's the liked songs, then send it to the setLiked(false) api
+    if (foundPlaylist.id === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME) {
+      const buttonSelection = await window.showInformationMessage(
+        `Are you sure you would like to remove '${trackItem.name}' from your '${SPOTIFY_LIKED_SONGS_PLAYLIST_NAME}' playlist?`,
+        ...[YES_LABEL]
+      );
+
+      if (buttonSelection === YES_LABEL) {
+        await MusicControlManager.getInstance().setLiked(trackItem, false);
+      }
+    } else {
+      // remove it from a playlist
+      const tracks = [trackItem.id];
+      const result = await removeTracksFromPlaylist(currentPlaylistId, tracks);
+
+      const errMsg = getCodyErrorMessage(result);
+      if (errMsg) {
+        window.showInformationMessage(`Error removing the selected track. ${errMsg}`);
+      } else {
+        window.showInformationMessage("Song removed successfully");
+        commands.executeCommand("musictime.refreshMusicTimeView");
+      }
+    }
+  }
+}
+
+export async function followSpotifyPlaylist(playlist: PlaylistItem) {
+  const codyResp: CodyResponse = await followPlaylist(playlist.id);
+  if (codyResp.state === CodyResponseType.Success) {
+    window.showInformationMessage(`Successfully following the '${playlist.name}' playlist.`);
+
+    // repopulate the playlists since we've changed the state of the playlist
+    await getSpotifyPlaylists();
+
+    commands.executeCommand("musictime.refreshMusicTimeView");
+  } else {
+    window.showInformationMessage(`Unable to follow ${playlist.name}. ${codyResp.message}`, ...[OK_LABEL]);
+  }
+}
+
+////////////////////////////////////////////////////////////////
+// PRIVATE FUNCTIONS
+////////////////////////////////////////////////////////////////
 
 function getPlaylistItemTracksFromCodyResponse(codyResponse: CodyResponse): PlaylistItem[] {
   let playlistItems: PlaylistItem[] = [];
@@ -395,7 +641,7 @@ function getPlaylistItemTracksFromCodyResponse(codyResponse: CodyResponse): Play
   return playlistItems;
 }
 
-function createPlaylistItemFromTrack(track: Track, position: number) {
+export function createPlaylistItemFromTrack(track: Track, position: number) {
   const popularity = track.popularity ? track.popularity : null;
   const artistName = getArtist(track);
 
@@ -510,5 +756,24 @@ function sortTracks(tracks) {
       if (nameA > nameB) return 1;
       return 0; //default return value (no sorting)
     });
+  }
+}
+
+function removeTrackFromRecommendations(trackId) {
+  let foundIdx = -1;
+  for (let i = 0; i < this.recommendationTracks.length; i++) {
+    if (this.recommendationTracks[i].id === trackId) {
+      foundIdx = i;
+      break;
+    }
+  }
+  if (foundIdx > -1) {
+    // splice it out
+    this.recommendationTracks.splice(foundIdx, 1);
+  }
+
+  if (this.recommendationTracks.length < 2) {
+    // refresh
+    commands.executeCommand("musictime.refreshMusicTimeView");
   }
 }

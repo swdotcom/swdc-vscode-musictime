@@ -3,10 +3,10 @@ import { api_endpoint, launch_url } from "../Constants";
 import { isResponseOk, softwareGet } from "../HttpClient";
 import { showQuickPick } from "../MenuManager";
 import { launchWebUrl, getPluginType, getVersion, getPluginId } from "../Util";
-import { initializeWebsockets } from '../websockets';
+import { initializeWebsockets } from "../websockets";
 import { getAuthCallbackState, getItem, getPluginUuid, setAuthCallbackState, setItem } from "./FileManager";
-import { updateSlackIntegrations, updateSpotifyIntegration } from './IntegrationManager';
-import { initializeSpotify } from './PlaylistUtilManager';
+import { updateSlackIntegrations, updateSpotifyIntegration } from "./IntegrationManager";
+import { initializeSpotify } from "./PlaylistDataManager";
 
 const queryString = require("query-string");
 
@@ -147,7 +147,7 @@ export async function authenticationCompleteHandler(user) {
       processNewSpotifyIntegration();
     } else if (addedNewSlackIntegration) {
       // refresh the tree view
-	    setTimeout(() => {
+      setTimeout(() => {
         // refresh the playlist to show the device button update
         commands.executeCommand("musictime.refreshMusicTimeView");
       }, 1000);
@@ -163,14 +163,14 @@ export async function authenticationCompleteHandler(user) {
 export async function processNewSpotifyIntegration() {
   setItem("requiresSpotifyReAuth", false);
 
-	// update the login status
-	window.showInformationMessage(`Successfully connected to Spotify. Loading playlists...`);
+  // update the login status
+  window.showInformationMessage(`Successfully connected to Spotify. Loading playlists...`);
 
-	// initialize spotify and playlists
-	await initializeSpotify(true /*refreshUser*/);
+  // initialize spotify and playlists
+  await initializeSpotify(true /*refreshUser*/);
 
-	// initiate the playlist build
-	setTimeout(() => {
-	  commands.executeCommand("musictime.hardRefreshPlaylist");
-	}, 2000);
+  // initiate the playlist build
+  setTimeout(() => {
+    commands.executeCommand("musictime.hardRefreshPlaylist");
+  }, 2000);
 }

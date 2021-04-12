@@ -10,33 +10,35 @@ import {
   transferSpotifyDevice,
 } from "cody-music";
 import { commands, window } from "vscode";
-import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
+import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from "../Constants";
 import { MusicCommandUtil } from "../music/MusicCommandUtil";
-import { MusicDataManager } from "../music/MusicDataManager";
 import { MusicStateManager } from "../music/MusicStateManager";
-import { getBestActiveDevice, getDeviceSet } from "../music/MusicUtil";
 import { createSpotifyIdFromUri, createUriFromPlaylistId, createUriFromTrackId, isMac, isWindows } from "../Util";
 import {
+  getBestActiveDevice,
+  getCachedLikedSongsTracks,
+  getDeviceSet,
+  getPlaylistById,
   getSelectedPlayerName,
   getSelectedPlaylistId,
-  getSelectedPlaylistItem,
+  getSelectedTrackItem,
   populateSpotifyDevices,
   updateSelectedPlayer,
-  updateSelectedPlaylistItem,
+  updateSelectedTrackItem,
+  getCurrentDevices,
 } from "./PlaylistDataManager";
 import { hasSpotifyUser, isPremiumUser, populateSpotifyUser } from "./SpotifyManager";
 
 // PLAY SELECTED TRACK
 
 export async function playSelectedItem(playlistItem: PlaylistItem) {
-  updateSelectedPlaylistItem(playlistItem);
+  updateSelectedTrackItem(playlistItem);
 
   // // ask to launch web or desktop if neither are running
   await playInitialization(playMusicSelection);
 }
 
 export async function launchTrackPlayer(playerName: PlayerName = null, callback: any = null) {
-  const dataMgr = MusicDataManager.getInstance();
   const { webPlayer, desktop, activeDevice, activeComputerDevice, activeWebPlayerDevice, activeDesktopPlayerDevice } = getDeviceSet();
 
   const hasDesktopDevice = activeDesktopPlayerDevice || desktop ? true : false;
@@ -48,9 +50,9 @@ export async function launchTrackPlayer(playerName: PlayerName = null, callback:
   }
 
   if (requiresDesktopLaunch || playerName === PlayerName.SpotifyDesktop) {
-    playerName = PlayerName.SpotifyDesktop;
+    updateSelectedPlayer(PlayerName.SpotifyDesktop);
   } else {
-    playerName = PlayerName.SpotifyWeb;
+    updateSelectedPlayer(PlayerName.SpotifyWeb);
   }
 
   // {playlist_id | album_id | track_id, quietly }
@@ -58,18 +60,14 @@ export async function launchTrackPlayer(playerName: PlayerName = null, callback:
     quietly: false,
   };
 
-  const hasSelectedTrackItem = dataMgr.selectedTrackItem && dataMgr.selectedTrackItem.id ? true : false;
-  const hasSelectedPlaylistItem = dataMgr.selectedPlaylist && dataMgr.selectedPlaylist.id ? true : false;
+  const selectedTrack = getSelectedTrackItem();
 
-  if (!isPremiumUser() && (hasSelectedTrackItem || hasSelectedPlaylistItem)) {
-    // show the track or playlist
-    const isRecommendationTrack = dataMgr.selectedTrackItem.type === "recommendation" ? true : false;
-    const isLikedSong = dataMgr.selectedPlaylist && dataMgr.selectedPlaylist.name === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME ? true : false;
-    if (hasSelectedTrackItem && (isRecommendationTrack || isLikedSong)) {
-      options["track_id"] = dataMgr.selectedTrackItem.id;
-    } else {
-      options["playlist_id"] = dataMgr.selectedPlaylist.id;
-    }
+  const selectedPlaylist = getPlaylistById(selectedTrack["playlist_id"]);
+
+  if (selectedPlaylist) {
+    options["playlist_id"] = selectedTrack["playlist_id"];
+  } else if (selectedTrack) {
+    options["track_id"] = selectedTrack.id;
   }
 
   // spotify device launch error would look like ..
@@ -143,7 +141,9 @@ export async function showPlayerLaunchConfirmation(callback: any = null) {
 async function checkDeviceLaunch(playerName: PlayerName, tries: number = 5, callback: any = null) {
   setTimeout(async () => {
     await populateSpotifyDevices(true /*retry*/);
-    const devices = MusicDataManager.getInstance().currentDevices;
+
+    const devices = getCurrentDevices();
+
     if ((!devices || devices.length == 0) && tries >= 0) {
       if (!isWindows() && tries === 1) {
         // play it to get spotify to update the device ID
@@ -183,27 +183,28 @@ async function checkPlayingState(deviceId: string, tries = 3) {
 }
 
 async function playMusicSelection() {
-  const selectedPlaylistItem = getSelectedPlaylistItem();
+  const selectedPlaylistItem = getSelectedTrackItem();
   if (!selectedPlaylistItem) {
     return;
   }
-  const dataMgr: MusicDataManager = MusicDataManager.getInstance();
   const musicCommandUtil: MusicCommandUtil = MusicCommandUtil.getInstance();
   // get the playlist id, track id, and device id
 
   const device = getBestActiveDevice();
 
   const playlist_id = getSelectedPlaylistId();
+  const selectedPlayer = getSelectedPlayerName() || PlayerName.SpotifyWeb;
   const isLikedSong = !!(playlist_id === SPOTIFY_LIKED_SONGS_PLAYLIST_ID);
-  const desktopSelected = !!(getSelectedPlayerName() === PlayerName.SpotifyDesktop);
+  const desktopSelected = !!(selectedPlayer === PlayerName.SpotifyDesktop);
   const isRecommendationTrack = !!(selectedPlaylistItem.type === "recommendation");
 
   const trackId = createSpotifyIdFromUri(selectedPlaylistItem.id);
   const trackUri = createUriFromTrackId(selectedPlaylistItem.id);
   let result = undefined;
+
   if (isRecommendationTrack || isLikedSong) {
     try {
-      result = await playTrackInContext(PlayerName.SpotifyDesktop, [trackUri]);
+      result = await playTrackInContext(selectedPlayer, [trackUri]);
     } catch (e) {}
   } else {
     if (isMac() && desktopSelected) {
@@ -211,7 +212,7 @@ async function playMusicSelection() {
       const playlistUri = createUriFromPlaylistId(playlist_id);
       const params = [trackUri, playlistUri];
       try {
-        result = await playTrackInContext(PlayerName.SpotifyDesktop, params);
+        result = await playTrackInContext(selectedPlayer, params);
       } catch (e) {}
     }
     if (!result || result !== "ok") {
@@ -223,4 +224,43 @@ async function playMusicSelection() {
   setTimeout(() => {
     checkPlayingState(device.id);
   }, 1000);
+}
+
+export async function playNextLikedSong() {
+  const likedSongs: Track[] = getCachedLikedSongsTracks();
+  const nextIdx = getNextOrPrevLikedIndex(true);
+
+  let nextLikedTrack = likedSongs[nextIdx];
+
+  const selectedPlayer = getSelectedPlayerName() || PlayerName.SpotifyWeb;
+  playTrackInContext(selectedPlayer, [createUriFromTrackId(nextLikedTrack.id)]);
+}
+
+export async function playPreviousLikedSongs() {
+  const likedSongs: Track[] = getCachedLikedSongsTracks();
+  const prevIdx = getNextOrPrevLikedIndex(false);
+
+  let nextLikedTrack = likedSongs[prevIdx];
+
+  const selectedPlayer = getSelectedPlayerName() || PlayerName.SpotifyWeb;
+  playTrackInContext(selectedPlayer, [createUriFromTrackId(nextLikedTrack.id)]);
+}
+
+function getNextOrPrevLikedIndex(get_next: boolean) {
+  const likedSongs: Track[] = getCachedLikedSongsTracks();
+  const selectedTrack = getSelectedTrackItem();
+  const nextIdx = likedSongs.findIndex((n: Track) => n.id === selectedTrack.id);
+  if (get_next) {
+    // get next
+    if (nextIdx + 1 >= likedSongs.length) {
+      return 0;
+    }
+    return nextIdx + 1;
+  }
+  // get prev
+  if (nextIdx - 1 < 0) {
+    return likedSongs.length - 1;
+  } else {
+    return nextIdx - 1;
+  }
 }

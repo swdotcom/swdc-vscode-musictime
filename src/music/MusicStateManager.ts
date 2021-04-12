@@ -1,10 +1,9 @@
 import { createSpotifyIdFromUri, createUriFromTrackId, nowInSecs, isMac } from "../Util";
 import { Track, TrackStatus, getTrack, PlayerName, CodyResponse, getSpotifyRecentlyPlayedBefore } from "cody-music";
 import { MusicCommandManager } from "./MusicCommandManager";
-import { MusicDataManager } from "./MusicDataManager";
 import { commands } from "vscode";
-import { getBestActiveDevice, requiresSpotifyAccess } from "./MusicUtil";
-import { execCmd } from '../managers/ExecManager';
+import { execCmd } from "../managers/ExecManager";
+import { getBestActiveDevice, getRunningTrack, populatePlayerContext, requiresSpotifyAccess } from "../managers/PlaylistDataManager";
 const path = require("path");
 const moment = require("moment-timezone");
 
@@ -24,17 +23,6 @@ export class MusicStateManager {
       MusicStateManager.instance = new MusicStateManager();
     }
     return MusicStateManager.instance;
-  }
-
-  /**
-   * Get the selected playlis or find it from the list of playlists
-   * @param track
-   */
-  private updateTrackPlaylistId(track: Track) {
-    const selectedPlaylist = MusicDataManager.getInstance().selectedPlaylist;
-    if (selectedPlaylist) {
-      track["playlistId"] = selectedPlaylist.id;
-    }
   }
 
   private getUtcAndLocal() {
@@ -64,8 +52,6 @@ export class MusicStateManager {
    * Core logic in gathering tracks. This is called every 20 seconds.
    */
   public async fetchTrack(): Promise<any> {
-    const dataMgr: MusicDataManager = MusicDataManager.getInstance();
-
     try {
       const utcLocalTimes = this.getUtcAndLocal();
 
@@ -153,17 +139,12 @@ export class MusicStateManager {
         this.existingTrack.progress_ms = playingTrack.progress_ms || 0;
       }
 
-      // update the running track
-      dataMgr.runningTrack = this.existingTrack;
-
       // update the music time status bar
-      MusicCommandManager.syncControls(dataMgr.runningTrack, false);
+      MusicCommandManager.syncControls(getRunningTrack(), false);
 
       if (isNewTrack) {
-        // update the playlistId
-        this.updateTrackPlaylistId(playingTrack);
         // the player context such as player device status
-        MusicDataManager.getInstance().populatePlayerContext();
+        populatePlayerContext();
         if (trackStateChanged) {
           // update the device info in case the device has changed
           commands.executeCommand("musictime.refreshDeviceInfo");
@@ -187,7 +168,7 @@ export class MusicStateManager {
     const before = moment().utc().valueOf();
     const resp: CodyResponse = await getSpotifyRecentlyPlayedBefore(1, before);
     if (resp && resp.data && resp.data.tracks && resp.data.tracks.length) {
-      MusicDataManager.getInstance().runningTrack = resp.data.tracks[0];
+      return resp.data.tracks[0];
     }
   }
 

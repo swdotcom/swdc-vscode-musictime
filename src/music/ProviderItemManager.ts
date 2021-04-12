@@ -1,12 +1,17 @@
 import { PlayerType, PlaylistItem, PlaylistTrackInfo, PlayerDevice, Track } from "cody-music";
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
-import { requiresSpotifyAccess, getDeviceSet, requiresSpotifyReAuthentication } from "./MusicUtil";
-import { MusicDataManager } from "./MusicDataManager";
-import { MusicManager } from "./MusicManager";
 import { isMac } from "../Util";
 import { KpmItem } from "../model/models";
 import { getSlackWorkspaces } from "../managers/SlackManager";
 import { getItem } from "../managers/FileManager";
+import {
+  createPlaylistItemFromTrack,
+  getCachedRecommendationInfo,
+  getCurrentDevices,
+  getDeviceSet,
+  requiresSpotifyAccess,
+  requiresSpotifyReAuthentication,
+} from "../managers/PlaylistDataManager";
 
 export class ProviderItemManager {
   private static instance: ProviderItemManager;
@@ -37,11 +42,9 @@ export class ProviderItemManager {
   }
 
   async getActiveSpotifyDevicesButton() {
-    const dataMgr: MusicDataManager = MusicDataManager.getInstance();
-
     const { webPlayer, desktop, activeDevice, activeComputerDevice, activeWebPlayerDevice } = getDeviceSet();
 
-    const devices: PlayerDevice[] = dataMgr.currentDevices;
+    const devices: PlayerDevice[] = getCurrentDevices();
 
     let msg = "";
     let tooltip = "Listening on a Spotify device";
@@ -289,14 +292,8 @@ export class ProviderItemManager {
     let items: PlaylistItem[] = [];
 
     if (!requiresSpotifyAccess()) {
-      const labelButton = this.buildActionItem(
-        MusicDataManager.getInstance().recommendationLabel,
-        "label",
-        null,
-        PlayerType.NotAssigned,
-        MusicDataManager.getInstance().recommendationLabel,
-        ""
-      );
+      const recLabel = getCachedRecommendationInfo() ? getCachedRecommendationInfo().label : "";
+      const labelButton = this.buildActionItem(recLabel, "label", null, PlayerType.NotAssigned, recLabel, "");
       labelButton.tag = "paw";
 
       if (tracks && tracks.length > 0) {
@@ -304,7 +301,7 @@ export class ProviderItemManager {
         items.push(labelButton);
         for (let i = 0; i < tracks.length; i++) {
           const track: Track = tracks[i];
-          const item: PlaylistItem = MusicManager.getInstance().createPlaylistItemFromTrack(track, 0);
+          const item: PlaylistItem = createPlaylistItemFromTrack(track, 0);
           item.tag = "spotify";
           item.type = "recommendation";
           items.push(item);

@@ -1,8 +1,7 @@
 import { showQuickPick } from "../MenuManager";
-import { MusicDataManager } from "../music/MusicDataManager";
 import { Track, PlayerContext, TrackStatus } from "cody-music";
-import { getDeviceSet } from "../music/MusicUtil";
-import { showPlayerLaunchConfirmation } from '../managers/PlaylistControlManager';
+import { showPlayerLaunchConfirmation } from "../managers/PlaylistControlManager";
+import { getCachedSpotifyPlayerContext, getDeviceSet, getRunningTrack, populatePlayerContext } from "../managers/PlaylistDataManager";
 
 export async function showSortPlaylistMenu() {
   const items = getSortItems();
@@ -43,11 +42,12 @@ export async function showPlaylistOptionsMenu() {
     repeat_state:"context" | repeat_state:"off" | repeat_state:"track"
     shuffle_state:false
      */
-  const currentTrack: Track = MusicDataManager.getInstance().runningTrack;
-  if (!MusicDataManager.getInstance().spotifyContext) {
-    await MusicDataManager.getInstance().populatePlayerContext();
+  const currentTrack: Track = getRunningTrack();
+  let spotifyContext: PlayerContext = getCachedSpotifyPlayerContext();
+  if (!spotifyContext) {
+    await populatePlayerContext();
   }
-  const spotifyContext: PlayerContext = MusicDataManager.getInstance().spotifyContext;
+  spotifyContext = getCachedSpotifyPlayerContext();
   const currentVolume = spotifyContext.device.volume_percent;
 
   // is it currently shuffling?

@@ -11,12 +11,12 @@ import {
   getSelectedPlaylistId,
   getSelectedTabView,
   getSoftwareTop40Playlist,
-  getSpotifyLikedTracksPlaylist,
+  getSpotifyLikedPlaylist,
   getSpotifyPlaylists,
 } from "../managers/PlaylistDataManager";
 import { getSlackWorkspaces, hasSlackWorkspaces } from "../managers/SlackManager";
 import { getConnectedSpotifyUser } from "../managers/SpotifyManager";
-import { isCodeTimeTimeInstalled } from '../Util';
+import { isCodeTimeTimeInstalled } from "../Util";
 
 export async function getReactData(tabView = undefined) {
   const name = getItem("name");
@@ -58,7 +58,7 @@ export async function getReactData(tabView = undefined) {
     likedSongsTracks,
     playlistTracks,
     softwareTop40Playlist,
-    likedSongsPlaylist: getSpotifyLikedTracksPlaylist(),
+    likedSongsPlaylist: getSpotifyLikedPlaylist(),
     selectedPlaylistId: getSelectedPlaylistId(),
     spotifyUser: getConnectedSpotifyUser(),
     slackConnected: !!hasSlackWorkspaces(),
