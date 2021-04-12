@@ -49,7 +49,7 @@ let spotifyContext: PlayerContext = undefined;
 let selectedPlayerName = PlayerName.SpotifyWeb;
 // playlists, recommendations, metrics
 let selectedTabView = "playlists";
-let recommendationMetadata: any = {};
+let recommendationMetadata: any = undefined;
 let recommendationInfo: any = undefined;
 let sortAlphabetically: boolean = false;
 
@@ -377,6 +377,25 @@ export async function getAlbumForTrack(playlistItem: PlaylistItem) {
   }
 }
 
+export function refreshRecommendations() {
+  if (!recommendationInfo) {
+    return getFamiliarRecs();
+  } else {
+    let offset = (recommendationMetadata.offset += 5);
+    if (offset.length - 5 < offset) {
+      // start back at the beginning
+      offset = 0;
+    }
+    getRecommendations(
+      recommendationMetadata.label,
+      recommendationMetadata.seedLimit,
+      recommendationMetadata.seed_genres,
+      recommendationMetadata.features,
+      offset
+    );
+  }
+}
+
 export async function getRecommendations(
   label: string,
   seedLimit: number = 5,
@@ -396,7 +415,7 @@ export async function getRecommendations(
     offset,
   };
 
-  recommendedTracks = await getTrackIdsForRecommendations(seedLimit, seedTracks).then(async (trackIds) => {
+  recommendedTracks = await getTrackIdsForRecommendations(seedLimit, seedTracks, offset).then(async (trackIds) => {
     const tracks: Track[] = await getRecommendationsForTracks(
       trackIds,
       RECOMMENDATION_LIMIT,
@@ -740,7 +759,7 @@ function getArtist(track: any) {
   return null;
 }
 
-async function getTrackIdsForRecommendations(seedLimit: number = 5, seedTracks = []) {
+async function getTrackIdsForRecommendations(seedLimit: number = 5, seedTracks = [], offset = 0) {
   if (seedLimit === 0) {
     return [];
   }
@@ -749,8 +768,10 @@ async function getTrackIdsForRecommendations(seedLimit: number = 5, seedTracks =
     await populateLikedSongs();
   }
 
+  seedLimit = offset + seedLimit;
+
   // up until limit
-  seedTracks.push(...spotifyLikedTracks.slice(0, seedLimit));
+  seedTracks.push(...spotifyLikedTracks.slice(offset, seedLimit));
 
   const remainingLen = seedLimit - seedTracks.length;
   if (remainingLen < seedLimit) {

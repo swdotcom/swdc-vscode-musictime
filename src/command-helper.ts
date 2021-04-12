@@ -29,6 +29,7 @@ import {
   getTrackRecommendations,
   getUserMusicMetrics,
   populateSpotifyDevices,
+  refreshRecommendations,
   removeTrackFromPlaylist,
   requiresSpotifyAccess,
   updateSelectedTabView,
@@ -321,6 +322,12 @@ export function createCommands(
       const features = args.length > 3 ? args[3] : {};
 
       getRecommendations(label, likedSongSeedLimit, seed_genres, features);
+    })
+  );
+
+  cmds.push(
+    commands.registerCommand("musictime.refreshRecommendations", (args) => {
+      refreshRecommendations();
     })
   );
 
