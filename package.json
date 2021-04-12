@@ -82,14 +82,6 @@
         "title": "Music Time: Stop"
       },
       {
-        "command": "musictime.spotifyPlaylist",
-        "title": "Launch Spotify"
-      },
-      {
-        "command": "musictime.refreshButton",
-        "title": "Music Time: Reload playlists"
-      },
-      {
         "command": "musictime.follow",
         "title": "Follow"
       },

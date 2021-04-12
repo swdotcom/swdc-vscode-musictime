@@ -5,7 +5,7 @@ import { PlaylistItem, PlayerName, PlayerDevice, playSpotifyDevice } from "cody-
 import { SocialShareManager } from "./social/SocialShareManager";
 import { connectSlackWorkspace, disconnectSlack, disconnectSlackAuth } from "./managers/SlackManager";
 import { showGenreSelections, showMoodSelections } from "./selector/RecTypeSelectorManager";
-import { showSortPlaylistMenu, showPlaylistOptionsMenu } from "./selector/SortPlaylistSelectorManager";
+import { showSortPlaylistMenu } from "./selector/SortPlaylistSelectorManager";
 import { showDeviceSelectorMenu } from "./selector/SpotifyDeviceSelectorManager";
 import { MusicCommandUtil } from "./music/MusicCommandUtil";
 import { showSearchInput } from "./selector/SearchSelectorManager";
@@ -265,18 +265,6 @@ export function createCommands(
     })
   );
 
-  // RECONCILE PLAYLIST
-  // this should only be attached to the refresh button
-  cmds.push(
-    commands.registerCommand("musictime.refreshButton", async () => {
-      // no devices found at all OR no active devices and a computer device is not found in the list
-      const selectedButton = await window.showInformationMessage(`Reload your playlists?`, ...["Yes"]);
-      if (selectedButton && selectedButton === "Yes") {
-        commands.executeCommand("musictime.hardRefreshPlaylist");
-      }
-    })
-  );
-
   // this should only be attached to the refresh button
   const refreshDeviceInfoCommand = commands.registerCommand("musictime.refreshDeviceInfo", async () => {
     if (!requiresSpotifyAccess()) {
@@ -285,28 +273,9 @@ export function createCommands(
   });
   cmds.push(refreshDeviceInfoCommand);
 
-  // OPTIONS TITLE COMMAND
-  cmds.push(
-    commands.registerCommand("musictime.optionsIcon", () => {
-      showPlaylistOptionsMenu();
-    })
-  );
-
   cmds.push(
     commands.registerCommand("musictime.launchSpotify", () => {
       launchTrackPlayer(PlayerName.SpotifyWeb);
-    })
-  );
-
-  cmds.push(
-    commands.registerCommand("musictime.spotifyPlaylist", () => {
-      launchTrackPlayer(PlayerName.SpotifyWeb);
-    })
-  );
-
-  cmds.push(
-    commands.registerCommand("musictime.laulaunchSpotifyDesktopnchSpotify", () => {
-      launchTrackPlayer(PlayerName.SpotifyDesktop);
     })
   );
 

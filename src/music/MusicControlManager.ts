@@ -10,7 +10,6 @@ import {
   saveToSpotifyLiked,
   addTracksToPlaylist,
   removeFromSpotifyLiked,
-  setItunesLoved,
   repeatOn,
   repeatOff,
   PlayerDevice,
@@ -344,22 +343,14 @@ export class MusicControlManager {
       return;
     }
 
-    if (track.playerType === PlayerType.MacItunesDesktop) {
-      // await so that the stateCheckHandler fetches
-      // the latest version of the itunes track
-      await setItunesLoved(liked).catch((err) => {
-        console.log(`Error updating itunes loved state: ${err.message}`);
-      });
+    // save the spotify track to the users liked songs playlist
+    if (liked) {
+      await saveToSpotifyLiked([track.id]);
     } else {
-      // save the spotify track to the users liked songs playlist
-      if (liked) {
-        await saveToSpotifyLiked([track.id]);
-      } else {
-        await removeFromSpotifyLiked([track.id]);
-      }
-      // clear the liked songs
-      clearSpotifyLikedTracksCache();
+      await removeFromSpotifyLiked([track.id]);
     }
+    // clear the liked songs
+    clearSpotifyLikedTracksCache();
 
     // refresh
     commands.executeCommand("musictime.refreshMusicTimeView");

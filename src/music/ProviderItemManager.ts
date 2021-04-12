@@ -87,10 +87,6 @@ export class ProviderItemManager {
     );
   }
 
-  getItunesConnectedButton() {
-    return this.buildActionItem("itunesconnected", "connected", null, PlayerType.MacItunesDesktop, "iTunes Connected", "You've connected iTunes");
-  }
-
   getLoadingButton() {
     return this.buildActionItem("loading", "action", null, PlayerType.NotAssigned, "Loading...", "please wait", null, "action");
   }
@@ -124,10 +120,6 @@ export class ProviderItemManager {
 
   getSwitchToSpotifyButton() {
     return this.buildActionItem("switchtospotify", "spotify", "musictime.launchSpotifyDesktop", PlayerType.WebSpotify, "Launch Spotify");
-  }
-
-  getSwitchToItunesButton() {
-    return this.buildActionItem("switchtoitunes", "itunes", "musictime.launchItunes", PlayerType.MacItunesDesktop, "Launch iTunes");
   }
 
   // readme button

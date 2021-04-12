@@ -458,11 +458,6 @@ async function populateSpotifyDevices(tryAgain = false) {
     currentDevices = devices;
 
     setTimeout(() => {
-      // refresh the playlist to show the device button update
-      commands.executeCommand("musictime.refreshMusicTimeView");
-    }, 1000);
-
-    setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
     }, 3000);
   }
@@ -756,24 +751,5 @@ function sortTracks(tracks) {
       if (nameA > nameB) return 1;
       return 0; //default return value (no sorting)
     });
-  }
-}
-
-function removeTrackFromRecommendations(trackId) {
-  let foundIdx = -1;
-  for (let i = 0; i < this.recommendationTracks.length; i++) {
-    if (this.recommendationTracks[i].id === trackId) {
-      foundIdx = i;
-      break;
-    }
-  }
-  if (foundIdx > -1) {
-    // splice it out
-    this.recommendationTracks.splice(foundIdx, 1);
-  }
-
-  if (this.recommendationTracks.length < 2) {
-    // refresh
-    commands.executeCommand("musictime.refreshMusicTimeView");
   }
 }

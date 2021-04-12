@@ -156,7 +156,7 @@ export default function PlaylistItemNode(props) {
 
   function likeTrackHandler(event) {
     const command = {
-      action: item.liked ? "musictime.like" : "musictime.unlike",
+      action: !item.liked ? "musictime.like" : "musictime.unlike",
       command: "command_execute",
       arguments: [item],
     };
@@ -227,14 +227,7 @@ export default function PlaylistItemNode(props) {
             <Grid container direction="row" justify="space-between" alignItems="flex-start">
               <Grid item xs={6}>
                 <Tooltip title={item.liked ? "Remove from liked playlist" : "Add to your liked playlist"}>
-                  <IconButton
-                    hidden={true}
-                    size="small"
-                    style={{ color: deepPurple[300] }}
-                    onMouseOver={likeTrackHandler}
-                    onClick={handleClick}
-                    aria-label="Like button"
-                  >
+                  <IconButton hidden={true} size="small" style={{ color: deepPurple[300] }} onClick={likeTrackHandler} aria-label="Like button">
                     {item.liked ? <MuiFavoriteIcon /> : <MuiFavoriteBorderIcon />}
                   </IconButton>
                 </Tooltip>

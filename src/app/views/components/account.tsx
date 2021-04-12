@@ -76,6 +76,25 @@ export default function Account(props) {
       command: "command_execute",
     };
     props.vscode.postMessage(command);
+    setAccountOpen(false);
+  }
+
+  function dashboardClickHandler() {
+    const command = {
+      action: "musictime.displayDashboard",
+      command: "command_execute",
+    };
+    props.vscode.postMessage(command);
+    setAccountOpen(false);
+  }
+
+  function webAnalyticsClickHandler() {
+    const command = {
+      action: "musictime.launchAnalytics",
+      command: "command_execute",
+    };
+    props.vscode.postMessage(command);
+    setAccountOpen(false);
   }
 
   function submitIssueClickHandler() {
@@ -84,9 +103,17 @@ export default function Account(props) {
       command: "command_execute",
     };
     props.vscode.postMessage(command);
+    setAccountOpen(false);
   }
 
-  function switchSpotifyHandler() {}
+  function switchSpotifyHandler() {
+    const command = {
+      action: "musictime.switchSpotifyAccount",
+      command: "command_execute",
+    };
+    props.vscode.postMessage(command);
+    setAccountOpen(false);
+  }
 
   function connectSpotifyHandler() {
     if (stateData.spotifyUser) {
@@ -97,6 +124,7 @@ export default function Account(props) {
       command: "command_execute",
     };
     props.vscode.postMessage(command);
+    setAccountOpen(false);
   }
 
   function accountClickHandler() {
@@ -157,6 +185,20 @@ export default function Account(props) {
               <ListItemText id="spotify-switch-li" primary="Switch spotify account" classes={{ primary: classes.primaryListText }} />
             </ListItem>
           )}
+
+          <ListItem key="report-dashboard" disableGutters={true} dense={true} button onClick={dashboardClickHandler}>
+            <ListItemIcon className={classes.listItemIcon}>
+              <DocumentIcon />
+            </ListItemIcon>
+            <ListItemText id="report-dashboard-li" primary="Dashboard" classes={{ primary: classes.primaryListText }} />
+          </ListItem>
+
+          <ListItem key="web-analytics" disableGutters={true} dense={true} button onClick={webAnalyticsClickHandler}>
+            <ListItemIcon className={classes.listItemIcon}>
+              <DocumentIcon />
+            </ListItemIcon>
+            <ListItemText id="web-analytics-li" primary="More data at Software.com" classes={{ primary: classes.primaryListText }} />
+          </ListItem>
 
           <ListItem key="documentation" disableGutters={true} dense={true} button onClick={documentationClickHandler}>
             <ListItemIcon className={classes.listItemIcon}>
