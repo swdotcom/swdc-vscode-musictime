@@ -1,7 +1,7 @@
 import { showQuickPick } from "../MenuManager";
 import { Track, PlayerContext, TrackStatus } from "cody-music";
 import { showPlayerLaunchConfirmation } from "../managers/PlaylistControlManager";
-import { getCachedSpotifyPlayerContext, getDeviceSet, getRunningTrack, populatePlayerContext } from "../managers/PlaylistDataManager";
+import { getCachedSpotifyPlayerContext, getDeviceSet, getCachedRunningTrack, populatePlayerContext } from "../managers/PlaylistDataManager";
 
 export async function showSortPlaylistMenu() {
   const items = getSortItems();
@@ -42,7 +42,7 @@ export async function showPlaylistOptionsMenu() {
     repeat_state:"context" | repeat_state:"off" | repeat_state:"track"
     shuffle_state:false
      */
-  const currentTrack: Track = getRunningTrack();
+  const currentTrack: Track = getCachedRunningTrack();
   let spotifyContext: PlayerContext = getCachedSpotifyPlayerContext();
   if (!spotifyContext) {
     await populatePlayerContext();

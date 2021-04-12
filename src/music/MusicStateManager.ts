@@ -1,9 +1,8 @@
 import { createSpotifyIdFromUri, createUriFromTrackId, nowInSecs, isMac } from "../Util";
-import { Track, TrackStatus, getTrack, PlayerName, CodyResponse, getSpotifyRecentlyPlayedBefore } from "cody-music";
+import { Track, getTrack, PlayerName, CodyResponse, getSpotifyRecentlyPlayedBefore } from "cody-music";
 import { MusicCommandManager } from "./MusicCommandManager";
-import { commands } from "vscode";
 import { execCmd } from "../managers/ExecManager";
-import { getBestActiveDevice, getRunningTrack, populatePlayerContext, requiresSpotifyAccess } from "../managers/PlaylistDataManager";
+import { getBestActiveDevice, requiresSpotifyAccess } from "../managers/PlaylistDataManager";
 const path = require("path");
 const moment = require("moment-timezone");
 
@@ -40,10 +39,6 @@ export class MusicStateManager {
     return offset * 60;
   }
 
-  public isExistingTrackPlaying(): boolean {
-    return this.existingTrack && this.existingTrack.id && this.existingTrack.state === TrackStatus.Playing ? true : false;
-  }
-
   public fetchPlayingTrack(): Promise<Track> {
     return getTrack(PlayerName.SpotifyWeb);
   }
@@ -53,8 +48,6 @@ export class MusicStateManager {
    */
   public async fetchTrack(): Promise<any> {
     try {
-      const utcLocalTimes = this.getUtcAndLocal();
-
       const requiresAccess = requiresSpotifyAccess();
 
       if (requiresAccess) {
@@ -98,58 +91,9 @@ export class MusicStateManager {
         playingTrack.id = createSpotifyIdFromUri(playingTrack.id);
       }
 
-      const isNewTrack = this.existingTrack.id !== playingTrack.id ? true : false;
-      const sendSongSession = isNewTrack && this.existingTrack.id ? true : false;
-      const trackStateChanged = this.existingTrack.state !== playingTrack.state ? true : false;
+      this.existingTrack = { ...playingTrack };
 
-      // has the existing track ended or have we started a new track?
-      if (sendSongSession) {
-        // just set it to playing
-        this.existingTrack.state = TrackStatus.Playing;
-
-        // clear the track.
-        this.existingTrack = null;
-
-        if (playingTrack) {
-          this.existingTrack = new Track();
-        }
-      }
-
-      if (!this.existingTrack || this.existingTrack.id !== playingTrack.id) {
-        // update the entire object if the id's don't match
-        this.existingTrack = { ...playingTrack };
-      }
-
-      if (this.existingTrack.state !== playingTrack.state) {
-        // update the state if the state doesn't match
-        this.existingTrack.state = playingTrack.state;
-      }
-
-      // set the start for the playing track
-      if (this.existingTrack && this.existingTrack.id && !this.existingTrack["start"]) {
-        this.existingTrack["start"] = utcLocalTimes.utc;
-        this.existingTrack["local_start"] = utcLocalTimes.local;
-        this.existingTrack["end"] = 0;
-      }
-
-      // make sure we set the current progress and duratio
-      if (isValidTrack) {
-        this.existingTrack.duration = playingTrack.duration || 0;
-        this.existingTrack.duration_ms = playingTrack.duration_ms || 0;
-        this.existingTrack.progress_ms = playingTrack.progress_ms || 0;
-      }
-
-      // update the music time status bar
-      MusicCommandManager.syncControls(getRunningTrack(), false);
-
-      if (isNewTrack) {
-        // the player context such as player device status
-        populatePlayerContext();
-        if (trackStateChanged) {
-          // update the device info in case the device has changed
-          commands.executeCommand("musictime.refreshDeviceInfo");
-        }
-      }
+      MusicCommandManager.syncControls(this.existingTrack);
     } catch (e) {
       const errMsg = e.message || e;
       console.error(`Unexpected track state processing error: ${errMsg}`);

@@ -15,7 +15,7 @@ import BottomNavigation from "@material-ui/core/BottomNavigation";
 import BottomNavigationAction from "@material-ui/core/BottomNavigationAction";
 import { TOP_APP_BAR_MIN_HEIGHT, BOTTOM_BAR_HEIGHT, DARK_BG_COLOR, GETTING_STARTED_MIN_HEIGHT } from "../utils/view_constants";
 import { PlaylistIcon, BeakerIcon, MuiEmojiEventsIcon } from "./icons";
-import { deepPurple, grey, lime } from "@material-ui/core/colors";
+import { deepPurple, grey, orange } from "@material-ui/core/colors";
 
 const useStyles = makeStyles((theme) => ({
   bottomNav: {
@@ -44,32 +44,6 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: 400,
   },
 }));
-
-// const getHeight = () => window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
-
-// function useCurrentHeight() {
-//   // save current window width in the state object
-//   let [height, setHeight] = useState(getHeight());
-
-//   // in this case useEffect will execute only once because
-//   // it does not have any dependencies.
-//   useEffect(() => {
-//     const resizeListener = () => {
-//       // change width from the state object
-//       setHeight(getHeight());
-//     };
-//     // set resize listener
-//     window.addEventListener("resize", resizeListener);
-
-//     // clean up function
-//     return () => {
-//       // remove resize listener
-//       window.removeEventListener("resize", resizeListener);
-//     };
-//   }, []);
-
-//   return height;
-// }
 
 export default function SideBar(props) {
   const classes = useStyles();
@@ -103,7 +77,7 @@ export default function SideBar(props) {
         palette: {
           type: prefersDarkMode ? "dark" : "light",
           primary: deepPurple,
-          secondary: lime,
+          secondary: orange,
         },
         overrides: {
           MuiGrid: {

@@ -204,7 +204,7 @@ export default function PlaylistItemNode(props) {
                 secondary={
                   item.albumName ? (
                     <Typography noWrap className={classes.playlistSecondaryText}>
-                      {item?.albumName}
+                      {item.description}
                     </Typography>
                   ) : null
                 }
@@ -224,15 +224,15 @@ export default function PlaylistItemNode(props) {
       {item.type === "track" && (
         <Grid item xs={3} className={classes.trackItemGridItem}>
           <Fade in={show}>
-            <Grid container direction="row" justify="space-between" alignItems="flex-start">
-              <Grid item xs={6}>
+            <Grid container style={{ padding: 1, textAlign: "center" }}>
+              <Grid item xs>
                 <Tooltip title={item.liked ? "Remove from liked playlist" : "Add to your liked playlist"}>
                   <IconButton hidden={true} size="small" style={{ color: deepPurple[300] }} onClick={likeTrackHandler} aria-label="Like button">
                     {item.liked ? <MuiFavoriteIcon /> : <MuiFavoriteBorderIcon />}
                   </IconButton>
                 </Tooltip>
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs>
                 <IconButton
                   hidden={true}
                   size="small"

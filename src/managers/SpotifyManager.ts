@@ -1,4 +1,4 @@
-import { CodyConfig, getUserProfile, setConfig } from "cody-music";
+import { CodyConfig, getRunningTrack, getUserProfile, setConfig } from "cody-music";
 import { commands, window } from "vscode";
 import { api_endpoint, YES_LABEL } from "../Constants";
 import { isResponseOk, softwareGet, softwarePut } from "../HttpClient";
@@ -10,7 +10,7 @@ import { getAuthCallbackState, getIntegrations, getItem, getPluginUuid, setItem 
 import { getUser } from "./UserStatusManager";
 import { clearSpotifyIntegrations, updateSpotifyIntegration } from "./IntegrationManager";
 import { processNewSpotifyIntegration } from "./UserStatusManager";
-import { clearAllData, getRunningTrack } from "./PlaylistDataManager";
+import { clearAllData } from "./PlaylistDataManager";
 
 const queryString = require("query-string");
 
@@ -162,7 +162,7 @@ export async function disconnectSpotify(confirmDisconnect = true) {
     }, 1000);
 
     // update the status bar
-    MusicCommandManager.syncControls(getRunningTrack(), false);
+    MusicCommandManager.syncControls(await getRunningTrack(), false);
 
     if (confirmDisconnect) {
       window.showInformationMessage(`Successfully disconnected your Spotify connection.`);

@@ -1,6 +1,6 @@
 import { window, StatusBarAlignment, StatusBarItem } from "vscode";
 import { getSongDisplayName } from "../Util";
-import { TrackStatus, Track } from "cody-music";
+import { TrackStatus, Track, getRunningTrack } from "cody-music";
 import { getItem, setItem } from "../managers/FileManager";
 import { getBestActiveDevice, requiresSpotifyAccess, requiresSpotifyReAuthentication } from "../managers/PlaylistDataManager";
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from "../Constants";
@@ -86,7 +86,7 @@ export class MusicCommandManager {
     this.createButton("$(pulse)", "Display song info", "musictime.songTitleRefresh", 995);
     // button area for the current song name
     this.createButton("", "Click to view track", "musictime.currentSong", 994);
-    this.syncControls(null);
+    this.syncControls(await getRunningTrack());
   }
 
   public static initiateProgress(progressLabel: string) {

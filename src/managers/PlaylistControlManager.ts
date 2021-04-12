@@ -222,12 +222,13 @@ async function playMusicSelection() {
   }
 
   setTimeout(() => {
+    MusicStateManager.getInstance().fetchTrack();
     checkPlayingState(device.id);
   }, 1000);
 }
 
 export async function playNextLikedSong() {
-  const likedSongs: Track[] = getCachedLikedSongsTracks();
+  const likedSongs: PlaylistItem[] = getCachedLikedSongsTracks();
   const nextIdx = getNextOrPrevLikedIndex(true);
 
   let nextLikedTrack = likedSongs[nextIdx];
@@ -237,7 +238,7 @@ export async function playNextLikedSong() {
 }
 
 export async function playPreviousLikedSongs() {
-  const likedSongs: Track[] = getCachedLikedSongsTracks();
+  const likedSongs: PlaylistItem[] = getCachedLikedSongsTracks();
   const prevIdx = getNextOrPrevLikedIndex(false);
 
   let nextLikedTrack = likedSongs[prevIdx];
@@ -247,9 +248,9 @@ export async function playPreviousLikedSongs() {
 }
 
 function getNextOrPrevLikedIndex(get_next: boolean) {
-  const likedSongs: Track[] = getCachedLikedSongsTracks();
+  const likedSongs: PlaylistItem[] = getCachedLikedSongsTracks();
   const selectedTrack = getSelectedTrackItem();
-  const nextIdx = likedSongs.findIndex((n: Track) => n.id === selectedTrack.id);
+  const nextIdx = likedSongs.findIndex((n: PlaylistItem) => n.id === selectedTrack.id);
   if (get_next) {
     // get next
     if (nextIdx + 1 >= likedSongs.length) {

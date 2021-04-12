@@ -18,11 +18,11 @@ import { getSlackWorkspaces, hasSlackWorkspaces } from "../managers/SlackManager
 import { getConnectedSpotifyUser } from "../managers/SpotifyManager";
 import { isCodeTimeTimeInstalled } from "../Util";
 
-export async function getReactData(tabView = undefined) {
+export async function getReactData(tab_view = undefined, playlist_id = undefined) {
   const name = getItem("name");
   const authType = getItem("authType");
 
-  const selectedTabView = tabView ? tabView : getSelectedTabView();
+  const selectedTabView = tab_view ? tab_view : getSelectedTabView();
 
   let spotifyPlaylists = [];
   let likedSongsTracks = [];
@@ -42,6 +42,8 @@ export async function getReactData(tabView = undefined) {
       spotifyPlaylists = await getSpotifyPlaylists();
     }
   }
+
+  const selectedPlaylistId = playlist_id ? playlist_id : getSelectedPlaylistId();
   const recommendationInfo = selectedTabView === "recommendations" ? getCachedRecommendationInfo() : [];
   const userMusicMetrics = selectedTabView === "metrics" ? getCachedUserMusicMetrics() : [];
   const averageMusicMetrics = selectedTabView === "metrics" ? getCachedAverageMusicMetrics() : {};
@@ -58,8 +60,8 @@ export async function getReactData(tabView = undefined) {
     likedSongsTracks,
     playlistTracks,
     softwareTop40Playlist,
+    selectedPlaylistId,
     likedSongsPlaylist: getSpotifyLikedPlaylist(),
-    selectedPlaylistId: getSelectedPlaylistId(),
     spotifyUser: getConnectedSpotifyUser(),
     slackConnected: !!hasSlackWorkspaces(),
     slackWorkspaces: getSlackWorkspaces(),

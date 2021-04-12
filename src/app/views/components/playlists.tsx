@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme) => ({
   cardHeaderIcon: {
     marginTop: 10,
     marginRight: 10,
-  }
+  },
 }));
 
 let playlistTracks = {};
@@ -88,16 +88,16 @@ export default function Playlists(props) {
         }
         action={
           <div className={classes.cardHeaderIcon}>
-              <Tooltip title="Ranking">
-                <IconButton onClick={sortPlaylist}>
-                  <MuiSortByAlphaIcon/>
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Search Spotify">
-                <IconButton onClick={searchSongs}>
-                  <MuiSearchIcon/>
-                </IconButton>
-              </Tooltip>
+            <Tooltip title="Ranking">
+              <IconButton onClick={sortPlaylist}>
+                <MuiSortByAlphaIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Search Spotify">
+              <IconButton onClick={searchSongs}>
+                <MuiSearchIcon />
+              </IconButton>
+            </Tooltip>
           </div>
         }
       />
@@ -111,8 +111,7 @@ export default function Playlists(props) {
           defaultCollapseIcon={<ArrowDropDownIcon />}
           defaultExpandIcon={<ArrowRightIcon />}
         >
-
-          {(props.stateData.softwareTop40Playlist && props.stateData.softwareTop40Playlist.tracks) && (
+          {props.stateData.softwareTop40Playlist && props.stateData.softwareTop40Playlist.tracks && (
             <PlaylistItem
               vscode={props.vscode}
               playlistItem={props.stateData.softwareTop40Playlist}

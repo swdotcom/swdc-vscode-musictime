@@ -34,17 +34,17 @@ import { getItem } from "./FileManager";
 import { connectSpotify, getSpotifyIntegration, populateSpotifyUser, updateCodyConfig, updateSpotifyClientInfo } from "./SpotifyManager";
 
 let currentDevices: PlayerDevice[] = [];
-let spotifyLikedTracks: Track[] = undefined;
+let spotifyLikedTracks: PlaylistItem[] = undefined;
 let spotifyPlaylists: PlaylistItem[] = undefined;
 let softwareTop40Playlist: PlaylistItem = undefined;
-let recommendedTracks: Track[] = undefined;
+let recommendedTracks: PlaylistItem[] = undefined;
 let playlistTracks: any = {};
 let userMusicMetrics: MusicMetrics[] = undefined;
 let globalMusicMetrics: MusicMetrics[] = undefined;
 let averageMusicMetrics: MusicMetrics = undefined;
 let selectedPlaylistId = undefined;
 let selectedTrackItem: PlaylistItem = undefined;
-let runningTrack: Track = undefined;
+let cachedRunningTrack: Track = undefined;
 let spotifyContext: PlayerContext = undefined;
 let selectedPlayerName = PlayerName.SpotifyWeb;
 // playlists, recommendations, metrics
@@ -94,6 +94,10 @@ export function updateSpotifyLikedTracks(songs) {
   spotifyLikedTracks = songs;
 }
 
+export function removeTrackFromLikedPlaylist(trackId) {
+  spotifyLikedTracks = spotifyLikedTracks.filter((n) => n.id !== trackId);
+}
+
 export function updateSpotifyPlaylistTracks(id, songs) {
   playlistTracks[id] = songs;
 }
@@ -117,8 +121,8 @@ export function updateSort(alphabetically: boolean) {
   commands.executeCommand("musictime.refreshMusicTimeView");
 }
 
-export function updateRunningTrack(track: Track) {
-  runningTrack = track;
+export function updateCachedRunningTrack(track: Track) {
+  cachedRunningTrack = track;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -161,8 +165,8 @@ export function getCachedSpotifyPlayerContext() {
   return spotifyContext;
 }
 
-export function getRunningTrack() {
-  return runningTrack;
+export function getCachedRunningTrack() {
+  return cachedRunningTrack;
 }
 
 export function getSelectedPlaylistId() {
@@ -234,7 +238,8 @@ export async function getSoftwareTop40Playlist() {
   if (softwareTop40Playlist && softwareTop40Playlist.tracks && softwareTop40Playlist.tracks["items"]) {
     softwareTop40Playlist.tracks["items"] = softwareTop40Playlist.tracks["items"].map((n) => {
       const albumName = getAlbumName(n.track);
-      n.track = { ...n.track, albumName };
+      const description = getArtistAlbumDescription(n.track);
+      n.track = { ...n.track, albumName, description };
       return { ...n };
     });
   }
@@ -262,7 +267,8 @@ export async function fetchTracksForPlaylist(playlist_id) {
     if (tracks?.length) {
       tracks = tracks.map((t) => {
         const albumName = getAlbumName(t);
-        return { ...t, playlist_id, albumName, liked: false };
+        const description = getArtistAlbumDescription(t);
+        return { ...t, playlist_id, albumName, description, liked: false };
       });
     }
     playlistTracks[playlist_id] = tracks;
@@ -294,12 +300,18 @@ export async function getUserMusicMetrics() {
 }
 
 export async function populateLikedSongs() {
-  spotifyLikedTracks = (await getSpotifyLikedSongs()) || [];
+  const tracks: Track[] = (await getSpotifyLikedSongs()) || [];
   // add the playlist id to the tracks
-  if (spotifyLikedTracks?.length) {
-    spotifyLikedTracks = spotifyLikedTracks.map((t) => {
+  if (tracks?.length) {
+    spotifyLikedTracks = tracks.map((t, idx) => {
+      const playlistItem: PlaylistItem = createPlaylistItemFromTrack(t, idx);
       const albumName = getAlbumName(t);
-      return { ...t, playlist_id: SPOTIFY_LIKED_SONGS_PLAYLIST_ID, albumName, liked: true };
+      const description = getArtistAlbumDescription(t);
+      playlistItem["playlist_id"] = SPOTIFY_LIKED_SONGS_PLAYLIST_ID;
+      playlistItem["albumName"] = albumName;
+      playlistItem["liked"] = true;
+      playlistItem["description"] = description;
+      return playlistItem;
     });
   }
 }
@@ -353,7 +365,15 @@ export async function getAlbumForTrack(playlistItem: PlaylistItem) {
 
   if (albumId) {
     const albumTracks: Track[] = await getSpotifyAlbumTracks(albumId);
-    populateRecommendationTracks(playlistItem["albumName"], albumTracks);
+    let items: PlaylistItem[] = [];
+
+    if (albumTracks?.length) {
+      items = albumTracks.map((t, idx) => {
+        const playlistItem: PlaylistItem = createPlaylistItemFromTrack(t, idx);
+        return playlistItem;
+      });
+    }
+    populateRecommendationTracks(playlistItem["albumName"], items);
   }
 }
 
@@ -377,17 +397,36 @@ export async function getRecommendations(
   };
 
   recommendedTracks = await getTrackIdsForRecommendations(seedLimit, seedTracks).then(async (trackIds) => {
-    return getRecommendationsForTracks(trackIds, RECOMMENDATION_LIMIT, "" /*market*/, 20, 100, seed_genres, [] /*artists*/, features);
+    const tracks: Track[] = await getRecommendationsForTracks(
+      trackIds,
+      RECOMMENDATION_LIMIT,
+      "" /*market*/,
+      20,
+      100,
+      seed_genres,
+      [] /*artists*/,
+      features
+    );
+
+    let items: PlaylistItem[] = [];
+    if (tracks?.length) {
+      items = tracks.map((t, idx) => {
+        const playlistItem: PlaylistItem = createPlaylistItemFromTrack(t, idx);
+        return playlistItem;
+      });
+    }
+    return items;
   });
 
   populateRecommendationTracks(label, recommendedTracks);
 }
 
-export function populateRecommendationTracks(label: string, tracks: Track[]) {
+export function populateRecommendationTracks(label: string, tracks: PlaylistItem[]) {
   if (tracks?.length) {
     tracks = tracks.map((t) => {
       const albumName = getAlbumName(t);
-      return { ...t, albumName, liked: false };
+      const description = getArtistAlbumDescription(t);
+      return { ...t, albumName, description, liked: false };
     });
   }
 
@@ -528,7 +567,7 @@ export function getBestActiveDevice() {
 
 export async function populatePlayerContext() {
   spotifyContext = await getSpotifyPlayerContext();
-  MusicCommandManager.syncControls(runningTrack, false);
+  MusicCommandManager.syncControls(cachedRunningTrack, false);
 }
 
 ////////////////////////////////////////////////////////////////
@@ -560,7 +599,7 @@ export async function initializeSpotify(refreshUser = false) {
 export async function isTrackRepeating(): Promise<boolean> {
   // get the current repeat state
   let spotifyContext: PlayerContext = getCachedSpotifyPlayerContext();
-  if (!spotifyContext && getRunningTrack()) {
+  if (!spotifyContext && getCachedRunningTrack()) {
     await populatePlayerContext();
     spotifyContext = getCachedSpotifyPlayerContext();
   }
@@ -637,34 +676,54 @@ function getPlaylistItemTracksFromCodyResponse(codyResponse: CodyResponse): Play
 }
 
 export function createPlaylistItemFromTrack(track: Track, position: number) {
-  const popularity = track.popularity ? track.popularity : null;
-  const artistName = getArtist(track);
-
-  let tooltip = track.name;
-  if (artistName) {
-    tooltip += ` - ${artistName}`;
-  }
-  if (popularity) {
-    tooltip += ` (Popularity: ${popularity})`;
-  }
-
   let playlistItem: PlaylistItem = new PlaylistItem();
   playlistItem.type = "track";
   playlistItem.name = track.name;
-  playlistItem.tooltip = tooltip;
+  playlistItem.tooltip = getTrackTooltip(track);
   playlistItem.id = track.id;
   playlistItem.uri = track.uri;
   playlistItem.popularity = track.popularity;
   playlistItem.position = position;
-  playlistItem.artist = artistName;
+  playlistItem.artist = getArtist(track);
   playlistItem.playerType = track.playerType;
   playlistItem.itemType = "track";
   playlistItem["albumId"] = track?.album?.id;
-  playlistItem["albumName"] = track?.album?.name;
+  playlistItem["albumName"] = getAlbumName(track);
+  playlistItem["description"] = getArtistAlbumDescription(track);
 
   delete playlistItem.tracks;
 
   return playlistItem;
+}
+
+function getTrackTooltip(track: any) {
+  let tooltip = track.name;
+  const artistName = getArtist(track);
+
+  if (artistName) {
+    tooltip += ` - ${artistName}`;
+  }
+  if (track.popularity) {
+    tooltip += ` (Popularity: ${track.popularity})`;
+  }
+  return tooltip;
+}
+
+function getArtistAlbumDescription(track: any) {
+  let artistName = getArtist(track);
+  let albumName = getAlbumName(track);
+
+  // return artist - album (but abbreviate both if the len is too large)
+  if (artistName.length + albumName.length > 150) {
+    // start abbreviating
+    if (artistName.length > 75) {
+      artistName = artistName(0, 71) + "...";
+    }
+    if (albumName.length > 75) {
+      albumName = albumName(0, 71) + "...";
+    }
+  }
+  return `${artistName} - ${albumName}`;
 }
 
 function getArtist(track: any) {
