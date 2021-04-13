@@ -125,7 +125,7 @@ export default function MetricAudioDashboard(props) {
   const classes = useStyles();
   const featureNames = featuresInfo.map((n) => n.key);
   const [checked, setChecked] = useState(featureNames);
-  const [musicMetricData, setMusicMetricData] = useState({ ...props.stateData.averageMusicMetrics });
+  const [musicMetricData, setMusicMetricData] = useState(props.stateData.averageMusicMetrics);
 
   const metrics = props.stateData.averageMusicMetrics;
   if (metrics && metrics.valence) {
@@ -169,7 +169,11 @@ export default function MetricAudioDashboard(props) {
   }
 
   function refreshFeatureData() {
-    setMusicMetricData({ ...props.stateData.averageMusicMetrics });
+    const command = {
+      action: "musictime.resetAudioFeatures",
+      command: "command_execute",
+    };
+    props.vscode.postMessage(command);
   }
 
   function sliderText(value) {
@@ -222,9 +226,11 @@ export default function MetricAudioDashboard(props) {
         }}
         action={
           <div className={classes.headerActionButtons}>
-            <IconButton aria-label="recommendations" onClick={refreshFeatureData}>
-              <MuiRefreshIcon />
-            </IconButton>
+            <Tooltip title="Reset">
+              <IconButton aria-label="recommendations" onClick={refreshFeatureData}>
+                <MuiRefreshIcon />
+              </IconButton>
+            </Tooltip>
             <Tooltip title="Generate recommendations">
               <IconButton aria-label="recommendations" onClick={generateRecommendations}>
                 <BeakerIcon />

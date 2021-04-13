@@ -87,12 +87,12 @@ export default function Metrics(props) {
           }
           action={
             <div className={classes.headerActionButtons}>
-              <Tooltip title="Ranking">
+              <Tooltip title="Your productivity ranking">
                 <IconButton onClick={showRanking}>
                   <MuiEmojiEventsIcon color={tabView === 0 ? "primary" : "disabled"} />
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Dashboard">
+              <Tooltip title="Your audio feature averages">
                 <IconButton onClick={showDashboard}>
                   <MuiTuneIcon color={tabView === 1 ? "primary" : "disabled"} />
                 </IconButton>

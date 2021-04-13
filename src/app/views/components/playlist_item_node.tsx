@@ -3,7 +3,6 @@ import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import List from "@material-ui/core/List";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListItem from "@material-ui/core/ListItem";
-import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import PropTypes from "prop-types";
 import Typography from "@material-ui/core/Typography";
@@ -125,6 +124,7 @@ export default function PlaylistItemNode(props) {
       arguments: [item],
     };
     props.vscode.postMessage(command);
+    handleClose();
   }
 
   function showAlbum() {
@@ -134,6 +134,7 @@ export default function PlaylistItemNode(props) {
       arguments: [item],
     };
     props.vscode.postMessage(command);
+    handleClose();
   }
 
   function getTrackRecommendations() {
@@ -143,6 +144,7 @@ export default function PlaylistItemNode(props) {
       arguments: [item],
     };
     props.vscode.postMessage(command);
+    handleClose();
   }
 
   function shareTrack() {
@@ -152,6 +154,7 @@ export default function PlaylistItemNode(props) {
       arguments: [item],
     };
     props.vscode.postMessage(command);
+    handleClose();
   }
 
   function likeTrackHandler(event) {
@@ -161,6 +164,7 @@ export default function PlaylistItemNode(props) {
       arguments: [item],
     };
     props.vscode.postMessage(command);
+    handleClose();
   }
 
   function hideMenu() {
@@ -178,7 +182,7 @@ export default function PlaylistItemNode(props) {
     event.preventDefault();
   }
 
-  function handleClose(event) {
+  function handleClose(event = null) {
     setAnchorEl(null);
     event.preventDefault();
   }
@@ -202,11 +206,9 @@ export default function PlaylistItemNode(props) {
                   </Typography>
                 }
                 secondary={
-                  item.albumName ? (
-                    <Typography noWrap className={classes.playlistSecondaryText}>
-                      {item.description}
-                    </Typography>
-                  ) : null
+                  <Typography noWrap className={classes.playlistSecondaryText}>
+                    {item.description}
+                  </Typography>
                 }
               />
             </ListItem>
@@ -255,6 +257,7 @@ export default function PlaylistItemNode(props) {
               style: {
                 maxHeight: MAX_MENU_HEIGHT,
                 backgroundColor: DARK_BG_COLOR,
+                paddingRight: 5,
               },
             }}
           >
@@ -269,15 +272,15 @@ export default function PlaylistItemNode(props) {
                     }
                     secondary={
                       <Typography noWrap className={classes.menuHeaderSecondary}>
-                        {item?.albumName}
+                        {item?.description}
                       </Typography>
                     }
                   />
-                  <ListItemSecondaryAction onClick={handleClose}>
-                    <MuiCloseIcon />
-                  </ListItemSecondaryAction>
                 </ListItem>
               </List>
+              <IconButton aria-label="Close" onClick={handleClose} style={{ position: "absolute", right: 2, top: 2 }}>
+                <MuiCloseIcon />
+              </IconButton>
             </MenuItem>
             <List component="nav" disablePadding={true} dense={true} aria-labelledby="track-selections">
               <ListItem key="show-album" button onClick={showAlbum} disableGutters={true} dense={true}>

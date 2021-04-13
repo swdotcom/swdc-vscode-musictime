@@ -305,12 +305,8 @@ export async function populateLikedSongs() {
   if (tracks?.length) {
     spotifyLikedTracks = tracks.map((t, idx) => {
       const playlistItem: PlaylistItem = createPlaylistItemFromTrack(t, idx);
-      const albumName = getAlbumName(t);
-      const description = getArtistAlbumDescription(t);
       playlistItem["playlist_id"] = SPOTIFY_LIKED_SONGS_PLAYLIST_ID;
-      playlistItem["albumName"] = albumName;
       playlistItem["liked"] = true;
-      playlistItem["description"] = description;
       return playlistItem;
     });
   }
@@ -359,6 +355,7 @@ export function getTrackRecommendations(playlistItem: PlaylistItem) {
 
 export async function getAlbumForTrack(playlistItem: PlaylistItem) {
   let albumId = playlistItem["albumId"];
+  let albumName = playlistItem["album"] ? playlistItem["album"]["name"] : "";
   if (!albumId && playlistItem["album"]) {
     albumId = playlistItem["album"]["id"];
   }
@@ -369,6 +366,9 @@ export async function getAlbumForTrack(playlistItem: PlaylistItem) {
 
     if (albumTracks?.length) {
       items = albumTracks.map((t, idx) => {
+        if (!t["albumName"]) {
+          t["albumName"] = albumName;
+        }
         const playlistItem: PlaylistItem = createPlaylistItemFromTrack(t, idx);
         return playlistItem;
       });
@@ -684,8 +684,7 @@ function getPlaylistItemTracksFromCodyResponse(codyResponse: CodyResponse): Play
     if (paginationItem && paginationItem.items) {
       playlistItems = paginationItem.items.map((track: Track, idx: number) => {
         const position = idx + 1;
-        let playlistItem: PlaylistItem = createPlaylistItemFromTrack(track, position);
-
+        const playlistItem: PlaylistItem = createPlaylistItemFromTrack(track, position);
         return playlistItem;
       });
     }
@@ -733,16 +732,16 @@ function getArtistAlbumDescription(track: any) {
   let albumName = getAlbumName(track);
 
   // return artist - album (but abbreviate both if the len is too large)
-  if (artistName.length + albumName.length > 150) {
+  if (artistName && albumName && artistName.length + albumName.length > 100) {
     // start abbreviating
-    if (artistName.length > 75) {
-      artistName = artistName(0, 71) + "...";
+    if (artistName.length > 50) {
+      artistName = artistName(0, 50) + "...";
     }
-    if (albumName.length > 75) {
-      albumName = albumName(0, 71) + "...";
+    if (albumName.length > 50) {
+      albumName = albumName(0, 50) + "...";
     }
   }
-  return `${artistName} - ${albumName}`;
+  return albumName ? `${artistName} - ${albumName}` : artistName;
 }
 
 function getArtist(track: any) {

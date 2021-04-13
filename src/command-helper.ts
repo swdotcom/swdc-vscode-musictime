@@ -331,6 +331,13 @@ export function createCommands(
     })
   );
 
+  cmds.push(
+    commands.registerCommand("musictime.resetAudioFeatures", () => {
+      updateSelectedTabView("metrics");
+      commands.executeCommand("musictime.refreshMusicTimeView");
+    })
+  );
+
   // signup button click
   cmds.push(
     commands.registerCommand("musictime.signUpAccount", async () => {
@@ -423,8 +430,8 @@ export function createCommands(
   );
 
   cmds.push(
-    commands.registerCommand("musictime.showAlbum", async (node: PlaylistItem) => {
-      getAlbumForTrack(node);
+    commands.registerCommand("musictime.showAlbum", async (item: PlaylistItem) => {
+      getAlbumForTrack(item);
     })
   );
 
