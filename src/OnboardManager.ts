@@ -24,19 +24,11 @@ export async function onboardPlugin(ctx: ExtensionContext, callback: any) {
 }
 
 async function primaryWindowOnboarding(ctx: ExtensionContext, callback: any) {
-  let serverIsOnline = await serverIsAvailable();
-  if (serverIsOnline) {
-    // great, it's online, create the anon user
-    const jwt = await createAnonymousUser();
-    if (jwt) {
-      // great, it worked. call the callback
-      return callback(ctx);
-    }
-    // else its some kind of server issue, try again in a minute
-    serverIsOnline = false;
-  }
-
-  if (!serverIsOnline) {
+  const jwt = await createAnonymousUser();
+  if (jwt) {
+    // great, it worked. call the callback
+    return callback(ctx);
+  } else {
     // not online, try again in a minute
     if (retry_counter === 0) {
       // show the prompt that we're unable connect to our app 1 time only

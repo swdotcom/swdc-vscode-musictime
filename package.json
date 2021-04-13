@@ -94,11 +94,6 @@
         "title": "Playing"
       },
       {
-        "command": "musictime.progress",
-        "title": "Loading",
-        "tooltip": "Please wait"
-      },
-      {
         "command": "musictime.sortIcon",
         "title": "Music Time: Sort"
       },

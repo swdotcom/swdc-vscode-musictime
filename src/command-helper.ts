@@ -77,11 +77,6 @@ export function createCommands(
     })
   );
 
-  const progressCmd = commands.registerCommand("musictime.progress", () => {
-    // do nothing for now
-  });
-  cmds.push(progressCmd);
-
   // PLAY CMD
   cmds.push(
     commands.registerCommand("musictime.play", async () => {
@@ -267,12 +262,13 @@ export function createCommands(
   );
 
   // this should only be attached to the refresh button
-  const refreshDeviceInfoCommand = commands.registerCommand("musictime.refreshDeviceInfo", async () => {
-    if (!requiresSpotifyAccess()) {
-      await populateSpotifyDevices(false);
-    }
-  });
-  cmds.push(refreshDeviceInfoCommand);
+  cmds.push(
+    commands.registerCommand("musictime.refreshDeviceInfo", async () => {
+      if (!requiresSpotifyAccess()) {
+        await populateSpotifyDevices(false);
+      }
+    })
+  );
 
   cmds.push(
     commands.registerCommand("musictime.launchSpotify", () => {
@@ -280,8 +276,11 @@ export function createCommands(
     })
   );
 
-  const launchMusicAnalyticsCommand = commands.registerCommand("musictime.launchAnalytics", () => launchMusicAnalytics());
-  cmds.push(launchMusicAnalyticsCommand);
+  cmds.push(
+    commands.registerCommand("musictime.launchAnalytics", () => {
+      launchMusicAnalytics();
+    })
+  );
 
   const deviceSelectTransferCmd = commands.registerCommand("musictime.transferToDevice", async (d: PlayerDevice) => {
     // transfer to this device

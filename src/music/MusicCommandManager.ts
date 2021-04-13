@@ -89,10 +89,6 @@ export class MusicCommandManager {
     this.syncControls(await getRunningTrack());
   }
 
-  public static initiateProgress(progressLabel: string) {
-    this.showProgress(progressLabel);
-  }
-
   public static async syncControls(track: Track, showLoading: boolean = false, statusOverride: TrackStatus = null) {
     if (this._hideSongTimeout) {
       clearTimeout(this._hideSongTimeout);
@@ -346,25 +342,6 @@ export class MusicCommandManager {
     });
 
     this.hideCurrentSong();
-  }
-
-  private static showProgress(progressLabel: string) {
-    this._buttons.map((button) => {
-      const btnCmd = button.statusBarItem.command;
-      const isMusicTimeMenuButton = btnCmd === "musictime.displaySidebar";
-      const isMusicTimeProgress = btnCmd === "musictime.progress";
-
-      if (isMusicTimeMenuButton || isMusicTimeProgress) {
-        if (isMusicTimeMenuButton) {
-          button.tooltip = this.getMusicMenuTooltip();
-        }
-        // show progress and headphones menu buttons
-        button.statusBarItem.show();
-      } else {
-        // hide the rest
-        button.statusBarItem.hide();
-      }
-    });
   }
 
   private static getMusicMenuTooltip() {
