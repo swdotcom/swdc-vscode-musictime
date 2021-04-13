@@ -13,23 +13,8 @@ import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import BottomNavigation from "@material-ui/core/BottomNavigation";
 import BottomNavigationAction from "@material-ui/core/BottomNavigationAction";
-import Drawer from "@material-ui/core/Drawer";
-import IconButton from "@material-ui/core/IconButton";
-import Paper from "@material-ui/core/Paper";
 import { TOP_APP_BAR_MIN_HEIGHT, BOTTOM_BAR_HEIGHT, DARK_BG_COLOR, GETTING_STARTED_MIN_HEIGHT } from "../utils/view_constants";
-import {
-  PlaylistIcon,
-  BeakerIcon,
-  MuiEmojiEventsIcon,
-  MuiSkipNextIcon,
-  MuiPlayArrowIcon,
-  MuiSkipPreviousIcon,
-  MuiShuffleIcon,
-  MuiRepeatIcon,
-  MuiRepeatOneIcon,
-  MuiVolumeOffIcon,
-  MuiVolumeUpIcon,
-} from "./icons";
+import { PlaylistIcon, BeakerIcon, MuiEmojiEventsIcon } from "./icons";
 import { deepPurple, grey, orange } from "@material-ui/core/colors";
 
 const useStyles = makeStyles((theme) => ({
@@ -62,7 +47,6 @@ const useStyles = makeStyles((theme) => ({
 
 export default function SideBar(props) {
   const classes = useStyles();
-  const [state, setState] = React.useState({ bottom: false });
 
   const currentColorKind = props.stateData.currentColorKind;
   const prefersDarkMode = !!(currentColorKind === 2);
@@ -191,14 +175,6 @@ export default function SideBar(props) {
     props.vscode.postMessage(updateCmd);
   }
 
-  const toggleDrawer = (open) => (event) => {
-    if (event.type === "keydown" && (event.key === "Tab" || event.key === "Shift")) {
-      return;
-    }
-
-    setState({ ...state, bottom: open });
-  };
-
   return (
     <ThemeProvider theme={theme}>
       <React.Fragment>
@@ -212,7 +188,7 @@ export default function SideBar(props) {
             )}
             {props.stateData.registered && (
               <Grid item key="account-user-grid-item" xs={12} style={{ marginLeft: 12 }}>
-                <Account vscode={props.vscode} stateData={props.stateData} openAudioControls={toggleDrawer(open)} />
+                <Account vscode={props.vscode} stateData={props.stateData} />
               </Grid>
             )}
           </Grid>
@@ -273,44 +249,6 @@ export default function SideBar(props) {
             </Toolbar>
           </AppBar>
         )}
-
-        <Drawer anchor="bottom" open={state["bottom"]} onClose={toggleDrawer(false)}>
-          <Paper style={{ display: "flex", height: `${BOTTOM_BAR_HEIGHT}px` }} elevation={0}>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  textAlign: "center",
-                  paddingLeft: theme.spacing(1),
-                  paddingBottom: theme.spacing(1),
-                }}
-              >
-                <IconButton aria-label="previous">
-                  <MuiSkipPreviousIcon />
-                </IconButton>
-                <IconButton aria-label="play/pause">
-                  <MuiPlayArrowIcon />
-                </IconButton>
-                <IconButton aria-label="next">
-                  <MuiSkipNextIcon />
-                </IconButton>
-
-                <IconButton aria-label="next">
-                  <MuiShuffleIcon />
-                </IconButton>
-
-                <IconButton aria-label="next">
-                  <MuiRepeatIcon />
-                </IconButton>
-
-                <IconButton aria-label="next">
-                  <MuiVolumeOffIcon />
-                </IconButton>
-              </div>
-            </div>
-          </Paper>
-        </Drawer>
       </React.Fragment>
     </ThemeProvider>
   );

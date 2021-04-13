@@ -5,15 +5,39 @@ import ListItemText from "@material-ui/core/ListItemText";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import { makeStyles } from "@material-ui/core/styles";
-import { GoogleIcon, MuiGitHubIcon, EmailIcon, MessageIcon, DocumentIcon, SpotifyIcon, MuiSyncIcon, MuiTuneIcon } from "../icons";
+import {
+  GoogleIcon,
+  MuiGitHubIcon,
+  EmailIcon,
+  MessageIcon,
+  DocumentIcon,
+  SpotifyIcon,
+  MuiSyncIcon,
+  MuiTuneIcon,
+  MuiSkipNextIcon,
+  MuiPlayArrowIcon,
+  MuiSkipPreviousIcon,
+  MuiShuffleIcon,
+  MuiRepeatIcon,
+  MuiRepeatOneIcon,
+  MuiVolumeOffIcon,
+  MuiVolumeUpIcon,
+} from "../icons";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import Collapse from "@material-ui/core/Collapse";
 import grey from "@material-ui/core/colors/grey";
 import Workspaces from "./workspaces";
+import Box from "@material-ui/core/Box";
 
 const useStyles = makeStyles((theme) => ({
+  root: {
+    flexGrow: 1,
+    width: "100%",
+    padding: 0,
+    margin: 0,
+  },
   textButton: {
     width: "100%",
     justifyContent: "flex-start",
@@ -27,6 +51,8 @@ const useStyles = makeStyles((theme) => ({
   collapseList: {
     flexGrow: 1,
     width: "100%",
+    margin: 0,
+    padding: 0,
   },
   collapseListItem: {
     marginLeft: 10,
@@ -42,9 +68,6 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: 300,
     fontSize: 12,
     right: 0,
-  },
-  listItemIcon: {
-    minWidth: 26,
   },
   label: {
     fontWeight: "inherit",
@@ -62,6 +85,13 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: "inherit",
     flexGrow: 1,
   },
+  controls: {
+    display: "flex",
+    flexGrow: 1,
+    width: "100%",
+    paddingLeft: theme.spacing(1),
+    paddingBottom: theme.spacing(1),
+  },
 }));
 
 export default function Account(props) {
@@ -69,6 +99,7 @@ export default function Account(props) {
   const stateData = props.stateData;
 
   const [accountOpen, setAccountOpen] = useState(false);
+  const [audioOpen, setAudioOpen] = useState(false);
 
   function documentationClickHandler() {
     const command = {
@@ -127,18 +158,23 @@ export default function Account(props) {
     setAccountOpen(false);
   }
 
+  function audioClickHandler() {
+    setAudioOpen(!audioOpen);
+  }
+
   function accountClickHandler() {
     setAccountOpen(!accountOpen);
   }
 
   return (
-    <Grid container>
+    <Grid container className={classes.root}>
       <Grid item key="accont-user-info-grid-item" xs={12}>
         <List disablePadding={true} dense={true}>
           <ListItem key="account_manage_item" disableGutters={true} dense={true}>
             <ListItemText key="account_manage" primary="Account" secondary={!stateData.registered ? "Manage your account" : stateData.email} />
             <ListItemSecondaryAction classes={{ root: classes.secondaryAction }}>
-              <IconButton onClick={props.openAudioControls} aria-label="View audio controls">
+              {/* <IconButton onClick={props.openAudioControls} aria-label="View audio controls"> */}
+              <IconButton onClick={audioClickHandler}>
                 <MuiTuneIcon />
               </IconButton>
               <IconButton edge="end" onClick={accountClickHandler} aria-label="View account info">
@@ -154,11 +190,43 @@ export default function Account(props) {
           </ListItem>
         </List>
       </Grid>
-      <Collapse in={accountOpen} timeout="auto" unmountOnExit>
+      <Collapse in={audioOpen} timeout="auto" unmountOnExit className={classes.root}>
+        <div style={{ width: "100%", padding: 0, margin: 0 }}>
+          <Box display="flex" className={classes.root}>
+            <Box p={1} flexGrow={1}>
+              <IconButton aria-label="previous">
+                <MuiSkipPreviousIcon />
+              </IconButton>
+              <IconButton aria-label="play/pause">
+                <MuiPlayArrowIcon />
+              </IconButton>
+              <IconButton aria-label="next">
+                <MuiSkipNextIcon />
+              </IconButton>
+            </Box>
+            <Box p={1}>
+              <IconButton aria-label="previous">
+                <MuiShuffleIcon />
+              </IconButton>
+            </Box>
+            <Box p={1}>
+              <IconButton aria-label="play/pause">
+                <MuiRepeatIcon />
+              </IconButton>
+            </Box>
+            <Box p={1}>
+              <IconButton aria-label="next">
+                <MuiVolumeOffIcon />
+              </IconButton>
+            </Box>
+          </Box>
+        </div>
+      </Collapse>
+      <Collapse in={accountOpen} timeout="auto" unmountOnExit className={classes.root}>
         <List className={classes.collapseList} disablePadding={true} dense={true}>
           {!props.stateData.spotifyUser && (
             <ListItem key="spotify-connect" disableGutters={true} dense={true} button onClick={connectSpotifyHandler}>
-              <ListItemIcon className={classes.listItemIcon}>
+              <ListItemIcon>
                 <SpotifyIcon />
               </ListItemIcon>
               <ListItemText id="spotify-connect-li" primary="Connect Spotify" classes={{ primary: classes.primaryListText }} />
@@ -168,7 +236,7 @@ export default function Account(props) {
             <Grid container justify="space-between" alignItems="center">
               <Grid item key={`account-user-icon-container`} xs={10}>
                 <div className={classes.labelRoot}>
-                  <ListItemIcon className={classes.listItemIcon}>
+                  <ListItemIcon>
                     <SpotifyIcon />
                   </ListItemIcon>
                   <Typography>{props.stateData.spotifyUser.email}</Typography>
@@ -182,7 +250,7 @@ export default function Account(props) {
 
           {props.stateData.spotifyUser && (
             <ListItem key="switch-spotify" disableGutters={true} dense={true} button onClick={switchSpotifyHandler}>
-              <ListItemIcon className={classes.listItemIcon}>
+              <ListItemIcon style={{ marginLeft: 3 }}>
                 <MuiSyncIcon />
               </ListItemIcon>
               <ListItemText id="spotify-switch-li" primary="Switch spotify account" classes={{ primary: classes.primaryListText }} />
@@ -190,28 +258,28 @@ export default function Account(props) {
           )}
 
           <ListItem key="report-dashboard" disableGutters={true} dense={true} button onClick={dashboardClickHandler}>
-            <ListItemIcon className={classes.listItemIcon}>
+            <ListItemIcon>
               <DocumentIcon />
             </ListItemIcon>
             <ListItemText id="report-dashboard-li" primary="Dashboard" classes={{ primary: classes.primaryListText }} />
           </ListItem>
 
           <ListItem key="web-analytics" disableGutters={true} dense={true} button onClick={webAnalyticsClickHandler}>
-            <ListItemIcon className={classes.listItemIcon}>
+            <ListItemIcon>
               <DocumentIcon />
             </ListItemIcon>
             <ListItemText id="web-analytics-li" primary="More data at Software.com" classes={{ primary: classes.primaryListText }} />
           </ListItem>
 
           <ListItem key="documentation" disableGutters={true} dense={true} button onClick={documentationClickHandler}>
-            <ListItemIcon className={classes.listItemIcon}>
+            <ListItemIcon>
               <DocumentIcon />
             </ListItemIcon>
             <ListItemText id="documentation-li" primary="Documentation" classes={{ primary: classes.primaryListText }} />
           </ListItem>
 
           <ListItem key="submit-issue" disableGutters={true} dense={true} button onClick={submitIssueClickHandler}>
-            <ListItemIcon className={classes.listItemIcon}>
+            <ListItemIcon>
               <MessageIcon />
             </ListItemIcon>
             <ListItemText id="submit-issue-li" primary="Submit an issue" classes={{ primary: classes.primaryListText }} />
