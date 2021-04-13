@@ -79,7 +79,7 @@ export default function MetricItemNode(props) {
       </Grid>
       <Grid item key="keystrokes-grid-item" xs={5}>
         <Grid container direction="row" wrap="nowrap">
-          <Grid item key={`metric-grid-item-${props.item.keystrokes_formatted}`} xs>
+          <Grid item key={`metric-grid-item-ks-${props.item.keystrokes_formatted}`} xs>
             <List disablePadding={true} dense={true}>
               <ListItem key={props.item.keystrokes_formatted} disableGutters={true} dense={true} className={classes.statItem}>
                 <ListItemText
@@ -90,7 +90,7 @@ export default function MetricItemNode(props) {
               </ListItem>
             </List>
           </Grid>
-          <Grid item key={`metric-grid-item-${props.item.song_rank}`} xs>
+          <Grid item key={`metric-grid-item-rank-${props.item.song_rank}`} xs>
             <List disablePadding={true} dense={true}>
               <ListItem key={props.item.song_rank} disableGutters={true} dense={true} className={classes.statItem}>
                 <ListItemText

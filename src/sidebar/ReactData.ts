@@ -62,6 +62,7 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
     playlistTracks,
     softwareTop40Playlist,
     selectedPlaylistId,
+    featureState: 0,
     spotifyPlayerContext: getCachedSpotifyPlayerContext(),
     likedSongsPlaylist: getSpotifyLikedPlaylist(),
     spotifyUser: getConnectedSpotifyUser(),

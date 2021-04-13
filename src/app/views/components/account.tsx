@@ -169,8 +169,7 @@ export default function Account(props) {
           <ListItem key="account_manage_item" disableGutters={true} dense={true}>
             <ListItemText key="account_manage" primary="Account" secondary={!stateData.registered ? "Manage your account" : stateData.email} />
             <ListItemSecondaryAction classes={{ root: classes.secondaryAction }}>
-              {/* <IconButton onClick={props.openAudioControls} aria-label="View audio controls"> */}
-              <IconButton onClick={audioClickHandler}>
+              <IconButton onClick={audioClickHandler} aria-label="View audio controls">
                 <MuiTuneIcon />
               </IconButton>
               <IconButton edge="end" onClick={accountClickHandler} aria-label="View account info">

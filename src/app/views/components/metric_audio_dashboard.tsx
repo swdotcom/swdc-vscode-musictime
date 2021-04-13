@@ -126,6 +126,7 @@ export default function MetricAudioDashboard(props) {
   const featureNames = featuresInfo.map((n) => n.key);
   const [checked, setChecked] = useState(featureNames);
   const [musicMetricData, setMusicMetricData] = useState(props.stateData.averageMusicMetrics);
+  const [featureState, setFeatureState] = useState(props.stateData.featureState);
 
   const metrics = props.stateData.averageMusicMetrics;
   if (metrics && metrics.valence) {
@@ -202,6 +203,8 @@ export default function MetricAudioDashboard(props) {
       arguments: [selectedFeatureData],
     };
     props.vscode.postMessage(command);
+
+    setFeatureState(1);
   }
 
   const handleToggle = (value) => () => {
@@ -218,7 +221,7 @@ export default function MetricAudioDashboard(props) {
   };
 
   return (
-    <Card className={classes.root} elevation={0}>
+    <Card className={classes.root} elevation={0} data-val={featureState}>
       <CardHeader
         classes={{
           root: classes.cardHeaderRoot,
