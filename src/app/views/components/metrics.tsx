@@ -8,7 +8,7 @@ import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import MetricsSetup from "./metrics_setup";
 import { MuiTuneIcon, MuiEmojiEventsIcon } from "../icons";
-import { indigo } from "@material-ui/core/colors";
+import { indigo, grey } from "@material-ui/core/colors";
 import Tooltip from "@material-ui/core/Tooltip";
 import IconButton from "@material-ui/core/IconButton";
 import Box from "@material-ui/core/Box";
@@ -31,6 +31,11 @@ const useStyles = makeStyles((theme) => {
     cardHeaderText: {
       color: indigo[300],
       fontWeight: 500,
+    },
+    resetFeaturesText: {
+      fontWeight: 300,
+      color: grey[500],
+      fontSize: 12,
     },
     cardHeaderIcon: {
       marginTop: 10,
@@ -63,9 +68,16 @@ TabPanel.propTypes = {
   value: PropTypes.any.isRequired,
 };
 
+let origAudioFeatures = undefined;
+
 export default function Metrics(props) {
   const classes = useStyles();
   const [tabView, setTabView] = useState(0);
+
+  if (!origAudioFeatures) {
+    origAudioFeatures = { ...props.stateData.averageMusicMetrics };
+  }
+  const [liveAudioFeatures, setLiveAudioFeatures] = useState(props.stateData.averageMusicMetrics);
 
   function showRanking() {
     setTabView(0);
@@ -73,6 +85,14 @@ export default function Metrics(props) {
 
   function showDashboard() {
     setTabView(1);
+  }
+
+  function resetAudioFeaturesHandler() {
+    setLiveAudioFeatures(origAudioFeatures);
+    setTabView(3);
+    setTimeout(() => {
+      setTabView(1);
+    }, 2000);
   }
 
   return (
@@ -111,17 +131,28 @@ export default function Metrics(props) {
                   props.stateData.userMusicMetrics.map((item, index) => {
                     return <MetricItemNode key={`metric-item-node-idx-${index}`} vscode={props.vscode} stateData={props.stateData} item={item} />;
                   })
-                ) : !props.stateData.userMusicMetrics ? (
+                ) : !liveAudioFeatures ? (
                   <Typography>Loading metrics...</Typography>
                 ) : (
                   <Typography>No metrics available</Typography>
                 )}
               </Grid>
             </Grid>
-          ) : (
+          ) : tabView === 1 ? (
             <Grid container>
               <Grid item key={`metrics-grid-time-metric-dashboard-container`} xs={12}>
-                <MetricAudioDashboard vscode={props.vscode} stateData={props.stateData} />
+                <MetricAudioDashboard
+                  vscode={props.vscode}
+                  stateData={props.stateData}
+                  audioFeatures={liveAudioFeatures}
+                  resetAudioFeatures={resetAudioFeaturesHandler}
+                />
+              </Grid>
+            </Grid>
+          ) : (
+            <Grid container>
+              <Grid item key={`metrics-grid-time-metrics-reset-audio`} xs={12}>
+                <Typography className={classes.resetFeaturesText}>Resetting your audio metric averages...</Typography>
               </Grid>
             </Grid>
           )}

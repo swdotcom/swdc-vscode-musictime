@@ -328,13 +328,6 @@ export function createCommands(
     })
   );
 
-  cmds.push(
-    commands.registerCommand("musictime.resetAudioFeatures", () => {
-      updateSelectedTabView("metrics");
-      commands.executeCommand("musictime.refreshMusicTimeView");
-    })
-  );
-
   // signup button click
   cmds.push(
     commands.registerCommand("musictime.signUpAccount", async () => {

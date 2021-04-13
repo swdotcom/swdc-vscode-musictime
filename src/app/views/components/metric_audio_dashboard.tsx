@@ -125,30 +125,18 @@ export default function MetricAudioDashboard(props) {
   const classes = useStyles();
   const featureNames = featuresInfo.map((n) => n.key);
   const [checked, setChecked] = useState(featureNames);
-  const [musicMetricData, setMusicMetricData] = useState(props.stateData.averageMusicMetrics);
-  const [featureState, setFeatureState] = useState(props.stateData.featureState);
 
-  const metrics = props.stateData.averageMusicMetrics;
-  if (metrics && metrics.valence) {
-    Object.keys(metrics).forEach((key) => {
-      updateFeature(key, metrics[key]);
+  if (props.audioFeatures && Object.keys(props.audioFeatures).length) {
+    Object.keys(props.audioFeatures).forEach((key) => {
+      updateFeature(key, props.audioFeatures[key]);
     });
   }
 
-  const handleSliderChange = (e, newValue) => {
-    let selectedKey = null;
-    if (e.target.dataset.index) {
-      const keys = Object.keys(musicMetricData);
-      selectedKey = keys[e.target.dataset.index];
-    } else if (e.target.dataset.id) {
-      selectedKey = e.target.dataset.id;
-    } else if (e.target.dataset.tag) {
-      selectedKey = e.target.dataset.tag;
-    }
+  const handleSliderChange = (e, newValue, key) => {
+    updateFeature(key, newValue);
 
-    updateFeature(selectedKey, newValue);
-    musicMetricData[selectedKey] = newValue;
-    setMusicMetricData(musicMetricData);
+    // update the state data
+    props.audioFeatures[key] = newValue;
   };
 
   function updateFeature(key, value) {
@@ -167,14 +155,6 @@ export default function MetricAudioDashboard(props) {
       features[`target_${key}`] = value;
       delete features[`max_${key}`];
     }
-  }
-
-  function refreshFeatureData() {
-    const command = {
-      action: "musictime.resetAudioFeatures",
-      command: "command_execute",
-    };
-    props.vscode.postMessage(command);
   }
 
   function sliderText(value) {
@@ -203,8 +183,6 @@ export default function MetricAudioDashboard(props) {
       arguments: [selectedFeatureData],
     };
     props.vscode.postMessage(command);
-
-    setFeatureState(1);
   }
 
   const handleToggle = (value) => () => {
@@ -220,8 +198,12 @@ export default function MetricAudioDashboard(props) {
     setChecked(newChecked);
   };
 
+  function refreshFeatureData() {
+    props.resetAudioFeatures();
+  }
+
   return (
-    <Card className={classes.root} elevation={0} data-val={featureState}>
+    <Card className={classes.root} elevation={0}>
       <CardHeader
         classes={{
           root: classes.cardHeaderRoot,
@@ -255,11 +237,11 @@ export default function MetricAudioDashboard(props) {
       <Divider />
       <Grid container spacing={1}>
         <Grid item key="audio-container-grid-item" xs={12} zeroMinWidth={true}>
-          {musicMetricData &&
-            musicMetricData.valence &&
-            Object.keys(musicMetricData).map((key, index) => {
+          {props.audioFeatures &&
+            Object.keys(props.audioFeatures).length &&
+            Object.keys(props.audioFeatures).map((key, index) => {
               const featureInfo: any = featuresInfo.find((n) => n.key === key);
-              const defaultVal = parseFloat(musicMetricData[key].toFixed(2));
+              const defaultVal = parseFloat(props.audioFeatures[key].toFixed(2));
               return (
                 <Grid item xs={12} key={`audio-grid-item-${key}`}>
                   <Grid container>
@@ -290,9 +272,11 @@ export default function MetricAudioDashboard(props) {
                     <Grid item key={`audio-grid-slider-item-${key}`} xs={4} style={{ marginTop: 6, marginRight: 0 }}>
                       <Slider
                         key={`slider-${key}`}
+                        name={key}
                         data-id={key}
                         data-tag={key}
-                        onChange={handleSliderChange}
+                        // onChange={handleSliderChange}
+                        onChange={(event, value) => handleSliderChange(event, value, key)}
                         defaultValue={defaultVal}
                         getAriaValueText={sliderText}
                         min={featureInfo.min}
