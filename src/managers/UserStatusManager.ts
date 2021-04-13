@@ -156,7 +156,7 @@ export async function authenticationCompleteHandler(user) {
 
   // initiate the playlist build
   setTimeout(() => {
-    commands.executeCommand("musictime.hardRefreshPlaylist");
+    commands.executeCommand("musictime.refreshMusicTimeView");
   }, 1000);
 }
 
@@ -171,6 +171,6 @@ export async function processNewSpotifyIntegration() {
 
   // initiate the playlist build
   setTimeout(() => {
-    commands.executeCommand("musictime.hardRefreshPlaylist");
+    commands.executeCommand("musictime.refreshMusicTimeView");
   }, 2000);
 }

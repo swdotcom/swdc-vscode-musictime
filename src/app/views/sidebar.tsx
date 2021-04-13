@@ -182,7 +182,7 @@ export default function SideBar(props) {
         <AppBar position="fixed" className={classes.topAppBar} id="top-app-bar" style={{ margin: 0, padding: 0 }}>
           <Grid container>
             {(!props.stateData.registered || !props.stateData.spotifyUser) && (
-              <Grid item key="setup-user-grid-item" xs={12} style={{ marginLeft: 12 }}>
+              <Grid item key="setup-user-grid-item" xs={12}>
                 <Setup stateData={props.stateData} vscode={props.vscode} />
               </Grid>
             )}

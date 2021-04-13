@@ -12,7 +12,7 @@ import grey from "@material-ui/core/colors/grey";
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    marginTop: 0,
+    margin: 0,
     background: "linear-gradient(#6879F5, #976AF7)",
   },
   setup: {
