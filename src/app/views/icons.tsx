@@ -23,6 +23,14 @@ import RemoveCircleTwoToneIcon from "@material-ui/icons/RemoveCircleTwoTone";
 import ControlPointTwoToneIcon from "@material-ui/icons/ControlPointTwoTone";
 import SortByAlphaIcon from "@material-ui/icons/SortByAlpha";
 import FavoriteBorderIcon from "@material-ui/icons/FavoriteBorder";
+import SkipPreviousIcon from "@material-ui/icons/SkipPrevious";
+import PlayArrowIcon from "@material-ui/icons/PlayArrow";
+import SkipNextIcon from "@material-ui/icons/SkipNext";
+import ShuffleIcon from "@material-ui/icons/Shuffle";
+import RepeatIcon from "@material-ui/icons/Repeat";
+import RepeatOneIcon from "@material-ui/icons/RepeatOne";
+import VolumeUpIcon from "@material-ui/icons/VolumeUp";
+import VolumeOffIcon from "@material-ui/icons/VolumeOff";
 
 // Material UI SVG Icons
 export const MuiAlbumIcon = (props: SvgIconProps) => {
@@ -111,6 +119,38 @@ export const MuiControlPointTwoToneIcon = (props: SvgIconProps) => {
 
 export const MuiSortByAlphaIcon = (props: SvgIconProps) => {
   return <SortByAlphaIcon {...props} style={getMuiIconStyle(props)} />;
+};
+
+export const MuiSkipPreviousIcon = (props: SvgIconProps) => {
+  return <SkipPreviousIcon {...props} style={getMuiIconStyle(props)} />;
+};
+
+export const MuiPlayArrowIcon = (props: SvgIconProps) => {
+  return <PlayArrowIcon {...props} style={getMuiIconStyle(props)} />;
+};
+
+export const MuiSkipNextIcon = (props: SvgIconProps) => {
+  return <SkipNextIcon {...props} style={getMuiIconStyle(props)} />;
+};
+
+export const MuiShuffleIcon = (props: SvgIconProps) => {
+  return <ShuffleIcon {...props} style={getMuiIconStyle(props)} />;
+};
+
+export const MuiRepeatIcon = (props: SvgIconProps) => {
+  return <RepeatIcon {...props} style={getMuiIconStyle(props)} />;
+};
+
+export const MuiRepeatOneIcon = (props: SvgIconProps) => {
+  return <RepeatOneIcon {...props} style={getMuiIconStyle(props)} />;
+};
+
+export const MuiVolumeUpIcon = (props: SvgIconProps) => {
+  return <VolumeUpIcon {...props} style={getMuiIconStyle(props)} />;
+};
+
+export const MuiVolumeOffIcon = (props: SvgIconProps) => {
+  return <VolumeOffIcon {...props} style={getMuiIconStyle(props)} />;
 };
 
 // Custom SVG Icons

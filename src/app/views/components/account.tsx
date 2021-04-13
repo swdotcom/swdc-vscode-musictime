@@ -5,7 +5,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import { makeStyles } from "@material-ui/core/styles";
-import { GoogleIcon, MuiGitHubIcon, EmailIcon, MessageIcon, DocumentIcon, SpotifyIcon, MuiSyncIcon } from "../icons";
+import { GoogleIcon, MuiGitHubIcon, EmailIcon, MessageIcon, DocumentIcon, SpotifyIcon, MuiSyncIcon, MuiTuneIcon } from "../icons";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
@@ -137,8 +137,11 @@ export default function Account(props) {
         <List disablePadding={true} dense={true}>
           <ListItem key="account_manage_item" disableGutters={true} dense={true}>
             <ListItemText key="account_manage" primary="Account" secondary={!stateData.registered ? "Manage your account" : stateData.email} />
-            <ListItemSecondaryAction classes={{ root: classes.secondaryAction }} onClick={accountClickHandler}>
-              <IconButton size="small" edge="end" style={{ width: "32px", height: "32px" }} aria-label="View account info">
+            <ListItemSecondaryAction classes={{ root: classes.secondaryAction }}>
+              <IconButton onClick={props.openAudioControls} aria-label="View audio controls">
+                <MuiTuneIcon />
+              </IconButton>
+              <IconButton edge="end" onClick={accountClickHandler} aria-label="View account info">
                 {!stateData.registered ? null : stateData.authType === "github" ? (
                   <MuiGitHubIcon />
                 ) : stateData.authType === "google" ? (
