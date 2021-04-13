@@ -5,7 +5,7 @@ import { PlaylistItem, PlayerName, PlayerDevice, playSpotifyDevice } from "cody-
 import { SocialShareManager } from "./social/SocialShareManager";
 import { connectSlackWorkspace, disconnectSlack, disconnectSlackAuth } from "./managers/SlackManager";
 import { showGenreSelections, showMoodSelections } from "./selector/RecTypeSelectorManager";
-import { showSortPlaylistMenu } from "./selector/SortPlaylistSelectorManager";
+import { showPlaylistOptionsMenu, showSortPlaylistMenu } from "./selector/SortPlaylistSelectorManager";
 import { showDeviceSelectorMenu } from "./selector/SpotifyDeviceSelectorManager";
 import { MusicCommandUtil } from "./music/MusicCommandUtil";
 import { showSearchInput } from "./selector/SearchSelectorManager";
@@ -478,6 +478,12 @@ export function createCommands(
   cmds.push(
     commands.registerCommand("musictime.addToPlaylist", async (p: PlaylistItem) => {
       controller.addToPlaylistMenu(p);
+    })
+  );
+
+  cmds.push(
+    commands.registerCommand("musictime.showPlaylistOptionsMenu", async () => {
+      showPlaylistOptionsMenu();
     })
   );
 

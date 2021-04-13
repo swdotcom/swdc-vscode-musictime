@@ -14,14 +14,8 @@ import {
   SpotifyIcon,
   MuiSyncIcon,
   MuiTuneIcon,
-  MuiSkipNextIcon,
-  MuiPlayArrowIcon,
-  MuiSkipPreviousIcon,
-  MuiShuffleIcon,
-  MuiRepeatIcon,
-  MuiRepeatOneIcon,
-  MuiVolumeOffIcon,
-  MuiVolumeUpIcon,
+  PawIcon,
+  DashboardIcon,
 } from "../icons";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
@@ -29,7 +23,6 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import Collapse from "@material-ui/core/Collapse";
 import grey from "@material-ui/core/colors/grey";
 import Workspaces from "./workspaces";
-import Box from "@material-ui/core/Box";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -99,7 +92,6 @@ export default function Account(props) {
   const stateData = props.stateData;
 
   const [accountOpen, setAccountOpen] = useState(false);
-  const [audioOpen, setAudioOpen] = useState(false);
 
   function documentationClickHandler() {
     const command = {
@@ -159,7 +151,11 @@ export default function Account(props) {
   }
 
   function audioClickHandler() {
-    setAudioOpen(!audioOpen);
+    const command = {
+      action: "musictime.showPlaylistOptionsMenu",
+      command: "command_execute",
+    };
+    props.vscode.postMessage(command);
   }
 
   function accountClickHandler() {
@@ -190,38 +186,6 @@ export default function Account(props) {
           </ListItem>
         </List>
       </Grid>
-      <Collapse in={audioOpen} timeout="auto" unmountOnExit className={classes.root}>
-        <div style={{ width: "100%", padding: 0, margin: 0 }}>
-          <Box display="flex" className={classes.root}>
-            <Box p={1} flexGrow={1}>
-              <IconButton aria-label="previous">
-                <MuiSkipPreviousIcon />
-              </IconButton>
-              <IconButton aria-label="play/pause">
-                <MuiPlayArrowIcon />
-              </IconButton>
-              <IconButton aria-label="next">
-                <MuiSkipNextIcon />
-              </IconButton>
-            </Box>
-            <Box p={1}>
-              <IconButton aria-label="previous">
-                <MuiShuffleIcon />
-              </IconButton>
-            </Box>
-            <Box p={1}>
-              <IconButton aria-label="play/pause">
-                <MuiRepeatIcon />
-              </IconButton>
-            </Box>
-            <Box p={1}>
-              <IconButton aria-label="next">
-                <MuiVolumeOffIcon />
-              </IconButton>
-            </Box>
-          </Box>
-        </div>
-      </Collapse>
       <Collapse in={accountOpen} timeout="auto" unmountOnExit className={classes.root}>
         <List className={classes.collapseList} disablePadding={true} dense={true}>
           {!props.stateData.spotifyUser && (
@@ -259,14 +223,14 @@ export default function Account(props) {
 
           <ListItem key="report-dashboard" disableGutters={true} dense={true} button onClick={dashboardClickHandler}>
             <ListItemIcon>
-              <DocumentIcon />
+              <DashboardIcon />
             </ListItemIcon>
             <ListItemText id="report-dashboard-li" primary="Dashboard" classes={{ primary: classes.primaryListText }} />
           </ListItem>
 
           <ListItem key="web-analytics" disableGutters={true} dense={true} button onClick={webAnalyticsClickHandler}>
             <ListItemIcon>
-              <DocumentIcon />
+              <PawIcon />
             </ListItemIcon>
             <ListItemText id="web-analytics-li" primary="More data at Software.com" classes={{ primary: classes.primaryListText }} />
           </ListItem>
