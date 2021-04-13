@@ -22,14 +22,19 @@ import { isCodeTimeTimeInstalled } from "../Util";
 export async function getReactData(tab_view = undefined, playlist_id = undefined) {
   const name = getItem("name");
   const authType = getItem("authType");
+  const spotifyUser = getConnectedSpotifyUser();
 
   const selectedTabView = tab_view ? tab_view : getSelectedTabView();
 
   let spotifyPlaylists = [];
   let likedSongsTracks = [];
   let playlistTracks = [];
-  let softwareTop40Playlist = {};
-  if (selectedTabView === "playlists") {
+  let softwareTop40Playlist = undefined;
+  let selectedPlaylistId = undefined;
+  let recommendationInfo = [];
+  let userMusicMetrics = [];
+  let averageMusicMetrics = undefined;
+  if (selectedTabView === "playlists" && spotifyUser) {
     likedSongsTracks = getCachedLikedSongsTracks();
     playlistTracks = getCachedPlaylistTracks();
 
@@ -42,12 +47,12 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
     if (!spotifyPlaylists) {
       spotifyPlaylists = await getSpotifyPlaylists();
     }
-  }
 
-  const selectedPlaylistId = playlist_id ? playlist_id : getSelectedPlaylistId();
-  const recommendationInfo = selectedTabView === "recommendations" ? getCachedRecommendationInfo() : [];
-  const userMusicMetrics = selectedTabView === "metrics" ? getCachedUserMusicMetrics() : [];
-  const averageMusicMetrics = selectedTabView === "metrics" ? getCachedAverageMusicMetrics() : {};
+    selectedPlaylistId = playlist_id ? playlist_id : getSelectedPlaylistId();
+    recommendationInfo = selectedTabView === "recommendations" ? getCachedRecommendationInfo() : [];
+    userMusicMetrics = selectedTabView === "metrics" ? getCachedUserMusicMetrics() : [];
+    averageMusicMetrics = selectedTabView === "metrics" ? getCachedAverageMusicMetrics() : {};
+  }
 
   const reactData = {
     authType,

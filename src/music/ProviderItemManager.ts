@@ -127,15 +127,6 @@ export class ProviderItemManager {
     return this.buildKpmItem("Documentation", "View the Music Time Readme to learn more", null, "musictime.displayReadme");
   }
 
-  getLoggedInButton() {
-    const connectedToInfo = this.getAuthTypeIconAndLabel();
-
-    const parentItem = this.buildKpmItem(connectedToInfo.label, connectedToInfo.tooltip);
-    parentItem.contextValue = "musictime_slack_folder_parent";
-    parentItem.children = [this.getReadmeButton(), this.getGenerateDashboardButton(), this.getWebAnalyticsButton()];
-    return parentItem;
-  }
-
   getAuthTypeIconAndLabel() {
     const authType = getItem("authType");
     const name = getItem("name");
