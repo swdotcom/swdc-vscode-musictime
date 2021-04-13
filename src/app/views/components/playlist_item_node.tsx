@@ -17,6 +17,7 @@ import Fade from "@material-ui/core/Fade";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import Tooltip from "@material-ui/core/Tooltip";
+import Divider from "@material-ui/core/Divider";
 import { BeakerIcon, MuiAlbumIcon, MuiShareIcon, MuiCloseIcon } from "../icons";
 import { DARK_BG_COLOR, MAX_MENU_HEIGHT } from "../../utils/view_constants";
 
@@ -157,9 +158,29 @@ export default function PlaylistItemNode(props) {
     handleClose();
   }
 
+  function removeTrack(event) {
+    const command = {
+      action: "musictime.removeTrack",
+      command: "command_execute",
+      arguments: [item],
+    };
+    props.vscode.postMessage(command);
+    handleClose();
+  }
+
   function likeTrackHandler(event) {
     const command = {
       action: !item.liked ? "musictime.like" : "musictime.unlike",
+      command: "command_execute",
+      arguments: [item],
+    };
+    props.vscode.postMessage(command);
+    handleClose();
+  }
+
+  function addToPlaylist(event) {
+    const command = {
+      action: "musictime.addToPlaylist",
       command: "command_execute",
       arguments: [item],
     };
@@ -249,7 +270,7 @@ export default function PlaylistItemNode(props) {
             </Grid>
           </Fade>
           <Menu
-            id="long-menu"
+            id="main-menu"
             anchorEl={anchorEl}
             keepMounted
             open={open}
@@ -257,7 +278,8 @@ export default function PlaylistItemNode(props) {
               style: {
                 maxHeight: MAX_MENU_HEIGHT,
                 backgroundColor: DARK_BG_COLOR,
-                paddingRight: 5,
+                paddingRight: 6,
+                paddingLeft: 0,
               },
             }}
           >
@@ -300,6 +322,22 @@ export default function PlaylistItemNode(props) {
                   <MuiShareIcon />
                 </ListItemIcon>
                 <ListItemText primary="Share track" style={{ margin: 0, padding: 0 }} />
+              </ListItem>
+              <Divider />
+              <ListItem key="remove-track" button onClick={removeTrack} disableGutters={true} dense={true}>
+                <ListItemIcon className={classes.listItemIcon}>
+                  <MuiShareIcon />
+                </ListItemIcon>
+                <ListItemText
+                  primary={item.liked ? "Remove from your liked playlist" : "Remove from this playlist"}
+                  style={{ margin: 0, padding: 0 }}
+                />
+              </ListItem>
+              <ListItem key="add-to-playlist" button onClick={addToPlaylist} disableGutters={true} dense={true}>
+                <ListItemIcon className={classes.listItemIcon}>
+                  <MuiShareIcon />
+                </ListItemIcon>
+                <ListItemText primary="Add to playlist" style={{ margin: 0, padding: 0 }} />
               </ListItem>
             </List>
           </Menu>

@@ -283,9 +283,6 @@ export function createCommands(
   const launchMusicAnalyticsCommand = commands.registerCommand("musictime.launchAnalytics", () => launchMusicAnalytics());
   cmds.push(launchMusicAnalyticsCommand);
 
-  const addToPlaylistCommand = commands.registerCommand("musictime.addToPlaylist", (item: PlaylistItem) => controller.addToPlaylistMenu(item));
-  cmds.push(addToPlaylistCommand);
-
   const deviceSelectTransferCmd = commands.registerCommand("musictime.transferToDevice", async (d: PlayerDevice) => {
     // transfer to this device
     window.showInformationMessage(`Connected to ${d.name}`);
@@ -475,6 +472,12 @@ export function createCommands(
     commands.registerCommand("musictime.displaySidebar", () => {
       // logic to open the sidebar (need to figure out how to reveal the sidebar webview)
       commands.executeCommand("workbench.view.extension.music-time-sidebar");
+    })
+  );
+
+  cmds.push(
+    commands.registerCommand("musictime.addToPlaylist", async (p: PlaylistItem) => {
+      controller.addToPlaylistMenu(p);
     })
   );
 

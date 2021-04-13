@@ -98,8 +98,8 @@ export function removeTrackFromLikedPlaylist(trackId) {
   spotifyLikedTracks = spotifyLikedTracks.filter((n) => n.id !== trackId);
 }
 
-export function updateSpotifyPlaylistTracks(id, songs) {
-  playlistTracks[id] = songs;
+export function updateSpotifyPlaylistTracks(playlist_id, songs) {
+  playlistTracks[playlist_id] = songs;
 }
 
 export function updateSelectedTrackItem(item) {
@@ -649,8 +649,11 @@ export async function removeTrackFromPlaylist(trackItem: PlaylistItem) {
 
       const errMsg = getCodyErrorMessage(result);
       if (errMsg) {
-        window.showInformationMessage(`Error removing the selected track. ${errMsg}`);
+        window.showInformationMessage(`Unable to remove the track from your playlist. ${errMsg}`);
       } else {
+        // remove it from the cached list
+        playlistTracks[currentPlaylistId] = playlistTracks[currentPlaylistId].filter((n) => n.id !== trackItem.id);
+
         window.showInformationMessage("Song removed successfully");
         commands.executeCommand("musictime.refreshMusicTimeView");
       }
@@ -735,10 +738,10 @@ function getArtistAlbumDescription(track: any) {
   if (artistName && albumName && artistName.length + albumName.length > 100) {
     // start abbreviating
     if (artistName.length > 50) {
-      artistName = artistName(0, 50) + "...";
+      artistName = artistName.substring(0, 50) + "...";
     }
     if (albumName.length > 50) {
-      albumName = albumName(0, 50) + "...";
+      albumName = albumName.substring(0, 50) + "...";
     }
   }
   return albumName ? `${artistName} - ${albumName}` : artistName;
