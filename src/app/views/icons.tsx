@@ -35,6 +35,7 @@ import EqualizerIcon from "@material-ui/icons/Equalizer";
 import DashboardIcon from "@material-ui/icons/Dashboard";
 import SettingsRemoteIcon from "@material-ui/icons/SettingsRemote";
 import StopIcon from "@material-ui/icons/Stop";
+import DevicesIcon from "@material-ui/icons/Devices";
 
 // Material UI SVG Icons
 export const MuiAlbumIcon = (props: SvgIconProps) => {
@@ -172,6 +173,12 @@ export const MuiSettingsRemoteIcon = (props: SvgIconProps) => {
 export const MuiStopIcon = (props: SvgIconProps) => {
   return <StopIcon {...props} style={getMuiIconStyle(props)} />;
 };
+
+export const MuiDevicesIcon = (props: SvgIconProps) => {
+  return <DevicesIcon {...props} style={getMuiIconStyle(props)} />;
+};
+
+DevicesIcon;
 
 // Custom SVG Icons
 

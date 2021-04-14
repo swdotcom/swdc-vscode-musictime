@@ -29,7 +29,7 @@ import { MusicCommandManager } from "../music/MusicCommandManager";
 import { MusicCommandUtil } from "../music/MusicCommandUtil";
 import { MusicControlManager } from "../music/MusicControlManager";
 import { MusicStateManager } from "../music/MusicStateManager";
-import { getCodyErrorMessage } from "../Util";
+import { getCodyErrorMessage, isMac } from "../Util";
 import { getItem } from "./FileManager";
 import { connectSpotify, getSpotifyIntegration, populateSpotifyUser, updateCodyConfig, updateSpotifyClientInfo } from "./SpotifyManager";
 
@@ -588,6 +588,42 @@ export function getDeviceSet() {
     activeDesktopPlayerDevice,
   };
   return deviceData;
+}
+
+export function getDeviceMenuInfo() {
+  const { webPlayer, desktop, activeDevice, activeComputerDevice, activeWebPlayerDevice } = getDeviceSet();
+
+  const devices: PlayerDevice[] = getCurrentDevices();
+
+  let primaryText = "";
+  let secondaryText = "";
+  let isActive = true;
+  if (activeDevice) {
+    // found an active device
+    primaryText = `Listening on ${activeDevice.name}`;
+  } else if (isMac() && desktop) {
+    // show that the desktop player is an active device
+    primaryText = `Listening on ${desktop.name}`;
+  } else if (webPlayer) {
+    // show that the web player is an active device
+    primaryText = `Listening on ${webPlayer.name}`;
+  } else if (desktop) {
+    // show that the desktop player is an active device
+    primaryText = `Listening on ${desktop.name}`;
+  } else if (devices.length) {
+    // no active device but found devices
+    const names = devices.map((d: PlayerDevice) => d.name);
+    primaryText = `Spotify devices available`;
+    secondaryText = `${names.join(", ")}`;
+    isActive = false;
+  } else if (devices.length === 0) {
+    // no active device and no devices
+    primaryText = "Connect to a Spotify device";
+    secondaryText = "Click to launch the web or desktop player";
+    isActive = false;
+  }
+
+  return { primaryText, secondaryText, isActive };
 }
 
 export function getBestActiveDevice() {

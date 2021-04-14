@@ -26,6 +26,7 @@ import {
   MuiStopIcon,
   MuiVolumeUpIcon,
   MuiVolumeOffIcon,
+  MuiDevicesIcon,
 } from "../icons";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
@@ -36,9 +37,12 @@ import Workspaces from "./workspaces";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import Divider from "@material-ui/core/Divider";
-import { DARK_BG_COLOR, MAX_MENU_HEIGHT } from "../../utils/view_constants";
+import { DARK_BG_COLOR, DARK_BG_TEXT_COLOR, DARK_BG_TEXT_SECONDARY_COLOR, MAX_MENU_HEIGHT } from "../../utils/view_constants";
 import Tooltip from "@material-ui/core/Tooltip";
 import ButtonGroup from "@material-ui/core/ButtonGroup";
+import Button from "@material-ui/core/Button";
+import Card from "@material-ui/core/Card";
+import CardHeader from "@material-ui/core/CardHeader";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -54,12 +58,6 @@ const useStyles = makeStyles((theme) => ({
     "& > *": {
       margin: theme.spacing(1),
     },
-  },
-  textButton: {
-    width: "100%",
-    justifyContent: "flex-start",
-    padding: theme.spacing(0.25, 0.5),
-    fontWeight: 500,
   },
   secondaryAction: {
     right: 0,
@@ -105,7 +103,6 @@ const useStyles = makeStyles((theme) => ({
   controls: {
     display: "flex",
     flexGrow: 1,
-    width: "100%",
     paddingLeft: theme.spacing(1),
     paddingBottom: theme.spacing(1),
   },
@@ -125,10 +122,35 @@ const useStyles = makeStyles((theme) => ({
     margin: 0,
     padding: 0,
   },
+  MuiListItemText: {
+    root: {
+      marginTop: 0,
+    },
+    primary: {
+      fontWeight: 500,
+      fontSize: 12,
+    },
+    secondary: {
+      color: grey[500],
+    },
+  },
+  cardRoot: {
+    background: "transparent",
+    root: {
+      color: DARK_BG_TEXT_COLOR,
+    },
+    title: {
+      color: DARK_BG_TEXT_COLOR,
+    },
+    subheader: {
+      color: DARK_BG_TEXT_SECONDARY_COLOR,
+      fontWeight: 300,
+    },
+  },
 }));
 
 function getTrackName(currentTrack) {
-  return currentTrack?.name ?? "Select a track";
+  return isTrackAvailable(currentTrack) ? currentTrack?.name || "Select a track to play" : "Select a track to play";
 }
 
 function getTrackDescription(currentTrack) {
@@ -146,15 +168,15 @@ function getTrackDescription(currentTrack) {
 }
 
 function isRepeatingTrack(spotifyContext) {
-  return !!(spotifyContext.repeat_state === "track");
+  return !!(spotifyContext && spotifyContext.repeat_state === "track");
 }
 
 function isRepeatingPlaylist(spotifyContext) {
-  return !!(spotifyContext.repeat_state === "context");
+  return !!(spotifyContext && spotifyContext.repeat_state === "context");
 }
 
 function isShuffling(spotifyContext) {
-  return !!(spotifyContext.shuffle_state === true);
+  return !!(spotifyContext && spotifyContext.shuffle_state === true);
 }
 
 function isTrackAvailable(currentTrack) {
@@ -162,11 +184,11 @@ function isTrackAvailable(currentTrack) {
 }
 
 function isPaused(currentTrack) {
-  return !!(currentTrack.state === "paused");
+  return !!(currentTrack && currentTrack.state === "paused");
 }
 
 function isPlaying(currentTrack) {
-  return !!(currentTrack.state === "playing");
+  return !!(currentTrack && currentTrack.state === "playing");
 }
 
 function isMuted(currentTrack) {
@@ -179,7 +201,12 @@ export default function Account(props) {
   const spotifyContext = props.stateData.spotifyPlayerContext;
   const currentTrack = props.stateData.currentlyRunningTrack;
 
-  console.log("getting latest current track info");
+  /**
+   * primaryText,
+   * secondaryText,
+   * isActive
+   */
+  const deviceMenuInfo = props.stateData.deviceMenuInfo;
 
   const runningTrackName = getTrackName(currentTrack);
   const runningTrackStatus = getTrackDescription(currentTrack);
@@ -383,17 +410,26 @@ export default function Account(props) {
     setAnchorEl(null);
   }
 
+  function connectDeviceClick() {
+    const command = {
+      action: "musictime.deviceSelector",
+      command: "command_execute",
+    };
+    props.vscode.postMessage(command);
+    setAnchorEl(null);
+  }
+
   return (
     <Grid container className={classes.root}>
-      <Grid item key="accont-user-info-grid-item" xs={12}>
+      <Grid item key="account_user_grid" xs={12}>
         <List disablePadding={true} dense={true}>
           <ListItem key="account_manage_item" disableGutters={true} dense={true}>
             <ListItemText key="account_manage" primary="Account" secondary={!stateData.registered ? "Manage your account" : stateData.email} />
             <ListItemSecondaryAction classes={{ root: classes.secondaryAction }}>
-              <IconButton onClick={handleAudioOptionsClick} aria-label="View audio controls">
+              <IconButton onClick={handleAudioOptionsClick}>
                 <MuiSettingsRemoteIcon />
               </IconButton>
-              <IconButton edge="end" onClick={accountClickHandler} aria-label="View account info">
+              <IconButton edge="end" onClick={accountClickHandler}>
                 {!stateData.registered ? null : stateData.authType === "github" ? (
                   <MuiGitHubIcon />
                 ) : stateData.authType === "google" ? (
@@ -407,20 +443,22 @@ export default function Account(props) {
         </List>
       </Grid>
       <Menu
-        id="main-audio-options-menu"
+        id="main_audio_options_menu"
         anchorEl={anchorEl}
         keepMounted
         open={open}
         PaperProps={{
           style: {
+            width: 280,
             maxHeight: MAX_MENU_HEIGHT,
             backgroundColor: DARK_BG_COLOR,
             paddingRight: 6,
             paddingLeft: 0,
+            color: DARK_BG_TEXT_COLOR,
           },
         }}
       >
-        <MenuItem key="audio-options-menu-item" style={{ padding: 0, margin: 0 }}>
+        <MenuItem key="audio_options_menu_item" style={{ padding: 0, margin: 0 }}>
           <List disablePadding={true} dense={true} style={{ marginLeft: 10, marginRight: 10, marginBottom: 0, marginTop: 0 }}>
             <ListItem key={`audo-options-info-li`} disableGutters={true} dense={true}>
               <ListItemText
@@ -441,79 +479,92 @@ export default function Account(props) {
             <MuiCloseIcon />
           </IconButton>
         </MenuItem>
-
-        <div className={classes.buttonGroupItems}>
-          <ButtonGroup variant="outlined">
-            <Tooltip title="Previous">
-              <IconButton onClick={previousClick}>
-                <MuiSkipPreviousIcon color={enableControls ? "primary" : "disabled"} />
-              </IconButton>
-            </Tooltip>
-            {enableControls && paused && (
-              <Tooltip title="Play">
-                <IconButton onClick={playClick}>
-                  <MuiPlayArrowIcon color={enableControls ? "primary" : "disabled"} />
-                </IconButton>
-              </Tooltip>
-            )}
-            {enableControls && playing && (
-              <Tooltip title="Pause">
-                <IconButton onClick={pauseClick}>
-                  <MuiStopIcon color={enableControls ? "primary" : "disabled"} />
-                </IconButton>
-              </Tooltip>
-            )}
-            {!enableControls && (
-              <Tooltip title="Play">
-                <IconButton disabled>
-                  <MuiPlayArrowIcon color="disabled" />
-                </IconButton>
-              </Tooltip>
-            )}
-            <Tooltip title="Next">
-              <IconButton onClick={nextClick}>
-                <MuiSkipNextIcon color={enableControls ? "primary" : "disabled"} />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title={shuffling ? "Disable shuffle" : "Enable shuffle"}>
-              <IconButton disabled={!enableControls} onClick={shuffling ? disableShuffleClick : enableShuffleClick}>
-                <MuiShuffleIcon color={shuffling ? "secondary" : enableControls ? "primary" : "disabled"} />
-              </IconButton>
-            </Tooltip>
-            {repeatingTrack ? (
-              <Tooltip title="Disable repeat">
-                <IconButton onClick={disableRepeatClick}>
-                  <MuiRepeatOneIcon color="secondary" />
-                </IconButton>
-              </Tooltip>
-            ) : repeatingPlaylist ? (
-              <Tooltip title="Enable repeat one">
-                <IconButton onClick={repeatOneClick}>
-                  <MuiRepeatIcon color="secondary" />
-                </IconButton>
-              </Tooltip>
+        <Grid container>
+          <Grid item xs={12}>
+            <div className={classes.buttonGroupItems}>
+              {enableControls && (
+                <ButtonGroup variant="text" size="small">
+                  <Tooltip title="Previous">
+                    <Button onClick={previousClick}>
+                      <MuiSkipPreviousIcon color="primary" />
+                    </Button>
+                  </Tooltip>
+                  {paused && (
+                    <Tooltip title="Play">
+                      <Button onClick={playClick}>
+                        <MuiPlayArrowIcon color="primary" />
+                      </Button>
+                    </Tooltip>
+                  )}
+                  {playing && (
+                    <Tooltip title="Pause">
+                      <Button onClick={pauseClick}>
+                        <MuiStopIcon color="primary" />
+                      </Button>
+                    </Tooltip>
+                  )}
+                  <Tooltip title="Next">
+                    <Button onClick={nextClick}>
+                      <MuiSkipNextIcon color="primary" />
+                    </Button>
+                  </Tooltip>
+                  <Tooltip title={shuffling ? "Disable shuffle" : "Enable shuffle"}>
+                    <Button onClick={shuffling ? disableShuffleClick : enableShuffleClick}>
+                      <MuiShuffleIcon color={shuffling ? "secondary" : "primary"} />
+                    </Button>
+                  </Tooltip>
+                  {repeatingTrack ? (
+                    <Tooltip title="Disable repeat">
+                      <Button onClick={disableRepeatClick}>
+                        <MuiRepeatOneIcon color="secondary" />
+                      </Button>
+                    </Tooltip>
+                  ) : repeatingPlaylist ? (
+                    <Tooltip title="Enable repeat one">
+                      <Button onClick={repeatOneClick}>
+                        <MuiRepeatIcon color="secondary" />
+                      </Button>
+                    </Tooltip>
+                  ) : (
+                    <Tooltip title="Enable playlist repeat">
+                      <Button onClick={repeatPlaylistClick}>
+                        <MuiRepeatIcon color="primary" />
+                      </Button>
+                    </Tooltip>
+                  )}
+                  {muted ? (
+                    <Tooltip title="Unmute">
+                      <Button onClick={unMuteClick}>
+                        <MuiVolumeOffIcon />
+                      </Button>
+                    </Tooltip>
+                  ) : (
+                    <Tooltip title="Mute">
+                      <Button onClick={muteClick}>
+                        <MuiVolumeUpIcon />
+                      </Button>
+                    </Tooltip>
+                  )}
+                </ButtonGroup>
+              )}
+            </div>
+          </Grid>
+          <Divider />
+          <Grid item xs={12}>
+            {deviceMenuInfo.isActive ? (
+              <Card className={classes.cardRoot}>
+                <CardHeader
+                  avatar={<MuiDevicesIcon />}
+                  action={<Button onClick={connectDeviceClick}>Connect</Button>}
+                  title={deviceMenuInfo.primaryText}
+                  subheader={deviceMenuInfo.secondaryText || null}
+                />
+              </Card>
             ) : (
-              <Tooltip title="Enable playlist repeat">
-                <IconButton disabled={!enableControls} onClick={repeatPlaylistClick}>
-                  <MuiRepeatIcon color={enableControls ? "primary" : "disabled"} />
-                </IconButton>
-              </Tooltip>
+              <div></div>
             )}
-            {muted ? (
-              <Tooltip title="Unmute">
-                <IconButton onClick={unMuteClick}>
-                  <MuiVolumeOffIcon />
-                </IconButton>
-              </Tooltip>
-            ) : (
-              <Tooltip title="Mute">
-                <IconButton onClick={muteClick}>
-                  <MuiVolumeUpIcon />
-                </IconButton>
-              </Tooltip>
-            )}
-          </ButtonGroup>
-        </div>
+          </Grid>
+        </Grid>
       </Menu>
       <Collapse in={accountOpen} timeout="auto" unmountOnExit className={classes.root}>
         <List className={classes.collapseList} disablePadding={true} dense={true}>

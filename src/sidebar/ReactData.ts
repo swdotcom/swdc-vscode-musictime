@@ -10,6 +10,8 @@ import {
   getCachedSpotifyPlayerContext,
   getCachedSpotifyPlaylists,
   getCachedUserMusicMetrics,
+  getDeviceMenuInfo,
+  getDeviceSet,
   getSelectedPlaylistId,
   getSelectedTabView,
   getSoftwareTop40Playlist,
@@ -37,6 +39,7 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
   let averageMusicMetrics = undefined;
   let spotifyPlayerContext = undefined;
   let currentlyRunningTrack = undefined;
+  let deviceMenuInfo = getDeviceMenuInfo();
   if (spotifyUser) {
     spotifyPlayerContext = await getCachedSpotifyPlayerContext();
     currentlyRunningTrack = getCachedRunningTrack();
@@ -71,6 +74,7 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
     selectedPlaylistId,
     spotifyPlayerContext,
     currentlyRunningTrack,
+    deviceMenuInfo,
     likedSongsPlaylist: getSpotifyLikedPlaylist(),
     spotifyUser: getConnectedSpotifyUser(),
     slackConnected: !!hasSlackWorkspaces(),
