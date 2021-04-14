@@ -2,25 +2,19 @@
 
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import { commands, ExtensionContext } from "vscode";
+import { commands, ExtensionContext, window } from "vscode";
 import { onboardPlugin } from "./OnboardManager";
-import {
-  getVersion,
-  getPluginName,
-} from "./Util";
+import { getVersion, getPluginName } from "./Util";
 import { createCommands } from "./command-helper";
-import { MusicManager } from "./music/MusicManager";
-import { TrackerManager } from "./managers/TrackerManager";
 import { displayReadmeIfNotExists } from "./managers/FileManager";
 import { migrateAccessInfo } from "./managers/SpotifyManager";
-import { clearWebsocketConnectionRetryTimeout, initializeWebsockets } from './websockets';
+import { clearWebsocketConnectionRetryTimeout, initializeWebsockets } from "./websockets";
+import { initializeSpotify } from "./managers/PlaylistDataManager";
+
+let currentColorKind: number = undefined;
 
 export function deactivate(ctx: ExtensionContext) {
-
   clearWebsocketConnectionRetryTimeout();
-
-  // store the deactivate event
-  TrackerManager.getInstance().trackEditorAction("editor", "deactivate");
 }
 
 export async function activate(ctx: ExtensionContext) {
@@ -34,7 +28,7 @@ export async function intializePlugin(ctx: ExtensionContext) {
   //
   // add the player commands before we show the playlist
   //
-  ctx.subscriptions.push(createCommands());
+  ctx.subscriptions.push(createCommands(ctx));
 
   // migrate legacy spotify access token info to integration info
   await migrateAccessInfo();
@@ -44,14 +38,35 @@ export async function intializePlugin(ctx: ExtensionContext) {
 
   // This will initialize the user and spotify
   // this needs to happen first to enable spotify playlist and control logic
-  await MusicManager.getInstance().initializeSpotify();
+  await initializeSpotify();
 
-  // store the activate event
-  TrackerManager.getInstance().init();
+  activateColorKindChangeListener();
 
   try {
     initializeWebsockets();
   } catch (e) {
     console.error("Failed to initialize websockets", e);
   }
+}
+
+export function getCurrentColorKind() {
+  if (!currentColorKind) {
+    currentColorKind = window.activeColorTheme.kind;
+  }
+  return currentColorKind;
+}
+
+/**
+ * Active color theme listener
+ */
+function activateColorKindChangeListener() {
+  currentColorKind = window.activeColorTheme.kind;
+
+  window.onDidChangeActiveColorTheme((event) => {
+    currentColorKind = event.kind;
+    // let the sidebar know the new current color kind
+    setTimeout(() => {
+      commands.executeCommand("musictime.refreshMusicTimeView");
+    }, 250);
+  });
 }

@@ -1,14 +1,17 @@
-import { PlayerType, PlaylistItem, PlaylistTrackInfo, PlayerDevice, PlayerName, Track } from "cody-music";
-import {
-  SPOTIFY_LIKED_SONGS_PLAYLIST_NAME
-} from "../Constants";
-import { requiresSpotifyAccess, getDeviceSet, requiresSpotifyReAuthentication } from "./MusicUtil";
-import { MusicDataManager } from "./MusicDataManager";
-import { MusicManager } from "./MusicManager";
+import { PlayerType, PlaylistItem, PlaylistTrackInfo, PlayerDevice, Track } from "cody-music";
+import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
 import { isMac } from "../Util";
 import { KpmItem } from "../model/models";
 import { getSlackWorkspaces } from "../managers/SlackManager";
 import { getItem } from "../managers/FileManager";
+import {
+  createPlaylistItemFromTrack,
+  getCachedRecommendationInfo,
+  getCurrentDevices,
+  getDeviceSet,
+  requiresSpotifyAccess,
+  requiresSpotifyReAuthentication,
+} from "../managers/PlaylistDataManager";
 
 export class ProviderItemManager {
   private static instance: ProviderItemManager;
@@ -35,16 +38,13 @@ export class ProviderItemManager {
     item.tag = "spotify-liked-songs";
     item.itemType = "playlist";
     item.name = SPOTIFY_LIKED_SONGS_PLAYLIST_NAME;
-    item["icon"] = "heart-filled.svg";
     return item;
   }
 
   async getActiveSpotifyDevicesButton() {
-    const dataMgr: MusicDataManager = MusicDataManager.getInstance();
-
     const { webPlayer, desktop, activeDevice, activeComputerDevice, activeWebPlayerDevice } = getDeviceSet();
 
-    const devices: PlayerDevice[] = dataMgr.currentDevices;
+    const devices: PlayerDevice[] = getCurrentDevices();
 
     let msg = "";
     let tooltip = "Listening on a Spotify device";
@@ -83,17 +83,12 @@ export class ProviderItemManager {
       "Switch Account",
       "Connect to your premium Spotify account to enable web playback controls",
       null,
-      null,
-      "generate.svg"
+      null
     );
   }
 
-  getItunesConnectedButton() {
-    return this.buildActionItem("itunesconnected", "connected", null, PlayerType.MacItunesDesktop, "iTunes Connected", "You've connected iTunes");
-  }
-
   getLoadingButton() {
-    return this.buildActionItem("loading", "action", null, PlayerType.NotAssigned, "Loading...", "please wait", null, "action", "audio.svg");
+    return this.buildActionItem("loading", "action", null, PlayerType.NotAssigned, "Loading...", "please wait", null, "action");
   }
 
   getConnectToSpotifyButton() {
@@ -127,22 +122,9 @@ export class ProviderItemManager {
     return this.buildActionItem("switchtospotify", "spotify", "musictime.launchSpotifyDesktop", PlayerType.WebSpotify, "Launch Spotify");
   }
 
-  getSwitchToItunesButton() {
-    return this.buildActionItem("switchtoitunes", "itunes", "musictime.launchItunes", PlayerType.MacItunesDesktop, "Launch iTunes");
-  }
-
   // readme button
   getReadmeButton() {
-    return this.buildKpmItem("Documentation", "View the Music Time Readme to learn more", "readme.svg", "musictime.displayReadme");
-  }
-
-  getLoggedInButton() {
-    const connectedToInfo = this.getAuthTypeIconAndLabel();
-
-    const parentItem = this.buildKpmItem(connectedToInfo.label, connectedToInfo.tooltip, connectedToInfo.icon);
-    parentItem.contextValue = "musictime_slack_folder_parent";
-    parentItem.children = [this.getReadmeButton(), this.getGenerateDashboardButton(), this.getWebAnalyticsButton()];
-    return parentItem;
+    return this.buildKpmItem("Documentation", "View the Music Time Readme to learn more", null, "musictime.displayReadme");
   }
 
   getAuthTypeIconAndLabel() {
@@ -151,19 +133,16 @@ export class ProviderItemManager {
     let tooltip = name ? `Connected as ${name}` : "";
     if (authType === "google") {
       return {
-        icon: "google.svg",
         label: name,
         tooltip,
       };
     } else if (authType === "github") {
       return {
-        icon: "github.svg",
         label: name,
         tooltip,
       };
     }
     return {
-      icon: "email.svg",
       label: name,
       tooltip,
     };
@@ -178,8 +157,7 @@ export class ProviderItemManager {
       "Sign up",
       "Sign up to see more data visualizations.",
       "",
-      null,
-      "paw.svg"
+      null
     );
   }
 
@@ -192,22 +170,21 @@ export class ProviderItemManager {
       "Log in",
       "Log in to see more data visualizations.",
       "",
-      null,
-      "paw.svg"
+      null
     );
   }
 
   getGenerateDashboardButton() {
-    return this.buildKpmItem("Dashboard", "View your latest music metrics right here in your editor", "dashboard.svg", "musictime.displayDashboard");
+    return this.buildKpmItem("Dashboard", "View your latest music metrics right here in your editor", null, "musictime.displayDashboard");
   }
 
   getSlackIntegrationsTree(): KpmItem {
-    const parentItem = this.buildKpmItem("Slack workspaces", "", "slack.svg");
+    const parentItem = this.buildKpmItem("Slack workspaces", "");
     parentItem.contextValue = "musictime_slack_folder_parent";
     parentItem.children = [];
     const workspaces = getSlackWorkspaces();
     for (const integration of workspaces) {
-      const workspaceItem = this.buildKpmItem(integration.team_domain, "", "slack.svg");
+      const workspaceItem = this.buildKpmItem(integration.team_domain, "");
       workspaceItem.contextValue = "musictime_slack_workspace_node";
       workspaceItem.description = `(${integration.team_name})`;
       workspaceItem.value = integration.authId;
@@ -255,7 +232,7 @@ export class ProviderItemManager {
 
   getWebAnalyticsButton() {
     // See web analytics
-    return this.buildKpmItem("More data at Software.com", "See music analytics in the web app", "paw.svg", "musictime.launchAnalytics");
+    return this.buildKpmItem("More data at Software.com", "See music analytics in the web app", null, "musictime.launchAnalytics");
   }
 
   getNoTracksFoundButton() {
@@ -298,14 +275,8 @@ export class ProviderItemManager {
     let items: PlaylistItem[] = [];
 
     if (!requiresSpotifyAccess()) {
-      const labelButton = this.buildActionItem(
-        MusicDataManager.getInstance().recommendationLabel,
-        "label",
-        null,
-        PlayerType.NotAssigned,
-        MusicDataManager.getInstance().recommendationLabel,
-        ""
-      );
+      const recLabel = getCachedRecommendationInfo() ? getCachedRecommendationInfo().label : "";
+      const labelButton = this.buildActionItem(recLabel, "label", null, PlayerType.NotAssigned, recLabel, "");
       labelButton.tag = "paw";
 
       if (tracks && tracks.length > 0) {
@@ -313,10 +284,9 @@ export class ProviderItemManager {
         items.push(labelButton);
         for (let i = 0; i < tracks.length; i++) {
           const track: Track = tracks[i];
-          const item: PlaylistItem = MusicManager.getInstance().createPlaylistItemFromTrack(track, 0);
+          const item: PlaylistItem = createPlaylistItemFromTrack(track, 0);
           item.tag = "spotify";
           item.type = "recommendation";
-          item["icon"] = "track.svg";
           items.push(item);
         }
       }

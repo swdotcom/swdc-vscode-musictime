@@ -10,6 +10,7 @@ export async function showGenreSelections() {
     const genres = getGenreSelections();
     genres.sort();
 
+    // genre should not use any seed track ids, send 0
     genres.forEach((genre) => {
         let label = genre.replace(/[_-]/g, " ");
         // capitalize the 1st character
@@ -30,7 +31,7 @@ export async function showGenreSelections() {
     return null;
 }
 
-export async function showCategorySelections() {
+export async function showMoodSelections() {
     let menuOptions = {
         items: [],
         placeholder: "Select a mood",

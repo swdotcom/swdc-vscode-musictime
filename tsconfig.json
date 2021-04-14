@@ -11,6 +11,13 @@
     },
     "exclude": [
         "node_modules",
-        ".vscode-test"
+        ".vscode-test",
+        "**/src/app/**"
+    ],
+    "plugins": [
+        {
+            "name": "typescript-tslint-plugin",
+            "configFile": "./tslint.json"
+        }
     ]
 }

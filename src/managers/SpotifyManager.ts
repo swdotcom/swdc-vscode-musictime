@@ -1,16 +1,16 @@
-import { CodyConfig, getUserProfile, setConfig } from "cody-music";
+import { CodyConfig, getRunningTrack, getUserProfile, setConfig } from "cody-music";
 import { commands, window } from "vscode";
 import { api_endpoint, YES_LABEL } from "../Constants";
 import { isResponseOk, softwareGet, softwarePut } from "../HttpClient";
 import SoftwareIntegration from "../model/SoftwareIntegration";
 import { getPluginId, getPluginType, getVersion, isMac, launchWebUrl } from "../Util";
 import { SpotifyUser } from "cody-music/dist/lib/profile";
-import { MusicDataManager } from "../music/MusicDataManager";
 import { MusicCommandManager } from "../music/MusicCommandManager";
 import { getAuthCallbackState, getIntegrations, getItem, getPluginUuid, setItem } from "./FileManager";
 import { getUser } from "./UserStatusManager";
 import { clearSpotifyIntegrations, updateSpotifyIntegration } from "./IntegrationManager";
 import { processNewSpotifyIntegration } from "./UserStatusManager";
+import { clearAllData } from "./PlaylistDataManager";
 
 const queryString = require("query-string");
 
@@ -29,6 +29,16 @@ export function getConnectedSpotifyUser() {
 
 export function hasSpotifyUser() {
   return !!(spotifyUser && spotifyUser.product);
+}
+
+export function getSpotifyEmail() {
+  const spotifyIntegration = getSpotifyIntegration();
+  return spotifyIntegration?.value;
+}
+
+export async function getSoftwareTop40() {
+  const data = await softwareGet("/music/top40");
+  return isResponseOk(data) ? data.data : null;
 }
 
 export async function isPremiumUser() {
@@ -77,17 +87,17 @@ export async function connectSpotify() {
   const endpoint = `${api_endpoint}/auth/spotify?${queryStr}`;
   launchWebUrl(endpoint);
   addedNewIntegration = false;
-  setTimeout(() =>{
+  setTimeout(() => {
     lazilyPollForSpotifyConnection();
   }, 15000);
 }
 
-export async function lazilyPollForSpotifyConnection(tries:number = 20) {
-  addedNewIntegration = (!addedNewIntegration) ? await updateSpotifyIntegration(await getUser(getItem("jwt"))) : addedNewIntegration;
+export async function lazilyPollForSpotifyConnection(tries: number = 20) {
+  addedNewIntegration = !addedNewIntegration ? await updateSpotifyIntegration(await getUser(getItem("jwt"))) : addedNewIntegration;
   if (!addedNewIntegration) {
     // try again
     tries--;
-    setTimeout(() =>{
+    setTimeout(() => {
       lazilyPollForSpotifyConnection(tries);
     }, 15000);
   } else {
@@ -145,15 +155,14 @@ export async function disconnectSpotify(confirmDisconnect = true) {
     removeSpotifyIntegration();
 
     // clear the spotify playlists
-    MusicDataManager.getInstance().disconnect();
+    clearAllData();
 
     setTimeout(() => {
-      commands.executeCommand("musictime.refreshPlaylist");
-      commands.executeCommand("musictime.refreshRecommendations");
+      commands.executeCommand("musictime.refreshMusicTimeView");
     }, 1000);
 
     // update the status bar
-    MusicCommandManager.syncControls(MusicDataManager.getInstance().runningTrack, false);
+    MusicCommandManager.syncControls(await getRunningTrack(), false);
 
     if (confirmDisconnect) {
       window.showInformationMessage(`Successfully disconnected your Spotify connection.`);

@@ -5,7 +5,8 @@
 	"search.exclude": {
 		"out": true
 	},
-	"editor.tabSize": 4,
+	"editor.tabSize": 2,
 	"editor.insertSpaces": false,
-	"workbench.colorCustomizations": {}
+	"workbench.colorCustomizations": {},
+	"editor.formatOnSave": true
 }

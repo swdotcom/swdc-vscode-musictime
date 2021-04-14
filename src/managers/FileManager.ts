@@ -12,8 +12,6 @@ const fileIt = require("file-it");
 const fs = require("fs");
 const os = require("os");
 
-let extensionName = null;
-let extensionDisplayName = null; // Code Time or Music Time
 let lastDayOfMonth = -1;
 const NO_DATA = `MUSIC TIME
     Listen to Spotify while coding to generate this playlist`;
@@ -87,38 +85,11 @@ export function getSessionSummaryFile() {
 }
 
 export function getExtensionDisplayName() {
-  if (extensionDisplayName) {
-    return extensionDisplayName;
-  }
-
-  const extInfoFile = `${__dirname}${getFile("extensioninfo.json")}`;
-
-  const data = fileIt.readJsonFileSync(extInfoFile);
-  if (data) {
-    extensionDisplayName = data.displayName;
-  }
-
-  if (!extensionDisplayName) {
-    extensionDisplayName = "Music Time";
-  }
-  return extensionDisplayName;
+  return "Music Time";
 }
 
 export function getExtensionName() {
-  if (extensionName) {
-    return extensionName;
-  }
-
-  const extInfoFile = `${__dirname}${getFile("extensioninfo.json")}`;
-
-  const data = fileIt.readJsonFileSync(extInfoFile);
-  if (data) {
-    extensionName = data.name;
-  }
-  if (!extensionName) {
-    extensionName = "music-time";
-  }
-  return extensionName;
+  return "music-time";
 }
 
 export function getSoftwareDir(autoCreate = true) {
@@ -226,7 +197,7 @@ export function syncSlackIntegrations(integrations) {
 }
 
 export function syncSpotifyIntegration(integration) {
-  const nonSpotifyIntegrations = getIntegrations().filter(integration => integration.name.toLowerCase() != "spotify");
+  const nonSpotifyIntegrations = getIntegrations().filter((integration) => integration.name.toLowerCase() != "spotify");
   const integrations = integration ? [...nonSpotifyIntegrations, integration] : nonSpotifyIntegrations;
   fileIt.writeJsonFileSync(getIntegrationsFile(), integrations);
 }
@@ -253,7 +224,7 @@ export function displayReadmeIfNotExists(override = false) {
 
   if (!vscode_musictime_initialized || override) {
     setTimeout(() => {
-      commands.executeCommand("musictime.revealTree");
+      commands.executeCommand("musictime.displaySidebar");
     }, 1000);
 
     const readmeUri = Uri.file(getLocalREADMEFile());

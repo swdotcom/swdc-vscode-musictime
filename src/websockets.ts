@@ -2,7 +2,7 @@ import { websockets_url } from "./Constants";
 import { getPluginId, getPluginName, getVersion, getOs, getOffsetSeconds } from "./Util";
 import { handleAuthenticatedPluginUser } from "./message_handlers/authenticated_plugin_user";
 import { handleIntegrationConnectionSocketEvent } from "./message_handlers/integration_connection";
-import { getItem, getPluginUuid } from './managers/FileManager';
+import { getItem, getPluginUuid } from "./managers/FileManager";
 
 const WebSocket = require("ws");
 
@@ -11,6 +11,14 @@ let maxRetries = 20;
 let retryCount = 0;
 
 export function initializeWebsockets() {
+  const jwt = getItem("jwt");
+  if (!jwt) {
+    // try again later
+    setTimeout(() => {
+      initializeWebsockets();
+    }, 1000 * 60);
+    return;
+  }
   const options = {
     headers: {
       Authorization: getItem("jwt"),

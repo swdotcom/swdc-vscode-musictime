@@ -1,5 +1,4 @@
 import {
-  PlayerType,
   play,
   pause,
   previous,
@@ -10,7 +9,6 @@ import {
   saveToSpotifyLiked,
   addTracksToPlaylist,
   removeFromSpotifyLiked,
-  setItunesLoved,
   repeatOn,
   repeatOff,
   PlayerDevice,
@@ -24,41 +22,35 @@ import {
   mute,
   unmute,
   getTrack,
-  getSpotifyLikedSongs,
+  getRunningTrack,
 } from "cody-music";
 import { window, ViewColumn, Uri, commands } from "vscode";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { showQuickPick } from "../MenuManager";
-import {
-  populateSpotifyPlaylists,
-} from "../DataController";
-import {
-  createSpotifyIdFromUri,
-  createUriFromTrackId,
-  isMac,
-  getCodyErrorMessage,
-  isWindows,
-  checkRegistration,
-} from "../Util";
-import {
-  SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
-  OK_LABEL,
-} from "../Constants";
+import { playInitialization, playNextLikedSong, playPreviousLikedSongs } from "../managers/PlaylistControlManager";
+import { createSpotifyIdFromUri, createUriFromTrackId, isMac, getCodyErrorMessage, isWindows, checkRegistration } from "../Util";
+import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME, OK_LABEL, SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from "../Constants";
 import { MusicStateManager } from "./MusicStateManager";
 import { SocialShareManager } from "../social/SocialShareManager";
 import { tmpdir } from "os";
-import { connectSlackWorkspace, hasSlackWorkspaces } from "../managers/SlackManager";
-import { MusicManager } from "./MusicManager";
 import { MusicPlaylistManager } from "./MusicPlaylistManager";
-import { sortPlaylists, requiresSpotifyAccess, getDeviceSet, getDeviceId } from "./MusicUtil";
-import { MusicDataManager } from "./MusicDataManager";
 import { MusicCommandUtil } from "./MusicCommandUtil";
-import {
-  fetchMusicTimeMetricsMarkdownDashboard,
-  getMusicTimeMarkdownFile,
-  getSoftwareDir,
-} from "../managers/FileManager";
+import { fetchMusicTimeMetricsMarkdownDashboard, getMusicTimeMarkdownFile, getSoftwareDir } from "../managers/FileManager";
 import { connectSpotify, isPremiumUser } from "../managers/SpotifyManager";
+import {
+  getBestActiveDevice,
+  getDeviceSet,
+  getSelectedTrackItem,
+  getSpotifyPlaylists,
+  isLikedSongPlaylistSelected,
+  isTrackRepeating,
+  removeTracksFromRecommendations,
+  sortPlaylists,
+  requiresSpotifyAccess,
+  removeTrackFromLikedPlaylist,
+  populateLikedSongs,
+} from "../managers/PlaylistDataManager";
+import { connectSlackWorkspace, hasSlackWorkspaces } from "../managers/SlackManager";
 
 const fileIt = require("file-it");
 const clipboardy = require("clipboardy");
@@ -80,17 +72,9 @@ export class MusicControlManager {
     return MusicControlManager.instance;
   }
 
-  isLikedSongPlaylist() {
-    const dataMgr: MusicDataManager = MusicDataManager.getInstance();
-    return dataMgr.selectedPlaylist &&
-     dataMgr.selectedPlaylist.id === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME
-      ? true
-      : false;
-  }
-
   async nextSong() {
-    if (this.isLikedSongPlaylist()) {
-      await MusicManager.getInstance().playNextLikedSong();
+    if (isLikedSongPlaylistSelected()) {
+      await playNextLikedSong();
     } else if (this.useSpotifyDesktop()) {
       await next(PlayerName.SpotifyDesktop);
     } else {
@@ -99,12 +83,12 @@ export class MusicControlManager {
 
     setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
-    }, 600);
+    }, 750);
   }
 
   async previousSong() {
-    if (this.isLikedSongPlaylist()) {
-      await MusicManager.getInstance().playPreviousLikedSong();
+    if (isLikedSongPlaylistSelected()) {
+      await playPreviousLikedSongs();
     } else if (this.useSpotifyDesktop()) {
       await previous(PlayerName.SpotifyDesktop);
     } else {
@@ -113,7 +97,7 @@ export class MusicControlManager {
 
     setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
-    }, 600);
+    }, 750);
   }
 
   /**
@@ -121,22 +105,23 @@ export class MusicControlManager {
    */
   async playSong(tries = 0) {
     let result: any = null;
-    const deviceId = getDeviceId();
+    const deviceId = getBestActiveDevice();
     const controlMgr: MusicControlManager = MusicControlManager.getInstance();
     if (!deviceId && tries === 1) {
       // initiate the device selection prompt
-      await MusicManager.getInstance().playInitialization(controlMgr.playSong);
+      await playInitialization(controlMgr.playSong);
     } else {
-      const dataMgr: MusicDataManager = MusicDataManager.getInstance();
-      if (!dataMgr.runningTrack || !dataMgr.runningTrack.id) {
-       dataMgr.runningTrack = await getTrack(PlayerName.SpotifyWeb);
-        if (!dataMgr.runningTrack || !dataMgr.runningTrack.id) {
-          await MusicStateManager.getInstance().updateRunningTrackToMostRecentlyPlayed();
+      let runningTrack = await getRunningTrack();
+      if (!runningTrack || !runningTrack.id) {
+        runningTrack = await getTrack(PlayerName.SpotifyWeb);
+        if (!runningTrack || !runningTrack.id) {
+          runningTrack = await MusicStateManager.getInstance().updateRunningTrackToMostRecentlyPlayed();
+          const device = getBestActiveDevice();
           const result: any = await MusicCommandUtil.getInstance().runSpotifyCommand(play, [
             PlayerName.SpotifyWeb,
             {
-              track_ids: [dataMgr.runningTrack.id],
-              device_id: getDeviceId(),
+              track_ids: [runningTrack.id],
+              device_id: device?.id,
               offset: 0,
             },
           ]);
@@ -149,13 +134,13 @@ export class MusicControlManager {
         }
 
         if (result && (result.status < 300 || result === "ok")) {
-          MusicCommandManager.syncControls(dataMgr.runningTrack, true, TrackStatus.Playing);
+          MusicCommandManager.syncControls(runningTrack, true, TrackStatus.Playing);
         }
       }
 
       setTimeout(() => {
         MusicStateManager.getInstance().fetchTrack();
-      }, 600);
+      }, 750);
     }
   }
 
@@ -168,49 +153,48 @@ export class MusicControlManager {
     }
 
     if (result && (result.status < 300 || result === "ok")) {
-      const dataMgr: MusicDataManager = MusicDataManager.getInstance();
-      MusicCommandManager.syncControls(dataMgr.runningTrack, true, TrackStatus.Paused);
+      MusicCommandManager.syncControls(await getRunningTrack(), true, TrackStatus.Paused);
     }
 
     setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
-    }, 600);
+    }, 750);
   }
 
   async setShuffleOn() {
-    const deviceId = getDeviceId();
-    await setShuffle(PlayerName.SpotifyWeb, true, deviceId);
+    const device = getBestActiveDevice();
+    await setShuffle(PlayerName.SpotifyWeb, true, device?.id);
 
     setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
-    }, 600);
+    }, 750);
   }
 
   async setShuffleOff() {
-    const deviceId = getDeviceId();
-    await setShuffle(PlayerName.SpotifyWeb, false, deviceId);
+    const device = getBestActiveDevice();
+    await setShuffle(PlayerName.SpotifyWeb, false, device?.id);
 
     setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
-    }, 600);
+    }, 750);
   }
 
   async setRepeatTrackOn() {
-    const deviceId = getDeviceId();
-    await setRepeatTrack(PlayerName.SpotifyWeb, deviceId);
+    const device = getBestActiveDevice();
+    await setRepeatTrack(PlayerName.SpotifyWeb, device?.id);
 
     setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
-    }, 600);
+    }, 750);
   }
 
   async setRepeatPlaylistOn() {
-    const deviceId = getDeviceId();
-    await setRepeatPlaylist(PlayerName.SpotifyWeb, deviceId);
+    const device = getBestActiveDevice();
+    await setRepeatPlaylist(PlayerName.SpotifyWeb, device?.id);
 
     setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
-    }, 600);
+    }, 750);
   }
 
   async setRepeatOnOff(setToOn: boolean) {
@@ -223,7 +207,7 @@ export class MusicControlManager {
 
     setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
-    }, 600);
+    }, 750);
   }
 
   async setMuteOn() {
@@ -235,14 +219,7 @@ export class MusicControlManager {
   }
 
   useSpotifyDesktop() {
-    const {
-      webPlayer,
-      desktop,
-      activeDevice,
-      activeComputerDevice,
-      activeWebPlayerDevice,
-      activeDesktopPlayerDevice,
-    } = getDeviceSet();
+    const { webPlayer, desktop, activeDevice, activeComputerDevice, activeWebPlayerDevice, activeDesktopPlayerDevice } = getDeviceSet();
 
     if (isMac() && (desktop || activeDesktopPlayerDevice)) {
       return true;
@@ -255,16 +232,13 @@ export class MusicControlManager {
    * @param isTrack boolean
    */
   async playSpotifyWebPlaylistTrack(isTrack: boolean, devices: PlayerDevice[]) {
-    const trackRepeating = await MusicManager.getInstance().isTrackRepeating();
-    const dataMgr: MusicDataManager = MusicDataManager.getInstance();
+    const trackRepeating = await isTrackRepeating();
 
-    // get the selected playlist
-    const selectedPlaylist = dataMgr.selectedPlaylist;
     // get the selected track
-    const selectedTrack = dataMgr.selectedTrackItem;
+    const selectedTrack = getSelectedTrackItem();
 
-    const isLikedSongsPlaylist = selectedPlaylist.name === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME;
-    const playlistId = isLikedSongsPlaylist ? "" : selectedPlaylist.id;
+    const isLikedSongsPlaylist = selectedTrack["playlist_id"] === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME;
+    const playlistId = isLikedSongsPlaylist ? "" : selectedTrack["playlist_id"];
 
     if (isLikedSongsPlaylist) {
       await this.playSpotifyByTrack(selectedTrack, devices);
@@ -295,16 +269,15 @@ export class MusicControlManager {
    * against the mac spotify desktop app.
    */
   async playSpotifyDesktopPlaylistTrack(devices: PlayerDevice[]) {
-    const trackRepeating = await MusicManager.getInstance().isTrackRepeating();
-    const dataMgr: MusicDataManager = MusicDataManager.getInstance();
+    const trackRepeating = await isTrackRepeating();
+
+    const selectedTrack: PlaylistItem = getSelectedTrackItem();
 
     // get the selected playlist
-    const selectedPlaylist = dataMgr.selectedPlaylist;
     const isPrem = isPremiumUser();
     const isWin = isWindows();
     // get the selected track
-    const selectedTrack = dataMgr.selectedTrackItem;
-    const isLikedSongsPlaylist = selectedPlaylist.name === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME;
+    const isLikedSongsPlaylist = selectedTrack["playlist_id"] === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME;
 
     if (isLikedSongsPlaylist) {
       if ((!isWin || isPrem) && devices && devices.length > 0) {
@@ -321,9 +294,9 @@ export class MusicControlManager {
       if (!isWin) {
         // ex: ["spotify:track:0R8P9KfGJCDULmlEoBagcO", "spotify:playlist:6ZG5lRT77aJ3btmArcykra"]
         // make sure the track has spotify:track and the playlist has spotify:playlist
-        playSpotifyMacDesktopTrack(selectedTrack.id, selectedPlaylist.id);
+        playSpotifyMacDesktopTrack(selectedTrack.id, selectedTrack["playlist_id"]);
       } else {
-        this.playSpotifyByTrackAndPlaylist(selectedPlaylist.id, selectedTrack.id);
+        this.playSpotifyByTrackAndPlaylist(selectedTrack["playlist_id"], selectedTrack.id);
       }
     }
 
@@ -343,16 +316,16 @@ export class MusicControlManager {
   }
 
   async playSpotifyByTrackAndPlaylist(playlistId: string, trackId: string) {
-    const deviceId = getDeviceId();
+    const device = getBestActiveDevice();
     // just play the 1st track
-    await playSpotifyPlaylist(playlistId, trackId, deviceId);
+    await playSpotifyPlaylist(playlistId, trackId, device?.id);
   }
 
   async playSpotifyByTrack(track: PlaylistItem, devices: PlayerDevice[] = []) {
-    const deviceId = getDeviceId();
+    const device = getBestActiveDevice();
 
-    if (deviceId) {
-      playSpotifyTrack(track.id, deviceId);
+    if (device) {
+      playSpotifyTrack(track.id, device.id);
     } else if (!isWindows()) {
       // try with the desktop app
       playSpotifyMacDesktopTrack(track.id);
@@ -362,56 +335,27 @@ export class MusicControlManager {
     }
   }
 
-  async setLiked(liked: boolean, overrideTrack: Track = null) {
-    const dataMgr: MusicDataManager = MusicDataManager.getInstance();
-    const runningTrack: Track = dataMgr.runningTrack;
-
-    const track: Track = !overrideTrack ? runningTrack : overrideTrack;
-
+  async setLiked(track: PlaylistItem, liked: boolean) {
     if (!track || !track.id) {
-      window.showInformationMessage(
-        `No track currently playing. Please play a track to use this feature.`
-      );
+      window.showInformationMessage(`No track currently playing. Please play a track to use this feature.`);
       return;
     }
 
-    if (track.playerType === PlayerType.MacItunesDesktop) {
-      // await so that the stateCheckHandler fetches
-      // the latest version of the itunes track
-      await setItunesLoved(liked).catch((err) => {
-        console.log(`Error updating itunes loved state: ${err.message}`);
-      });
+    // save the spotify track to the users liked songs playlist
+    if (liked) {
+      await saveToSpotifyLiked([track.id]);
+      await populateLikedSongs();
     } else {
-      // save the spotify track to the users liked songs playlist
-      if (liked) {
-        await saveToSpotifyLiked([track.id]);
-      } else {
-        await removeFromSpotifyLiked([track.id]);
-      }
-      // clear the liked songs
-      MusicDataManager.getInstance().spotifyLikedSongs = [];
-      // repopulate the liked songs
-      MusicDataManager.getInstance().spotifyLikedSongs = await getSpotifyLikedSongs();
+      await removeFromSpotifyLiked([track.id]);
+      // remove from the cached liked list
+      removeTrackFromLikedPlaylist(track.id);
     }
 
-    runningTrack.loved = liked;
-    dataMgr.runningTrack = runningTrack;
-    MusicCommandManager.syncControls(runningTrack, false);
-
-    // check if it's in the recommendation list
-    const foundRecTrack = dataMgr.recommendationTracks.find((t: Track) => t.id === track.id);
-
-    if (foundRecTrack) {
-      dataMgr.removeTrackFromRecommendations(track.id);
-      commands.executeCommand("musictime.refreshRecommendationsTree");
-    }
-
-    // refresh
-    commands.executeCommand("musictime.refreshPlaylist");
+    commands.executeCommand("musictime.refreshMusicTimeView", "playlists", SPOTIFY_LIKED_SONGS_PLAYLIST_ID);
 
     setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
-    }, 1000);
+    }, 3000);
   }
 
   async copySpotifyLink(id: string, isPlaylist: boolean) {
@@ -437,25 +381,22 @@ export class MusicControlManager {
   }
 
   copyCurrentTrackLink() {
-    const dataMgr: MusicDataManager = MusicDataManager.getInstance();
     // example: https://open.spotify.com/track/7fa9MBXhVfQ8P8Df9OEbD8
     // get the current track
-    const selectedItem: PlaylistItem = dataMgr.selectedTrackItem;
+    const selectedItem: PlaylistItem = getSelectedTrackItem();
     this.copySpotifyLink(selectedItem.id, false);
   }
 
   copyCurrentPlaylistLink() {
-    const dataMgr: MusicDataManager = MusicDataManager.getInstance();
     // example: https://open.spotify.com/playlist/0mwG8hCL4scWi8Nkt7jyoV
-    const selectedItem: PlaylistItem = dataMgr.selectedPlaylist;
-    this.copySpotifyLink(selectedItem.id, true);
+    const selectedItem: PlaylistItem = getSelectedTrackItem();
+    this.copySpotifyLink(selectedItem["playlist_id"], true);
   }
 
   shareCurrentPlaylist() {
-    const dataMgr: MusicDataManager = MusicDataManager.getInstance();
     const socialShare: SocialShareManager = SocialShareManager.getInstance();
-    const selectedItem: PlaylistItem = dataMgr.selectedPlaylist;
-    const url = buildSpotifyLink(selectedItem.id, true);
+    const selectedItem: PlaylistItem = getSelectedTrackItem();
+    const url = buildSpotifyLink(selectedItem["playlist_id"], true);
 
     socialShare.shareIt("facebook", { u: url, hashtag: "OneOfMyFavs" });
   }
@@ -480,7 +421,7 @@ export class MusicControlManager {
     menuOptions.items.push({
       label: "Submit an issue on GitHub",
       detail: "Encounter a bug? Submit an issue on our GitHub page",
-      url: "https://github.com/swdotcom/swdc-vscode/issues",
+      url: "https://github.com/swdotcom/swdc-vscode-musictime/issues",
     });
 
     menuOptions.items.push({
@@ -530,7 +471,7 @@ export class MusicControlManager {
           label: "Disconnect Slack",
           detail: "Disconnect your Slack oauth integration",
           url: null,
-          command: "musictime.disconnectSlack"
+          command: "musictime.disconnectSlack",
         });
       }
     }
@@ -543,9 +484,7 @@ export class MusicControlManager {
       value: placeHolder,
       placeHolder: "New Playlist",
       validateInput: (text) => {
-        return !text || text.trim().length === 0
-          ? "Please enter a playlist name to continue."
-          : null;
+        return !text || text.trim().length === 0 ? "Please enter a playlist name to continue." : null;
       },
     });
   }
@@ -584,12 +523,7 @@ export class MusicControlManager {
       ],
       placeholder: "Select or Create a playlist",
     };
-    let playlists: PlaylistItem[] = MusicManager.getInstance().currentPlaylists;
-
-    // filter out the ones with itemType = playlist
-    playlists = playlists
-      .filter((n: PlaylistItem) => n.itemType === "playlist" && n.name !== "Software Top 40")
-      .map((n: PlaylistItem) => n);
+    let playlists: PlaylistItem[] = await getSpotifyPlaylists();
 
     sortPlaylists(playlists);
 
@@ -601,12 +535,9 @@ export class MusicControlManager {
     });
 
     const pick = await showQuickPick(menuOptions);
-    const dataMgr: MusicDataManager = MusicDataManager.getInstance();
     if (pick && pick.label) {
       // add it to this playlist
-      const matchingPlaylists = playlists
-        .filter((n: PlaylistItem) => n.name === pick.label)
-        .map((n: PlaylistItem) => n);
+      const matchingPlaylists = playlists.filter((n: PlaylistItem) => n.name === pick.label).map((n: PlaylistItem) => n);
       if (matchingPlaylists.length) {
         const matchingPlaylist = matchingPlaylists[0];
         if (matchingPlaylist) {
@@ -623,33 +554,26 @@ export class MusicControlManager {
             errMsg = getCodyErrorMessage(codyResponse);
 
             // populate the spotify playlists
-            await populateSpotifyPlaylists();
+            await getSpotifyPlaylists(true);
           } else {
             // it's a liked songs playlist update
-            let track: Track = dataMgr.runningTrack;
+            let track: Track = await getRunningTrack();
             if (track.id !== trackId) {
               track = new Track();
               track.id = playlistItem.id;
               track.playerType = playlistItem.playerType;
               track.state = playlistItem.state;
             }
-            await this.setLiked(true, track);
-
-            // add to the trackIdsForRecommendations
-            dataMgr.trackIdsForRecommendations.push(trackId);
+            await this.setLiked(playlistItem, true);
           }
           if (!errMsg) {
             window.showInformationMessage(`Added ${playlistItem.name} to ${playlistName}`);
             // refresh the playlist and clear the current recommendation metadata
-            dataMgr.removeTrackFromRecommendations(trackId);
-            commands.executeCommand("musictime.refreshPlaylist");
-            commands.executeCommand("musictime.refreshRecommendationsTree");
+            removeTracksFromRecommendations(trackId);
+            commands.executeCommand("musictime.refreshMusicTimeView");
           } else {
             if (errMsg) {
-              window.showErrorMessage(
-                `Failed to add '${playlistItem.name}' to '${playlistName}'. ${errMsg}`,
-                ...[OK_LABEL]
-              );
+              window.showErrorMessage(`Failed to add '${playlistItem.name}' to '${playlistName}'. ${errMsg}`, ...[OK_LABEL]);
             }
           }
         }
@@ -684,16 +608,11 @@ export async function displayMusicTimeMetricsMarkdownDashboard() {
     preserveFocus: false,
   };
   const localResourceRoots = [Uri.file(getSoftwareDir()), Uri.file(tmpdir())];
-  const panel = window.createWebviewPanel(
-    "music-time-preview",
-    `Music Time Dashboard`,
-    viewOptions,
-    {
-      enableFindWidget: true,
-      localResourceRoots,
-      enableScripts: true, // enables javascript that may be in the content
-    }
-  );
+  const panel = window.createWebviewPanel("music-time-preview", `Music Time Dashboard`, viewOptions, {
+    enableFindWidget: true,
+    localResourceRoots,
+    enableScripts: true, // enables javascript that may be in the content
+  });
 
   const content = fileIt.readContentFileSync(musicTimeFile);
   panel.webview.html = content;

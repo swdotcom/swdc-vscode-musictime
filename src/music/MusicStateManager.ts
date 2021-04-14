@@ -1,10 +1,8 @@
 import { createSpotifyIdFromUri, createUriFromTrackId, nowInSecs, isMac } from "../Util";
-import { Track, TrackStatus, getTrack, PlayerName, CodyResponse, getSpotifyRecentlyPlayedBefore } from "cody-music";
+import { Track, getTrack, PlayerName, CodyResponse, getSpotifyRecentlyPlayedBefore } from "cody-music";
 import { MusicCommandManager } from "./MusicCommandManager";
-import { MusicDataManager } from "./MusicDataManager";
-import { commands } from "vscode";
-import { getDeviceId, requiresSpotifyAccess } from "./MusicUtil";
-import { execCmd } from '../managers/ExecManager';
+import { execCmd } from "../managers/ExecManager";
+import { getBestActiveDevice, requiresSpotifyAccess, updateCachedRunningTrack } from "../managers/PlaylistDataManager";
 const path = require("path");
 const moment = require("moment-timezone");
 
@@ -26,17 +24,6 @@ export class MusicStateManager {
     return MusicStateManager.instance;
   }
 
-  /**
-   * Get the selected playlis or find it from the list of playlists
-   * @param track
-   */
-  private updateTrackPlaylistId(track: Track) {
-    const selectedPlaylist = MusicDataManager.getInstance().selectedPlaylist;
-    if (selectedPlaylist) {
-      track["playlistId"] = selectedPlaylist.id;
-    }
-  }
-
   private getUtcAndLocal() {
     const utc = nowInSecs();
     const offset_sec = this.timeOffsetSeconds();
@@ -52,10 +39,6 @@ export class MusicStateManager {
     return offset * 60;
   }
 
-  public isExistingTrackPlaying(): boolean {
-    return this.existingTrack && this.existingTrack.id && this.existingTrack.state === TrackStatus.Playing ? true : false;
-  }
-
   public fetchPlayingTrack(): Promise<Track> {
     return getTrack(PlayerName.SpotifyWeb);
   }
@@ -64,24 +47,22 @@ export class MusicStateManager {
    * Core logic in gathering tracks. This is called every 20 seconds.
    */
   public async fetchTrack(): Promise<any> {
-    const dataMgr: MusicDataManager = MusicDataManager.getInstance();
-
     try {
-      const utcLocalTimes = this.getUtcAndLocal();
-
       const requiresAccess = requiresSpotifyAccess();
 
       if (requiresAccess) {
         // either no device ID, requires spotify connection,
         // or it's a windows device that is not online
+        updateCachedRunningTrack(undefined);
         return;
       }
 
-      const deviceId = getDeviceId();
+      const device = getBestActiveDevice();
 
       // check if we've set the existing device id but don't have a device
-      if ((!this.existingTrack || !this.existingTrack.id) && !deviceId && !isMac()) {
+      if ((!this.existingTrack || !this.existingTrack.id) && !device?.id && !isMac()) {
         // no existing track and no device, skip checking
+        updateCachedRunningTrack(undefined);
         return;
       }
 
@@ -90,7 +71,7 @@ export class MusicStateManager {
         // fetch from the desktop
         playingTrack = await this.fetchSpotifyMacTrack();
         // applescript doesn't always return a name
-        if (deviceId && (!playingTrack || !playingTrack.name)) {
+        if (device && (!playingTrack || !playingTrack.name)) {
           playingTrack = await getTrack(PlayerName.SpotifyWeb);
         }
       } else {
@@ -112,63 +93,10 @@ export class MusicStateManager {
         playingTrack.id = createSpotifyIdFromUri(playingTrack.id);
       }
 
-      const isNewTrack = this.existingTrack.id !== playingTrack.id ? true : false;
-      const sendSongSession = isNewTrack && this.existingTrack.id ? true : false;
-      const trackStateChanged = this.existingTrack.state !== playingTrack.state ? true : false;
+      this.existingTrack = { ...playingTrack };
 
-      // has the existing track ended or have we started a new track?
-      if (sendSongSession) {
-        // just set it to playing
-        this.existingTrack.state = TrackStatus.Playing;
-
-        // clear the track.
-        this.existingTrack = null;
-
-        if (playingTrack) {
-          this.existingTrack = new Track();
-        }
-      }
-
-      if (!this.existingTrack || this.existingTrack.id !== playingTrack.id) {
-        // update the entire object if the id's don't match
-        this.existingTrack = { ...playingTrack };
-      }
-
-      if (this.existingTrack.state !== playingTrack.state) {
-        // update the state if the state doesn't match
-        this.existingTrack.state = playingTrack.state;
-      }
-
-      // set the start for the playing track
-      if (this.existingTrack && this.existingTrack.id && !this.existingTrack["start"]) {
-        this.existingTrack["start"] = utcLocalTimes.utc;
-        this.existingTrack["local_start"] = utcLocalTimes.local;
-        this.existingTrack["end"] = 0;
-      }
-
-      // make sure we set the current progress and duratio
-      if (isValidTrack) {
-        this.existingTrack.duration = playingTrack.duration || 0;
-        this.existingTrack.duration_ms = playingTrack.duration_ms || 0;
-        this.existingTrack.progress_ms = playingTrack.progress_ms || 0;
-      }
-
-      // update the running track
-      dataMgr.runningTrack = this.existingTrack;
-
-      // update the music time status bar
-      MusicCommandManager.syncControls(dataMgr.runningTrack, false);
-
-      if (isNewTrack) {
-        // update the playlistId
-        this.updateTrackPlaylistId(playingTrack);
-        // the player context such as player device status
-        MusicDataManager.getInstance().populatePlayerContext();
-        if (trackStateChanged) {
-          // update the device info in case the device has changed
-          commands.executeCommand("musictime.refreshDeviceInfo");
-        }
-      }
+      MusicCommandManager.syncControls(this.existingTrack);
+      updateCachedRunningTrack(this.existingTrack);
     } catch (e) {
       const errMsg = e.message || e;
       console.error(`Unexpected track state processing error: ${errMsg}`);
@@ -187,7 +115,7 @@ export class MusicStateManager {
     const before = moment().utc().valueOf();
     const resp: CodyResponse = await getSpotifyRecentlyPlayedBefore(1, before);
     if (resp && resp.data && resp.data.tracks && resp.data.tracks.length) {
-      MusicDataManager.getInstance().runningTrack = resp.data.tracks[0];
+      return resp.data.tracks[0];
     }
   }
 

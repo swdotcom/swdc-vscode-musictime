@@ -8,7 +8,7 @@ export function execCmd(cmd = "", projectDir = null, returnLines = false): any {
 	}
 
 	try {
-	  const opts = projectDir ? { cwd: projectDir, encoding: "utf8", timeout: 5000 } : { encoding: "utf8", timeout: 5000 };
+	  const opts = projectDir ? { cwd: projectDir, encoding: "utf8" } : { encoding: "utf8" };
 
 	  const cmdResult = execSync(cmd, opts);
 	  if (cmdResult && cmdResult.length) {
