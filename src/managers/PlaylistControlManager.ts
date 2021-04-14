@@ -62,12 +62,14 @@ export async function launchTrackPlayer(playerName: PlayerName = null, callback:
 
   const selectedTrack = getSelectedTrackItem();
 
-  const selectedPlaylist = getPlaylistById(selectedTrack["playlist_id"]);
+  if (selectedTrack) {
+    const selectedPlaylist = getPlaylistById(selectedTrack["playlist_id"]);
 
-  if (selectedPlaylist) {
-    options["playlist_id"] = selectedTrack["playlist_id"];
-  } else if (selectedTrack) {
-    options["track_id"] = selectedTrack.id;
+    if (selectedPlaylist) {
+      options["playlist_id"] = selectedTrack["playlist_id"];
+    } else if (selectedTrack) {
+      options["track_id"] = selectedTrack.id;
+    }
   }
 
   // spotify device launch error would look like ..
