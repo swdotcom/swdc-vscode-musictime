@@ -5,6 +5,7 @@ import {
   getCachedLikedSongsTracks,
   getCachedPlaylistTracks,
   getCachedRecommendationInfo,
+  getCachedRunningTrack,
   getCachedSoftwareTop40Playlist,
   getCachedSpotifyPlayerContext,
   getCachedSpotifyPlaylists,
@@ -34,25 +35,26 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
   let recommendationInfo = [];
   let userMusicMetrics = [];
   let averageMusicMetrics = undefined;
+  let spotifyPlayerContext = undefined;
+  let currentlyRunningTrack = undefined;
   if (spotifyUser) {
+    spotifyPlayerContext = await getCachedSpotifyPlayerContext();
+    currentlyRunningTrack = getCachedRunningTrack();
+    console.log("spotifyPlayerContext: ", JSON.stringify(spotifyPlayerContext));
+    if (currentlyRunningTrack) {
+      console.log("currentlyRunningTrack: ", JSON.stringify(currentlyRunningTrack));
+    }
+
     if (selectedTabView === "playlists") {
       likedSongsTracks = getCachedLikedSongsTracks();
       playlistTracks = getCachedPlaylistTracks();
-
-      softwareTop40Playlist = getCachedSoftwareTop40Playlist();
-      if (!softwareTop40Playlist) {
-        softwareTop40Playlist = await getSoftwareTop40Playlist();
-      }
-
-      spotifyPlaylists = getCachedSpotifyPlaylists();
-      if (!spotifyPlaylists) {
-        spotifyPlaylists = await getSpotifyPlaylists();
-      }
+      softwareTop40Playlist = await getCachedSoftwareTop40Playlist();
+      spotifyPlaylists = await getCachedSpotifyPlaylists();
 
       selectedPlaylistId = playlist_id ? playlist_id : getSelectedPlaylistId();
     } else if (selectedTabView === "metrics") {
-      userMusicMetrics = getCachedUserMusicMetrics() ?? [];
-      averageMusicMetrics = getCachedAverageMusicMetrics() ?? {};
+      userMusicMetrics = (await getCachedUserMusicMetrics()) ?? [];
+      averageMusicMetrics = (await getCachedAverageMusicMetrics()) ?? {};
     } else if (selectedTabView === "recommendations") {
       recommendationInfo = getCachedRecommendationInfo() ?? [];
     }
@@ -71,8 +73,8 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
     playlistTracks,
     softwareTop40Playlist,
     selectedPlaylistId,
-    featureState: 0,
-    spotifyPlayerContext: getCachedSpotifyPlayerContext(),
+    spotifyPlayerContext,
+    currentlyRunningTrack,
     likedSongsPlaylist: getSpotifyLikedPlaylist(),
     spotifyUser: getConnectedSpotifyUser(),
     slackConnected: !!hasSlackWorkspaces(),

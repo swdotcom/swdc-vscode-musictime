@@ -123,13 +123,18 @@ export function updateSort(alphabetically: boolean) {
 
 export function updateCachedRunningTrack(track: Track) {
   cachedRunningTrack = track;
+  // track has been updated, refresh the webview
+  commands.executeCommand("musictime.refreshMusicTimeView");
 }
 
 ////////////////////////////////////////////////////////////////
 // CACHE GETTERS
 ////////////////////////////////////////////////////////////////
 
-export function getCachedSpotifyPlaylists() {
+export async function getCachedSpotifyPlaylists() {
+  if (!spotifyPlaylists) {
+    spotifyPlaylists = await getSpotifyPlaylists();
+  }
   return spotifyPlaylists;
 }
 
@@ -141,7 +146,10 @@ export function getCachedLikedSongsTracks() {
   return spotifyLikedTracks;
 }
 
-export function getCachedSoftwareTop40Playlist() {
+export async function getCachedSoftwareTop40Playlist() {
+  if (!softwareTop40Playlist) {
+    softwareTop40Playlist = await getSoftwareTop40Playlist();
+  }
   return softwareTop40Playlist;
 }
 
@@ -149,11 +157,17 @@ export function getCachedRecommendationInfo() {
   return recommendationInfo;
 }
 
-export function getCachedUserMusicMetrics() {
+export async function getCachedUserMusicMetrics() {
+  if (!userMusicMetrics) {
+    await getUserMusicMetrics();
+  }
   return userMusicMetrics;
 }
 
-export function getCachedAverageMusicMetrics() {
+export async function getCachedAverageMusicMetrics() {
+  if (!averageMusicMetrics) {
+    await getUserMusicMetrics();
+  }
   return averageMusicMetrics;
 }
 
@@ -161,7 +175,10 @@ export function getCachedRecommendationMetadata() {
   return recommendationMetadata;
 }
 
-export function getCachedSpotifyPlayerContext() {
+export async function getCachedSpotifyPlayerContext() {
+  if (!spotifyContext) {
+    await populatePlayerContext();
+  }
   return spotifyContext;
 }
 
@@ -617,10 +634,8 @@ export async function initializeSpotify(refreshUser = false) {
 
 export async function isTrackRepeating(): Promise<boolean> {
   // get the current repeat state
-  let spotifyContext: PlayerContext = getCachedSpotifyPlayerContext();
-  if (!spotifyContext && getCachedRunningTrack()) {
-    await populatePlayerContext();
-    spotifyContext = getCachedSpotifyPlayerContext();
+  if (!spotifyContext) {
+    spotifyContext = await getCachedSpotifyPlayerContext();
   }
   // "off", "track", "context", ""
   const repeatState = spotifyContext ? spotifyContext.repeat_state : "";

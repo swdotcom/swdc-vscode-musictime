@@ -43,11 +43,8 @@ export async function showPlaylistOptionsMenu() {
     shuffle_state:false
      */
   const currentTrack: Track = getCachedRunningTrack();
-  let spotifyContext: PlayerContext = getCachedSpotifyPlayerContext();
-  if (!spotifyContext) {
-    await populatePlayerContext();
-  }
-  spotifyContext = getCachedSpotifyPlayerContext();
+  const spotifyContext = await getCachedSpotifyPlayerContext();
+
   const currentVolume = spotifyContext.device.volume_percent;
 
   // is it currently shuffling?

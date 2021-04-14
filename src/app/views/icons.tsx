@@ -31,6 +31,10 @@ import RepeatIcon from "@material-ui/icons/Repeat";
 import RepeatOneIcon from "@material-ui/icons/RepeatOne";
 import VolumeUpIcon from "@material-ui/icons/VolumeUp";
 import VolumeOffIcon from "@material-ui/icons/VolumeOff";
+import EqualizerIcon from "@material-ui/icons/Equalizer";
+import DashboardIcon from "@material-ui/icons/Dashboard";
+import SettingsRemoteIcon from "@material-ui/icons/SettingsRemote";
+import StopIcon from "@material-ui/icons/Stop";
 
 // Material UI SVG Icons
 export const MuiAlbumIcon = (props: SvgIconProps) => {
@@ -153,14 +157,23 @@ export const MuiVolumeOffIcon = (props: SvgIconProps) => {
   return <VolumeOffIcon {...props} style={getMuiIconStyle(props)} />;
 };
 
-// Custom SVG Icons
-export const DashboardIcon = (props: SvgIconProps) => {
-  return (
-    <SvgIcon {...props} style={getCustomIconStyle(props)}>
-      <path d="M13.7188 10.875C13.8734 10.875 14 11.0016 14 11.1562V11.7188C14 11.8734 13.8734 12 13.7188 12H2.28125C2.12656 12 2 11.8734 2 11.7188V3.28125C2 3.12656 2.12656 3 2.28125 3H2.84375C2.99844 3 3.125 3.12656 3.125 3.28125V10.875H13.7188ZM5.375 9.46875V7.78125C5.375 7.62656 5.24844 7.5 5.09375 7.5H4.53125C4.37656 7.5 4.25 7.62656 4.25 7.78125V9.46875C4.25 9.62344 4.37656 9.75 4.53125 9.75H5.09375C5.24844 9.75 5.375 9.62344 5.375 9.46875ZM7.625 9.46875V4.78125C7.625 4.62656 7.49844 4.5 7.34375 4.5H6.78125C6.62656 4.5 6.5 4.62656 6.5 4.78125V9.46875C6.5 9.62344 6.62656 9.75 6.78125 9.75H7.34375C7.49844 9.75 7.625 9.62344 7.625 9.46875ZM9.875 9.46875V6.28125C9.875 6.12656 9.74844 6 9.59375 6H9.03125C8.87656 6 8.75 6.12656 8.75 6.28125V9.46875C8.75 9.62344 8.87656 9.75 9.03125 9.75H9.59375C9.74844 9.75 9.875 9.62344 9.875 9.46875ZM12.125 9.46875V4.03125C12.125 3.87656 11.9984 3.75 11.8438 3.75H11.2812C11.1266 3.75 11 3.87656 11 4.03125V9.46875C11 9.62344 11.1266 9.75 11.2812 9.75H11.8438C11.9984 9.75 12.125 9.62344 12.125 9.46875Z" />
-    </SvgIcon>
-  );
+export const MuiEqualizerIcon = (props: SvgIconProps) => {
+  return <EqualizerIcon {...props} style={getMuiIconStyle(props)} />;
 };
+
+export const MuiDashboardIcon = (props: SvgIconProps) => {
+  return <DashboardIcon {...props} style={getMuiIconStyle(props)} />;
+};
+
+export const MuiSettingsRemoteIcon = (props: SvgIconProps) => {
+  return <SettingsRemoteIcon {...props} style={getMuiIconStyle(props)} />;
+};
+
+export const MuiStopIcon = (props: SvgIconProps) => {
+  return <StopIcon {...props} style={getMuiIconStyle(props)} />;
+};
+
+// Custom SVG Icons
 
 export const ProjectSummaryIcon = (props: SvgIconProps) => {
   return (

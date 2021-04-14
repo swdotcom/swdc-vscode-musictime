@@ -13,16 +13,28 @@ import {
   DocumentIcon,
   SpotifyIcon,
   MuiSyncIcon,
-  MuiTuneIcon,
   PawIcon,
-  DashboardIcon,
+  MuiDashboardIcon,
+  MuiCloseIcon,
+  MuiSettingsRemoteIcon,
+  MuiSkipPreviousIcon,
+  MuiPlayArrowIcon,
+  MuiSkipNextIcon,
+  MuiRepeatIcon,
+  MuiShuffleIcon,
 } from "../icons";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import Collapse from "@material-ui/core/Collapse";
-import grey from "@material-ui/core/colors/grey";
+import { grey, deepPurple } from "@material-ui/core/colors";
 import Workspaces from "./workspaces";
+import Menu from "@material-ui/core/Menu";
+import MenuItem from "@material-ui/core/MenuItem";
+import Divider from "@material-ui/core/Divider";
+import { DARK_BG_COLOR, MAX_MENU_HEIGHT } from "../../utils/view_constants";
+import Box from "@material-ui/core/Box";
+import Button from "@material-ui/core/Button";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -85,13 +97,111 @@ const useStyles = makeStyles((theme) => ({
     paddingLeft: theme.spacing(1),
     paddingBottom: theme.spacing(1),
   },
+  menuHeaderPrimary: {
+    color: deepPurple[200],
+    marginRight: 10,
+  },
+  menuHeaderSecondary: {
+    color: grey[500],
+    fontWeight: 300,
+    fontSize: 12,
+  },
+  listItemIcon: {
+    display: "flex",
+    justifyContent: "center",
+    textAlign: "center",
+    margin: 0,
+    padding: 0,
+  },
 }));
+
+function getTrackName(currentTrack) {
+  let runningTrackName = "Select a track";
+  if (isTrackAvailable(currentTrack)) {
+    runningTrackName = currentTrack.name;
+    if (currentTrack.artist) {
+      runningTrackName += ` - ${currentTrack.artist}`;
+    } else if (currentTrack.album) {
+      runningTrackName += ` - ${currentTrack.album}`;
+    }
+  }
+  return runningTrackName;
+}
+
+function getTrackStatus(currentTrack, spotifyContext) {
+  const currentVolume = currentTrack.volume ?? 0;
+
+  let msg = "";
+
+  if (currentTrack && currentTrack.id) {
+    if (currentTrack.state === "playing") {
+      msg += `playing; `;
+    } else if (currentTrack.state === "paused") {
+      msg += `paused; `;
+    }
+  }
+
+  if (isRepeatingTrack(spotifyContext)) {
+    msg += "repeating track; ";
+  } else if (isRepeatingPlaylist(spotifyContext)) {
+    msg += "repeating playlist; ";
+  }
+
+  if (isShuffling(spotifyContext)) {
+    msg += "shuffling playlist; ";
+  }
+
+  msg += `volume ${currentVolume}%`;
+  return msg;
+}
+
+function isRepeatingTrack(spotifyContext) {
+  return !!(spotifyContext.repeat_state === "track");
+}
+
+function isRepeatingPlaylist(spotifyContext) {
+  return !!(spotifyContext.repeat_state === "context");
+}
+
+function isShuffling(spotifyContext) {
+  return !!(spotifyContext.shuffle_state === true);
+}
+
+function isTrackAvailable(currentTrack) {
+  return !!(currentTrack && currentTrack.id);
+}
 
 export default function Account(props) {
   const classes = useStyles();
   const stateData = props.stateData;
+  const spotifyContext = props.stateData.spotifyPlayerContext;
+  const currentTrack = props.stateData.currentlyRunningTrack;
+
+  const runningTrackName = getTrackName(currentTrack);
+  const runningTrackStatus = getTrackStatus(currentTrack, spotifyContext);
+  const enableControls = isTrackAvailable(currentTrack);
+  const repeatingTrack = isRepeatingTrack(currentTrack);
+
+  /**
+   * paused song
+   * spotifyPlayerContext
+   * {"timestamp":0,"device":{"id":"","is_active":"","is_restricted":false,
+   * "name":"","type":"","volume_percent":0},"progress_ms":"","is_playing":false,
+   * "currently_playing_type":"","actions":null,"item":null,"shuffle_state":false,
+   * "repeat_state":"","context":null}
+   *
+   * currentlyRunningTrack:
+   * {"artist":"Yves V","album":"Echo","genre":"","disc_number":1,"duration":180560,"played_count":0,
+   * "track_number":1,"id":"57Zcl7oKKr29qHp38dzzWi","name":"Echo","state":"paused",
+   * "volume":100,"popularity":67,
+   * "artwork_url":"https://i.scdn.co/image/ab67616d0000b2730b74292f2a1f6825f10f3c4f",
+   * "spotify_url":"spotify:track:57Zcl7oKKr29qHp38dzzWi","progress_ms":27898,
+   * "uri":"spotify:track:57Zcl7oKKr29qHp38dzzWi"}
+   */
 
   const [accountOpen, setAccountOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
 
   function documentationClickHandler() {
     const command = {
@@ -150,17 +260,21 @@ export default function Account(props) {
     setAccountOpen(false);
   }
 
-  function audioClickHandler() {
-    const command = {
-      action: "musictime.showPlaylistOptionsMenu",
-      command: "command_execute",
-    };
-    props.vscode.postMessage(command);
-  }
-
   function accountClickHandler() {
     setAccountOpen(!accountOpen);
   }
+
+  function handleAudioOptionsClick(event) {
+    setAnchorEl(event.currentTarget);
+    event.preventDefault();
+  }
+
+  function handleClose(event = null) {
+    setAnchorEl(null);
+    event.preventDefault();
+  }
+
+  function toggleShuffleHandler() {}
 
   return (
     <Grid container className={classes.root}>
@@ -169,8 +283,8 @@ export default function Account(props) {
           <ListItem key="account_manage_item" disableGutters={true} dense={true}>
             <ListItemText key="account_manage" primary="Account" secondary={!stateData.registered ? "Manage your account" : stateData.email} />
             <ListItemSecondaryAction classes={{ root: classes.secondaryAction }}>
-              <IconButton onClick={audioClickHandler} aria-label="View audio controls">
-                <MuiTuneIcon />
+              <IconButton onClick={handleAudioOptionsClick} aria-label="View audio controls">
+                <MuiSettingsRemoteIcon />
               </IconButton>
               <IconButton edge="end" onClick={accountClickHandler} aria-label="View account info">
                 {!stateData.registered ? null : stateData.authType === "github" ? (
@@ -185,6 +299,68 @@ export default function Account(props) {
           </ListItem>
         </List>
       </Grid>
+      <Menu
+        id="main-audio-options-menu"
+        anchorEl={anchorEl}
+        keepMounted
+        open={open}
+        PaperProps={{
+          style: {
+            maxHeight: MAX_MENU_HEIGHT,
+            backgroundColor: DARK_BG_COLOR,
+            paddingRight: 6,
+            paddingLeft: 0,
+          },
+        }}
+      >
+        <MenuItem key="audio-options-menu-item" style={{ padding: 0, margin: 0 }}>
+          <List disablePadding={true} dense={true} style={{ marginLeft: 10, marginRight: 10, marginBottom: 0, marginTop: 0 }}>
+            <ListItem key={`audo-options-info-li`} disableGutters={true} dense={true}>
+              <ListItemText
+                primary={
+                  <Typography noWrap className={classes.menuHeaderPrimary}>
+                    {runningTrackName}
+                  </Typography>
+                }
+                secondary={
+                  <Typography noWrap className={classes.menuHeaderSecondary}>
+                    {runningTrackStatus}
+                  </Typography>
+                }
+              />
+            </ListItem>
+          </List>
+          <IconButton aria-label="Close" onClick={handleClose} style={{ position: "absolute", right: 2, top: 2 }}>
+            <MuiCloseIcon />
+          </IconButton>
+        </MenuItem>
+        <div style={{ width: "100%" }}>
+          <Box display="flex" p={1}>
+            <Box>
+              <IconButton>
+                <MuiSkipPreviousIcon />
+              </IconButton>
+              <IconButton>
+                <MuiPlayArrowIcon />
+              </IconButton>
+              <IconButton>
+                <MuiSkipNextIcon />
+              </IconButton>
+            </Box>
+            <Box flexGrow={1}></Box>
+            <Box>
+              <IconButton>
+                <MuiRepeatIcon />
+              </IconButton>
+            </Box>
+            <Box>
+              <IconButton>
+                <MuiShuffleIcon />
+              </IconButton>
+            </Box>
+          </Box>
+        </div>
+      </Menu>
       <Collapse in={accountOpen} timeout="auto" unmountOnExit className={classes.root}>
         <List className={classes.collapseList} disablePadding={true} dense={true}>
           {!props.stateData.spotifyUser && (
@@ -221,8 +397,8 @@ export default function Account(props) {
           )}
 
           <ListItem key="report-dashboard" disableGutters={true} dense={true} button onClick={dashboardClickHandler}>
-            <ListItemIcon>
-              <DashboardIcon />
+            <ListItemIcon style={{ marginLeft: 3 }}>
+              <MuiDashboardIcon />
             </ListItemIcon>
             <ListItemText id="report-dashboard-li" primary="Dashboard" classes={{ primary: classes.primaryListText }} />
           </ListItem>

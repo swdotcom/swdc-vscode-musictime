@@ -2,7 +2,7 @@ import { createSpotifyIdFromUri, createUriFromTrackId, nowInSecs, isMac } from "
 import { Track, getTrack, PlayerName, CodyResponse, getSpotifyRecentlyPlayedBefore } from "cody-music";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { execCmd } from "../managers/ExecManager";
-import { getBestActiveDevice, requiresSpotifyAccess } from "../managers/PlaylistDataManager";
+import { getBestActiveDevice, requiresSpotifyAccess, updateCachedRunningTrack } from "../managers/PlaylistDataManager";
 const path = require("path");
 const moment = require("moment-timezone");
 
@@ -53,6 +53,7 @@ export class MusicStateManager {
       if (requiresAccess) {
         // either no device ID, requires spotify connection,
         // or it's a windows device that is not online
+        updateCachedRunningTrack(undefined);
         return;
       }
 
@@ -61,6 +62,7 @@ export class MusicStateManager {
       // check if we've set the existing device id but don't have a device
       if ((!this.existingTrack || !this.existingTrack.id) && !device?.id && !isMac()) {
         // no existing track and no device, skip checking
+        updateCachedRunningTrack(undefined);
         return;
       }
 
@@ -94,6 +96,7 @@ export class MusicStateManager {
       this.existingTrack = { ...playingTrack };
 
       MusicCommandManager.syncControls(this.existingTrack);
+      updateCachedRunningTrack(this.existingTrack);
     } catch (e) {
       const errMsg = e.message || e;
       console.error(`Unexpected track state processing error: ${errMsg}`);

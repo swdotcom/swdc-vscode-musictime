@@ -46,7 +46,6 @@ import {
   isTrackRepeating,
   removeTracksFromRecommendations,
   sortPlaylists,
-  updateCachedRunningTrack,
   requiresSpotifyAccess,
   removeTrackFromLikedPlaylist,
   populateLikedSongs,
@@ -128,7 +127,6 @@ export class MusicControlManager {
           ]);
         }
       } else {
-        updateCachedRunningTrack(runningTrack);
         if (controlMgr.useSpotifyDesktop()) {
           result = await play(PlayerName.SpotifyDesktop);
         } else {
