@@ -211,7 +211,7 @@ export class MusicCommandManager {
     }
 
     const trackName = trackInfo ? trackInfo.name : "";
-    const songInfo = trackInfo ? `${trackInfo.name} (${trackInfo.artist})` : "";
+    const songInfo = trackInfo && trackInfo.id ? `${trackInfo.name} (${trackInfo.artist})` : "";
 
     const isLiked = !!(trackInfo && trackInfo["playlist_id"] === SPOTIFY_LIKED_SONGS_PLAYLIST_ID);
 
@@ -245,7 +245,7 @@ export class MusicCommandManager {
           button.statusBarItem.hide();
         }
       } else if (currentSongButton) {
-        button.statusBarItem.tooltip = `(${songInfo})`;
+        button.statusBarItem.tooltip = `${songInfo}`;
         button.statusBarItem.text = getSongDisplayName(trackName);
         button.statusBarItem.show();
         this._songButton = button;
@@ -286,7 +286,7 @@ export class MusicCommandManager {
     }
 
     const trackName = trackInfo ? trackInfo.name : "";
-    const songInfo = trackInfo ? `${trackInfo.name} (${trackInfo.artist})` : "";
+    const songInfo = trackInfo && trackInfo.id ? `${trackInfo.name} (${trackInfo.artist})` : "";
 
     const isLiked = !!(trackInfo && trackInfo["playlist_id"] === SPOTIFY_LIKED_SONGS_PLAYLIST_ID);
 
@@ -320,7 +320,7 @@ export class MusicCommandManager {
           button.statusBarItem.hide();
         }
       } else if (currentSongButton) {
-        button.statusBarItem.tooltip = `(${songInfo})`;
+        button.statusBarItem.tooltip = `${songInfo}`;
         button.statusBarItem.text = getSongDisplayName(trackName);
         button.statusBarItem.show();
         this._songButton = button;

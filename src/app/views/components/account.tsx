@@ -22,6 +22,10 @@ import {
   MuiSkipNextIcon,
   MuiRepeatIcon,
   MuiShuffleIcon,
+  MuiRepeatOneIcon,
+  MuiStopIcon,
+  MuiVolumeUpIcon,
+  MuiVolumeOffIcon,
 } from "../icons";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
@@ -33,8 +37,8 @@ import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import Divider from "@material-ui/core/Divider";
 import { DARK_BG_COLOR, MAX_MENU_HEIGHT } from "../../utils/view_constants";
-import Box from "@material-ui/core/Box";
-import Button from "@material-ui/core/Button";
+import Tooltip from "@material-ui/core/Tooltip";
+import ButtonGroup from "@material-ui/core/ButtonGroup";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -42,6 +46,14 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
     padding: 0,
     margin: 0,
+  },
+  buttonGroupItems: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    "& > *": {
+      margin: theme.spacing(1),
+    },
   },
   textButton: {
     width: "100%",
@@ -116,43 +128,21 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function getTrackName(currentTrack) {
-  let runningTrackName = "Select a track";
-  if (isTrackAvailable(currentTrack)) {
-    runningTrackName = currentTrack.name;
-    if (currentTrack.artist) {
-      runningTrackName += ` - ${currentTrack.artist}`;
-    } else if (currentTrack.album) {
-      runningTrackName += ` - ${currentTrack.album}`;
-    }
-  }
-  return runningTrackName;
+  return currentTrack?.name ?? "Select a track";
 }
 
-function getTrackStatus(currentTrack, spotifyContext) {
-  const currentVolume = currentTrack.volume ?? 0;
-
-  let msg = "";
-
-  if (currentTrack && currentTrack.id) {
-    if (currentTrack.state === "playing") {
-      msg += `playing; `;
-    } else if (currentTrack.state === "paused") {
-      msg += `paused; `;
+function getTrackDescription(currentTrack) {
+  let description = "";
+  if (isTrackAvailable(currentTrack)) {
+    description += currentTrack?.artist && "";
+    if (currentTrack.album) {
+      if (description.length) {
+        description += " - ";
+      }
+      description += currentTrack.album;
     }
   }
-
-  if (isRepeatingTrack(spotifyContext)) {
-    msg += "repeating track; ";
-  } else if (isRepeatingPlaylist(spotifyContext)) {
-    msg += "repeating playlist; ";
-  }
-
-  if (isShuffling(spotifyContext)) {
-    msg += "shuffling playlist; ";
-  }
-
-  msg += `volume ${currentVolume}%`;
-  return msg;
+  return description;
 }
 
 function isRepeatingTrack(spotifyContext) {
@@ -171,16 +161,35 @@ function isTrackAvailable(currentTrack) {
   return !!(currentTrack && currentTrack.id);
 }
 
+function isPaused(currentTrack) {
+  return !!(currentTrack.state === "paused");
+}
+
+function isPlaying(currentTrack) {
+  return !!(currentTrack.state === "playing");
+}
+
+function isMuted(currentTrack) {
+  return !!(isTrackAvailable(currentTrack) && currentTrack.volume === 0);
+}
+
 export default function Account(props) {
   const classes = useStyles();
   const stateData = props.stateData;
   const spotifyContext = props.stateData.spotifyPlayerContext;
   const currentTrack = props.stateData.currentlyRunningTrack;
 
+  console.log("getting latest current track info");
+
   const runningTrackName = getTrackName(currentTrack);
-  const runningTrackStatus = getTrackStatus(currentTrack, spotifyContext);
+  const runningTrackStatus = getTrackDescription(currentTrack);
   const enableControls = isTrackAvailable(currentTrack);
   const repeatingTrack = isRepeatingTrack(currentTrack);
+  const repeatingPlaylist = isRepeatingPlaylist(currentTrack);
+  const shuffling = isShuffling(spotifyContext);
+  const paused = isPaused(currentTrack);
+  const playing = isPlaying(currentTrack);
+  const muted = isMuted(currentTrack);
 
   /**
    * paused song
@@ -274,7 +283,105 @@ export default function Account(props) {
     event.preventDefault();
   }
 
-  function toggleShuffleHandler() {}
+  // audio control functions
+  function unMuteClick() {
+    const command = {
+      action: "musictime.unMute",
+      command: "command_execute",
+    };
+    props.vscode.postMessage(command);
+    setAnchorEl(null);
+  }
+
+  function muteClick() {
+    const command = {
+      action: "musictime.mute",
+      command: "command_execute",
+    };
+    props.vscode.postMessage(command);
+    setAnchorEl(null);
+  }
+
+  function repeatPlaylistClick() {
+    const command = {
+      action: "musictime.repeatPlaylist",
+      command: "command_execute",
+    };
+    props.vscode.postMessage(command);
+    setAnchorEl(null);
+  }
+
+  function repeatOneClick() {
+    const command = {
+      action: "musictime.repeatTrack",
+      command: "command_execute",
+    };
+    props.vscode.postMessage(command);
+    setAnchorEl(null);
+  }
+
+  function disableRepeatClick() {
+    const command = {
+      action: "musictime.repeatOff",
+      command: "command_execute",
+    };
+    props.vscode.postMessage(command);
+    setAnchorEl(null);
+  }
+
+  function playClick() {
+    const command = {
+      action: "musictime.play",
+      command: "command_execute",
+    };
+    props.vscode.postMessage(command);
+    setAnchorEl(null);
+  }
+
+  function pauseClick() {
+    const command = {
+      action: "musictime.pause",
+      command: "command_execute",
+    };
+    props.vscode.postMessage(command);
+    setAnchorEl(null);
+  }
+
+  function previousClick() {
+    const command = {
+      action: "musictime.previous",
+      command: "command_execute",
+    };
+    props.vscode.postMessage(command);
+    setAnchorEl(null);
+  }
+
+  function nextClick() {
+    const command = {
+      action: "musictime.next",
+      command: "command_execute",
+    };
+    props.vscode.postMessage(command);
+    setAnchorEl(null);
+  }
+
+  function disableShuffleClick() {
+    const command = {
+      action: "musictime.shuffleOff",
+      command: "command_execute",
+    };
+    props.vscode.postMessage(command);
+    setAnchorEl(null);
+  }
+
+  function enableShuffleClick() {
+    const command = {
+      action: "musictime.shuffleOn",
+      command: "command_execute",
+    };
+    props.vscode.postMessage(command);
+    setAnchorEl(null);
+  }
 
   return (
     <Grid container className={classes.root}>
@@ -334,31 +441,78 @@ export default function Account(props) {
             <MuiCloseIcon />
           </IconButton>
         </MenuItem>
-        <div style={{ width: "100%" }}>
-          <Box display="flex" p={1}>
-            <Box>
-              <IconButton>
-                <MuiSkipPreviousIcon />
+
+        <div className={classes.buttonGroupItems}>
+          <ButtonGroup variant="outlined">
+            <Tooltip title="Previous">
+              <IconButton onClick={previousClick}>
+                <MuiSkipPreviousIcon color={enableControls ? "primary" : "disabled"} />
               </IconButton>
-              <IconButton>
-                <MuiPlayArrowIcon />
+            </Tooltip>
+            {enableControls && paused && (
+              <Tooltip title="Play">
+                <IconButton onClick={playClick}>
+                  <MuiPlayArrowIcon color={enableControls ? "primary" : "disabled"} />
+                </IconButton>
+              </Tooltip>
+            )}
+            {enableControls && playing && (
+              <Tooltip title="Pause">
+                <IconButton onClick={pauseClick}>
+                  <MuiStopIcon color={enableControls ? "primary" : "disabled"} />
+                </IconButton>
+              </Tooltip>
+            )}
+            {!enableControls && (
+              <Tooltip title="Play">
+                <IconButton disabled>
+                  <MuiPlayArrowIcon color="disabled" />
+                </IconButton>
+              </Tooltip>
+            )}
+            <Tooltip title="Next">
+              <IconButton onClick={nextClick}>
+                <MuiSkipNextIcon color={enableControls ? "primary" : "disabled"} />
               </IconButton>
-              <IconButton>
-                <MuiSkipNextIcon />
+            </Tooltip>
+            <Tooltip title={shuffling ? "Disable shuffle" : "Enable shuffle"}>
+              <IconButton disabled={!enableControls} onClick={shuffling ? disableShuffleClick : enableShuffleClick}>
+                <MuiShuffleIcon color={shuffling ? "secondary" : enableControls ? "primary" : "disabled"} />
               </IconButton>
-            </Box>
-            <Box flexGrow={1}></Box>
-            <Box>
-              <IconButton>
-                <MuiRepeatIcon />
-              </IconButton>
-            </Box>
-            <Box>
-              <IconButton>
-                <MuiShuffleIcon />
-              </IconButton>
-            </Box>
-          </Box>
+            </Tooltip>
+            {repeatingTrack ? (
+              <Tooltip title="Disable repeat">
+                <IconButton onClick={disableRepeatClick}>
+                  <MuiRepeatOneIcon color="secondary" />
+                </IconButton>
+              </Tooltip>
+            ) : repeatingPlaylist ? (
+              <Tooltip title="Enable repeat one">
+                <IconButton onClick={repeatOneClick}>
+                  <MuiRepeatIcon color="secondary" />
+                </IconButton>
+              </Tooltip>
+            ) : (
+              <Tooltip title="Enable playlist repeat">
+                <IconButton disabled={!enableControls} onClick={repeatPlaylistClick}>
+                  <MuiRepeatIcon color={enableControls ? "primary" : "disabled"} />
+                </IconButton>
+              </Tooltip>
+            )}
+            {muted ? (
+              <Tooltip title="Unmute">
+                <IconButton onClick={unMuteClick}>
+                  <MuiVolumeOffIcon />
+                </IconButton>
+              </Tooltip>
+            ) : (
+              <Tooltip title="Mute">
+                <IconButton onClick={muteClick}>
+                  <MuiVolumeUpIcon />
+                </IconButton>
+              </Tooltip>
+            )}
+          </ButtonGroup>
         </div>
       </Menu>
       <Collapse in={accountOpen} timeout="auto" unmountOnExit className={classes.root}>
@@ -371,6 +525,9 @@ export default function Account(props) {
               <ListItemText id="spotify-connect-li" primary="Connect Spotify" classes={{ primary: classes.primaryListText }} />
             </ListItem>
           )}
+
+          <Divider />
+
           {props.stateData.spotifyUser && (
             <Grid container justify="space-between" alignItems="center">
               <Grid item key={`account-user-icon-container`} xs={10}>
@@ -423,6 +580,8 @@ export default function Account(props) {
             </ListItemIcon>
             <ListItemText id="submit-issue-li" primary="Submit an issue" classes={{ primary: classes.primaryListText }} />
           </ListItem>
+
+          <Divider />
 
           <ListItem key="slack-workspaces" disableGutters={true} dense={true}>
             <Workspaces vscode={props.vscode} stateData={props.stateData} />

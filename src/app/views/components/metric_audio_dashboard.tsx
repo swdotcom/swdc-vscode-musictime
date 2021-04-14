@@ -275,7 +275,6 @@ export default function MetricAudioDashboard(props) {
                         name={key}
                         data-id={key}
                         data-tag={key}
-                        // onChange={handleSliderChange}
                         onChange={(event, value) => handleSliderChange(event, value, key)}
                         defaultValue={defaultVal}
                         getAriaValueText={sliderText}

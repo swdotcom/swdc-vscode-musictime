@@ -40,10 +40,6 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
   if (spotifyUser) {
     spotifyPlayerContext = await getCachedSpotifyPlayerContext();
     currentlyRunningTrack = getCachedRunningTrack();
-    console.log("spotifyPlayerContext: ", JSON.stringify(spotifyPlayerContext));
-    if (currentlyRunningTrack) {
-      console.log("currentlyRunningTrack: ", JSON.stringify(currentlyRunningTrack));
-    }
 
     if (selectedTabView === "playlists") {
       likedSongsTracks = getCachedLikedSongsTracks();
