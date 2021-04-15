@@ -231,7 +231,7 @@
     "@types/ws": "^7.4.0",
     "axios": "^0.21.1",
     "clipboardy": "^2.1.0",
-    "cody-music": "2.10.3",
+    "cody-music": "2.10.4",
     "file-it": "^1.1.1",
     "moment-timezone": "^0.5.25",
     "open": "^6.4.0",

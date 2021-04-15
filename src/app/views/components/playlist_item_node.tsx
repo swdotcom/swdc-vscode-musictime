@@ -200,12 +200,10 @@ export default function PlaylistItemNode(props) {
 
   function handleClick(event) {
     setAnchorEl(event.currentTarget);
-    event.preventDefault();
   }
 
   function handleClose(event = null) {
     setAnchorEl(null);
-    event.preventDefault();
   }
 
   return (

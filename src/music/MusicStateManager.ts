@@ -1,4 +1,4 @@
-import { createSpotifyIdFromUri, createUriFromTrackId, nowInSecs, isMac } from "../Util";
+import { createSpotifyIdFromUri, createUriFromTrackId, isMac } from "../Util";
 import { Track, getTrack, PlayerName, CodyResponse, getSpotifyRecentlyPlayedBefore } from "cody-music";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { execCmd } from "../managers/ExecManager";
@@ -22,21 +22,6 @@ export class MusicStateManager {
       MusicStateManager.instance = new MusicStateManager();
     }
     return MusicStateManager.instance;
-  }
-
-  private getUtcAndLocal() {
-    const utc = nowInSecs();
-    const offset_sec = this.timeOffsetSeconds();
-    const local = utc - offset_sec;
-
-    return { utc, local };
-  }
-
-  private timeOffsetSeconds() {
-    const d = new Date();
-    // offset is the minutes from GMT. it's positive if it's before, and negative after
-    const offset = d.getTimezoneOffset();
-    return offset * 60;
   }
 
   public fetchPlayingTrack(): Promise<Track> {

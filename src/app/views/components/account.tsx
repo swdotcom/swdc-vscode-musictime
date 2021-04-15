@@ -41,7 +41,6 @@ import { DARK_BG_COLOR, DARK_BG_TEXT_COLOR, DARK_BG_TEXT_SECONDARY_COLOR, MAX_ME
 import Tooltip from "@material-ui/core/Tooltip";
 import ButtonGroup from "@material-ui/core/ButtonGroup";
 import Button from "@material-ui/core/Button";
-import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 
 const useStyles = makeStyles((theme) => ({
@@ -82,7 +81,7 @@ const useStyles = makeStyles((theme) => ({
     color: grey[500],
     fontWeight: 300,
     fontSize: 12,
-    right: 0,
+    right: 2,
   },
   label: {
     fontWeight: "inherit",
@@ -136,16 +135,15 @@ const useStyles = makeStyles((theme) => ({
   },
   cardRoot: {
     background: "transparent",
-    root: {
-      color: DARK_BG_TEXT_COLOR,
-    },
-    title: {
-      color: DARK_BG_TEXT_COLOR,
-    },
-    subheader: {
-      color: DARK_BG_TEXT_SECONDARY_COLOR,
-      fontWeight: 300,
-    },
+  },
+  cardHeaderAction: {
+    color: theme.palette.secondary.main,
+  },
+  cardHeaderTitle: {
+    color: DARK_BG_TEXT_COLOR,
+  },
+  cardHeaderSubheader: {
+    color: DARK_BG_TEXT_SECONDARY_COLOR,
   },
 }));
 
@@ -211,8 +209,8 @@ export default function Account(props) {
   const runningTrackName = getTrackName(currentTrack);
   const runningTrackStatus = getTrackDescription(currentTrack);
   const enableControls = isTrackAvailable(currentTrack);
-  const repeatingTrack = isRepeatingTrack(currentTrack);
-  const repeatingPlaylist = isRepeatingPlaylist(currentTrack);
+  const repeatingTrack = isRepeatingTrack(spotifyContext);
+  const repeatingPlaylist = isRepeatingPlaylist(spotifyContext);
   const shuffling = isShuffling(spotifyContext);
   const paused = isPaused(currentTrack);
   const playing = isPlaying(currentTrack);
@@ -302,12 +300,10 @@ export default function Account(props) {
 
   function handleAudioOptionsClick(event) {
     setAnchorEl(event.currentTarget);
-    event.preventDefault();
   }
 
   function handleClose(event = null) {
     setAnchorEl(null);
-    event.preventDefault();
   }
 
   // audio control functions
@@ -327,6 +323,7 @@ export default function Account(props) {
     };
     props.vscode.postMessage(command);
     setAnchorEl(null);
+    currentTrack.volume = 0;
   }
 
   function repeatPlaylistClick() {
@@ -336,6 +333,7 @@ export default function Account(props) {
     };
     props.vscode.postMessage(command);
     setAnchorEl(null);
+    spotifyContext.repeat_state = "context";
   }
 
   function repeatOneClick() {
@@ -345,6 +343,7 @@ export default function Account(props) {
     };
     props.vscode.postMessage(command);
     setAnchorEl(null);
+    spotifyContext.repeat_state = "track";
   }
 
   function disableRepeatClick() {
@@ -354,6 +353,7 @@ export default function Account(props) {
     };
     props.vscode.postMessage(command);
     setAnchorEl(null);
+    spotifyContext.repeat_state = "none";
   }
 
   function playClick() {
@@ -399,6 +399,7 @@ export default function Account(props) {
     };
     props.vscode.postMessage(command);
     setAnchorEl(null);
+    spotifyContext.shuffle_state = false;
   }
 
   function enableShuffleClick() {
@@ -408,6 +409,7 @@ export default function Account(props) {
     };
     props.vscode.postMessage(command);
     setAnchorEl(null);
+    spotifyContext.shuffle_state = true;
   }
 
   function connectDeviceClick() {
@@ -551,18 +553,20 @@ export default function Account(props) {
           </Grid>
           <Divider />
           <Grid item xs={12}>
-            {deviceMenuInfo.isActive ? (
-              <Card className={classes.cardRoot}>
-                <CardHeader
-                  avatar={<MuiDevicesIcon />}
-                  action={<Button onClick={connectDeviceClick}>Connect</Button>}
-                  title={deviceMenuInfo.primaryText}
-                  subheader={deviceMenuInfo.secondaryText || null}
-                />
-              </Card>
-            ) : (
-              <div></div>
-            )}
+            <CardHeader
+              classes={{
+                title: classes.cardHeaderTitle,
+                subheader: classes.cardHeaderSubheader,
+              }}
+              avatar={<MuiDevicesIcon />}
+              action={
+                <Button className={classes.cardHeaderAction} onClick={connectDeviceClick}>
+                  {!deviceMenuInfo.isActive ? "Connect" : "Change Device"}
+                </Button>
+              }
+              title={deviceMenuInfo.primaryText}
+              subheader={deviceMenuInfo.secondaryText || null}
+            />
           </Grid>
         </Grid>
       </Menu>
@@ -581,7 +585,7 @@ export default function Account(props) {
 
           {props.stateData.spotifyUser && (
             <Grid container justify="space-between" alignItems="center">
-              <Grid item key={`account-user-icon-container`} xs={10}>
+              <Grid item key={`account-user-icon-container`} xs={9}>
                 <div className={classes.labelRoot}>
                   <ListItemIcon>
                     <SpotifyIcon />
@@ -589,7 +593,7 @@ export default function Account(props) {
                   <Typography>{props.stateData.spotifyUser.email}</Typography>
                 </div>
               </Grid>
-              <Grid item key={`account-user-product-info`} xs={2} className={classes.secondaryListText}>
+              <Grid item key={`account-user-product-info`} xs={3} className={classes.secondaryListText}>
                 {props.stateData.spotifyUser?.product === "premium" ? "Premium" : "Open"}
               </Grid>
             </Grid>

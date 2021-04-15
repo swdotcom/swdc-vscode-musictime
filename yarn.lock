@@ -1343,10 +1343,10 @@ code-point-at@^1.0.0:
   resolved "https://registry.yarnpkg.com/code-point-at/-/code-point-at-1.1.0.tgz#0d070b4d043a5bea33a2f1a40e2edb3d9a4ccf77"
   integrity sha1-DQcLTQQ6W+ozovGkDi7bPZpMz3c=
 
-cody-music@2.10.3:
-  version "2.10.3"
-  resolved "https://registry.yarnpkg.com/cody-music/-/cody-music-2.10.3.tgz#2a58613396b5d8caa0a37ad838709344f1376fef"
-  integrity sha512-qwXPv5BJoMcJeMe+yvhPBkDx6FgOr7cB+Z5gpaPVi10UOHop1zSdeyrI77BsN2VV5eHoiFgauUqp9N3GmB3N6Q==
+cody-music@2.10.4:
+  version "2.10.4"
+  resolved "https://registry.yarnpkg.com/cody-music/-/cody-music-2.10.4.tgz#76286f8c672deda35c2a1894a8629666116cab86"
+  integrity sha512-ikwgVmeNCqizUVdGOGloWq3453gGc8tKFkfb5ptgVgTkVEGKYuq+UTsbRSvT4FH76poOTnUdixClz3OjnFumdA==
   dependencies:
     axios "^0.21.1"
     dotenv "^8.2.0"

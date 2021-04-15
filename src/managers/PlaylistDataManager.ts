@@ -256,7 +256,7 @@ export async function getSoftwareTop40Playlist() {
     softwareTop40Playlist.tracks["items"] = softwareTop40Playlist.tracks["items"].map((n) => {
       const albumName = getAlbumName(n.track);
       const description = getArtistAlbumDescription(n.track);
-      n.track = { ...n.track, albumName, description };
+      n.track = { ...n.track, albumName, description, playlist_id: SOFTWARE_TOP_40_PLAYLIST_ID };
       return { ...n };
     });
   }
@@ -307,6 +307,8 @@ export async function getUserMusicMetrics() {
       userMusicMetrics = userMusicMetrics.map((n, index) => {
         n["keystrokes"] = n.keystrokes ? Math.ceil(n.keystrokes) : 0;
         n["keystrokes_formatted"] = new Intl.NumberFormat().format(n.keystrokes);
+        n["id"] = n.song_id;
+        n["trackId"] = n.song_id;
         averageMusicMetrics.increment(n);
         return n;
       });
@@ -600,16 +602,16 @@ export function getDeviceMenuInfo() {
   let isActive = true;
   if (activeDevice) {
     // found an active device
-    primaryText = `Listening on ${activeDevice.name}`;
+    primaryText = `Listening on your ${activeDevice.name}`;
   } else if (isMac() && desktop) {
     // show that the desktop player is an active device
-    primaryText = `Listening on ${desktop.name}`;
+    primaryText = `Listening on your ${desktop.name}`;
   } else if (webPlayer) {
     // show that the web player is an active device
-    primaryText = `Listening on ${webPlayer.name}`;
+    primaryText = `Listening on your ${webPlayer.name}`;
   } else if (desktop) {
     // show that the desktop player is an active device
-    primaryText = `Listening on ${desktop.name}`;
+    primaryText = `Listening on your ${desktop.name}`;
   } else if (devices.length) {
     // no active device but found devices
     const names = devices.map((d: PlayerDevice) => d.name);
@@ -619,7 +621,7 @@ export function getDeviceMenuInfo() {
   } else if (devices.length === 0) {
     // no active device and no devices
     primaryText = "Connect to a Spotify device";
-    secondaryText = "Click to launch the web or desktop player";
+    secondaryText = "Click connect to launch the web or desktop player";
     isActive = false;
   }
 
@@ -747,7 +749,10 @@ function getPlaylistItemTracksFromCodyResponse(codyResponse: CodyResponse): Play
   return playlistItems;
 }
 
-export function createPlaylistItemFromTrack(track: Track, position: number) {
+export function createPlaylistItemFromTrack(track: Track, position: number = undefined) {
+  if (position === undefined) {
+    position = track.track_number;
+  }
   let playlistItem: PlaylistItem = new PlaylistItem();
   playlistItem.type = "track";
   playlistItem.name = track.name;

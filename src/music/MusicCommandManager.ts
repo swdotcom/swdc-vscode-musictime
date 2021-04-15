@@ -33,7 +33,7 @@ export class MusicCommandManager {
   private static _hideSongTimeout = null;
   private static _isLoading: boolean = false;
   private static _songButton: Button = null;
-  private static _displaySongButton: Button = null;
+  private static _musicTimeLabelButton: Button = null;
   private static _hideCurrentSongTimeout: any = null;
 
   private constructor() {
@@ -71,6 +71,7 @@ export class MusicCommandManager {
 
     // start with 100 0and go down in sequence
     this.createButton("🎧", musictimeMenuTooltip, "musictime.displaySidebar", 1000);
+    this._musicTimeLabelButton = this.createButton("MusicTime", "Display song info", "musictime.songTitleRefresh", 999);
     this.createButton(`${action} Spotify`, `${action} Spotify to add your top productivity tracks.`, "musictime.connectSpotify", 999);
     // play previous or unicode ⏪
     this.createButton("$(chevron-left)", "Previous", "musictime.previous", 999);
@@ -83,7 +84,6 @@ export class MusicCommandManager {
     // 996 buttons (unlike, like)
     this.createButton("♡", "Like", "musictime.like", 996);
     this.createButton("♥", "Unlike", "musictime.unlike", 996);
-    this.createButton("$(pulse)", "Display song info", "musictime.songTitleRefresh", 995);
     // button area for the current song name
     this.createButton("", "Click to view track", "musictime.currentSong", 994);
     this.syncControls(await getRunningTrack());
@@ -152,6 +152,7 @@ export class MusicCommandManager {
     };
 
     this._buttons.push(button);
+    return button;
   }
 
   /**
@@ -255,13 +256,6 @@ export class MusicCommandManager {
           button.statusBarItem.tooltip = `${button.tooltip} - ${songInfo}`;
         }
         button.statusBarItem.show();
-      } else if (refreshSongStatusButton) {
-        this._displaySongButton = button;
-        if (trackName) {
-          button.statusBarItem.hide();
-        } else {
-          button.statusBarItem.show();
-        }
       } else {
         button.statusBarItem.hide();
       }
@@ -329,13 +323,6 @@ export class MusicCommandManager {
           button.statusBarItem.tooltip = `${button.tooltip} - ${songInfo}`;
         }
         button.statusBarItem.show();
-      } else if (refreshSongStatusButton) {
-        this._displaySongButton = button;
-        if (trackName) {
-          button.statusBarItem.hide();
-        } else {
-          button.statusBarItem.show();
-        }
       } else {
         button.statusBarItem.hide();
       }
@@ -375,12 +362,18 @@ export class MusicCommandManager {
     }
 
     this._hideCurrentSongTimeout = setTimeout(() => {
-      if (this._displaySongButton) {
-        this._displaySongButton.statusBarItem.show();
+      if (this._musicTimeLabelButton) {
+        // show the "MusicTime" label
+        this._musicTimeLabelButton.statusBarItem.show();
       }
       if (this._songButton) {
-        this._songButton.statusBarItem.hide();
+        // this._songButton.statusBarItem.hide();
+        this._buttons.map((button) => {
+          if (button.statusBarItem.command !== "musictime.displaySidebar" && button.statusBarItem.command !== "musictime.songTitleRefresh") {
+            button.statusBarItem.hide();
+          }
+        });
       }
-    }, 5000);
+    }, 10000);
   }
 }

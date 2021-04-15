@@ -50,7 +50,7 @@ export class MusicCommandUtil {
     } else {
       const error = this.getResponseError(result);
       if (error) {
-        console.log("access validation error: ", error);
+        console.log("Spotify access expired error: ", error);
       }
     }
   }

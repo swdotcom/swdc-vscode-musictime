@@ -23,6 +23,7 @@ import {
   unmute,
   getTrack,
   getRunningTrack,
+  setVolume,
 } from "cody-music";
 import { window, ViewColumn, Uri, commands } from "vscode";
 import { MusicCommandManager } from "./MusicCommandManager";
@@ -49,6 +50,7 @@ import {
   requiresSpotifyAccess,
   removeTrackFromLikedPlaylist,
   populateLikedSongs,
+  getCachedRunningTrack,
 } from "../managers/PlaylistDataManager";
 import { connectSlackWorkspace, hasSlackWorkspaces } from "../managers/SlackManager";
 
@@ -83,7 +85,7 @@ export class MusicControlManager {
 
     setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
-    }, 750);
+    }, 1000);
   }
 
   async previousSong() {
@@ -97,7 +99,7 @@ export class MusicControlManager {
 
     setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
-    }, 750);
+    }, 1000);
   }
 
   /**
@@ -140,7 +142,7 @@ export class MusicControlManager {
 
       setTimeout(() => {
         MusicStateManager.getInstance().fetchTrack();
-      }, 750);
+      }, 1000);
     }
   }
 
@@ -158,7 +160,7 @@ export class MusicControlManager {
 
     setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
-    }, 750);
+    }, 1000);
   }
 
   async setShuffleOn() {
@@ -167,7 +169,7 @@ export class MusicControlManager {
 
     setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
-    }, 750);
+    }, 1000);
   }
 
   async setShuffleOff() {
@@ -176,7 +178,7 @@ export class MusicControlManager {
 
     setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
-    }, 750);
+    }, 1000);
   }
 
   async setRepeatTrackOn() {
@@ -185,7 +187,7 @@ export class MusicControlManager {
 
     setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
-    }, 750);
+    }, 1000);
   }
 
   async setRepeatPlaylistOn() {
@@ -194,7 +196,7 @@ export class MusicControlManager {
 
     setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
-    }, 750);
+    }, 1000);
   }
 
   async setRepeatOnOff(setToOn: boolean) {
@@ -207,15 +209,24 @@ export class MusicControlManager {
 
     setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
-    }, 750);
+    }, 1000);
   }
 
   async setMuteOn() {
-    await MusicCommandUtil.getInstance().runSpotifyCommand(mute, [PlayerName.SpotifyWeb]);
+    const playerDevice: PlayerDevice = getBestActiveDevice();
+    await MusicCommandUtil.getInstance().runSpotifyCommand(mute, [PlayerName.SpotifyWeb, playerDevice?.id]);
+    setTimeout(() => {
+      MusicStateManager.getInstance().fetchTrack();
+    }, 1000);
   }
 
   async setMuteOff() {
-    await MusicCommandUtil.getInstance().runSpotifyCommand(unmute, [PlayerName.SpotifyWeb]);
+    const playerDevice: PlayerDevice = getBestActiveDevice();
+    // setVolume(PlayerName.SpotifyWeb, 50);
+    const result = await MusicCommandUtil.getInstance().runSpotifyCommand(unmute, [PlayerName.SpotifyWeb, playerDevice?.id]);
+    setTimeout(() => {
+      MusicStateManager.getInstance().fetchTrack();
+    }, 1000);
   }
 
   useSpotifyDesktop() {
@@ -336,26 +347,32 @@ export class MusicControlManager {
   }
 
   async setLiked(track: PlaylistItem, liked: boolean) {
-    if (!track || !track.id) {
+    let trackId = track?.id;
+    if (!trackId) {
+      // check to see if we have a running track
+      const runningTrack: Track = await getCachedRunningTrack();
+      trackId = runningTrack?.id;
+    }
+    if (!trackId) {
       window.showInformationMessage(`No track currently playing. Please play a track to use this feature.`);
       return;
     }
 
     // save the spotify track to the users liked songs playlist
     if (liked) {
-      await saveToSpotifyLiked([track.id]);
+      await saveToSpotifyLiked([trackId]);
       await populateLikedSongs();
     } else {
-      await removeFromSpotifyLiked([track.id]);
+      await removeFromSpotifyLiked([trackId]);
       // remove from the cached liked list
-      removeTrackFromLikedPlaylist(track.id);
+      removeTrackFromLikedPlaylist(trackId);
     }
 
     commands.executeCommand("musictime.refreshMusicTimeView", "playlists", SPOTIFY_LIKED_SONGS_PLAYLIST_ID);
 
     setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
-    }, 3000);
+    }, 2000);
   }
 
   async copySpotifyLink(id: string, isPlaylist: boolean) {

@@ -5,7 +5,7 @@ import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import ListItemText from "@material-ui/core/ListItemText";
-import { BeakerIcon } from "../icons";
+import { BeakerIcon, MuiEmojiEventsIcon } from "../icons";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 import Typography from "@material-ui/core/Typography";
@@ -58,10 +58,23 @@ export default function MetricsColdStart(props) {
       <Grid container>
         <Grid item key={`metrics-cold-start-icon-container`} xs={12}>
           <List disablePadding={true} dense={true}>
-            <ListItem key="productivity-ranking" disableGutters={true} dense={true}>
+            <ListItem key="productivity-ranking-feature" disableGutters={true} dense={true}>
               <ListItemText
                 primary="Productivity ranking"
                 secondary="Music Time works with Code Time to combine your music and coding data to find your most productive music"
+              />
+              <ListItemSecondaryAction classes={{ root: classes.secondaryAction }}>
+                <MuiEmojiEventsIcon />
+              </ListItemSecondaryAction>
+            </ListItem>
+          </List>
+        </Grid>
+        <Grid item key="audio-features-feature" xs={12}>
+          <List disablePadding={true} dense={true}>
+            <ListItem key="productivity-ranking" disableGutters={true} dense={true}>
+              <ListItemText
+                primary="Your audio metrics"
+                secondary="You can view how your audio features such as instrumentalness, energy, valence, and more are averaging."
               />
               <ListItemSecondaryAction classes={{ root: classes.secondaryAction }}>
                 <BeakerIcon />

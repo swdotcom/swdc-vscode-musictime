@@ -138,7 +138,6 @@ export default function MetricsSetup(props) {
 }
 
 MetricsSetup.propTypes = {
-  item: PropTypes.any.isRequired,
   vscode: PropTypes.any.isRequired,
   stateData: PropTypes.any.isRequired,
 };

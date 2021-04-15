@@ -1,16 +1,6 @@
 import { workspace, extensions, window, WorkspaceFolder, commands } from "vscode";
-import {
-  MUSIC_TIME_EXT_ID,
-  launch_url,
-  MUSIC_TIME_PLUGIN_ID,
-  MUSIC_TIME_TYPE,
-  SOFTWARE_TOP_40_PLAYLIST_ID,
-  SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
-  SOFTWARE_FOLDER,
-  CODE_TIME_EXT_ID,
-} from "./Constants";
-import { PlaylistItem, TrackStatus, CodyResponse, CodyResponseType } from "cody-music";
-import * as path from "path";
+import { MUSIC_TIME_EXT_ID, launch_url, MUSIC_TIME_PLUGIN_ID, MUSIC_TIME_TYPE, SOFTWARE_FOLDER, CODE_TIME_EXT_ID } from "./Constants";
+import { CodyResponse, CodyResponseType } from "cody-music";
 import { getItem } from "./managers/FileManager";
 import { isGitProject } from "./repo/GitUtil";
 import { execCmd } from "./managers/ExecManager";
@@ -21,8 +11,6 @@ const open = require("open");
 const fs = require("fs");
 const os = require("os");
 const crypto = require("crypto");
-
-const resourcePath: string = path.join(__dirname, "resources");
 
 export const alpha = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 export const DASHBOARD_LABEL_WIDTH = 25;
