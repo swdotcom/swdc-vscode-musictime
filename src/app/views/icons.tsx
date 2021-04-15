@@ -36,6 +36,8 @@ import DashboardIcon from "@material-ui/icons/Dashboard";
 import SettingsRemoteIcon from "@material-ui/icons/SettingsRemote";
 import StopIcon from "@material-ui/icons/Stop";
 import DevicesIcon from "@material-ui/icons/Devices";
+import RemoveCircleIcon from "@material-ui/icons/RemoveCircle";
+import AddCircleIcon from "@material-ui/icons/AddCircle";
 
 // Material UI SVG Icons
 export const MuiAlbumIcon = (props: SvgIconProps) => {
@@ -176,6 +178,14 @@ export const MuiStopIcon = (props: SvgIconProps) => {
 
 export const MuiDevicesIcon = (props: SvgIconProps) => {
   return <DevicesIcon {...props} style={getMuiIconStyle(props)} />;
+};
+
+export const MuiRemoveCircleIcon = (props: SvgIconProps) => {
+  return <RemoveCircleIcon {...props} style={getMuiIconStyle(props)} />;
+};
+
+export const MuiAddCircleIcon = (props: SvgIconProps) => {
+  return <AddCircleIcon {...props} style={getMuiIconStyle(props)} />;
 };
 
 DevicesIcon;
@@ -397,7 +407,7 @@ export const LoadingIcon = (props: SvgIconProps) => {
 };
 
 function getMuiIconStyle(props: SvgIconProps) {
-  const style = { color: deepPurple[400] };
+  const style = { color: deepPurple[300] };
   if (props.color) {
     delete style.color;
   }
@@ -405,7 +415,7 @@ function getMuiIconStyle(props: SvgIconProps) {
 }
 
 function getCustomIconStyle(props: SvgIconProps) {
-  const style = { color: deepPurple[400], marginLeft: 8, marginTop: 6, transform: "scale(1.5)" };
+  const style = { color: deepPurple[300], marginLeft: 8, marginTop: 6, transform: "scale(1.5)" };
   if (props.color) {
     delete style.color;
   }

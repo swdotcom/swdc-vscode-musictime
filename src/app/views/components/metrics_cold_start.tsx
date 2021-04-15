@@ -3,7 +3,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
-import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import { BeakerIcon, MuiEmojiEventsIcon } from "../icons";
 import Card from "@material-ui/core/Card";
@@ -29,16 +29,12 @@ const useStyles = makeStyles((theme) => ({
     color: indigo[300],
     fontWeight: 500,
   },
-  cardHeaderIcon: {
-    marginTop: 10,
-    marginRight: 10,
-  },
-  gridContainer: {},
-  secondaryAction: {
-    position: "absolute",
-    right: 0,
-    padding: 0,
-    margin: 0,
+  listItemIcon: {
+    display: "flex",
+    justifyContent: "center",
+    textAlign: "center",
+    marginRight: 0,
+    marginLeft: 0,
   },
 }));
 
@@ -51,34 +47,36 @@ export default function MetricsColdStart(props) {
         className={classes.cardHeader}
         title={
           <Typography noWrap gutterBottom={false} className={classes.cardHeaderText}>
-            Code + Music Features
+            Metrics
           </Typography>
         }
       />
+
       <Grid container>
-        <Grid item key={`metrics-cold-start-icon-container`} xs={12}>
+        <Grid item xs={12}>
           <List disablePadding={true} dense={true}>
-            <ListItem key="productivity-ranking-feature" disableGutters={true} dense={true}>
+            <ListItem key="play-info-item" disableGutters={true} dense={true}>
+              <ListItemIcon className={classes.listItemIcon}>
+                <MuiEmojiEventsIcon />
+              </ListItemIcon>
               <ListItemText
                 primary="Productivity ranking"
                 secondary="Music Time works with Code Time to combine your music and coding data to find your most productive music"
               />
-              <ListItemSecondaryAction classes={{ root: classes.secondaryAction }}>
-                <MuiEmojiEventsIcon />
-              </ListItemSecondaryAction>
             </ListItem>
           </List>
         </Grid>
-        <Grid item key="audio-features-feature" xs={12}>
+
+        <Grid item xs={12}>
           <List disablePadding={true} dense={true}>
-            <ListItem key="productivity-ranking" disableGutters={true} dense={true}>
+            <ListItem key="play-info-item" disableGutters={true} dense={true}>
+              <ListItemIcon className={classes.listItemIcon}>
+                <BeakerIcon />
+              </ListItemIcon>
               <ListItemText
                 primary="Your audio metrics"
-                secondary="You can view how your audio features such as instrumentalness, energy, valence, and more are averaging."
+                secondary="You can view how your audio features such as instrumentalness, energy, valence, and more are averaging"
               />
-              <ListItemSecondaryAction classes={{ root: classes.secondaryAction }}>
-                <BeakerIcon />
-              </ListItemSecondaryAction>
             </ListItem>
           </List>
         </Grid>

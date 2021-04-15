@@ -15,39 +15,22 @@ import {
   MuiSyncIcon,
   PawIcon,
   MuiDashboardIcon,
-  MuiCloseIcon,
   MuiSettingsRemoteIcon,
-  MuiSkipPreviousIcon,
-  MuiPlayArrowIcon,
-  MuiSkipNextIcon,
-  MuiRepeatIcon,
-  MuiShuffleIcon,
-  MuiRepeatOneIcon,
-  MuiStopIcon,
-  MuiVolumeUpIcon,
-  MuiVolumeOffIcon,
-  MuiDevicesIcon,
 } from "../icons";
 import IconButton from "@material-ui/core/IconButton";
-import Typography from "@material-ui/core/Typography";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import Collapse from "@material-ui/core/Collapse";
-import { grey, deepPurple } from "@material-ui/core/colors";
+import { grey } from "@material-ui/core/colors";
 import Workspaces from "./workspaces";
-import Menu from "@material-ui/core/Menu";
-import MenuItem from "@material-ui/core/MenuItem";
 import Divider from "@material-ui/core/Divider";
-import { DARK_BG_COLOR, DARK_BG_TEXT_COLOR, DARK_BG_TEXT_SECONDARY_COLOR, MAX_MENU_HEIGHT } from "../../utils/view_constants";
-import Tooltip from "@material-ui/core/Tooltip";
-import ButtonGroup from "@material-ui/core/ButtonGroup";
-import Button from "@material-ui/core/Button";
-import CardHeader from "@material-ui/core/CardHeader";
+import AudioControl from "./audio_control";
 
 const useStyles = makeStyles((theme) => ({
   root: {
     flexGrow: 1,
+    maxWidth: "100%",
     width: "100%",
-    padding: 0,
+    paddingLeft: 10,
     margin: 0,
   },
   buttonGroupItems: {
@@ -72,8 +55,6 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: 10,
   },
   primaryListText: {
-    flexGrow: 1,
-    width: "100%",
     fontWeight: 400,
     fontSize: 12,
   },
@@ -92,129 +73,17 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "center",
     padding: theme.spacing(0.5, 0),
   },
-  labelIcon: {
-    marginRight: theme.spacing(1),
-  },
-  labelText: {
-    fontWeight: "inherit",
-    flexGrow: 1,
-  },
-  controls: {
-    display: "flex",
-    flexGrow: 1,
-    paddingLeft: theme.spacing(1),
-    paddingBottom: theme.spacing(1),
-  },
-  menuHeaderPrimary: {
-    color: deepPurple[200],
-    marginRight: 10,
-  },
-  menuHeaderSecondary: {
-    color: grey[500],
-    fontWeight: 300,
-    fontSize: 12,
-  },
   listItemIcon: {
     display: "flex",
     justifyContent: "center",
     textAlign: "center",
-    margin: 0,
-    padding: 0,
-  },
-  MuiListItemText: {
-    root: {
-      marginTop: 0,
-    },
-    primary: {
-      fontWeight: 500,
-      fontSize: 12,
-    },
-    secondary: {
-      color: grey[500],
-    },
-  },
-  cardRoot: {
-    background: "transparent",
-  },
-  cardHeaderAction: {
-    color: theme.palette.secondary.main,
-  },
-  cardHeaderTitle: {
-    color: DARK_BG_TEXT_COLOR,
-  },
-  cardHeaderSubheader: {
-    color: DARK_BG_TEXT_SECONDARY_COLOR,
+    minWidth: "36px",
   },
 }));
-
-function getTrackName(currentTrack) {
-  return isTrackAvailable(currentTrack) ? currentTrack?.name || "Select a track to play" : "Select a track to play";
-}
-
-function getTrackDescription(currentTrack) {
-  let description = "";
-  if (isTrackAvailable(currentTrack)) {
-    description += currentTrack?.artist && "";
-    if (currentTrack.album) {
-      if (description.length) {
-        description += " - ";
-      }
-      description += currentTrack.album;
-    }
-  }
-  return description;
-}
-
-function isRepeatingTrack(spotifyContext) {
-  return !!(spotifyContext && spotifyContext.repeat_state === "track");
-}
-
-function isRepeatingPlaylist(spotifyContext) {
-  return !!(spotifyContext && spotifyContext.repeat_state === "context");
-}
-
-function isShuffling(spotifyContext) {
-  return !!(spotifyContext && spotifyContext.shuffle_state === true);
-}
-
-function isTrackAvailable(currentTrack) {
-  return !!(currentTrack && currentTrack.id);
-}
-
-function isPaused(currentTrack) {
-  return !!(currentTrack && currentTrack.state === "paused");
-}
-
-function isPlaying(currentTrack) {
-  return !!(currentTrack && currentTrack.state === "playing");
-}
-
-function isMuted(currentTrack) {
-  return !!(isTrackAvailable(currentTrack) && currentTrack.volume === 0);
-}
 
 export default function Account(props) {
   const classes = useStyles();
   const stateData = props.stateData;
-  const spotifyContext = props.stateData.spotifyPlayerContext;
-  const currentTrack = props.stateData.currentlyRunningTrack;
-
-  /**
-   * primaryText,
-   * secondaryText,
-   * isActive
-   */
-  const deviceMenuInfo = props.stateData.deviceMenuInfo;
-
-  const runningTrackName = getTrackName(currentTrack);
-  const runningTrackStatus = getTrackDescription(currentTrack);
-  const enableControls = isTrackAvailable(currentTrack);
-  const repeatingTrack = isRepeatingTrack(spotifyContext);
-  const repeatingPlaylist = isRepeatingPlaylist(spotifyContext);
-  const shuffling = isShuffling(spotifyContext);
-  const paused = isPaused(currentTrack);
-  const playing = isPlaying(currentTrack);
-  const muted = isMuted(currentTrack);
 
   /**
    * paused song
@@ -235,11 +104,11 @@ export default function Account(props) {
 
   const [accountOpen, setAccountOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
-  const open = Boolean(anchorEl);
+  const [openMenu, setOpenMenu] = useState(false);
 
   function documentationClickHandler() {
     const command = {
-      action: "musictime.displayReadme",
+      action: "musictime.launchReadme",
       command: "command_execute",
     };
     props.vscode.postMessage(command);
@@ -299,126 +168,12 @@ export default function Account(props) {
   }
 
   function handleAudioOptionsClick(event) {
+    setOpenMenu(!openMenu);
     setAnchorEl(event.currentTarget);
   }
 
-  function handleClose(event = null) {
-    setAnchorEl(null);
-  }
-
-  // audio control functions
-  function unMuteClick() {
-    const command = {
-      action: "musictime.unMute",
-      command: "command_execute",
-    };
-    props.vscode.postMessage(command);
-    setAnchorEl(null);
-  }
-
-  function muteClick() {
-    const command = {
-      action: "musictime.mute",
-      command: "command_execute",
-    };
-    props.vscode.postMessage(command);
-    setAnchorEl(null);
-    currentTrack.volume = 0;
-  }
-
-  function repeatPlaylistClick() {
-    const command = {
-      action: "musictime.repeatPlaylist",
-      command: "command_execute",
-    };
-    props.vscode.postMessage(command);
-    setAnchorEl(null);
-    spotifyContext.repeat_state = "context";
-  }
-
-  function repeatOneClick() {
-    const command = {
-      action: "musictime.repeatTrack",
-      command: "command_execute",
-    };
-    props.vscode.postMessage(command);
-    setAnchorEl(null);
-    spotifyContext.repeat_state = "track";
-  }
-
-  function disableRepeatClick() {
-    const command = {
-      action: "musictime.repeatOff",
-      command: "command_execute",
-    };
-    props.vscode.postMessage(command);
-    setAnchorEl(null);
-    spotifyContext.repeat_state = "none";
-  }
-
-  function playClick() {
-    const command = {
-      action: "musictime.play",
-      command: "command_execute",
-    };
-    props.vscode.postMessage(command);
-    setAnchorEl(null);
-  }
-
-  function pauseClick() {
-    const command = {
-      action: "musictime.pause",
-      command: "command_execute",
-    };
-    props.vscode.postMessage(command);
-    setAnchorEl(null);
-  }
-
-  function previousClick() {
-    const command = {
-      action: "musictime.previous",
-      command: "command_execute",
-    };
-    props.vscode.postMessage(command);
-    setAnchorEl(null);
-  }
-
-  function nextClick() {
-    const command = {
-      action: "musictime.next",
-      command: "command_execute",
-    };
-    props.vscode.postMessage(command);
-    setAnchorEl(null);
-  }
-
-  function disableShuffleClick() {
-    const command = {
-      action: "musictime.shuffleOff",
-      command: "command_execute",
-    };
-    props.vscode.postMessage(command);
-    setAnchorEl(null);
-    spotifyContext.shuffle_state = false;
-  }
-
-  function enableShuffleClick() {
-    const command = {
-      action: "musictime.shuffleOn",
-      command: "command_execute",
-    };
-    props.vscode.postMessage(command);
-    setAnchorEl(null);
-    spotifyContext.shuffle_state = true;
-  }
-
-  function connectDeviceClick() {
-    const command = {
-      action: "musictime.deviceSelector",
-      command: "command_execute",
-    };
-    props.vscode.postMessage(command);
-    setAnchorEl(null);
+  function handleAudioOptionsClose() {
+    setOpenMenu(false);
   }
 
   return (
@@ -444,133 +199,16 @@ export default function Account(props) {
           </ListItem>
         </List>
       </Grid>
-      <Menu
-        id="main_audio_options_menu"
+
+      <AudioControl
+        vscode={props.vscode}
+        stateData={props.stateData}
         anchorEl={anchorEl}
-        keepMounted
-        open={open}
-        PaperProps={{
-          style: {
-            width: 280,
-            maxHeight: MAX_MENU_HEIGHT,
-            backgroundColor: DARK_BG_COLOR,
-            paddingRight: 6,
-            paddingLeft: 0,
-            color: DARK_BG_TEXT_COLOR,
-          },
-        }}
-      >
-        <MenuItem key="audio_options_menu_item" style={{ padding: 0, margin: 0 }}>
-          <List disablePadding={true} dense={true} style={{ marginLeft: 10, marginRight: 10, marginBottom: 0, marginTop: 0 }}>
-            <ListItem key={`audo-options-info-li`} disableGutters={true} dense={true}>
-              <ListItemText
-                primary={
-                  <Typography noWrap className={classes.menuHeaderPrimary}>
-                    {runningTrackName}
-                  </Typography>
-                }
-                secondary={
-                  <Typography noWrap className={classes.menuHeaderSecondary}>
-                    {runningTrackStatus}
-                  </Typography>
-                }
-              />
-            </ListItem>
-          </List>
-          <IconButton aria-label="Close" onClick={handleClose} style={{ position: "absolute", right: 2, top: 2 }}>
-            <MuiCloseIcon />
-          </IconButton>
-        </MenuItem>
-        <Grid container>
-          <Grid item xs={12}>
-            <div className={classes.buttonGroupItems}>
-              {enableControls && (
-                <ButtonGroup variant="text" size="small">
-                  <Tooltip title="Previous">
-                    <Button onClick={previousClick}>
-                      <MuiSkipPreviousIcon color="primary" />
-                    </Button>
-                  </Tooltip>
-                  {paused && (
-                    <Tooltip title="Play">
-                      <Button onClick={playClick}>
-                        <MuiPlayArrowIcon color="primary" />
-                      </Button>
-                    </Tooltip>
-                  )}
-                  {playing && (
-                    <Tooltip title="Pause">
-                      <Button onClick={pauseClick}>
-                        <MuiStopIcon color="primary" />
-                      </Button>
-                    </Tooltip>
-                  )}
-                  <Tooltip title="Next">
-                    <Button onClick={nextClick}>
-                      <MuiSkipNextIcon color="primary" />
-                    </Button>
-                  </Tooltip>
-                  <Tooltip title={shuffling ? "Disable shuffle" : "Enable shuffle"}>
-                    <Button onClick={shuffling ? disableShuffleClick : enableShuffleClick}>
-                      <MuiShuffleIcon color={shuffling ? "secondary" : "primary"} />
-                    </Button>
-                  </Tooltip>
-                  {repeatingTrack ? (
-                    <Tooltip title="Disable repeat">
-                      <Button onClick={disableRepeatClick}>
-                        <MuiRepeatOneIcon color="secondary" />
-                      </Button>
-                    </Tooltip>
-                  ) : repeatingPlaylist ? (
-                    <Tooltip title="Enable repeat one">
-                      <Button onClick={repeatOneClick}>
-                        <MuiRepeatIcon color="secondary" />
-                      </Button>
-                    </Tooltip>
-                  ) : (
-                    <Tooltip title="Enable playlist repeat">
-                      <Button onClick={repeatPlaylistClick}>
-                        <MuiRepeatIcon color="primary" />
-                      </Button>
-                    </Tooltip>
-                  )}
-                  {muted ? (
-                    <Tooltip title="Unmute">
-                      <Button onClick={unMuteClick}>
-                        <MuiVolumeOffIcon />
-                      </Button>
-                    </Tooltip>
-                  ) : (
-                    <Tooltip title="Mute">
-                      <Button onClick={muteClick}>
-                        <MuiVolumeUpIcon />
-                      </Button>
-                    </Tooltip>
-                  )}
-                </ButtonGroup>
-              )}
-            </div>
-          </Grid>
-          <Divider />
-          <Grid item xs={12}>
-            <CardHeader
-              classes={{
-                title: classes.cardHeaderTitle,
-                subheader: classes.cardHeaderSubheader,
-              }}
-              avatar={<MuiDevicesIcon />}
-              action={
-                <Button className={classes.cardHeaderAction} onClick={connectDeviceClick}>
-                  {!deviceMenuInfo.isActive ? "Connect" : "Change Device"}
-                </Button>
-              }
-              title={deviceMenuInfo.primaryText}
-              subheader={deviceMenuInfo.secondaryText || null}
-            />
-          </Grid>
-        </Grid>
-      </Menu>
-      <Collapse in={accountOpen} timeout="auto" unmountOnExit className={classes.root}>
+        openMenu={openMenu}
+        handleAudioOptionsCloseCallback={handleAudioOptionsClose}
+      />
+
+      <Collapse in={accountOpen} timeout="auto" unmountOnExit>
         <List className={classes.collapseList} disablePadding={true} dense={true}>
           {!props.stateData.spotifyUser && (
             <ListItem key="spotify-connect" disableGutters={true} dense={true} button onClick={connectSpotifyHandler}>
@@ -581,27 +219,23 @@ export default function Account(props) {
             </ListItem>
           )}
 
-          <Divider />
-
           {props.stateData.spotifyUser && (
-            <Grid container justify="space-between" alignItems="center">
-              <Grid item key={`account-user-icon-container`} xs={9}>
-                <div className={classes.labelRoot}>
-                  <ListItemIcon>
-                    <SpotifyIcon />
-                  </ListItemIcon>
-                  <Typography>{props.stateData.spotifyUser.email}</Typography>
-                </div>
-              </Grid>
-              <Grid item key={`account-user-product-info`} xs={3} className={classes.secondaryListText}>
-                {props.stateData.spotifyUser?.product === "premium" ? "Premium" : "Open"}
-              </Grid>
-            </Grid>
+            <ListItem key="spotify-account-li" disableGutters={true} dense={true}>
+              <ListItemIcon className={classes.listItemIcon}>
+                <SpotifyIcon />
+              </ListItemIcon>
+              <ListItemText
+                id="spotify-account-li-text"
+                primary={props.stateData.spotifyUser.email}
+                secondary={props.stateData.spotifyUser?.product === "premium" ? "Spotify Premium" : "Spotify Open"}
+                classes={{ primary: classes.primaryListText }}
+              />
+            </ListItem>
           )}
 
           {props.stateData.spotifyUser && (
             <ListItem key="switch-spotify" disableGutters={true} dense={true} button onClick={switchSpotifyHandler}>
-              <ListItemIcon style={{ marginLeft: 3 }}>
+              <ListItemIcon className={classes.listItemIcon}>
                 <MuiSyncIcon />
               </ListItemIcon>
               <ListItemText id="spotify-switch-li" primary="Switch spotify account" classes={{ primary: classes.primaryListText }} />
@@ -609,28 +243,28 @@ export default function Account(props) {
           )}
 
           <ListItem key="report-dashboard" disableGutters={true} dense={true} button onClick={dashboardClickHandler}>
-            <ListItemIcon style={{ marginLeft: 3 }}>
+            <ListItemIcon className={classes.listItemIcon}>
               <MuiDashboardIcon />
             </ListItemIcon>
             <ListItemText id="report-dashboard-li" primary="Dashboard" classes={{ primary: classes.primaryListText }} />
           </ListItem>
 
           <ListItem key="web-analytics" disableGutters={true} dense={true} button onClick={webAnalyticsClickHandler}>
-            <ListItemIcon>
+            <ListItemIcon className={classes.listItemIcon}>
               <PawIcon />
             </ListItemIcon>
             <ListItemText id="web-analytics-li" primary="More data at Software.com" classes={{ primary: classes.primaryListText }} />
           </ListItem>
 
           <ListItem key="documentation" disableGutters={true} dense={true} button onClick={documentationClickHandler}>
-            <ListItemIcon>
+            <ListItemIcon className={classes.listItemIcon}>
               <DocumentIcon />
             </ListItemIcon>
             <ListItemText id="documentation-li" primary="Documentation" classes={{ primary: classes.primaryListText }} />
           </ListItem>
 
           <ListItem key="submit-issue" disableGutters={true} dense={true} button onClick={submitIssueClickHandler}>
-            <ListItemIcon>
+            <ListItemIcon className={classes.listItemIcon}>
               <MessageIcon />
             </ListItemIcon>
             <ListItemText id="submit-issue-li" primary="Submit an issue" classes={{ primary: classes.primaryListText }} />

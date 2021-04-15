@@ -8,6 +8,8 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       width: "100%",
+      margin: 0,
+      padding: 0,
     },
     loadingIcon: {
       display: "flex",

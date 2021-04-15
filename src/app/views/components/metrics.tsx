@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme) => {
     },
     cardHeader: {
       margin: 0,
-      padding: theme.spacing(1),
+      padding: 2,
     },
     cardHeaderText: {
       color: indigo[300],
@@ -102,7 +102,7 @@ export default function Metrics(props) {
           className={classes.cardHeader}
           title={
             <Typography noWrap gutterBottom={false} className={classes.cardHeaderText}>
-              Code + Music
+              Metrics
             </Typography>
           }
           action={

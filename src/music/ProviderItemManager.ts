@@ -122,11 +122,6 @@ export class ProviderItemManager {
     return this.buildActionItem("switchtospotify", "spotify", "musictime.launchSpotifyDesktop", PlayerType.WebSpotify, "Launch Spotify");
   }
 
-  // readme button
-  getReadmeButton() {
-    return this.buildKpmItem("Documentation", "View the Music Time Readme to learn more", null, "musictime.displayReadme");
-  }
-
   getAuthTypeIconAndLabel() {
     const authType = getItem("authType");
     const name = getItem("name");

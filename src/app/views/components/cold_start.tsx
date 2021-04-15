@@ -4,7 +4,7 @@ import Grid from "@material-ui/core/Grid";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
-import { BeakerIcon, MuiShareIcon, MuiSearchIcon, PawIcon, MuiPlayCircleOutlineIcon, MuiSubscriptionsIcon } from "../icons";
+import { BeakerIcon, MuiSearchIcon, PawIcon, MuiPlayCircleOutlineIcon, MuiSubscriptionsIcon, PlaylistIcon } from "../icons";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
@@ -31,6 +31,13 @@ const useStyles = makeStyles((theme) => ({
     padding: 0,
     margin: 0,
   },
+  listItemIcon: {
+    display: "flex",
+    justifyContent: "center",
+    textAlign: "center",
+    marginRight: 0,
+    marginLeft: 0,
+  },
 }));
 
 export default function ColdStart(props) {
@@ -39,67 +46,70 @@ export default function ColdStart(props) {
   return (
     <Card className={classes.root} elevation={0}>
       <CardHeader title="Music Time Features" className={classes.cardHeader} />
+
       <Grid container>
         <Grid item xs={12}>
           <List disablePadding={true} dense={true}>
-            <ListItem key="mood-info-item" disableGutters={true} dense={true}>
-              <ListItemIcon>
-                <BeakerIcon />
+            <ListItem key="play-info-item" disableGutters={true} dense={true}>
+              <ListItemIcon className={classes.listItemIcon}>
+                <MuiPlayCircleOutlineIcon />
               </ListItemIcon>
-              <ListItemText primary="Mood & Genre recomendations" secondary="Explore songs by mood or genre" />
+              <ListItemText primary="Control your music" secondary="Play, pause, and skip from the VS Code status bar" />
             </ListItem>
           </List>
         </Grid>
-        <Grid item xs={12}>
-          <List disablePadding={true} dense={true}>
-            <ListItem key="share-info-item" disableGutters={true} dense={true}>
-              <ListItemIcon>
-                <MuiShareIcon />
-              </ListItemIcon>
-              <ListItemText primary="Share music" secondary="Share your top songs" />
-            </ListItem>
-          </List>
-        </Grid>
-        <Grid item xs={12}>
-          <List disablePadding={true} dense={true}>
-            <ListItem key="search-info-item" disableGutters={true} dense={true}>
-              <ListItemIcon>
-                <MuiSearchIcon />
-              </ListItemIcon>
-              <ListItemText primary="Search" secondary="Search for a song or recommendations" />
-            </ListItem>
-          </List>
-        </Grid>
+
         <Grid item xs={12}>
           <List disablePadding={true} dense={true}>
             <ListItem key="play-info-item" disableGutters={true} dense={true}>
-              <ListItemIcon>
-                <MuiPlayCircleOutlineIcon />
+              <ListItemIcon className={classes.listItemIcon}>
+                <PlaylistIcon />
               </ListItemIcon>
-              <ListItemText
-                primary="Integrated player controls"
-                secondary="Play your liked songs, playlists, recommendations, or jump right into an album"
-              />
+              <ListItemText primary="Browse your playlists" secondary="Browse all your music without leaving VS Code" />
             </ListItem>
           </List>
         </Grid>
+
+        <Grid item xs={12}>
+          <List disablePadding={true} dense={true}>
+            <ListItem key="mood-info-item" disableGutters={true} dense={true}>
+              <ListItemIcon className={classes.listItemIcon}>
+                <BeakerIcon />
+              </ListItemIcon>
+              <ListItemText primary="Discover new music" secondary="Get song recommendations based on mood and genre" />
+            </ListItem>
+          </List>
+        </Grid>
+
+        <Grid item xs={12}>
+          <List disablePadding={true} dense={true}>
+            <ListItem key="search-info-item" disableGutters={true} dense={true}>
+              <ListItemIcon className={classes.listItemIcon}>
+                <MuiSearchIcon />
+              </ListItemIcon>
+              <ListItemText primary="Search for songs" secondary="Search and add songs to playlists right from VS Code" />
+            </ListItem>
+          </List>
+        </Grid>
+
         <Grid item xs={12}>
           <List disablePadding={true} dense={true}>
             <ListItem key="global-info-item" disableGutters={true} dense={true}>
-              <ListItemIcon>
+              <ListItemIcon className={classes.listItemIcon}>
                 <MuiSubscriptionsIcon />
               </ListItemIcon>
-              <ListItemText primary="Global Top 40" secondary="Discover new music from developers around the world in our Software Top 40 playlist" />
+              <ListItemText primary="Listen to the Global Top 40" secondary="Listen to the top music from developers around the world" />
             </ListItem>
           </List>
         </Grid>
+
         <Grid item xs={12}>
           <List disablePadding={true} dense={true}>
             <ListItem key="productivity-info-item" disableGutters={true} dense={true}>
-              <ListItemIcon>
+              <ListItemIcon className={classes.listItemIcon}>
                 <PawIcon />
               </ListItemIcon>
-              <ListItemText primary="Music+Code" secondary="Explore your most productive songs, artists, and genres by productivity score" />
+              <ListItemText primary="Explore your data" secondary="See your top songs and artists based on your coding activity" />
             </ListItem>
           </List>
         </Grid>

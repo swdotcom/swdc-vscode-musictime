@@ -29,7 +29,7 @@ export function showLogInMenuOptions() {
 }
 
 export function showSignUpMenuOptions() {
-  showAuthMenuOptions("Sign in", true /*isSignup*/);
+  showAuthMenuOptions("Sign up", true /*isSignup*/);
 }
 
 function showAuthMenuOptions(authText: string, isSignup: boolean = true) {

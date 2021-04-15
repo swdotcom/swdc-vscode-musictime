@@ -621,7 +621,7 @@ export function getDeviceMenuInfo() {
   } else if (devices.length === 0) {
     // no active device and no devices
     primaryText = "Connect to a Spotify device";
-    secondaryText = "Click connect to launch the web or desktop player";
+    secondaryText = "Launch the web or desktop player";
     isActive = false;
   }
 

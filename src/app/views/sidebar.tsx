@@ -25,10 +25,12 @@ const useStyles = makeStyles((theme) => ({
     margin: 0,
   },
   topAppBar: {
-    background: DARK_BG_COLOR,
     top: 0,
+    left: 0,
+    width: "100%",
     padding: 0,
     margin: 0,
+    background: DARK_BG_COLOR,
     minHeight: `${TOP_APP_BAR_MIN_HEIGHT}px`,
   },
   bottomAppBar: {
@@ -179,15 +181,15 @@ export default function SideBar(props) {
     <ThemeProvider theme={theme}>
       <React.Fragment>
         <CssBaseline />
-        <AppBar position="fixed" className={classes.topAppBar} id="top-app-bar" style={{ margin: 0, padding: 0 }}>
-          <Grid container>
+        <AppBar position="fixed" className={classes.topAppBar} id="top-app-bar">
+          <Grid container style={{ margin: 0, padding: 0, width: "100%", height: "100%" }}>
             {(!props.stateData.registered || !props.stateData.spotifyUser) && (
-              <Grid item key="setup-user-grid-item" xs={12}>
+              <Grid item key="setup-user-grid-item" xs={12} style={{ margin: 0, padding: 0 }}>
                 <Setup stateData={props.stateData} vscode={props.vscode} />
               </Grid>
             )}
             {props.stateData.registered && (
-              <Grid item key="account-user-grid-item" xs={12} style={{ marginLeft: 12 }}>
+              <Grid item key="account-user-grid-item" xs={12} style={{ margin: 0, padding: 0, width: "100%", height: "100%" }}>
                 <Account vscode={props.vscode} stateData={props.stateData} />
               </Grid>
             )}
@@ -199,7 +201,7 @@ export default function SideBar(props) {
             position: "absolute",
             overflowX: "hidden",
             top: !props.stateData.spotifyUser ? GETTING_STARTED_MIN_HEIGHT : TOP_APP_BAR_MIN_HEIGHT,
-            bottom: BOTTOM_BAR_HEIGHT,
+            bottom: !props.stateData.spotifyUser ? 0 : BOTTOM_BAR_HEIGHT,
           }}
         >
           {!props.stateData.spotifyUser && (

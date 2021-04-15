@@ -1,6 +1,5 @@
 import React from "react";
-import { makeStyles, createStyles, withStyles, Theme } from "@material-ui/core/styles";
-import LinearProgress from "@material-ui/core/LinearProgress";
+import { makeStyles } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
 import PropTypes from "prop-types";
 import CardContent from "@material-ui/core/CardContent";
@@ -8,88 +7,73 @@ import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import MetricsColdStart from "./metrics_cold_start";
 import Grid from "@material-ui/core/Grid";
-import { blue, grey } from "@material-ui/core/colors";
+import { orange, grey, deepPurple } from "@material-ui/core/colors";
 import Link from "@material-ui/core/Link";
+import { DARK_BG_COLOR } from "../../utils/view_constants";
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    width: "100%",
-    height: "100%",
-    flexGrow: 1,
     overflowX: "hidden",
     background: "transparent",
-  },
-  setupCardItem: {
     width: "100%",
-    padding: 0,
-    margin: 0,
-    background: "linear-gradient(#64b5f6, #1565c0)",
-  },
-  setupHeader: {
-    color: "#FFF",
-    display: "flex",
+    flexGrow: 1,
     justifyContent: "center",
     textAlign: "center",
+    padding: 10,
+  },
+  cardRoot: {
+    background: DARK_BG_COLOR,
+    fontSize: 11,
+  },
+  setupHeader: {
+    color: "#ffffff",
+    display: "inline",
+    justifyContent: "center",
+    textAlign: "center",
+    fontStyle: "bold",
+    paddingBottom: 0,
+    marginBottom: 0,
+  },
+  setupDescription: {
+    color: grey[500],
+    fontWeight: 400,
+    display: "inline",
+  },
+  setupDescriptionHighlight: {
+    paddingLeft: 6,
+    display: "inline",
+    color: "#ffffff",
   },
   setupButtonContent: {
     textAlign: "center",
   },
   setupButton: {
-    backgroundColor: "#ffffff",
-    color: blue[500],
+    backgroundColor: deepPurple[500],
+    color: "#ffffff",
     maxWidth: 200,
-  },
-  linkContent: {
-    textAlign: "center",
-  },
-  subInfoContent: {
-    justifyContent: "center",
-    textAlign: "center",
-  },
-  subInfo: {
-    marginRight: 4,
-    fontSize: 12,
-    color: grey[200],
-    display: "inline",
+    "&:hover": {
+      background: deepPurple[400],
+    },
   },
   link: {
-    fontSize: 14,
+    paddingLeft: 3,
     color: "#ffffff",
     background: "transparent",
     textDecoration: "none",
     display: "inline",
     "&:hover": {
-      fontSize: 14,
-      color: "rgb(255, 255, 255, 0.8)",
+      color: orange[500],
       textDecoration: "none",
     },
   },
-  coldStartView: {
-    padding: theme.spacing(1),
+  centeredContent: {
+    justifyContent: "center",
+    textAlign: "center",
   },
 }));
 
-const BorderLinearProgress = withStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      height: 5,
-      borderRadius: 4,
-    },
-    colorPrimary: {
-      backgroundColor: blue[200],
-    },
-    bar: {
-      borderRadius: 4,
-      backgroundColor: "#ffffff",
-    },
-  })
-)(LinearProgress);
-
 export default function MetricsSetup(props) {
   const classes = useStyles();
-  const stateData = props.stateData;
-
-  const progress = !stateData.registered ? 35 : 70;
 
   function setupClickHandler() {
     const command = {
@@ -109,29 +93,35 @@ export default function MetricsSetup(props) {
 
   return (
     <Grid container className={classes.root}>
+      <Grid item key={`metrics-setup-cold-start-container`} xs={12}>
+        <MetricsColdStart vscode={props.vscode} stateData={props.stateData} />
+      </Grid>
       <Grid item key={`metrics-setup-getting-started`} xs={12}>
-        <Card className={classes.setupCardItem}>
+        <Card className={classes.cardRoot}>
           <CardContent className={classes.setupHeader}>
-            <Typography>Getting Started with Code Time</Typography>
+            <Typography>What's your best music for coding?</Typography>
           </CardContent>
           <CardContent>
-            <BorderLinearProgress variant="determinate" value={progress} />
+            <Typography className={classes.setupDescription}>
+              See your most productive songs and artists on your coding activity while listening to music.
+            </Typography>
           </CardContent>
           <CardContent className={classes.setupButtonContent}>
             <Button variant="contained" onClick={setupClickHandler} className={classes.setupButton}>
               Install Code Time
             </Button>
           </CardContent>
-          <CardContent className={classes.subInfoContent}>
-            <Typography className={classes.subInfo}>Already installed?</Typography>
+          <CardContent>
+            <Typography className={classes.setupDescription}>Trust and data privacy matters.</Typography>
+            <Typography className={classes.setupDescriptionHighlight}>Your data is always private</Typography>
+          </CardContent>
+          <CardContent className={classes.centeredContent}>
+            <Typography className={classes.setupDescription}>Already installed?</Typography>
             <Link href="#" onClick={refreshClick} className={classes.link}>
               Refresh
             </Link>
           </CardContent>
         </Card>
-      </Grid>
-      <Grid item key={`metrics-setup-cold-start-container`} xs={12} className={classes.coldStartView}>
-        <MetricsColdStart vscode={props.vscode} stateData={props.stateData} />
       </Grid>
     </Grid>
   );
