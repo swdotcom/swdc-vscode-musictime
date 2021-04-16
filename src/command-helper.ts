@@ -22,7 +22,7 @@ import {
   getAlbumForTrack,
   getBestActiveDevice,
   getCachedRecommendationInfo,
-  getCachedUserMusicMetrics,
+  getCachedUserMetricsData,
   getFamiliarRecs,
   getMixedAudioFeatureRecs,
   getRecommendations,
@@ -445,9 +445,9 @@ export function createCommands(
       if (tabView === "recommendations" && !getCachedRecommendationInfo()) {
         // populate familiar recs
         await getFamiliarRecs();
-      } else if (tabView === "metrics" && !getCachedUserMusicMetrics()) {
+      } else if (tabView === "metrics") {
         // populate the user music metrics
-        await getUserMusicMetrics();
+        await getCachedUserMetricsData();
       }
       updateSelectedTabView(tabView);
       commands.executeCommand("musictime.refreshMusicTimeView");

@@ -157,18 +157,11 @@ export function getCachedRecommendationInfo() {
   return recommendationInfo;
 }
 
-export async function getCachedUserMusicMetrics() {
+export async function getCachedUserMetricsData() {
   if (!userMusicMetrics) {
     await getUserMusicMetrics();
   }
-  return userMusicMetrics;
-}
-
-export async function getCachedAverageMusicMetrics() {
-  if (!averageMusicMetrics) {
-    await getUserMusicMetrics();
-  }
-  return averageMusicMetrics;
+  return { userMusicMetrics, averageMusicMetrics };
 }
 
 export function getCachedRecommendationMetadata() {

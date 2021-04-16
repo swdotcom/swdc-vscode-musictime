@@ -1,7 +1,6 @@
 import { getCurrentColorKind } from "../extension";
 import { getItem } from "../managers/FileManager";
 import {
-  getCachedAverageMusicMetrics,
   getCachedLikedSongsTracks,
   getCachedPlaylistTracks,
   getCachedRecommendationInfo,
@@ -9,14 +8,11 @@ import {
   getCachedSoftwareTop40Playlist,
   getCachedSpotifyPlayerContext,
   getCachedSpotifyPlaylists,
-  getCachedUserMusicMetrics,
+  getCachedUserMetricsData,
   getDeviceMenuInfo,
-  getDeviceSet,
   getSelectedPlaylistId,
   getSelectedTabView,
-  getSoftwareTop40Playlist,
   getSpotifyLikedPlaylist,
-  getSpotifyPlaylists,
 } from "../managers/PlaylistDataManager";
 import { getSlackWorkspaces, hasSlackWorkspaces } from "../managers/SlackManager";
 import { getConnectedSpotifyUser } from "../managers/SpotifyManager";
@@ -52,8 +48,9 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
 
       selectedPlaylistId = playlist_id ? playlist_id : getSelectedPlaylistId();
     } else if (selectedTabView === "metrics") {
-      userMusicMetrics = (await getCachedUserMusicMetrics()) ?? [];
-      averageMusicMetrics = (await getCachedAverageMusicMetrics()) ?? {};
+      const metricsData = await getCachedUserMetricsData();
+      userMusicMetrics = metricsData.userMusicMetrics ?? [];
+      averageMusicMetrics = metricsData.averageMusicMetrics ?? [];
     } else if (selectedTabView === "recommendations") {
       recommendationInfo = getCachedRecommendationInfo() ?? [];
     }
