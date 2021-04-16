@@ -20,6 +20,10 @@ const useStyles = makeStyles((theme) => ({
     background: "transparent",
     margin: 0,
   },
+  cardHeader: {
+    margin: 0,
+    padding: 2,
+  },
   cardHeaderRoot: {
     margin: 0,
     overflow: "hidden",
@@ -85,10 +89,7 @@ export default function Recommendations(props) {
   return (
     <Card className={classes.root} elevation={0}>
       <CardHeader
-        classes={{
-          root: classes.cardHeaderRoot,
-          content: classes.cardHeaderContent,
-        }}
+        className={classes.cardHeader}
         title={
           <Typography noWrap gutterBottom={false} className={classes.cardHeaderText}>
             {props.stateData.recommendationInfo ? props.stateData.recommendationInfo.label : "Recommendations"}

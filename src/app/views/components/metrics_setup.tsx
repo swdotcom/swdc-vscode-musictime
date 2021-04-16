@@ -17,9 +17,6 @@ const useStyles = makeStyles((theme) => ({
     background: "transparent",
     width: "100%",
     flexGrow: 1,
-    justifyContent: "center",
-    textAlign: "center",
-    padding: 10,
   },
   cardRoot: {
     background: DARK_BG_COLOR,

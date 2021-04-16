@@ -25,8 +25,6 @@ export interface Button {
   statusBarItem: StatusBarItem;
 }
 
-// const songNameDisplayTimeoutMillis: number = 12000;
-
 export class MusicCommandManager {
   private static _initialized: boolean = false;
   private static _buttons: Button[] = [];
@@ -97,14 +95,11 @@ export class MusicCommandManager {
     const trackStatus: TrackStatus = track ? track.state : TrackStatus.NotAssigned;
 
     let pauseIt = trackStatus === TrackStatus.Playing;
-    let playIt = trackStatus === TrackStatus.Paused;
 
     if (statusOverride) {
       if (statusOverride === TrackStatus.Playing) {
-        playIt = false;
         pauseIt = true;
       } else {
-        playIt = true;
         pauseIt = false;
       }
     }

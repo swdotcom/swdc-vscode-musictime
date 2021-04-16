@@ -51,7 +51,6 @@ export default function MetricsColdStart(props) {
           </Typography>
         }
       />
-
       <Grid container>
         <Grid item xs={12}>
           <List disablePadding={true} dense={true}>
