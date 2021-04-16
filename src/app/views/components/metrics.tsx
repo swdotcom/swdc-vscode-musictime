@@ -20,7 +20,6 @@ const useStyles = makeStyles((theme) => {
       width: "100%",
       height: "100%",
       flexGrow: 1,
-      padding: 0,
       margin: 0,
       background: "transparent",
     },

@@ -21,7 +21,6 @@ const useStyles = makeStyles((theme) => ({
     overflowX: "hidden",
     background: "transparent",
     margin: 0,
-    padding: 0,
   },
   cardHeader: {
     margin: 0,

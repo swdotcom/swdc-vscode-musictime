@@ -44,7 +44,7 @@ export default function MetricItemTooltip(props) {
             <List dense>
               <ListItem key="productivity-info" className={classes.statItem}>
                 <ListItemText
-                  primary="productiity"
+                  primary="productivity"
                   secondary={props.item.productivity_score}
                   classes={{ primary: classes.primaryListText, secondary: classes.secondaryListText }}
                 />
