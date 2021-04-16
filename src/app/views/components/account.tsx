@@ -13,16 +13,13 @@ import {
   DocumentIcon,
   SpotifyIcon,
   MuiSyncIcon,
-  PawIcon,
   MuiDashboardIcon,
   MuiSettingsRemoteIcon,
 } from "../icons";
 import IconButton from "@material-ui/core/IconButton";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
-import Collapse from "@material-ui/core/Collapse";
-import { grey } from "@material-ui/core/colors";
+import Tooltip from "@material-ui/core/Tooltip";
 import Workspaces from "./workspaces";
-import Divider from "@material-ui/core/Divider";
 import AudioControl from "./audio_control";
 
 const useStyles = makeStyles((theme) => ({
@@ -53,16 +50,6 @@ const useStyles = makeStyles((theme) => ({
   },
   collapseListItem: {
     marginLeft: 10,
-  },
-  primaryListText: {
-    fontWeight: 400,
-    fontSize: 12,
-  },
-  secondaryListText: {
-    color: grey[500],
-    fontWeight: 300,
-    fontSize: 12,
-    right: 2,
   },
   label: {
     fontWeight: "inherit",
@@ -118,15 +105,6 @@ export default function Account(props) {
   function dashboardClickHandler() {
     const command = {
       action: "musictime.displayDashboard",
-      command: "command_execute",
-    };
-    props.vscode.postMessage(command);
-    setAccountOpen(false);
-  }
-
-  function webAnalyticsClickHandler() {
-    const command = {
-      action: "musictime.launchAnalytics",
       command: "command_execute",
     };
     props.vscode.postMessage(command);
@@ -208,75 +186,64 @@ export default function Account(props) {
         handleAudioOptionsCloseCallback={handleAudioOptionsClose}
       />
 
-      <Collapse in={accountOpen} timeout="auto" unmountOnExit>
-        <List className={classes.collapseList} disablePadding={true} dense={true}>
-          {!props.stateData.spotifyUser && (
-            <ListItem key="spotify-connect" disableGutters={true} dense={true} button onClick={connectSpotifyHandler}>
-              <ListItemIcon>
-                <SpotifyIcon />
-              </ListItemIcon>
-              <ListItemText id="spotify-connect-li" primary="Connect Spotify" classes={{ primary: classes.primaryListText }} />
-            </ListItem>
-          )}
-
-          {props.stateData.spotifyUser && (
-            <ListItem key="spotify-account-li" disableGutters={true} dense={true}>
-              <ListItemIcon className={classes.listItemIcon}>
-                <SpotifyIcon />
-              </ListItemIcon>
-              <ListItemText
-                id="spotify-account-li-text"
-                primary={props.stateData.spotifyUser.email}
-                secondary={props.stateData.spotifyUser?.product === "premium" ? "Spotify Premium" : "Spotify Open"}
-                classes={{ primary: classes.primaryListText }}
-              />
-            </ListItem>
-          )}
-
-          {props.stateData.spotifyUser && (
-            <ListItem key="switch-spotify" disableGutters={true} dense={true} button onClick={switchSpotifyHandler}>
-              <ListItemIcon className={classes.listItemIcon}>
-                <MuiSyncIcon />
-              </ListItemIcon>
-              <ListItemText id="spotify-switch-li" primary="Switch spotify account" classes={{ primary: classes.primaryListText }} />
-            </ListItem>
-          )}
-
-          <ListItem key="report-dashboard" disableGutters={true} dense={true} button onClick={dashboardClickHandler}>
-            <ListItemIcon className={classes.listItemIcon}>
-              <MuiDashboardIcon />
+      <List className={classes.collapseList} disablePadding={true} dense={true}>
+        {!props.stateData.spotifyUser && (
+          <ListItem key="spotify-connect" disableGutters={true} dense={true} button onClick={connectSpotifyHandler}>
+            <ListItemIcon>
+              <SpotifyIcon />
             </ListItemIcon>
-            <ListItemText id="report-dashboard-li" primary="Dashboard" classes={{ primary: classes.primaryListText }} />
+            <ListItemText id="spotify-connect-li" primary="Connect Spotify" />
           </ListItem>
+        )}
 
-          <ListItem key="web-analytics" disableGutters={true} dense={true} button onClick={webAnalyticsClickHandler}>
+        {props.stateData.spotifyUser && (
+          <ListItem key="spotify-account-li" disableGutters={true} dense={true}>
             <ListItemIcon className={classes.listItemIcon}>
-              <PawIcon />
+              <SpotifyIcon />
             </ListItemIcon>
-            <ListItemText id="web-analytics-li" primary="More data at Software.com" classes={{ primary: classes.primaryListText }} />
+            <ListItemText
+              id="spotify-account-li-text"
+              primary={
+                props.stateData.spotifyUser?.product === "premium"
+                  ? `Spotify Premium (${props.stateData.spotifyUser.email})`
+                  : `Spotify Premium (${props.stateData.spotifyUser.email})`
+              }
+            />
+            <ListItemSecondaryAction onClick={switchSpotifyHandler}>
+              <Tooltip title="Switch your Spotify account">
+                <IconButton onClick={switchSpotifyHandler}>
+                  <MuiSyncIcon />
+                </IconButton>
+              </Tooltip>
+            </ListItemSecondaryAction>
           </ListItem>
+        )}
 
-          <ListItem key="documentation" disableGutters={true} dense={true} button onClick={documentationClickHandler}>
-            <ListItemIcon className={classes.listItemIcon}>
-              <DocumentIcon />
-            </ListItemIcon>
-            <ListItemText id="documentation-li" primary="Documentation" classes={{ primary: classes.primaryListText }} />
-          </ListItem>
+        <ListItem key="report-dashboard" disableGutters={true} dense={true} button onClick={dashboardClickHandler}>
+          <ListItemIcon className={classes.listItemIcon}>
+            <MuiDashboardIcon />
+          </ListItemIcon>
+          <ListItemText id="report-dashboard-li" primary="Dashboard" />
+        </ListItem>
 
-          <ListItem key="submit-issue" disableGutters={true} dense={true} button onClick={submitIssueClickHandler}>
-            <ListItemIcon className={classes.listItemIcon}>
-              <MessageIcon />
-            </ListItemIcon>
-            <ListItemText id="submit-issue-li" primary="Submit an issue" classes={{ primary: classes.primaryListText }} />
-          </ListItem>
+        <ListItem key="slack-workspaces" disableGutters={true} dense={true}>
+          <Workspaces vscode={props.vscode} stateData={props.stateData} />
+        </ListItem>
 
-          <Divider />
+        <ListItem key="documentation" disableGutters={true} dense={true} button onClick={documentationClickHandler}>
+          <ListItemIcon className={classes.listItemIcon}>
+            <DocumentIcon />
+          </ListItemIcon>
+          <ListItemText id="documentation-li" primary="Documentation" />
+        </ListItem>
 
-          <ListItem key="slack-workspaces" disableGutters={true} dense={true}>
-            <Workspaces vscode={props.vscode} stateData={props.stateData} />
-          </ListItem>
-        </List>
-      </Collapse>
+        <ListItem key="submit-issue" disableGutters={true} dense={true} button onClick={submitIssueClickHandler}>
+          <ListItemIcon className={classes.listItemIcon}>
+            <MessageIcon />
+          </ListItemIcon>
+          <ListItemText id="submit-issue-li" primary="Submit an issue" />
+        </ListItem>
+      </List>
     </Grid>
   );
 }

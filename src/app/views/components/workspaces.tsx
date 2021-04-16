@@ -1,7 +1,9 @@
 import React from "react";
-import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
+import { makeStyles, createStyles } from "@material-ui/core/styles";
 import TreeView from "@material-ui/lab/TreeView";
 import TreeItem, { TreeItemProps } from "@material-ui/lab/TreeItem";
+import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
+import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import ArrowRightIcon from "@material-ui/icons/ArrowRight";
@@ -19,31 +21,6 @@ type StyledTreeItemProps = TreeItemProps & {
   authId?: string;
 };
 
-const useTreeItemStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      width: "100%",
-			height: "100%",
-			flexGrow: 1,
-			padding: 0
-    },
-    content: {
-      width: "100%",
-      fontWeight: theme.typography.fontWeightMedium,
-    },
-    labelRoot: {
-      display: "flex",
-      alignItems: "center",
-      padding: 0,
-			margin: 0
-    },
-    labelText: {
-      fontWeight: "inherit",
-      flexGrow: 1,
-    },
-  })
-);
-
 function removeWorkspaceClickHandler(authId: string) {
   const command = {
     action: "codetime.disconnectSlackWorkspace",
@@ -54,27 +31,39 @@ function removeWorkspaceClickHandler(authId: string) {
 }
 
 function StyledTreeItem(props: StyledTreeItemProps) {
-  const classes = useTreeItemStyles();
   const { labelText, labelIcon: LabelIcon, isWorkspace, isLeaf, authId, ...other } = props;
 
   return (
     <TreeItem
       icon={isLeaf && LabelIcon && <LabelIcon />}
-			style={isLeaf && {marginLeft: 10}}
       label={
-        <div className={classes.labelRoot}>
-          {!isLeaf && LabelIcon && <LabelIcon />}
-          <Typography variant="body2" className={classes.labelText}>
-            {labelText}
-          </Typography>
-          {isWorkspace && (
-            <IconButton
-              aria-label="Disconnect workspace"
-              onClick={() => removeWorkspaceClickHandler(authId)}>
-              <MuiRemoveCircleTwoToneIcon />
-            </IconButton>
-          )}
-        </div>
+        <Grid container style={{ padding: 0 }}>
+          <Grid item xs={11}>
+            {isLeaf ? (
+              <Typography style={{ marginTop: 0 }}>{labelText}</Typography>
+            ) : (
+              <Grid container style={{ padding: 0, marginTop: 8, marginLeft: -11 }}>
+                <Grid item xs={1}>
+                  <LabelIcon />
+                </Grid>
+                <Grid item xs={11}>
+                  {labelText}
+                </Grid>
+              </Grid>
+            )}
+          </Grid>
+          <Grid item xs={1}>
+            {isWorkspace ? (
+              <ListItemSecondaryAction>
+                <IconButton aria-label="Disconnect workspace" onClick={() => removeWorkspaceClickHandler(authId)}>
+                  <MuiRemoveCircleTwoToneIcon />
+                </IconButton>
+              </ListItemSecondaryAction>
+            ) : (
+              <div></div>
+            )}
+          </Grid>
+        </Grid>
       }
       {...other}
     />
@@ -105,11 +94,7 @@ export default function Workspaces(props) {
   }
 
   return (
-    <TreeView
-			className={classes.root}
-			disableSelection={true}
-			defaultCollapseIcon={<ArrowDropDownIcon />}
-			defaultExpandIcon={<ArrowRightIcon />}>
+    <TreeView className={classes.root} disableSelection={true} defaultCollapseIcon={<ArrowDropDownIcon />} defaultExpandIcon={<ArrowRightIcon />}>
       <StyledTreeItem nodeId="workspaces" labelText="Workspaces" key="workspaces" labelIcon={SlackFolderIcon}>
         {workspaces.map((value, index) => {
           return (

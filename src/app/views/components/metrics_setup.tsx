@@ -93,7 +93,7 @@ export default function MetricsSetup(props) {
       <Grid item key={`metrics-setup-cold-start-container`} xs={12}>
         <MetricsColdStart vscode={props.vscode} stateData={props.stateData} />
       </Grid>
-      <Grid item key={`metrics-setup-getting-started`} xs={12}>
+      <Grid item key={`metrics-setup-getting-started`} xs={12} style={{ justifyContent: "center", textAlign: "center", padding: 10 }}>
         <Card className={classes.cardRoot}>
           <CardContent className={classes.setupHeader}>
             <Typography>What's your best music for coding?</Typography>

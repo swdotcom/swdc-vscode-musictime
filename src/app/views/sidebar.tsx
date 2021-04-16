@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Account from "./components/account";
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
@@ -10,36 +10,31 @@ import Playlists from "./components/playlists";
 import Metrics from "./components/metrics";
 import Recommendations from "./components/recommendations";
 import AppBar from "@material-ui/core/AppBar";
-import Toolbar from "@material-ui/core/Toolbar";
-import BottomNavigation from "@material-ui/core/BottomNavigation";
-import BottomNavigationAction from "@material-ui/core/BottomNavigationAction";
-import { TOP_APP_BAR_MIN_HEIGHT, BOTTOM_BAR_HEIGHT, DARK_BG_COLOR, GETTING_STARTED_MIN_HEIGHT } from "../utils/view_constants";
-import { PlaylistIcon, BeakerIcon, MuiEmojiEventsIcon } from "./icons";
+import Tabs from "@material-ui/core/Tabs";
+import Tab from "@material-ui/core/Tab";
+import Box from "@material-ui/core/Box";
+import { TOP_APP_BAR_MIN_HEIGHT, BOTTOM_BAR_HEIGHT, GETTING_STARTED_MIN_HEIGHT } from "../utils/view_constants";
 import { deepPurple, grey, orange } from "@material-ui/core/colors";
 
 const useStyles = makeStyles((theme) => ({
+  root: {
+    flexGrow: 1,
+    padding: 0,
+    margin: 0,
+  },
+  tabIndicator: {
+    backgroundColor: "#ffffff",
+  },
   bottomNav: {
     background: "transparent",
     flexGrow: 1,
     width: "100%",
     margin: 0,
   },
-  topAppBar: {
-    top: 0,
-    left: 0,
-    width: "100%",
-    padding: 0,
-    margin: 0,
-    background: DARK_BG_COLOR,
-    minHeight: `${TOP_APP_BAR_MIN_HEIGHT}px`,
-  },
-  bottomAppBar: {
+  accountBox: {
     height: `${BOTTOM_BAR_HEIGHT}px`,
-    background: DARK_BG_COLOR,
     top: "auto",
     bottom: 0,
-    padding: 0,
-    margin: 0,
   },
   bottomNavLabel: {
     marginTop: 5,
@@ -49,6 +44,14 @@ const useStyles = makeStyles((theme) => ({
 
 export default function SideBar(props) {
   const classes = useStyles();
+
+  const [tabValue, setTabValue] = useState(0);
+
+  useEffect(() => {
+    if (tabValue !== props.stateData.selectedTabView) {
+      setTabValue(props.stateData.selectedTabView);
+    }
+  });
 
   const currentColorKind = props.stateData.currentColorKind;
   const prefersDarkMode = !!(currentColorKind === 2);
@@ -167,7 +170,8 @@ export default function SideBar(props) {
     [prefersDarkMode]
   );
 
-  function changeTabView(newValue) {
+  function changeTabView(event, newValue) {
+    console.log("tab value: ", JSON.stringify(newValue));
     // update the tab view
     const updateCmd = {
       action: "musictime.updateSelectedTabView",
@@ -175,25 +179,34 @@ export default function SideBar(props) {
       arguments: [newValue],
     };
     props.vscode.postMessage(updateCmd);
+    setTabValue(newValue);
   }
 
   return (
     <ThemeProvider theme={theme}>
-      <React.Fragment>
+      <div className={classes.root}>
         <CssBaseline />
-        <AppBar position="fixed" className={classes.topAppBar} id="top-app-bar">
-          <Grid container style={{ margin: 0, padding: 0, width: "100%", height: "100%" }}>
-            {(!props.stateData.registered || !props.stateData.spotifyUser) && (
+        <AppBar position="static" color="primary" id="top-app-bar">
+          {!props.stateData.registered || !props.stateData.spotifyUser ? (
+            <Grid container style={{ margin: 0, padding: 0, width: "100%", height: "100%" }}>
               <Grid item key="setup-user-grid-item" xs={12} style={{ margin: 0, padding: 0 }}>
                 <Setup stateData={props.stateData} vscode={props.vscode} />
               </Grid>
-            )}
-            {props.stateData.registered && (
-              <Grid item key="account-user-grid-item" xs={12} style={{ margin: 0, padding: 0, width: "100%", height: "100%" }}>
-                <Account vscode={props.vscode} stateData={props.stateData} />
-              </Grid>
-            )}
-          </Grid>
+            </Grid>
+          ) : (
+            <Tabs
+              value={tabValue}
+              onChange={changeTabView}
+              centered
+              variant="fullWidth"
+              aria-label="musictime-tabs"
+              classes={{ indicator: classes.tabIndicator }}
+            >
+              <Tab label="Playlists" value="playlists" />
+              <Tab label="Recommendations" value="recommendations" />
+              <Tab label="Metrics" value="metrics" />
+            </Tabs>
+          )}
         </AppBar>
         <Grid
           container
@@ -228,30 +241,12 @@ export default function SideBar(props) {
             </Grid>
           )}
         </Grid>
-
-        {props.stateData.spotifyUser && (
-          <AppBar position="fixed" className={classes.bottomAppBar}>
-            <Toolbar variant="dense" disableGutters={true} style={{ background: "transparent" }}>
-              <BottomNavigation
-                value={props.stateData.selectedTabView}
-                onChange={(event, newValue) => {
-                  changeTabView(newValue);
-                }}
-                className={classes.bottomNav}
-              >
-                <BottomNavigationAction classes={{ label: classes.bottomNavLabel }} label="Playlists" value="playlists" icon={<PlaylistIcon />} />
-                <BottomNavigationAction
-                  classes={{ label: classes.bottomNavLabel }}
-                  label="Recommendations"
-                  value="recommendations"
-                  icon={<BeakerIcon />}
-                />
-                <BottomNavigationAction classes={{ label: classes.bottomNavLabel }} label="Metrics" value="metrics" icon={<MuiEmojiEventsIcon />} />
-              </BottomNavigation>
-            </Toolbar>
-          </AppBar>
+        {props.stateData.registered && (
+          <Box position="fixed" className={classes.accountBox}>
+            <Account vscode={props.vscode} stateData={props.stateData} />
+          </Box>
         )}
-      </React.Fragment>
+      </div>
     </ThemeProvider>
   );
 }

@@ -166,8 +166,6 @@ export class MusicCommandManager {
       requiresReAuth = false;
     }
 
-    const action = requiresReAuth ? "Reconnect" : "Connect";
-
     // hide all except for the launch player button and possibly connect spotify button
     this._buttons = this._buttons.map((button) => {
       const btnCmd = button.statusBarItem.command;
@@ -179,10 +177,10 @@ export class MusicCommandManager {
         button.tooltip = this.getMusicMenuTooltip();
         // always show the headphones button for the launch controls function
         button.statusBarItem.show();
-      } else if (isConnectButton && (requiresAccessToken || requiresReAuth)) {
+      } else if (isConnectButton && requiresReAuth) {
         // show the connect button
         button.statusBarItem.show();
-        button.statusBarItem.text = `${action} Spotify`;
+        button.statusBarItem.text = `Reconnect Spotify`;
       } else {
         // hide the rest
         button.statusBarItem.hide();

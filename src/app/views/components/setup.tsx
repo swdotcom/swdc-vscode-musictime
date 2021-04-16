@@ -7,8 +7,7 @@ import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import Link from "@material-ui/core/Link";
 import Grid from "@material-ui/core/Grid";
-import blue from "@material-ui/core/colors/blue";
-import grey from "@material-ui/core/colors/grey";
+import { deepPurple, grey, blue } from "@material-ui/core/colors";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -23,27 +22,23 @@ const useStyles = makeStyles((theme) => ({
   setupHeader: {
     color: "#FFF",
     display: "flex",
-    justifyContent: "center",
-    textAlign: "center",
   },
   setupButtonContent: {
     textAlign: "center",
   },
   setupButton: {
     backgroundColor: "#ffffff",
-    color: blue[500],
+    color: deepPurple[600],
     maxWidth: 200,
-  },
-  linkContent: {
-    textAlign: "center",
   },
   subInfo: {
     marginRight: 4,
     fontSize: 12,
     color: grey[200],
-    display: "block",
+    display: "inline",
   },
   link: {
+    display: "inline",
     fontSize: 14,
     color: "#ffffff",
     background: "transparent",
@@ -67,7 +62,7 @@ const BorderLinearProgress = withStyles((theme: Theme) =>
     },
     bar: {
       borderRadius: 4,
-      backgroundColor: "#ffffff",
+      backgroundColor: deepPurple[200],
     },
   })
 )(LinearProgress);
@@ -110,11 +105,9 @@ export default function Setup(props) {
             </Button>
           </CardContent>
           {!stateData.registered && (
-            <CardContent className={classes.linkContent}>
-              <Typography className={classes.subInfo} display="inline">
-                Already have a software account?
-              </Typography>
-              <Link href="#" onClick={loginClickHandler} display="inline" className={classes.link}>
+            <CardContent>
+              <Typography className={classes.subInfo}>Already have a software account?</Typography>
+              <Link href="#" onClick={loginClickHandler} className={classes.link}>
                 Log in
               </Link>
             </CardContent>
