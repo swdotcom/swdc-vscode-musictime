@@ -275,11 +275,14 @@ export async function fetchTracksForPlaylist(playlist_id) {
     let tracks: PlaylistItem[] = getPlaylistItemTracksFromCodyResponse(results);
     // add the playlist id to the tracks
     if (tracks?.length) {
-      tracks = tracks.map((t) => {
+      for await (const t of tracks) {
         const albumName = getAlbumName(t);
         const description = getArtistAlbumDescription(t);
-        return { ...t, playlist_id, albumName, description, liked: false };
-      });
+
+        t["albumName"] = albumName;
+        t["description"] = description;
+        t["liked"] = await isLikedSong(t);
+      }
     }
     playlistTracks[playlist_id] = tracks;
   }
@@ -489,12 +492,12 @@ export function removeTracksFromRecommendations(trackId) {
   }
 }
 
-export ////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 // DEVICE EXPORTS
 ////////////////////////////////////////////////////////////////
 
 // POPULATE
-async function populateSpotifyDevices(tryAgain = false) {
+export async function populateSpotifyDevices(tryAgain = false) {
   const devices = await MusicCommandUtil.getInstance().runSpotifyCommand(getSpotifyDevices);
 
   if (devices.status && devices.status === 429 && tryAgain) {
@@ -721,9 +724,32 @@ export async function followSpotifyPlaylist(playlist: PlaylistItem) {
   }
 }
 
+export async function isLikedSong(song: any) {
+  const songIds = getSongIds(song);
+  if (!spotifyLikedTracks || spotifyLikedTracks.length === 0) {
+    // fetch the liked tracks
+    await populateLikedSongs();
+  }
+  return !!spotifyLikedTracks.find((n) => songIds.find((el) => el === n.id));
+}
+
 ////////////////////////////////////////////////////////////////
 // PRIVATE FUNCTIONS
 ////////////////////////////////////////////////////////////////
+
+function getSongIds(song) {
+  const ids = [];
+  if (song.id) {
+    ids.push(song.id);
+  }
+  if (song.song_id) {
+    ids.push(song.song_id);
+  }
+  if (song.uri) {
+    ids.push(song.uri);
+  }
+  return ids;
+}
 
 function getPlaylistItemTracksFromCodyResponse(codyResponse: CodyResponse): PlaylistItem[] {
   let playlistItems: PlaylistItem[] = [];

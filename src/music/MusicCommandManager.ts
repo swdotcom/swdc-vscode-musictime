@@ -2,7 +2,7 @@ import { window, StatusBarAlignment, StatusBarItem } from "vscode";
 import { getSongDisplayName } from "../Util";
 import { TrackStatus, Track, getRunningTrack } from "cody-music";
 import { getItem, setItem } from "../managers/FileManager";
-import { getBestActiveDevice, requiresSpotifyAccess, requiresSpotifyReAuthentication } from "../managers/PlaylistDataManager";
+import { getBestActiveDevice, isLikedSong, requiresSpotifyAccess, requiresSpotifyReAuthentication } from "../managers/PlaylistDataManager";
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from "../Constants";
 
 export interface Button {
@@ -214,7 +214,7 @@ export class MusicCommandManager {
     const trackName = trackInfo ? trackInfo.name : "";
     const songInfo = trackInfo && trackInfo.id ? `${trackInfo.name} (${trackInfo.artist})` : "";
 
-    const isLiked = !!(trackInfo && trackInfo["playlist_id"] === SPOTIFY_LIKED_SONGS_PLAYLIST_ID);
+    const isLiked = !!((trackInfo && trackInfo["playlist_id"] === SPOTIFY_LIKED_SONGS_PLAYLIST_ID) || (await isLikedSong(trackInfo)));
 
     this._buttons.map((button) => {
       const btnCmd = button.statusBarItem.command;
@@ -222,7 +222,6 @@ export class MusicCommandManager {
       const isPlayButton = btnCmd === "musictime.play";
       const isLikedButton = btnCmd === "musictime.like";
       const isUnLikedButton = btnCmd === "musictime.unlike";
-      const refreshSongStatusButton = btnCmd === "musictime.songTitleRefresh";
       const currentSongButton = btnCmd === "musictime.currentSong";
       const isPrevButton = btnCmd === "musictime.previous";
       const isNextButton = btnCmd === "musictime.next";
@@ -282,7 +281,7 @@ export class MusicCommandManager {
     const trackName = trackInfo ? trackInfo.name : "";
     const songInfo = trackInfo && trackInfo.id ? `${trackInfo.name} (${trackInfo.artist})` : "";
 
-    const isLiked = !!(trackInfo && trackInfo["playlist_id"] === SPOTIFY_LIKED_SONGS_PLAYLIST_ID);
+    const isLiked = !!((trackInfo && trackInfo["playlist_id"] === SPOTIFY_LIKED_SONGS_PLAYLIST_ID) || (await isLikedSong(trackInfo)));
 
     this._buttons.map((button) => {
       const btnCmd = button.statusBarItem.command;
@@ -290,7 +289,6 @@ export class MusicCommandManager {
       const isPauseButton = btnCmd === "musictime.pause";
       const isLikedButton = btnCmd === "musictime.like";
       const isUnLikedButton = btnCmd === "musictime.unlike";
-      const refreshSongStatusButton = btnCmd === "musictime.songTitleRefresh";
       const currentSongButton = btnCmd === "musictime.currentSong";
       const isPrevButton = btnCmd === "musictime.previous";
       const isNextButton = btnCmd === "musictime.next";
