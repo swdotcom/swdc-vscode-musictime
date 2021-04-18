@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Account from "./components/account";
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import { makeStyles } from "@material-ui/core/styles";
@@ -13,7 +12,8 @@ import AppBar from "@material-ui/core/AppBar";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 import Box from "@material-ui/core/Box";
-import { TOP_APP_BAR_MIN_HEIGHT, BOTTOM_BAR_HEIGHT, GETTING_STARTED_MIN_HEIGHT } from "../utils/view_constants";
+import UserAccount from "./components/user_account";
+import { TOP_APP_BAR_MIN_HEIGHT, BOTTOM_BAR_HEIGHT_MIN, BOTTOM_BAR_HEIGHT_MAX, GETTING_STARTED_MIN_HEIGHT } from "../utils/view_constants";
 import { deepPurple, grey, orange } from "@material-ui/core/colors";
 
 const useStyles = makeStyles((theme) => ({
@@ -21,6 +21,10 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
     padding: 0,
     margin: 0,
+  },
+  tab: {
+    fontSize: 10,
+    color: "white",
   },
   tabIndicator: {
     backgroundColor: "#ffffff",
@@ -32,9 +36,13 @@ const useStyles = makeStyles((theme) => ({
     margin: 0,
   },
   accountBox: {
-    height: `${BOTTOM_BAR_HEIGHT}px`,
+    maxHeight: `${BOTTOM_BAR_HEIGHT_MAX}px`,
+    width: "100%",
+    margin: 0,
+    padding: 0,
     top: "auto",
     bottom: 0,
+    left: 0,
   },
   bottomNavLabel: {
     marginTop: 5,
@@ -46,6 +54,7 @@ export default function SideBar(props) {
   const classes = useStyles();
 
   const [tabValue, setTabValue] = useState(0);
+  const [bottomHeight, setBottomHeight] = useState(40);
 
   useEffect(() => {
     if (tabValue !== props.stateData.selectedTabView) {
@@ -182,71 +191,79 @@ export default function SideBar(props) {
     setTabValue(newValue);
   }
 
+  function expandUserAccountCallback(isOpen) {
+    if (isOpen) {
+      setBottomHeight(BOTTOM_BAR_HEIGHT_MAX);
+    } else {
+      setBottomHeight(BOTTOM_BAR_HEIGHT_MIN);
+    }
+  }
+
   return (
     <ThemeProvider theme={theme}>
-      <div className={classes.root}>
-        <CssBaseline />
-        <AppBar position="static" color="primary" id="top-app-bar">
-          {!props.stateData.registered || !props.stateData.spotifyUser ? (
-            <Grid container style={{ margin: 0, padding: 0, width: "100%", height: "100%" }}>
-              <Grid item key="setup-user-grid-item" xs={12} style={{ margin: 0, padding: 0 }}>
-                <Setup stateData={props.stateData} vscode={props.vscode} />
-              </Grid>
+      <CssBaseline />
+      <AppBar position="static" color="primary" id="top-app-bar">
+        {!props.stateData.registered || !props.stateData.spotifyUser ? (
+          <Grid container style={{ margin: 0, padding: 0, width: "100%", height: "100%" }}>
+            <Grid item key="setup-user-grid-item" xs={12} style={{ margin: 0, padding: 0 }}>
+              <Setup stateData={props.stateData} vscode={props.vscode} />
             </Grid>
-          ) : (
-            <Tabs
-              value={tabValue}
-              onChange={changeTabView}
-              centered
-              variant="fullWidth"
-              aria-label="musictime-tabs"
-              classes={{ indicator: classes.tabIndicator }}
-            >
-              <Tab label="Playlists" value="playlists" />
-              <Tab label="Recommendations" value="recommendations" />
-              <Tab label="Metrics" value="metrics" />
-            </Tabs>
-          )}
-        </AppBar>
-        <Grid
-          container
-          style={{
-            position: "absolute",
-            overflowX: "hidden",
-            top: !props.stateData.spotifyUser ? GETTING_STARTED_MIN_HEIGHT : TOP_APP_BAR_MIN_HEIGHT,
-            bottom: !props.stateData.spotifyUser ? 0 : BOTTOM_BAR_HEIGHT,
-          }}
-        >
-          {!props.stateData.spotifyUser && (
-            <Grid item key="cold-start-grid-item" xs={12}>
-              <ColdStart vscode={props.vscode} stateData={props.stateData} />
-            </Grid>
-          )}
+          </Grid>
+        ) : (
+          <Tabs
+            value={tabValue}
+            onChange={changeTabView}
+            centered
+            variant="fullWidth"
+            aria-label="musictime-tabs"
+            classes={{ indicator: classes.tabIndicator }}
+          >
+            <Tab value="playlists" label="Playlists" className={classes.tab} />
 
-          {props.stateData.selectedTabView === "playlists" && props.stateData.spotifyUser && (
-            <Grid item key="playlists-grid-item" xs={12}>
-              <Playlists vscode={props.vscode} stateData={props.stateData} />
-            </Grid>
-          )}
+            <Tab value="recommendations" label="Recommendations" className={classes.tab} />
 
-          {props.stateData.selectedTabView === "recommendations" && props.stateData.spotifyUser && (
-            <Grid item key="recommendations-grid-item" xs={12}>
-              <Recommendations vscode={props.vscode} stateData={props.stateData} />
-            </Grid>
-          )}
-
-          {props.stateData.selectedTabView === "metrics" && props.stateData.spotifyUser && (
-            <Grid item key="metrics-grid-item" xs={12}>
-              <Metrics vscode={props.vscode} stateData={props.stateData} />
-            </Grid>
-          )}
-        </Grid>
-        {props.stateData.registered && (
-          <Box position="fixed" className={classes.accountBox}>
-            <Account vscode={props.vscode} stateData={props.stateData} />
-          </Box>
+            <Tab value="metrics" label="Metrics" className={classes.tab} />
+          </Tabs>
         )}
-      </div>
+      </AppBar>
+      <Grid
+        container
+        style={{
+          position: "absolute",
+          overflowX: "hidden",
+          top: !props.stateData.spotifyUser ? GETTING_STARTED_MIN_HEIGHT : TOP_APP_BAR_MIN_HEIGHT,
+          bottom: !props.stateData.spotifyUser ? 0 : bottomHeight,
+        }}
+      >
+        {!props.stateData.spotifyUser && (
+          <Grid item key="cold-start-grid-item" xs={12}>
+            <ColdStart vscode={props.vscode} stateData={props.stateData} />
+          </Grid>
+        )}
+
+        {props.stateData.selectedTabView === "playlists" && props.stateData.spotifyUser && (
+          <Grid item key="playlists-grid-item" xs={12}>
+            <Playlists vscode={props.vscode} stateData={props.stateData} />
+          </Grid>
+        )}
+
+        {props.stateData.selectedTabView === "recommendations" && props.stateData.spotifyUser && (
+          <Grid item key="recommendations-grid-item" xs={12}>
+            <Recommendations vscode={props.vscode} stateData={props.stateData} />
+          </Grid>
+        )}
+
+        {props.stateData.selectedTabView === "metrics" && props.stateData.spotifyUser && (
+          <Grid item key="metrics-grid-item" xs={12}>
+            <Metrics vscode={props.vscode} stateData={props.stateData} />
+          </Grid>
+        )}
+      </Grid>
+      {props.stateData.registered && (
+        <Box position="fixed" className={classes.accountBox}>
+          <UserAccount expandUserAccount={expandUserAccountCallback} vscode={props.vscode} stateData={props.stateData} />
+        </Box>
+      )}
     </ThemeProvider>
   );
 }

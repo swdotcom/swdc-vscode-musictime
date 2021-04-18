@@ -15,11 +15,11 @@ import {
   MuiSyncIcon,
   MuiDashboardIcon,
   MuiSettingsRemoteIcon,
+  SlackWorkspaceIcon,
 } from "../icons";
 import IconButton from "@material-ui/core/IconButton";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import Tooltip from "@material-ui/core/Tooltip";
-import Workspaces from "./workspaces";
 import AudioControl from "./audio_control";
 
 const useStyles = makeStyles((theme) => ({
@@ -93,6 +93,8 @@ export default function Account(props) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [openMenu, setOpenMenu] = useState(false);
 
+  const [openSlackMenu, setOpenSlackMenu] = useState(false);
+
   function documentationClickHandler() {
     const command = {
       action: "musictime.launchReadme",
@@ -154,6 +156,10 @@ export default function Account(props) {
     setOpenMenu(false);
   }
 
+  function handleSlackEditClick(event) {
+    setOpenSlackMenu(!openSlackMenu);
+  }
+
   return (
     <Grid container className={classes.root}>
       <Grid item key="account_user_grid" xs={12}>
@@ -203,13 +209,10 @@ export default function Account(props) {
             </ListItemIcon>
             <ListItemText
               id="spotify-account-li-text"
-              primary={
-                props.stateData.spotifyUser?.product === "premium"
-                  ? `Spotify Premium (${props.stateData.spotifyUser.email})`
-                  : `Spotify Premium (${props.stateData.spotifyUser.email})`
-              }
+              primary={props.stateData.spotifyUser?.product === "premium" ? `Spotify Premium` : `Spotify Open`}
+              secondary={`(${props.stateData.spotifyUser.email})`}
             />
-            <ListItemSecondaryAction onClick={switchSpotifyHandler}>
+            <ListItemSecondaryAction>
               <Tooltip title="Switch your Spotify account">
                 <IconButton onClick={switchSpotifyHandler}>
                   <MuiSyncIcon />
@@ -226,9 +229,23 @@ export default function Account(props) {
           <ListItemText id="report-dashboard-li" primary="Dashboard" />
         </ListItem>
 
-        <ListItem key="slack-workspaces" disableGutters={true} dense={true}>
-          <Workspaces vscode={props.vscode} stateData={props.stateData} />
+        <ListItem key="slack-workspace-li" disableGutters={true} dense={true}>
+          <ListItemIcon className={classes.listItemIcon}>
+            <SlackWorkspaceIcon />
+          </ListItemIcon>
+          <ListItemText id="slack-workspaces-li-text" primary="Slack workspaces" />
+          <ListItemSecondaryAction>
+            <Tooltip title="Switch your Spotify account">
+              <IconButton onClick={handleSlackEditClick}>
+                <MuiSyncIcon />
+              </IconButton>
+            </Tooltip>
+          </ListItemSecondaryAction>
         </ListItem>
+
+        {/* <ListItem key="slack-workspaces" disableGutters={true} dense={true}>
+          <Workspaces vscode={props.vscode} stateData={props.stateData} />
+        </ListItem> */}
 
         <ListItem key="documentation" disableGutters={true} dense={true} button onClick={documentationClickHandler}>
           <ListItemIcon className={classes.listItemIcon}>

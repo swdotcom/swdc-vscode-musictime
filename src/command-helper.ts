@@ -27,7 +27,6 @@ import {
   getMixedAudioFeatureRecs,
   getRecommendations,
   getTrackRecommendations,
-  getUserMusicMetrics,
   populateSpotifyDevices,
   refreshRecommendations,
   removeTrackFromPlaylist,
@@ -129,14 +128,14 @@ export function createCommands(
 
   // LIKE CMD
   cmds.push(
-    commands.registerCommand("musictime.like", (track: PlaylistItem) => {
+    commands.registerCommand("musictime.like", (track: any) => {
       controller.setLiked(track, true);
     })
   );
 
   // UNLIKE CMD
   cmds.push(
-    commands.registerCommand("musictime.unlike", (track: PlaylistItem) => {
+    commands.registerCommand("musictime.unlike", (track: any) => {
       controller.setLiked(track, false);
     })
   );

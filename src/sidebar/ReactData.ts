@@ -13,6 +13,7 @@ import {
   getSelectedPlaylistId,
   getSelectedTabView,
   getSpotifyLikedPlaylist,
+  isLikedSong,
 } from "../managers/PlaylistDataManager";
 import { getSlackWorkspaces, hasSlackWorkspaces } from "../managers/SlackManager";
 import { getConnectedSpotifyUser } from "../managers/SpotifyManager";
@@ -39,6 +40,9 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
   if (spotifyUser) {
     spotifyPlayerContext = await getCachedSpotifyPlayerContext();
     currentlyRunningTrack = getCachedRunningTrack();
+    if (currentlyRunningTrack) {
+      currentlyRunningTrack["liked"] = await isLikedSong(currentlyRunningTrack);
+    }
 
     if (selectedTabView === "playlists") {
       likedSongsTracks = getCachedLikedSongsTracks();

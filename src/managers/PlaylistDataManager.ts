@@ -725,7 +725,13 @@ export async function followSpotifyPlaylist(playlist: PlaylistItem) {
 }
 
 export async function isLikedSong(song: any) {
+  if (!song) {
+    return false;
+  }
   const songIds = getSongIds(song);
+  if (songIds.length === 0) {
+    return false;
+  }
   if (!spotifyLikedTracks || spotifyLikedTracks.length === 0) {
     // fetch the liked tracks
     await populateLikedSongs();

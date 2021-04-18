@@ -346,7 +346,7 @@ export class MusicControlManager {
     }
   }
 
-  async setLiked(track: PlaylistItem, liked: boolean) {
+  async setLiked(track: any, liked: boolean) {
     let trackId = track?.id;
     if (!trackId) {
       // check to see if we have a running track
@@ -372,7 +372,7 @@ export class MusicControlManager {
 
     setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
-    }, 2000);
+    }, 1000);
   }
 
   async copySpotifyLink(id: string, isPlaylist: boolean) {

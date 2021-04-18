@@ -8,10 +8,12 @@ import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import MetricsSetup from "./metrics_setup";
 import { MuiTuneIcon, MuiEmojiEventsIcon } from "../icons";
-import { indigo, grey } from "@material-ui/core/colors";
+import { indigo, grey, orange } from "@material-ui/core/colors";
 import Tooltip from "@material-ui/core/Tooltip";
 import IconButton from "@material-ui/core/IconButton";
 import Box from "@material-ui/core/Box";
+import Link from "@material-ui/core/Link";
+import Paper from "@material-ui/core/Paper";
 import MetricAudioDashboard from "./metric_audio_dashboard";
 
 const useStyles = makeStyles((theme) => {
@@ -43,6 +45,24 @@ const useStyles = makeStyles((theme) => {
     headerActionButtons: {
       marginTop: 10,
       marginRight: 10,
+    },
+    paperContent: {
+      background: "transparent",
+      justifyContent: "center",
+      textAlign: "center",
+    },
+    setupDescription: {
+      display: "inline",
+    },
+    link: {
+      paddingLeft: 3,
+      background: "transparent",
+      textDecoration: "none",
+      display: "inline",
+      "&:hover": {
+        color: orange[500],
+        textDecoration: "none",
+      },
     },
   };
 });
@@ -94,6 +114,15 @@ export default function Metrics(props) {
     }, 2000);
   }
 
+  function refreshClick() {
+    const command = {
+      action: "musictime.updateSelectedTabView",
+      command: "command_execute",
+      arguments: ["metrics"],
+    };
+    props.vscode.postMessage(command);
+  }
+
   return (
     <Card className={classes.root} elevation={0}>
       {props.stateData.codeTimeInstalled && (
@@ -133,7 +162,12 @@ export default function Metrics(props) {
                 ) : !liveAudioFeatures ? (
                   <Typography>Loading metrics...</Typography>
                 ) : (
-                  <Typography>No metrics available</Typography>
+                  <Paper className={classes.paperContent} elevation={0}>
+                    <Typography className={classes.setupDescription}>No data available yet. You can try again or check back later.</Typography>
+                    <Link href="#" onClick={refreshClick} className={classes.link}>
+                      Refresh
+                    </Link>
+                  </Paper>
                 )}
               </Grid>
             </Grid>

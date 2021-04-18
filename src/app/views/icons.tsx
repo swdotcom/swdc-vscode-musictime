@@ -1,6 +1,5 @@
 import React from "react";
 import SvgIcon, { SvgIconProps } from "@material-ui/core/SvgIcon";
-import MuiSettingsIcon from "@material-ui/icons/Settings";
 import AccountCircleIcon from "@material-ui/icons/AccountCircle";
 import AlbumIcon from "@material-ui/icons/Album";
 import deepPurple from "@material-ui/core/colors/deepPurple";
@@ -38,6 +37,8 @@ import StopIcon from "@material-ui/icons/Stop";
 import DevicesIcon from "@material-ui/icons/Devices";
 import RemoveCircleIcon from "@material-ui/icons/RemoveCircle";
 import AddCircleIcon from "@material-ui/icons/AddCircle";
+import SettingsIcon from "@material-ui/icons/Settings";
+import HeadsetIcon from "@material-ui/icons/Headset";
 
 // Material UI SVG Icons
 export const MuiAlbumIcon = (props: SvgIconProps) => {
@@ -58,10 +59,6 @@ export const MuiAccountCircleIcon = (props: SvgIconProps) => {
 
 export const MuiSyncIcon = (props: SvgIconProps) => {
   return <SyncIcon {...props} style={getMuiIconStyle(props)} />;
-};
-
-export const MuiSettingIcon = (props: SvgIconProps) => {
-  return <MuiSettingsIcon {...props} style={getMuiIconStyle(props)} />;
 };
 
 export const MuiShareIcon = (props: SvgIconProps) => {
@@ -188,7 +185,13 @@ export const MuiAddCircleIcon = (props: SvgIconProps) => {
   return <AddCircleIcon {...props} style={getMuiIconStyle(props)} />;
 };
 
-DevicesIcon;
+export const MuiSettingsIcon = (props: SvgIconProps) => {
+  return <SettingsIcon {...props} style={getMuiIconStyle(props)} />;
+};
+
+export const MuiHeadsetIcon = (props: SvgIconProps) => {
+  return <HeadsetIcon {...props} style={getMuiIconStyle(props)} />;
+};
 
 // Custom SVG Icons
 

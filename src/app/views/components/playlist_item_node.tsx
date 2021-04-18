@@ -326,7 +326,7 @@ export default function PlaylistItemNode(props) {
               </List>
             </MenuItem>
 
-            <Divider style={{ background: grey[500] }} />
+            <Divider />
 
             <List component="nav" disablePadding={true} dense={true} aria-labelledby="track-selections">
               <ListItem key="show-album" button onClick={showAlbum} disableGutters={true} dense={true}>
