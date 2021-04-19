@@ -212,10 +212,10 @@ async function playMusicSelection() {
     try {
       if (isRecommendationTrack) {
         const recommendationTrackUris = getRecommendationURIsFromTrackId(trackId);
-        play(PlayerName.SpotifyWeb, { device_id: device?.id, uris: recommendationTrackUris });
+        play(PlayerName.SpotifyWeb, { device_id: device?.id, uris: recommendationTrackUris, offset: 0 });
       } else {
         const likedTrackUris = getLikedURIsFromTrackId(trackId);
-        play(PlayerName.SpotifyWeb, { device_id: device?.id, uris: likedTrackUris });
+        play(PlayerName.SpotifyWeb, { device_id: device?.id, uris: likedTrackUris, offset: 0 });
       }
     } catch (e) {}
   } else {
