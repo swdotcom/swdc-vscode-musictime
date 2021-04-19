@@ -28,9 +28,9 @@ export default function PlaylistItem(props) {
         props.playlistTracks.map((item, index) => {
           if (item.track) {
             // it's a software top 40 track item
-            return <PlaylistItemNode vscode={props.vscode} item={item.track} key={item.track.id} />;
+            return <PlaylistItemNode vscode={props.vscode} item={item.track} key={`track_${item.track.id}_${item.playlist_id}`} />;
           } else {
-            return <PlaylistItemNode vscode={props.vscode} item={item} key={item.id} />;
+            return <PlaylistItemNode vscode={props.vscode} item={item} key={`playlist_${item.id}`} />;
           }
         })
       ) : !props.playlistTracks ? (

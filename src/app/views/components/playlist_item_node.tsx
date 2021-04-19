@@ -228,7 +228,14 @@ export default function PlaylistItemNode(props) {
             dense
             style={{ width: "100%", flexGrow: 1, marginLeft: 0, marginRight: 10, paddingLeft: 0, marginBottom: 0, marginTop: 0, padding: 0 }}
           >
-            <ListItem key={`track-${item.name}`} disableGutters={true} dense={true} button onClick={playTrack} style={{ margin: 0, padding: 0 }}>
+            <ListItem
+              key={`track_${item.name}_${item.playlist_id}_li`}
+              disableGutters={true}
+              dense={true}
+              button
+              onClick={playTrack}
+              style={{ margin: 0, padding: 0 }}
+            >
               <ListItemIcon className={classes.listItemIcon}>
                 <TrackIcon />
               </ListItemIcon>
@@ -251,7 +258,7 @@ export default function PlaylistItemNode(props) {
       ) : (
         <Grid item xs={9}>
           <List disablePadding={true} dense style={{ width: "100%", flexGrow: 1, margin: 0, padding: 0 }}>
-            <ListItem key={`track-${item.name}`} disableGutters={true} dense={true} style={{ margin: 0, padding: 0 }}>
+            <ListItem key={`playlist_${item.name}_li`} disableGutters={true} dense={true} style={{ margin: 0, padding: 0 }}>
               <ListItemIcon className={classes.listItemIcon}>
                 <PlaylistIcon />
               </ListItemIcon>
@@ -306,7 +313,7 @@ export default function PlaylistItemNode(props) {
           >
             <MenuItem key="menu_title">
               <List disablePadding={true} dense={true}>
-                <ListItem key={`track-menu-${item.name}`} disableGutters={true} dense={true}>
+                <ListItem key={`track_menu_${item.name}_${item.playlist_id}_li`} disableGutters={true} dense={true}>
                   <ListItemText
                     primary={
                       <Typography noWrap className={classes.menuHeaderPrimary}>

@@ -38,7 +38,6 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
     color: "white",
     position: "relative",
-    borderRadius: 0,
   },
   primaryContent: {
     color: "white",
@@ -56,7 +55,6 @@ const useStyles = makeStyles((theme) => ({
     minWidth: "32px",
   },
   containerRoot: {
-    borderRadius: 0,
     padding: 0,
     margin: 0,
     background: DARK_BG_COLOR,
@@ -138,7 +136,7 @@ export default function UserAccount(props) {
 
   return (
     <div className={classes.root} id="user-account-container">
-      <Accordion defaultExpanded={false} className={classes.containerRoot}>
+      <Accordion defaultExpanded={false} className={classes.containerRoot} square={true}>
         <AccordionSummary
           classes={{ root: classes.root, content: classes.root }}
           expandIcon={<ExpandMoreIcon style={{ color: "white" }} />}

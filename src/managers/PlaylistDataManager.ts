@@ -98,6 +98,11 @@ export function removeTrackFromLikedPlaylist(trackId) {
   spotifyLikedTracks = spotifyLikedTracks.filter((n) => n.id !== trackId);
 }
 
+export function addTrackToLikedPlaylist(playlistItem: PlaylistItem) {
+  playlistItem["liked"] = true;
+  spotifyLikedTracks.unshift(playlistItem);
+}
+
 export function updateSpotifyPlaylistTracks(playlist_id, songs) {
   playlistTracks[playlist_id] = songs;
 }
@@ -105,6 +110,10 @@ export function updateSpotifyPlaylistTracks(playlist_id, songs) {
 export function updateSelectedTrackItem(item) {
   selectedTrackItem = item;
   selectedPlaylistId = item["playlist_id"];
+}
+
+export function updateSelectedPlaylistId(playlist_id) {
+  selectedPlaylistId = playlist_id;
 }
 
 export function updateSelectedPlayer(player: PlayerName) {
@@ -125,6 +134,15 @@ export function updateCachedRunningTrack(track: Track) {
   cachedRunningTrack = track;
   // track has been updated, refresh the webview
   commands.executeCommand("musictime.refreshMusicTimeView");
+}
+
+export function updateLikedStatusInPlaylist(playlist_id, track_id, liked_state) {
+  if (playlistTracks[playlist_id]?.length) {
+    const item: PlaylistItem = playlistTracks[playlist_id].find((n) => n.id === track_id);
+    if (item) {
+      item["liked"] = liked_state;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////
@@ -269,7 +287,8 @@ export async function fetchTracksForLikedSongs() {
 
 // TRACKS FOR A SPECIFIED PLAYLIST
 export async function fetchTracksForPlaylist(playlist_id) {
-  selectedPlaylistId = playlist_id;
+  updateSelectedPlaylistId(playlist_id);
+
   if (!playlistTracks[playlist_id]) {
     const results: CodyResponse = await getPlaylistTracks(PlayerName.SpotifyWeb, playlist_id);
     let tracks: PlaylistItem[] = getPlaylistItemTracksFromCodyResponse(results);

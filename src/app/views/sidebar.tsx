@@ -180,7 +180,6 @@ export default function SideBar(props) {
   );
 
   function changeTabView(event, newValue) {
-    console.log("tab value: ", JSON.stringify(newValue));
     // update the tab view
     const updateCmd = {
       action: "musictime.updateSelectedTabView",

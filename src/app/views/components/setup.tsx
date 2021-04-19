@@ -89,6 +89,14 @@ export default function Setup(props) {
     props.vscode.postMessage(command);
   }
 
+  function refreshSpotifyHandler() {
+    const command = {
+      action: "musictime.refreshMusicTimeView",
+      command: "command_execute",
+    };
+    props.vscode.postMessage(command);
+  }
+
   return (
     <Grid container className={classes.root}>
       <Grid item xs={12}>
@@ -109,6 +117,14 @@ export default function Setup(props) {
               <Typography className={classes.subInfo}>Already have a software account?</Typography>
               <Link href="#" onClick={loginClickHandler} className={classes.link}>
                 Log in
+              </Link>
+            </CardContent>
+          )}
+          {stateData.registered && (
+            <CardContent>
+              <Typography className={classes.subInfo}>Already connected Spotify?</Typography>
+              <Link href="#" onClick={refreshSpotifyHandler} className={classes.link}>
+                Refresh
               </Link>
             </CardContent>
           )}

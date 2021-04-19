@@ -31,6 +31,7 @@ import {
   refreshRecommendations,
   removeTrackFromPlaylist,
   requiresSpotifyAccess,
+  updateSelectedPlaylistId,
   updateSelectedTabView,
   updateSort,
 } from "./managers/PlaylistDataManager";
@@ -430,6 +431,12 @@ export function createCommands(
       } else {
         fetchTracksForPlaylist(playlist_id);
       }
+    })
+  );
+
+  cmds.push(
+    commands.registerCommand("musictime.updateSelectedPlaylist", async (playlist_id) => {
+      updateSelectedPlaylistId(playlist_id);
     })
   );
 

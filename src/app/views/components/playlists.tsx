@@ -45,6 +45,21 @@ export default function Playlists(props) {
   playlistTracks[props.stateData.likedSongsPlaylist.id] = props.stateData.likedSongsTracks;
 
   async function onTreeNodeToggle(event, nodeIds: string[]) {
+    if (nodeIds.length) {
+      const command = {
+        action: "musictime.updateSelectedPlaylist",
+        command: "command_execute",
+        arguments: [nodeIds[0]],
+      };
+      props.vscode.postMessage(command);
+    } else {
+      const command = {
+        action: "musictime.updateSelectedPlaylist",
+        command: "command_execute",
+      };
+      props.vscode.postMessage(command);
+    }
+
     if (nodeIds?.length) {
       // get the 1st one. the list is built up
       const playlist_id = nodeIds[0];
@@ -131,7 +146,14 @@ export default function Playlists(props) {
           <Divider />
 
           {props.stateData.spotifyPlaylists.map((item, index) => {
-            return <PlaylistItem vscode={props.vscode} playlistItem={item} key={index} playlistTracks={props.stateData.playlistTracks[item.id]} />;
+            return (
+              <PlaylistItem
+                vscode={props.vscode}
+                playlistItem={item}
+                key={`playlist_${index}`}
+                playlistTracks={props.stateData.playlistTracks[item.id]}
+              />
+            );
           })}
         </TreeView>
       )}

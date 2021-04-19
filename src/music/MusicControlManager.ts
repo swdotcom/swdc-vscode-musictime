@@ -51,6 +51,10 @@ import {
   removeTrackFromLikedPlaylist,
   populateLikedSongs,
   getCachedRunningTrack,
+  addTrackToLikedPlaylist,
+  createPlaylistItemFromTrack,
+  getSelectedPlaylistId,
+  updateLikedStatusInPlaylist,
 } from "../managers/PlaylistDataManager";
 import { connectSlackWorkspace, hasSlackWorkspaces } from "../managers/SlackManager";
 
@@ -351,6 +355,7 @@ export class MusicControlManager {
     if (!trackId) {
       // check to see if we have a running track
       const runningTrack: Track = await getCachedRunningTrack();
+      track = createPlaylistItemFromTrack(runningTrack, 0);
       trackId = runningTrack?.id;
     }
     if (!trackId) {
@@ -361,14 +366,22 @@ export class MusicControlManager {
     // save the spotify track to the users liked songs playlist
     if (liked) {
       await saveToSpotifyLiked([trackId]);
-      await populateLikedSongs();
+      // add it to the liked songs playlist
+      addTrackToLikedPlaylist(track);
     } else {
       await removeFromSpotifyLiked([trackId]);
       // remove from the cached liked list
       removeTrackFromLikedPlaylist(trackId);
     }
 
-    commands.executeCommand("musictime.refreshMusicTimeView", "playlists", SPOTIFY_LIKED_SONGS_PLAYLIST_ID);
+    const selectedPlaylistId = getSelectedPlaylistId();
+    // update liked state in the playlist the track is in
+    if (selectedPlaylistId && selectedPlaylistId !== SPOTIFY_LIKED_SONGS_PLAYLIST_ID) {
+      updateLikedStatusInPlaylist(selectedPlaylistId, trackId, liked);
+    }
+    if (selectedPlaylistId) {
+      commands.executeCommand("musictime.refreshMusicTimeView", "playlists", selectedPlaylistId);
+    }
 
     setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
