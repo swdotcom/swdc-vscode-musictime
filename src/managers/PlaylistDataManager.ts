@@ -143,7 +143,7 @@ export function updateLikedStatusInPlaylist(playlist_id, track_id, liked_state) 
   }
 
   // it might be in the recommendations list
-  item = recommendedTracks.find((n) => n.id === track_id);
+  item = recommendationInfo.tracks.find((n) => n.id === track_id);
   if (item) {
     item["liked"] = liked_state;
   }
@@ -227,6 +227,52 @@ export function getPlaylistById(playlist_id) {
 
 export function isLikedSongPlaylistSelected() {
   return !!(selectedPlaylistId === SPOTIFY_LIKED_SONGS_PLAYLIST_ID);
+}
+
+export function getLikedURIsFromTrackId(trackId) {
+  return getTracksFromTrackId(trackId, spotifyLikedTracks);
+}
+
+export function getRecommendationURIsFromTrackId(trackId) {
+  return getTracksFromTrackId(trackId, recommendationInfo?.tracks);
+}
+
+function createUriFromTrackId(track_id: string) {
+  if (track_id && !track_id.includes("spotify:track:")) {
+    track_id = `spotify:track:${track_id}`;
+  }
+
+  return track_id;
+}
+
+function getTracksFromTrackId(trackId, existingTracks) {
+  let uris = [];
+  let foundTrack = false;
+  if (existingTracks?.length) {
+    for (const track of existingTracks) {
+      if (!foundTrack && track.id === trackId) {
+        foundTrack = true;
+      }
+
+      if (foundTrack) {
+        uris.push(createUriFromTrackId(track.id));
+      }
+    }
+  }
+
+  if (existingTracks?.length && uris.length < 10) {
+    const limit = 10;
+    // add the ones to the beginning until we've reached 10 or the found track
+    let idx = 0;
+    for (const track of existingTracks) {
+      if (idx >= 10 || (!foundTrack && track.id === trackId)) {
+        break;
+      }
+      uris.push(createUriFromTrackId(track.id));
+      idx++;
+    }
+  }
+  return uris;
 }
 
 ////////////////////////////////////////////////////////////////

@@ -162,9 +162,11 @@ export default function UserAccount(props) {
                 classes={{ primary: classes.primaryContent }}
               />
               <ListItemSecondaryAction classes={{ root: classes.secondaryAction }}>
-                <IconButton onClick={handleAudioOptionsClick}>
-                  <MuiSettingsRemoteIcon />
-                </IconButton>
+                <Tooltip title="Playback control">
+                  <IconButton onClick={handleAudioOptionsClick}>
+                    <MuiSettingsRemoteIcon />
+                  </IconButton>
+                </Tooltip>
               </ListItemSecondaryAction>
             </ListItem>
           </List>

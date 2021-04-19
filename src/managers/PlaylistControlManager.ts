@@ -10,7 +10,7 @@ import {
   transferSpotifyDevice,
 } from "cody-music";
 import { commands, window } from "vscode";
-import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from "../app/utils/view_constants";
+import { RECOMMENDATION_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from "../app/utils/view_constants";
 import { MusicCommandUtil } from "../music/MusicCommandUtil";
 import { MusicStateManager } from "../music/MusicStateManager";
 import { createSpotifyIdFromUri, createUriFromPlaylistId, createUriFromTrackId, isMac, isWindows } from "../Util";
@@ -26,6 +26,8 @@ import {
   updateSelectedPlayer,
   updateSelectedTrackItem,
   getCurrentDevices,
+  getLikedURIsFromTrackId,
+  getRecommendationURIsFromTrackId,
 } from "./PlaylistDataManager";
 import { hasSpotifyUser, isPremiumUser, populateSpotifyUser } from "./SpotifyManager";
 
@@ -198,7 +200,9 @@ async function playMusicSelection() {
   const selectedPlayer = getSelectedPlayerName() || PlayerName.SpotifyWeb;
   const isLikedSong = !!(playlist_id === SPOTIFY_LIKED_SONGS_PLAYLIST_ID);
   const desktopSelected = !!(selectedPlayer === PlayerName.SpotifyDesktop);
-  const isRecommendationTrack = !!(selectedPlaylistItem.type === "recommendation");
+  const isRecommendationTrack = !!(
+    selectedPlaylistItem.type === "recommendation" || selectedPlaylistItem["playlist_id"] === RECOMMENDATION_PLAYLIST_ID
+  );
 
   const trackId = createSpotifyIdFromUri(selectedPlaylistItem.id);
   const trackUri = createUriFromTrackId(selectedPlaylistItem.id);
@@ -206,7 +210,13 @@ async function playMusicSelection() {
 
   if (isRecommendationTrack || isLikedSong) {
     try {
-      result = await playTrackInContext(selectedPlayer, [trackUri]);
+      if (isRecommendationTrack) {
+        const recommendationTrackUris = getRecommendationURIsFromTrackId(trackId);
+        play(PlayerName.SpotifyWeb, { device_id: device?.id, uris: recommendationTrackUris });
+      } else {
+        const likedTrackUris = getLikedURIsFromTrackId(trackId);
+        play(PlayerName.SpotifyWeb, { device_id: device?.id, uris: likedTrackUris });
+      }
     } catch (e) {}
   } else {
     if (isMac() && desktopSelected) {
