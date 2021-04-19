@@ -38,6 +38,7 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
     color: "white",
     position: "relative",
+    borderRadius: 0,
   },
   primaryContent: {
     color: "white",
@@ -60,28 +61,11 @@ const useStyles = makeStyles((theme) => ({
     margin: 0,
     background: DARK_BG_COLOR,
   },
-  drawer: {
-    width: 210,
-  },
-  drawerPaper: {
-    position: "absolute",
-  },
-  drawerHeader: {
-    display: "flex",
-    alignItems: "center",
-    padding: theme.spacing(0, 1),
-    // necessary for content to be below app bar
-    ...theme.mixins.toolbar,
-    justifyContent: "flex-start",
-  },
 }));
 
 export default function UserAccount(props) {
   const classes = useStyles();
   const stateData = props.stateData;
-
-  // workspaces
-  // [{"id":1011894,"name":"Slack","value":"xavier@software.com","createdAt":"2021-03-29T04:39:03.000Z","updatedAt":"2021-03-30T14:37:26.000Z","status":"ACTIVE","access_token":"xoxp-175315606055-302992216229-1918458903220-0468a5e696fdac928a4c8a9ee06ca0cc","refresh_token":null,"scopes":["identity.basic","identity.email","identity.avatar","identity.team","users:write","users:read","dnd:write","dnd:read","users.profile:write","users.profile:read","chat:write:user","channels:read"],"authId":"U8WV66C6R","team_domain":"swdotcom","team_name":"sftw","integration_id":"U8WV66C6R"}]
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [openMenu, setOpenMenu] = useState(false);
@@ -153,7 +137,7 @@ export default function UserAccount(props) {
   };
 
   return (
-    <div className={classes.root} id="workspaces-drawer-container">
+    <div className={classes.root} id="user-account-container">
       <Accordion defaultExpanded={false} className={classes.containerRoot}>
         <AccordionSummary
           classes={{ root: classes.root, content: classes.root }}

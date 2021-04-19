@@ -260,7 +260,7 @@ export default function SideBar(props) {
         )}
       </Grid>
       {props.stateData.registered && (
-        <Box position="fixed" className={classes.accountBox}>
+        <Box position="fixed" className={classes.accountBox} borderRadius={0}>
           <UserAccount expandUserAccount={expandUserAccountCallback} vscode={props.vscode} stateData={props.stateData} />
         </Box>
       )}
