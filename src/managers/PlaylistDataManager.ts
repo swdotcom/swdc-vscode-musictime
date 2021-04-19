@@ -491,6 +491,9 @@ export async function getRecommendations(
   offset: number = 0,
   seedTracks = []
 ) {
+  // set the selectedTabView to "recommendations"
+  selectedTabView = "recommendations";
+
   // fetching recommendations based on a set of genre requires 0 seed track IDs
   seedLimit = seed_genres.length ? 0 : Math.max(seedLimit, 5);
 
