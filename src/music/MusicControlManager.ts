@@ -23,14 +23,18 @@ import {
   unmute,
   getTrack,
   getRunningTrack,
-  setVolume,
 } from "cody-music";
 import { window, ViewColumn, Uri, commands } from "vscode";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { showQuickPick } from "../MenuManager";
 import { playInitialization, playNextLikedSong, playPreviousLikedSongs } from "../managers/PlaylistControlManager";
 import { createSpotifyIdFromUri, createUriFromTrackId, isMac, getCodyErrorMessage, isWindows, checkRegistration } from "../Util";
-import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME, OK_LABEL, SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from "../Constants";
+import {
+  SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
+  OK_LABEL,
+  SPOTIFY_LIKED_SONGS_PLAYLIST_ID,
+  RECOMMENDATION_PLAYLIST_ID,
+} from "../app/utils/view_constants";
 import { MusicStateManager } from "./MusicStateManager";
 import { SocialShareManager } from "../social/SocialShareManager";
 import { tmpdir } from "os";
@@ -49,7 +53,6 @@ import {
   sortPlaylists,
   requiresSpotifyAccess,
   removeTrackFromLikedPlaylist,
-  populateLikedSongs,
   getCachedRunningTrack,
   addTrackToLikedPlaylist,
   createPlaylistItemFromTrack,
@@ -374,13 +377,21 @@ export class MusicControlManager {
       removeTrackFromLikedPlaylist(trackId);
     }
 
-    const selectedPlaylistId = getSelectedPlaylistId();
-    // update liked state in the playlist the track is in
-    if (selectedPlaylistId && selectedPlaylistId !== SPOTIFY_LIKED_SONGS_PLAYLIST_ID) {
-      updateLikedStatusInPlaylist(selectedPlaylistId, trackId, liked);
+    let selectedPlaylistId = getSelectedPlaylistId();
+    if (!selectedPlaylistId) {
+      selectedPlaylistId = track["playlist_id"];
     }
-    if (selectedPlaylistId) {
-      commands.executeCommand("musictime.refreshMusicTimeView", "playlists", selectedPlaylistId);
+    if (selectedPlaylistId === RECOMMENDATION_PLAYLIST_ID) {
+      updateLikedStatusInPlaylist(selectedPlaylistId, trackId, liked);
+      commands.executeCommand("musictime.refreshMusicTimeView", "recommendations", selectedPlaylistId);
+    } else {
+      // update liked state in the playlist the track is in
+      if (selectedPlaylistId !== SPOTIFY_LIKED_SONGS_PLAYLIST_ID) {
+        updateLikedStatusInPlaylist(selectedPlaylistId, trackId, liked);
+      }
+      if (selectedPlaylistId) {
+        commands.executeCommand("musictime.refreshMusicTimeView", "playlists", selectedPlaylistId);
+      }
     }
 
     setTimeout(() => {

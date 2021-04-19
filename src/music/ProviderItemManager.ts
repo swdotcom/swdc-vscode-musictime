@@ -1,17 +1,10 @@
-import { PlayerType, PlaylistItem, PlaylistTrackInfo, PlayerDevice, Track } from "cody-music";
-import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
+import { PlayerType, PlaylistItem, PlaylistTrackInfo, PlayerDevice } from "cody-music";
+import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../app/utils/view_constants";
 import { isMac } from "../Util";
 import { KpmItem } from "../model/models";
 import { getSlackWorkspaces } from "../managers/SlackManager";
 import { getItem } from "../managers/FileManager";
-import {
-  createPlaylistItemFromTrack,
-  getCachedRecommendationInfo,
-  getCurrentDevices,
-  getDeviceSet,
-  requiresSpotifyAccess,
-  requiresSpotifyReAuthentication,
-} from "../managers/PlaylistDataManager";
+import { getCurrentDevices, getDeviceSet, requiresSpotifyReAuthentication } from "../managers/PlaylistDataManager";
 
 export class ProviderItemManager {
   private static instance: ProviderItemManager;
@@ -264,31 +257,5 @@ export class ProviderItemManager {
     }
 
     return inactive_devices;
-  }
-
-  convertTracksToPlaylistItems(tracks: Track[]) {
-    let items: PlaylistItem[] = [];
-
-    if (!requiresSpotifyAccess()) {
-      const recLabel = getCachedRecommendationInfo() ? getCachedRecommendationInfo().label : "";
-      const labelButton = this.buildActionItem(recLabel, "label", null, PlayerType.NotAssigned, recLabel, "");
-      labelButton.tag = "paw";
-
-      if (tracks && tracks.length > 0) {
-        // since we have recommendations, show the label button
-        items.push(labelButton);
-        for (let i = 0; i < tracks.length; i++) {
-          const track: Track = tracks[i];
-          const item: PlaylistItem = createPlaylistItemFromTrack(track, 0);
-          item.tag = "spotify";
-          item.type = "recommendation";
-          items.push(item);
-        }
-      }
-    } else {
-      // create the connect button
-      items.push(this.getRecommendationConnectToSpotifyButton());
-    }
-    return items;
   }
 }

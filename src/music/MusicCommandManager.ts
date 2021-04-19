@@ -3,7 +3,7 @@ import { getSongDisplayName } from "../Util";
 import { TrackStatus, Track, getRunningTrack } from "cody-music";
 import { getItem, setItem } from "../managers/FileManager";
 import { getBestActiveDevice, isLikedSong, requiresSpotifyAccess, requiresSpotifyReAuthentication } from "../managers/PlaylistDataManager";
-import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from "../Constants";
+import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from "../app/utils/view_constants";
 
 export interface Button {
   /**

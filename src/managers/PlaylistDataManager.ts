@@ -21,8 +21,8 @@ import {
   Track,
 } from "cody-music";
 import { commands, window } from "vscode";
-import { RECOMMENDATION_LIMIT, SOFTWARE_TOP_40_PLAYLIST_ID } from "../app/utils/view_constants";
-import { OK_LABEL, SPOTIFY_LIKED_SONGS_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME, YES_LABEL } from "../Constants";
+import { RECOMMENDATION_LIMIT, RECOMMENDATION_PLAYLIST_ID, SOFTWARE_TOP_40_PLAYLIST_ID } from "../app/utils/view_constants";
+import { OK_LABEL, SPOTIFY_LIKED_SONGS_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME, YES_LABEL } from "../app/utils/view_constants";
 import { isResponseOk, softwareGet } from "../HttpClient";
 import MusicMetrics from "../model/MusicMetrics";
 import { MusicCommandManager } from "../music/MusicCommandManager";
@@ -137,11 +137,15 @@ export function updateCachedRunningTrack(track: Track) {
 }
 
 export function updateLikedStatusInPlaylist(playlist_id, track_id, liked_state) {
-  if (playlistTracks[playlist_id]?.length) {
-    const item: PlaylistItem = playlistTracks[playlist_id].find((n) => n.id === track_id);
-    if (item) {
-      item["liked"] = liked_state;
-    }
+  let item: PlaylistItem = playlistTracks[playlist_id]?.length ? playlistTracks[playlist_id].find((n) => n.id === track_id) : null;
+  if (item) {
+    item["liked"] = liked_state;
+  }
+
+  // it might be in the recommendations list
+  item = recommendedTracks.find((n) => n.id === track_id);
+  if (item) {
+    item["liked"] = liked_state;
   }
 }
 
@@ -291,7 +295,7 @@ export async function fetchTracksForPlaylist(playlist_id) {
 
   if (!playlistTracks[playlist_id]) {
     const results: CodyResponse = await getPlaylistTracks(PlayerName.SpotifyWeb, playlist_id);
-    let tracks: PlaylistItem[] = getPlaylistItemTracksFromCodyResponse(results);
+    let tracks: PlaylistItem[] = await getPlaylistItemTracksFromCodyResponse(results);
     // add the playlist id to the tracks
     if (tracks?.length) {
       for await (const t of tracks) {
@@ -399,13 +403,16 @@ export async function getAlbumForTrack(playlistItem: PlaylistItem) {
     let items: PlaylistItem[] = [];
 
     if (albumTracks?.length) {
-      items = albumTracks.map((t, idx) => {
+      let idx = 1;
+      for await (const t of albumTracks) {
+        const playlistItem: PlaylistItem = createPlaylistItemFromTrack(t, idx);
         if (!t["albumName"]) {
           t["albumName"] = albumName;
         }
-        const playlistItem: PlaylistItem = createPlaylistItemFromTrack(t, idx);
-        return playlistItem;
-      });
+        playlistItem["liked"] = await isLikedSong(t);
+        idx++;
+        items.push(playlistItem);
+      }
     }
     populateRecommendationTracks(playlistItem["albumName"], items);
   }
@@ -463,11 +470,16 @@ export async function getRecommendations(
 
     let items: PlaylistItem[] = [];
     if (tracks?.length) {
-      items = tracks.map((t, idx) => {
+      let idx = 1;
+      for await (const t of tracks) {
         const playlistItem: PlaylistItem = createPlaylistItemFromTrack(t, idx);
-        return playlistItem;
-      });
+        playlistItem["playlist_id"] = RECOMMENDATION_PLAYLIST_ID;
+        playlistItem["liked"] = await isLikedSong(t);
+        items.push(playlistItem);
+        idx++;
+      }
     }
+
     return items;
   });
 
@@ -477,9 +489,10 @@ export async function getRecommendations(
 export function populateRecommendationTracks(label: string, tracks: PlaylistItem[]) {
   if (tracks?.length) {
     tracks = tracks.map((t) => {
+      t["playlist_id"] = RECOMMENDATION_PLAYLIST_ID;
       const albumName = getAlbumName(t);
       const description = getArtistAlbumDescription(t);
-      return { ...t, albumName, description, liked: false };
+      return { ...t, albumName, description };
     });
   }
 
@@ -747,46 +760,53 @@ export async function isLikedSong(song: any) {
   if (!song) {
     return false;
   }
-  const songIds = getSongIds(song);
-  if (songIds.length === 0) {
+  const trackId = getSongId(song);
+  if (!trackId) {
     return false;
   }
   if (!spotifyLikedTracks || spotifyLikedTracks.length === 0) {
     // fetch the liked tracks
     await populateLikedSongs();
   }
-  return !!spotifyLikedTracks.find((n) => songIds.find((el) => el === n.id));
+  const foundSong = !!spotifyLikedTracks.find((n) => n.id === trackId);
+  return foundSong;
 }
 
 ////////////////////////////////////////////////////////////////
 // PRIVATE FUNCTIONS
 ////////////////////////////////////////////////////////////////
 
-function getSongIds(song) {
-  const ids = [];
+function getSongId(song) {
   if (song.id) {
-    ids.push(song.id);
+    return createSpotifyIdFromUri(song.id);
+  } else if (song.uri) {
+    return createSpotifyIdFromUri(song.uri);
+  } else if (song.song_id) {
+    return createSpotifyIdFromUri(song.song_id);
   }
-  if (song.song_id) {
-    ids.push(song.song_id);
-  }
-  if (song.uri) {
-    ids.push(song.uri);
-  }
-  return ids;
+  return null;
 }
 
-function getPlaylistItemTracksFromCodyResponse(codyResponse: CodyResponse): PlaylistItem[] {
+export function createSpotifyIdFromUri(id: string) {
+  if (id && id.indexOf("spotify:") === 0) {
+    return id.substring(id.lastIndexOf(":") + 1);
+  }
+  return id;
+}
+
+async function getPlaylistItemTracksFromCodyResponse(codyResponse: CodyResponse): Promise<PlaylistItem[]> {
   let playlistItems: PlaylistItem[] = [];
   if (codyResponse && codyResponse.state === CodyResponseType.Success) {
     let paginationItem: PaginationItem = codyResponse.data;
 
     if (paginationItem && paginationItem.items) {
-      playlistItems = paginationItem.items.map((track: Track, idx: number) => {
-        const position = idx + 1;
-        const playlistItem: PlaylistItem = createPlaylistItemFromTrack(track, position);
-        return playlistItem;
-      });
+      let idx = 1;
+      for await (const t of paginationItem.items) {
+        const playlistItem: PlaylistItem = createPlaylistItemFromTrack(t, idx);
+        playlistItem["liked"] = await isLikedSong(t);
+        playlistItems.push(playlistItem);
+        idx++;
+      }
     }
   }
 

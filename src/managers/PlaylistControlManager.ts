@@ -10,7 +10,7 @@ import {
   transferSpotifyDevice,
 } from "cody-music";
 import { commands, window } from "vscode";
-import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from "../Constants";
+import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from "../app/utils/view_constants";
 import { MusicCommandUtil } from "../music/MusicCommandUtil";
 import { MusicStateManager } from "../music/MusicStateManager";
 import { createSpotifyIdFromUri, createUriFromPlaylistId, createUriFromTrackId, isMac, isWindows } from "../Util";

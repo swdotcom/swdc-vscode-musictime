@@ -36,11 +36,3 @@ export const MUSIC_TIME_EXT_ID = "softwaredotcom.music-time";
 export const CODE_TIME_EXT_ID = "softwaredotcom.swdc-vscode";
 
 export const MUSIC_TIME_TYPE = "musictime";
-
-export const SOFTWARE_TOP_40_PLAYLIST_ID = "6jCkTED0V5NEuM8sKbGG1Z";
-
-export const SPOTIFY_LIKED_SONGS_PLAYLIST_NAME = "Liked Songs";
-export const SPOTIFY_LIKED_SONGS_PLAYLIST_ID = "liked-songs-playlist";
-
-export const PLAYLISTS_PROVIDER = "playlists";
-export const RECOMMENDATIONS_PROVIDER = "recommendations";
