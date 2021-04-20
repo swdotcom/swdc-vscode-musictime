@@ -59,7 +59,9 @@ export function getRepoIdentifierInfo(identifier) {
   if (parts && parts.length > 2 && identifier.indexOf(".git") !== -1) {
     // https://github.com/swdotcom/swdc-atom.git
     // this will return "swdc-atom"
-    repo_name = identifier.split("/").slice(-1)[0].split(".git")[0];
+    try {
+      repo_name = identifier.split("/").slice(-1)[0].split(".git")[0];
+    } catch (e) {}
   }
 
   return { identifier, owner_id, repo_name };

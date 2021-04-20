@@ -40,6 +40,7 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
   if (spotifyUser) {
     spotifyPlayerContext = await getCachedSpotifyPlayerContext();
     currentlyRunningTrack = getCachedRunningTrack();
+
     if (currentlyRunningTrack) {
       currentlyRunningTrack["liked"] = await isLikedSong(currentlyRunningTrack);
     }
@@ -56,7 +57,7 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
       userMusicMetrics = metricsData.userMusicMetrics ?? [];
       averageMusicMetrics = metricsData.averageMusicMetrics ?? [];
     } else if (selectedTabView === "recommendations") {
-      recommendationInfo = getCachedRecommendationInfo() ?? [];
+      recommendationInfo = getCachedRecommendationInfo();
     }
   }
 

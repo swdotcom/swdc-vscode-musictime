@@ -23,6 +23,7 @@ import {
   getBestActiveDevice,
   getCachedRecommendationInfo,
   getCachedUserMetricsData,
+  getCurrentRecommendations,
   getFamiliarRecs,
   getMixedAudioFeatureRecs,
   getRecommendations,
@@ -449,15 +450,15 @@ export function createCommands(
 
   cmds.push(
     commands.registerCommand("musictime.updateSelectedTabView", async (tabView: string) => {
-      if (tabView === "recommendations" && !getCachedRecommendationInfo()) {
-        // populate familiar recs
-        await getFamiliarRecs();
-      } else if (tabView === "metrics") {
-        // populate the user music metrics
-        await getCachedUserMetricsData();
-      }
       updateSelectedTabView(tabView);
-      commands.executeCommand("musictime.refreshMusicTimeView");
+      if (tabView === "recommendations") {
+        // populate familiar recs, but don't refreshMusicTimeView
+        // as the final logic will make that call
+        await getCurrentRecommendations();
+      } else {
+        // refresh the music time view
+        commands.executeCommand("musictime.refreshMusicTimeView");
+      }
     })
   );
 

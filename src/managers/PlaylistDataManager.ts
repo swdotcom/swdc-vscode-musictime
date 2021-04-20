@@ -401,6 +401,20 @@ export async function populateLikedSongs() {
 // RECOMMENDATION TRACKS EXPORTS
 ////////////////////////////////////////////////////////////////
 
+export function getCurrentRecommendations() {
+  if (recommendationMetadata) {
+    getRecommendations(
+      recommendationMetadata.length,
+      recommendationMetadata.seedLimit,
+      recommendationMetadata.seed_genres,
+      recommendationMetadata.features,
+      0
+    );
+  } else {
+    getFamiliarRecs();
+  }
+}
+
 export function getFamiliarRecs() {
   return getRecommendations("Familiar", 5);
 }
@@ -943,7 +957,12 @@ async function getTrackIdsForRecommendations(seedLimit: number = 5, seedTracks =
   seedLimit = offset + seedLimit;
 
   // up until limit
-  seedTracks.push(...spotifyLikedTracks.slice(offset, seedLimit));
+  if (spotifyLikedTracks?.length) {
+    if (offset > spotifyLikedTracks.length - 1) {
+      offset = 0;
+    }
+    seedTracks.push(...spotifyLikedTracks.slice(offset, seedLimit));
+  }
 
   const remainingLen = seedLimit - seedTracks.length;
   if (remainingLen < seedLimit) {

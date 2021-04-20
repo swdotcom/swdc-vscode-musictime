@@ -9,7 +9,9 @@ import IconButton from "@material-ui/core/IconButton";
 import { BeakerIcon, MuiSearchIcon, FilterIcon, MuiRefreshIcon } from "../icons";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Tooltip from "@material-ui/core/Tooltip";
-import { indigo } from "@material-ui/core/colors";
+import { indigo, orange } from "@material-ui/core/colors";
+import Paper from "@material-ui/core/Paper";
+import Link from "@material-ui/core/Link";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -49,6 +51,24 @@ const useStyles = makeStyles((theme) => ({
     marginTop: 10,
     marginRight: 10,
   },
+  paperContent: {
+    background: "transparent",
+    justifyContent: "center",
+    textAlign: "center",
+  },
+  setupDescription: {
+    display: "inline",
+  },
+  link: {
+    paddingLeft: 3,
+    background: "transparent",
+    textDecoration: "none",
+    display: "inline",
+    "&:hover": {
+      color: orange[500],
+      textDecoration: "none",
+    },
+  },
 }));
 
 export default function Recommendations(props) {
@@ -82,6 +102,15 @@ export default function Recommendations(props) {
     const command = {
       action: "musictime.refreshRecommendations",
       command: "command_execute",
+    };
+    props.vscode.postMessage(command);
+  }
+
+  function refreshClick() {
+    const command = {
+      action: "musictime.updateSelectedTabView",
+      command: "command_execute",
+      arguments: ["recommendations"],
     };
     props.vscode.postMessage(command);
   }
@@ -131,7 +160,12 @@ export default function Recommendations(props) {
               <CircularProgress disableShrink />
             </div>
           ) : (
-            <Typography>No tracks available</Typography>
+            <Paper className={classes.paperContent} elevation={0}>
+              <Typography className={classes.setupDescription}>No tracks available. You can try again or check back later.</Typography>
+              <Link href="#" onClick={refreshClick} className={classes.link}>
+                Refresh
+              </Link>
+            </Paper>
           )}
         </Grid>
       </Grid>
