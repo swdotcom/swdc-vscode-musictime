@@ -19,7 +19,7 @@ import MenuItem from "@material-ui/core/MenuItem";
 import Tooltip from "@material-ui/core/Tooltip";
 import Divider from "@material-ui/core/Divider";
 import { BeakerIcon, MuiAlbumIcon, MuiShareIcon, MuiCloseIcon, MuiRemoveCircleIcon, MuiAddCircleIcon } from "../icons";
-import { DARK_BG_COLOR, MAX_MENU_HEIGHT } from "../../utils/view_constants";
+import { DARK_BG_COLOR, MAX_MENU_HEIGHT, RECOMMENDATION_PLAYLIST_ID } from "../../utils/view_constants";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -355,7 +355,14 @@ export default function PlaylistItemNode(props) {
                 <ListItemText primary="Share track" className={classes.listItemText} />
               </ListItem>
 
-              <ListItem key="remove-track" button onClick={removeTrack} disableGutters={true} dense={true}>
+              <ListItem
+                key="remove-track"
+                button
+                onClick={removeTrack}
+                disableGutters={true}
+                dense={true}
+                disabled={!!(item.playlist_id === RECOMMENDATION_PLAYLIST_ID)}
+              >
                 <ListItemIcon className={classes.listItemIcon}>
                   <MuiRemoveCircleIcon />
                 </ListItemIcon>
