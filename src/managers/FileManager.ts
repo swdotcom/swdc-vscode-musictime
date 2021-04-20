@@ -1,5 +1,4 @@
 import { isWindows, getNowTimes, isLinux } from "../Util";
-import TimeData from "../model/TimeData";
 import { v4 as uuidv4 } from "uuid";
 import { commands, Uri, ViewColumn } from "vscode";
 import * as path from "path";
@@ -56,16 +55,8 @@ export function getProjectCodeSummaryFile() {
   return getFile("ProjectCodeSummary.txt");
 }
 
-export function getProjectContributorCodeSummaryFile() {
-  return getFile("ProjectContributorCodeSummary.txt");
-}
-
 export function getDailyReportSummaryFile() {
   return getFile("DailyReportSummary.txt");
-}
-
-export function getTimeDataSummaryFile() {
-  return getFile("projectTimeData.json");
 }
 
 export function getMusicTimeFile() {
@@ -74,14 +65,6 @@ export function getMusicTimeFile() {
 
 export function getMusicTimeMarkdownFile() {
   return getFile("MusicTime.html");
-}
-
-export function getSongSessionDataFile() {
-  return getFile("songSessionData.json");
-}
-
-export function getSessionSummaryFile() {
-  return getFile("sessionSummary.json");
 }
 
 export function getExtensionDisplayName() {
@@ -118,12 +101,6 @@ function getSeparator(name) {
     return `\\${name}`;
   }
   return `/${name}`;
-}
-
-export async function clearTimeDataSummary() {
-  const file = getTimeDataSummaryFile();
-  let payloads: TimeData[] = [];
-  fileIt.writeJsonFileSync(file, payloads, { spaces: 4 });
 }
 
 export function getFileDataAsJson(file) {
