@@ -36,7 +36,7 @@ import { hasSpotifyUser, isPremiumUser, populateSpotifyUser } from "./SpotifyMan
 export async function playSelectedItem(playlistItem: PlaylistItem) {
   updateSelectedTrackItem(playlistItem);
 
-  // // ask to launch web or desktop if neither are running
+  // ask to launch web or desktop if neither are running
   await playInitialization(playMusicSelection);
 }
 

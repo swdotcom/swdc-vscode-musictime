@@ -3,6 +3,9 @@ import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import TreeItem from "@material-ui/lab/TreeItem";
 import PlaylistItemNode from "./playlist_item_node";
 import Typography from "@material-ui/core/Typography";
+import Paper from "@material-ui/core/Paper";
+import Link from "@material-ui/core/Link";
+import { orange } from "@material-ui/core/colors";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -16,11 +19,38 @@ const useStyles = makeStyles((theme: Theme) =>
       justifyContent: "center",
       textAlign: "center",
     },
+    paperContent: {
+      background: "transparent",
+      justifyContent: "center",
+      textAlign: "center",
+    },
+    setupDescription: {
+      display: "inline",
+    },
+    link: {
+      paddingLeft: 3,
+      background: "transparent",
+      textDecoration: "none",
+      display: "inline",
+      "&:hover": {
+        color: orange[500],
+        textDecoration: "none",
+      },
+    },
   })
 );
 
 export default function PlaylistItem(props) {
   const classes = useStyles();
+
+  function refreshClick() {
+    const command = {
+      action: "musictime.updateSelectedTabView",
+      command: "command_execute",
+      arguments: ["playlists"],
+    };
+    props.vscode.postMessage(command);
+  }
 
   return (
     <TreeItem nodeId={props.playlistItem.id} className={classes.root} label={<PlaylistItemNode vscode={props.vscode} item={props.playlistItem} />}>
@@ -36,7 +66,12 @@ export default function PlaylistItem(props) {
       ) : !props.playlistTracks ? (
         <Typography>Loading tracks...</Typography>
       ) : (
-        <TreeItem nodeId={`${props.playlistItem.id}_track_placeholder`} label="No tracks available" />
+        <Paper className={classes.paperContent} elevation={0}>
+          <Typography className={classes.setupDescription}>No tracks available. You can try again or check back later.</Typography>
+          <Link href="#" onClick={refreshClick} className={classes.link}>
+            Refresh
+          </Link>
+        </Paper>
       )}
     </TreeItem>
   );

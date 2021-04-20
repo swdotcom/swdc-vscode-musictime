@@ -348,7 +348,7 @@ export async function fetchTracksForPlaylist(playlist_id) {
       for await (const t of tracks) {
         const albumName = getAlbumName(t);
         const description = getArtistAlbumDescription(t);
-
+        t["playlist_id"] = playlist_id;
         t["albumName"] = albumName;
         t["description"] = description;
         t["liked"] = await isLikedSong(t);

@@ -444,6 +444,7 @@ export function createCommands(
 
   cmds.push(
     commands.registerCommand("musictime.playTrack", async (item: PlaylistItem) => {
+      updateSelectedPlaylistId(item["playlist_id"]);
       playSelectedItem(item);
     })
   );
