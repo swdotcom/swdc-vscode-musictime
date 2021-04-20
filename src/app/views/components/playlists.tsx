@@ -19,7 +19,7 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
     overflowX: "hidden",
     background: "transparent",
-    margin: 0,
+    marginBottom: 5,
   },
   cardHeader: {
     margin: 0,
