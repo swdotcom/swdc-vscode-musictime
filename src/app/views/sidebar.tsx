@@ -14,7 +14,7 @@ import Tab from "@material-ui/core/Tab";
 import Box from "@material-ui/core/Box";
 import UserAccount from "./components/user_account";
 import { TOP_APP_BAR_MIN_HEIGHT, BOTTOM_BAR_HEIGHT_MIN, BOTTOM_BAR_HEIGHT_MAX, GETTING_STARTED_MIN_HEIGHT } from "../utils/view_constants";
-import { deepPurple, grey, orange } from "@material-ui/core/colors";
+import { deepPurple, grey } from "@material-ui/core/colors";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -83,7 +83,7 @@ export default function SideBar(props) {
             "Helvetica Neue",
             "sans-serif",
           ].join(","),
-          fontSize: 12,
+          fontSize: 11,
           fontWeightLight: 400,
           fontWeightRegular: 500,
           fontWeightMedium: 600,
@@ -91,9 +91,16 @@ export default function SideBar(props) {
         palette: {
           type: prefersDarkMode ? "dark" : "light",
           primary: deepPurple,
-          secondary: orange,
+          secondary: grey,
         },
         overrides: {
+          MuiAccordionSummary: {
+            content: {
+              "&$expanded": {
+                margin: 0,
+              },
+            },
+          },
           MuiGrid: {
             root: {
               flexGrow: 1,

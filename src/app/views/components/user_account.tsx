@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme) => ({
   root: {
     flexGrow: 1,
     margin: 0,
-    padding: 0,
+    padding: 2,
     width: "100%",
     color: "white",
     position: "relative",
@@ -140,11 +140,12 @@ export default function UserAccount(props) {
         <AccordionSummary
           classes={{ root: classes.root, content: classes.root }}
           expandIcon={<ExpandMoreIcon style={{ color: "white" }} />}
+          IconButtonProps={{ edge: false }}
           aria-controls="panel1c-content"
           id="panel1c-header"
           onClick={props.expandUserAccountCallback}
         >
-          <List disablePadding={true} dense={true} className={classes.root}>
+          <List className={classes.root}>
             <ListItem key="account_manage_item" disableGutters={true} dense={true}>
               <ListItemIcon className={classes.listItemIcon}>
                 {!stateData.registered ? null : stateData.authType === "github" ? (

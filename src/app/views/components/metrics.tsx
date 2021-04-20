@@ -5,10 +5,9 @@ import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 import MetricItemNode from "./metric_item_node";
 import Typography from "@material-ui/core/Typography";
-import Grid from "@material-ui/core/Grid";
 import MetricsSetup from "./metrics_setup";
 import { MuiTuneIcon, MuiEmojiEventsIcon } from "../icons";
-import { indigo, grey, orange } from "@material-ui/core/colors";
+import { grey, orange } from "@material-ui/core/colors";
 import Tooltip from "@material-ui/core/Tooltip";
 import IconButton from "@material-ui/core/IconButton";
 import Box from "@material-ui/core/Box";
@@ -30,8 +29,13 @@ const useStyles = makeStyles((theme) => {
       padding: 2,
     },
     cardHeaderText: {
-      color: indigo[300],
+      color: "#FFF",
       fontWeight: 500,
+    },
+    descriptionText: {
+      color: "#919EAB",
+      fontWeight: 400,
+      fontSize: 11,
     },
     resetFeaturesText: {
       fontWeight: 300,
@@ -153,49 +157,38 @@ export default function Metrics(props) {
       {props.stateData.codeTimeInstalled ? (
         <div>
           {tabView === 0 ? (
-            <Grid container>
-              <Grid item key={`metrics-grid-time-metrics-container`} xs={12}>
-                {props.stateData.userMusicMetrics && props.stateData.userMusicMetrics.length ? (
-                  props.stateData.userMusicMetrics.map((item, index) => {
-                    return <MetricItemNode key={`metric-item-node-idx-${index}`} vscode={props.vscode} stateData={props.stateData} item={item} />;
-                  })
-                ) : !liveAudioFeatures ? (
-                  <Typography>Loading metrics...</Typography>
-                ) : (
-                  <Paper className={classes.paperContent} elevation={0}>
-                    <Typography className={classes.setupDescription}>No data available yet. You can try again or check back later.</Typography>
-                    <Link href="#" onClick={refreshClick} className={classes.link}>
-                      Refresh
-                    </Link>
-                  </Paper>
-                )}
-              </Grid>
-            </Grid>
+            <>
+              <Typography className={classes.descriptionText}>
+                As you listen to music while you code, Music Time ranks your top songs by comparing your coding metrics with your listening history.
+              </Typography>
+              {props.stateData.userMusicMetrics && props.stateData.userMusicMetrics.length ? (
+                props.stateData.userMusicMetrics.map((item, index) => {
+                  return <MetricItemNode key={`metric-item-node-idx-${index}`} vscode={props.vscode} stateData={props.stateData} item={item} />;
+                })
+              ) : !liveAudioFeatures ? (
+                <Typography>Loading metrics...</Typography>
+              ) : (
+                <Paper className={classes.paperContent} elevation={0}>
+                  <Typography className={classes.setupDescription}>No data available yet. You can try again or check back later.</Typography>
+                  <Link href="#" onClick={refreshClick} className={classes.link}>
+                    Refresh
+                  </Link>
+                </Paper>
+              )}
+            </>
           ) : tabView === 1 ? (
-            <Grid container>
-              <Grid item key={`metrics-grid-time-metric-dashboard-container`} xs={12}>
-                <MetricAudioDashboard
-                  vscode={props.vscode}
-                  stateData={props.stateData}
-                  audioFeatures={liveAudioFeatures}
-                  resetAudioFeatures={resetAudioFeaturesHandler}
-                />
-              </Grid>
-            </Grid>
+            <MetricAudioDashboard
+              vscode={props.vscode}
+              stateData={props.stateData}
+              audioFeatures={liveAudioFeatures}
+              resetAudioFeatures={resetAudioFeaturesHandler}
+            />
           ) : (
-            <Grid container>
-              <Grid item key={`metrics-grid-time-metrics-reset-audio`} xs={12}>
-                <Typography className={classes.resetFeaturesText}>Resetting your audio metric averages...</Typography>
-              </Grid>
-            </Grid>
+            <Typography className={classes.resetFeaturesText}>Resetting your audio metric averages...</Typography>
           )}
         </div>
       ) : (
-        <Grid container>
-          <Grid item key={`metrics-grid-time-metric-setup-container`} xs={12}>
-            <MetricsSetup vscode={props.vscode} stateData={props.stateData} />
-          </Grid>
-        </Grid>
+        <MetricsSetup vscode={props.vscode} stateData={props.stateData} />
       )}
     </Card>
   );

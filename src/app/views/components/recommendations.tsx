@@ -9,7 +9,7 @@ import IconButton from "@material-ui/core/IconButton";
 import { BeakerIcon, MuiSearchIcon, FilterIcon, MuiRefreshIcon } from "../icons";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Tooltip from "@material-ui/core/Tooltip";
-import { indigo, orange } from "@material-ui/core/colors";
+import { orange } from "@material-ui/core/colors";
 import Paper from "@material-ui/core/Paper";
 import Link from "@material-ui/core/Link";
 
@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme) => ({
     overflow: "hidden",
   },
   cardHeaderText: {
-    color: indigo[300],
+    color: "#FFF",
     fontWeight: 500,
   },
   cardHeaderIcon: {

@@ -10,7 +10,7 @@ import Tooltip from "@material-ui/core/Tooltip";
 import Divider from "@material-ui/core/Divider";
 import Checkbox from "@material-ui/core/Checkbox";
 import { BeakerIcon, MuiRefreshIcon } from "../icons";
-import { indigo, grey } from "@material-ui/core/colors";
+import { grey } from "@material-ui/core/colors";
 import FormGroup from "@material-ui/core/FormGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormControl from "@material-ui/core/FormControl";
@@ -38,11 +38,11 @@ const useStyles = makeStyles((theme) => ({
     overflow: "hidden",
   },
   cardHeaderText: {
-    color: indigo[300],
+    color: "#FFF",
     fontWeight: 500,
   },
   cardSubHeaderText: {
-    fontWeight: 300,
+    fontWeight: 400,
     color: grey[500],
     fontSize: 12,
   },
@@ -254,6 +254,7 @@ export default function MetricAudioDashboard(props) {
                             value="end"
                             control={
                               <Checkbox
+                                color="primary"
                                 key={`audio-form-control-checkbox-${key}`}
                                 edge="start"
                                 onClick={handleToggle(key)}
