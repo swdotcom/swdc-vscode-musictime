@@ -277,7 +277,7 @@ export default function PlaylistItemNode(props) {
       {item.type === "track" && (
         <Grid item xs={3} className={classes.trackItemGridItem}>
           <Fade in={show}>
-            <Grid container style={{ padding: 1, textAlign: "center" }}>
+            <Grid container alignItems="center" style={{ padding: 1, height: "100%", textAlign: "center" }}>
               <Grid item xs>
                 <Tooltip title={item.liked ? "Remove from liked playlist" : "Add to your liked playlist"}>
                   <IconButton hidden={true} size="small" style={{ color: deepPurple[300] }} onClick={likeTrackHandler} aria-label="Like button">

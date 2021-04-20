@@ -14,6 +14,9 @@ const useStyles = makeStyles((theme: Theme) =>
       margin: 0,
       padding: 0,
     },
+    loading: {
+      padding: theme.spacing(2),
+    },
     loadingIcon: {
       display: "flex",
       justifyContent: "center",
@@ -64,7 +67,7 @@ export default function PlaylistItem(props) {
           }
         })
       ) : !props.playlistTracks ? (
-        <Typography>Loading tracks...</Typography>
+        <Typography className={classes.loading}>Loading tracks...</Typography>
       ) : (
         <Paper className={classes.paperContent} elevation={0}>
           <Typography className={classes.setupDescription}>No tracks available. You can try again or check back later.</Typography>

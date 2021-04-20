@@ -9,7 +9,6 @@ import { BeakerIcon, MuiEmojiEventsIcon } from "../icons";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 import Typography from "@material-ui/core/Typography";
-import { indigo } from "@material-ui/core/colors";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -26,7 +25,7 @@ const useStyles = makeStyles((theme) => ({
     padding: 2,
   },
   cardHeaderText: {
-    color: indigo[300],
+    color: "#FFF",
     fontWeight: 500,
   },
   listItemIcon: {
