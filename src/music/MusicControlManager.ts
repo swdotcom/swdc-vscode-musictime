@@ -366,6 +366,15 @@ export class MusicControlManager {
       return;
     }
 
+    let isRecommendationTrack = false;
+    let selectedPlaylistId = getSelectedPlaylistId();
+    if (!selectedPlaylistId) {
+      selectedPlaylistId = track["playlist_id"];
+    }
+    if (selectedPlaylistId === RECOMMENDATION_PLAYLIST_ID) {
+      isRecommendationTrack = true;
+    }
+
     // save the spotify track to the users liked songs playlist
     if (liked) {
       await saveToSpotifyLiked([trackId]);
@@ -377,11 +386,7 @@ export class MusicControlManager {
       removeTrackFromLikedPlaylist(trackId);
     }
 
-    let selectedPlaylistId = getSelectedPlaylistId();
-    if (!selectedPlaylistId) {
-      selectedPlaylistId = track["playlist_id"];
-    }
-    if (selectedPlaylistId === RECOMMENDATION_PLAYLIST_ID) {
+    if (isRecommendationTrack) {
       updateLikedStatusInPlaylist(selectedPlaylistId, trackId, liked);
       commands.executeCommand("musictime.refreshMusicTimeView", "recommendations", selectedPlaylistId);
     } else {

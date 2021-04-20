@@ -100,6 +100,7 @@ export function removeTrackFromLikedPlaylist(trackId) {
 
 export function addTrackToLikedPlaylist(playlistItem: PlaylistItem) {
   playlistItem["liked"] = true;
+  playlistItem["playlist_id"] = SPOTIFY_LIKED_SONGS_PLAYLIST_ID;
   spotifyLikedTracks.unshift(playlistItem);
 }
 

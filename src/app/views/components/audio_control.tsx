@@ -23,7 +23,7 @@ import {
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
 import { grey, deepPurple } from "@material-ui/core/colors";
-import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
+import Box from "@material-ui/core/Box";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import Divider from "@material-ui/core/Divider";
@@ -45,18 +45,26 @@ const useStyles = makeStyles((theme) => ({
     marginRight: 10,
     marginBottom: 0,
     marginTop: 0,
+    position: "relative",
   },
   listItemIcon: {
     minWidth: "28px",
   },
   menuHeaderPrimary: {
+    wrap: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
     color: deepPurple[200],
     marginRight: 10,
   },
   menuHeaderSecondary: {
+    wrap: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
     color: grey[500],
     fontWeight: 300,
     fontSize: 12,
+    marginRight: 10,
   },
   cardHeaderAction: {
     color: theme.palette.secondary.main,
@@ -353,17 +361,17 @@ export default function AudioControl(props) {
               }
             />
           </ListItem>
-          <ListItemSecondaryAction style={{ position: "absolute", right: 2, top: 10 }}>
-            <Tooltip title={liked ? "Unlike" : "Like"}>
-              <IconButton edge="end" onClick={updateLikedClick}>
-                {liked ? <MuiFavoriteIcon fontSize="small" /> : <MuiFavoriteBorderIcon fontSize="small" />}
-              </IconButton>
-            </Tooltip>
-            <IconButton aria-label="Close" onClick={handleClose} edge="end">
-              <MuiCloseIcon fontSize="small" />
-            </IconButton>
-          </ListItemSecondaryAction>
         </List>
+        <Box style={{ position: "absolute", right: 4, top: -6 }}>
+          <Tooltip title={liked ? "Unlike" : "Like"}>
+            <IconButton edge="end" onClick={updateLikedClick}>
+              {liked ? <MuiFavoriteIcon fontSize="small" /> : <MuiFavoriteBorderIcon fontSize="small" />}
+            </IconButton>
+          </Tooltip>
+          <IconButton aria-label="Close" onClick={handleClose} edge="end">
+            <MuiCloseIcon fontSize="small" />
+          </IconButton>
+        </Box>
       </MenuItem>
       <Divider />
       <Grid container>
