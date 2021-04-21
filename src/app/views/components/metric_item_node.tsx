@@ -4,11 +4,12 @@ import List from "@material-ui/core/List";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListItem from "@material-ui/core/ListItem";
 import PropTypes from "prop-types";
-import Grid from "@material-ui/core/Grid";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
 import { grey } from "@material-ui/core/colors";
 import { SpotifyIcon } from "../icons";
 import Tooltip from "@material-ui/core/Tooltip";
 import MetricItemTooltip from "./metric_item_tooltip";
+import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import { DARK_BG_COLOR } from "../../utils/view_constants";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -29,12 +30,18 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     mainSecondaryListText: {
       fontWeight: 600,
-      color: "#FFF",
     },
     statItem: {
       display: "flex",
       justifyContent: "right",
       textAlign: "right",
+    },
+    listItemIcon: {
+      display: "flex",
+      justifyContent: "center",
+      textAlign: "center",
+      marginRight: 0,
+      marginLeft: 0,
     },
   })
 );
@@ -61,34 +68,23 @@ export default function MetricItemNode(props) {
   }
 
   return (
-    <Grid key="metric_node_grid" container direction="row" wrap="nowrap" className={classes.root}>
-      <Grid key="metric_node_item" item xs={7}>
+    <List disablePadding={true} dense={true}>
+      <ListItem key={`metric_rank_item_${props.item.song_name}`} disableGutters={true} dense={true} button onClick={playTrack}>
+        <ListItemIcon className={classes.listItemIcon}>
+          <SpotifyIcon />
+        </ListItemIcon>
         <HtmlTooltip placement="bottom" title={<MetricItemTooltip vscode={props.vscode} item={props.item} />}>
-          <List disablePadding={true} dense={true}>
-            <ListItem key={props.item.song_name} button disableGutters={true} dense={true} onClick={playTrack}>
-              <SpotifyIcon />
-              <ListItemText
-                style={{ whiteSpace: "nowrap" }}
-                primary={props.item.song_name}
-                secondary={props.item.primary_artist_name}
-                classes={{ primary: classes.labelText, secondary: classes.labelText }}
-              />
-            </ListItem>
-          </List>
+          <ListItemText
+            primary={props.item.song_name}
+            secondary={props.item.primary_artist_name}
+            classes={{ primary: classes.primaryListText, secondary: classes.mainSecondaryListText }}
+          />
         </HtmlTooltip>
-      </Grid>
-      <Grid item key={`metric-grid-item-rank-${props.item.song_rank}`} xs={5}>
-        <List disablePadding={true} dense={true}>
-          <ListItem key={props.item.song_rank} disableGutters={true} dense={true} className={classes.statItem}>
-            <ListItemText
-              primary="rank"
-              secondary={props.item.song_rank}
-              classes={{ primary: classes.primaryListText, secondary: classes.mainSecondaryListText }}
-            />
-          </ListItem>
-        </List>
-      </Grid>
-    </Grid>
+        <ListItemSecondaryAction className={classes.statItem}>
+          <ListItemText primary="rank" secondary={props.item.song_rank} classes={{ primary: classes.labelText, secondary: classes.labelText }} />
+        </ListItemSecondaryAction>
+      </ListItem>
+    </List>
   );
 }
 

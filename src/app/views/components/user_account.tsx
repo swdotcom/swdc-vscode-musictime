@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme) => ({
   root: {
     flexGrow: 1,
     margin: 0,
-    padding: 2,
+    padding: 0,
     width: "100%",
     color: "white",
     position: "relative",

@@ -19,6 +19,7 @@ import {
   MuiAddCircleIcon,
   MuiFavoriteIcon,
   MuiFavoriteBorderIcon,
+  MuiRefreshIcon,
 } from "../icons";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
@@ -321,6 +322,14 @@ export default function AudioControl(props) {
     props.handleCloseCallback();
   }
 
+  function refreshSongInfoClick() {
+    const command = {
+      action: "musictime.songTitleRefresh",
+      command: "command_execute",
+    };
+    props.vscode.postMessage(command);
+  }
+
   return (
     <Menu
       id="main_audio_options_menu"
@@ -363,6 +372,11 @@ export default function AudioControl(props) {
           </ListItem>
         </List>
         <Box style={{ position: "absolute", right: 4, top: -6 }}>
+          <Tooltip title="Refresh song information">
+            <IconButton edge="end" onClick={refreshSongInfoClick}>
+              <MuiRefreshIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
           <Tooltip title={liked ? "Unlike" : "Like"}>
             <IconButton edge="end" onClick={updateLikedClick}>
               {liked ? <MuiFavoriteIcon fontSize="small" /> : <MuiFavoriteBorderIcon fontSize="small" />}
