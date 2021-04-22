@@ -23,12 +23,12 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
     //
   }
 
-  public async refresh(tab_view = undefined, playlist_id = undefined) {
+  public async refresh(tab_view = undefined, playlist_id = undefined, loading = false) {
     if (!this._webview) {
       // its not available to refresh yet
       return;
     }
-    this._webview.webview.html = await this.getReactHtml(tab_view, playlist_id);
+    this._webview.webview.html = await this.getReactHtml(tab_view, playlist_id, loading);
   }
 
   private _onDidClose = new EventEmitter<void>();
@@ -72,7 +72,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
     // make sure the jwt is available. The session info may have
     // been removed while this view was open.
     if ((getItem("jwt") && musicInitialized) || tries <= 0) {
-      this._webview.webview.html = await this.getReactHtml();
+      this._webview.webview.html = await this.getReactHtml(null, null, true);
     } else {
       tries--;
       setTimeout(() => {
@@ -81,10 +81,10 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
     }
   }
 
-  private async getReactHtml(tab_view = undefined, playlist_id = undefined): Promise<string> {
+  private async getReactHtml(tab_view = undefined, playlist_id = undefined, loading = false): Promise<string> {
     const reactAppPathOnDisk = Uri.file(path.join(__dirname, "webviewSidebar.js"));
     const reactAppUri = reactAppPathOnDisk.with({ scheme: "vscode-resource" });
-    const stateData = JSON.stringify(await getReactData(tab_view, playlist_id));
+    const stateData = JSON.stringify(await getReactData(tab_view, playlist_id, loading));
 
     return `<!DOCTYPE html>
 		<html lang="en">

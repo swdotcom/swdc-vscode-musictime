@@ -1,3 +1,4 @@
+import { commands } from "vscode";
 import { getCurrentColorKind } from "../extension";
 import { getItem } from "../managers/FileManager";
 import {
@@ -19,7 +20,7 @@ import { getSlackWorkspaces, hasSlackWorkspaces } from "../managers/SlackManager
 import { getConnectedSpotifyUser } from "../managers/SpotifyManager";
 import { isCodeTimeTimeInstalled } from "../Util";
 
-export async function getReactData(tab_view = undefined, playlist_id = undefined) {
+export async function getReactData(tab_view = undefined, playlist_id = undefined, loading = false) {
   const name = getItem("name");
   const authType = getItem("authType");
   const spotifyUser = getConnectedSpotifyUser();
@@ -45,24 +46,22 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
       currentlyRunningTrack["liked"] = await isLikedSong(currentlyRunningTrack);
     }
 
-    if (selectedTabView === "playlists") {
-      likedSongsTracks = getCachedLikedSongsTracks();
-      playlistTracks = getCachedPlaylistTracks();
-      softwareTop40Playlist = await getCachedSoftwareTop40Playlist();
-      spotifyPlaylists = await getCachedSpotifyPlaylists();
-
-      selectedPlaylistId = playlist_id ? playlist_id : getSelectedPlaylistId();
-    } else if (selectedTabView === "metrics") {
-      const metricsData = await getCachedUserMetricsData();
-      userMusicMetrics = metricsData.userMusicMetrics ?? [];
-      averageMusicMetrics = metricsData.averageMusicMetrics ?? [];
-    } else if (selectedTabView === "recommendations") {
-      recommendationInfo = getCachedRecommendationInfo();
+    if (!loading) {
+      const data = await getViewData(selectedTabView, playlist_id, spotifyUser);
+      likedSongsTracks = data.likedSongsTracks;
+      playlistTracks = data.playlistTracks;
+      spotifyPlaylists = data.spotifyPlaylists;
+      softwareTop40Playlist = data.softwareTop40Playlist;
+      selectedPlaylistId = data.selectedPlaylistId;
+      userMusicMetrics = data.userMusicMetrics;
+      averageMusicMetrics = data.averageMusicMetrics;
+      recommendationInfo = data.recommendationInfo;
     }
   }
 
   const reactData = {
     authType,
+    loading,
     registered: !!name,
     email: name,
     spotifyPlaylists,
@@ -85,5 +84,54 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
     codeTimeInstalled: isCodeTimeTimeInstalled(),
     skipSlackConnect: getItem("vscode_CtskipSlackConnect"),
   };
+  if (loading) {
+    const getDataPromise = getViewData(selectedTabView, playlist_id, spotifyUser);
+    // call this again with loading as false
+    setTimeout(async () => {
+      await getDataPromise;
+      commands.executeCommand("musictime.refreshMusicTimeView", "playlists");
+    }, 2000);
+  }
   return reactData;
+}
+
+async function getViewData(selectedTabView, playlist_id, spotifyUser) {
+  let likedSongsTracks = [];
+  let playlistTracks = [];
+  let spotifyPlaylists = [];
+  let softwareTop40Playlist = undefined;
+  let selectedPlaylistId = undefined;
+  let userMusicMetrics = [];
+  let averageMusicMetrics = undefined;
+  let recommendationInfo = [];
+
+  if (spotifyUser) {
+    if (selectedTabView === "playlists") {
+      likedSongsTracks = getCachedLikedSongsTracks();
+      playlistTracks = getCachedPlaylistTracks();
+      const softwareTop40PlaylistP = getCachedSoftwareTop40Playlist();
+      const spotifyPlaylistsP = getCachedSpotifyPlaylists();
+      softwareTop40Playlist = await softwareTop40PlaylistP;
+      spotifyPlaylists = await spotifyPlaylistsP;
+
+      selectedPlaylistId = playlist_id ? playlist_id : getSelectedPlaylistId();
+    } else if (selectedTabView === "metrics") {
+      const metricsData = await getCachedUserMetricsData();
+      userMusicMetrics = metricsData.userMusicMetrics ?? [];
+      averageMusicMetrics = metricsData.averageMusicMetrics ?? [];
+    } else if (selectedTabView === "recommendations") {
+      recommendationInfo = getCachedRecommendationInfo();
+    }
+  }
+
+  return {
+    likedSongsTracks,
+    playlistTracks,
+    spotifyPlaylists,
+    softwareTop40Playlist,
+    selectedPlaylistId,
+    userMusicMetrics,
+    averageMusicMetrics,
+    recommendationInfo,
+  };
 }

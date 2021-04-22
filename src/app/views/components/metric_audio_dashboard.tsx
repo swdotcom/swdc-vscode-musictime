@@ -140,7 +140,7 @@ export default function MetricAudioDashboard(props) {
   };
 
   function updateFeature(key, value) {
-    const featureInfo: any = featuresInfo.find((n) => n.key === key);
+    const featureInfo: any = featuresInfo?.find((n) => n.key === key);
     if (!featureInfo) {
       return;
     }
@@ -240,7 +240,7 @@ export default function MetricAudioDashboard(props) {
           {props.audioFeatures &&
             Object.keys(props.audioFeatures).length &&
             Object.keys(props.audioFeatures).map((key, index) => {
-              const featureInfo: any = featuresInfo.find((n) => n.key === key);
+              const featureInfo: any = featuresInfo?.find((n) => n.key === key);
               const defaultVal = parseFloat(props.audioFeatures[key].toFixed(2));
               return (
                 <Grid item xs={12} key={`audio-grid-item-${key}`}>

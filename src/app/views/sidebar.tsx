@@ -15,6 +15,7 @@ import Box from "@material-ui/core/Box";
 import UserAccount from "./components/user_account";
 import { TOP_APP_BAR_MIN_HEIGHT, BOTTOM_BAR_HEIGHT_MIN, BOTTOM_BAR_HEIGHT_MAX, GETTING_STARTED_MIN_HEIGHT } from "../utils/view_constants";
 import { deepPurple, grey } from "@material-ui/core/colors";
+import { Typography } from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -247,19 +248,25 @@ export default function SideBar(props) {
           </Grid>
         )}
 
-        {props.stateData.selectedTabView === "playlists" && props.stateData.spotifyUser && (
+        {props.stateData.loading && (
+          <Grid item key="playlists-grid-item" xs={12}>
+            <Typography style={{ marginTop: 15, marginLeft: 10 }}>Loading playlists...</Typography>
+          </Grid>
+        )}
+
+        {!props.stateData.loading && props.stateData.selectedTabView === "playlists" && props.stateData.spotifyUser && (
           <Grid item key="playlists-grid-item" xs={12}>
             <Playlists vscode={props.vscode} stateData={props.stateData} />
           </Grid>
         )}
 
-        {props.stateData.selectedTabView === "recommendations" && props.stateData.spotifyUser && (
+        {!props.stateData.loading && props.stateData.selectedTabView === "recommendations" && props.stateData.spotifyUser && (
           <Grid item key="recommendations-grid-item" xs={12}>
             <Recommendations vscode={props.vscode} stateData={props.stateData} />
           </Grid>
         )}
 
-        {props.stateData.selectedTabView === "metrics" && props.stateData.spotifyUser && (
+        {!props.stateData.loading && props.stateData.selectedTabView === "metrics" && props.stateData.spotifyUser && (
           <Grid item key="metrics-grid-item" xs={12}>
             <Metrics vscode={props.vscode} stateData={props.stateData} />
           </Grid>

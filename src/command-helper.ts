@@ -375,8 +375,8 @@ export function createCommands(
   );
 
   cmds.push(
-    commands.registerCommand("musictime.refreshMusicTimeView", (tab_view: undefined, playlist_id: undefined) => {
-      mtWebviewSidebar.refresh(tab_view, playlist_id);
+    commands.registerCommand("musictime.refreshMusicTimeView", (tab_view: undefined, playlist_id: undefined, loading = false) => {
+      mtWebviewSidebar.refresh(tab_view, playlist_id, loading);
     })
   );
 

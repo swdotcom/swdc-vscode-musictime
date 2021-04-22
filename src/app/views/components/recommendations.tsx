@@ -34,7 +34,6 @@ const useStyles = makeStyles((theme) => ({
     overflow: "hidden",
   },
   cardHeaderText: {
-    color: "#FFF",
     fontWeight: 500,
   },
   cardHeaderIcon: {

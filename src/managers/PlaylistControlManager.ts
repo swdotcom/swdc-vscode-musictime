@@ -262,7 +262,7 @@ export async function playPreviousLikedSongs() {
 function getNextOrPrevLikedIndex(get_next: boolean) {
   const likedSongs: PlaylistItem[] = getCachedLikedSongsTracks();
   const selectedTrack = getSelectedTrackItem();
-  const nextIdx = likedSongs.findIndex((n: PlaylistItem) => n.id === selectedTrack.id);
+  const nextIdx = likedSongs?.findIndex((n: PlaylistItem) => n.id === selectedTrack.id);
   if (get_next) {
     // get next
     if (nextIdx + 1 >= likedSongs.length) {

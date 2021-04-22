@@ -144,7 +144,7 @@ export function updateLikedStatusInPlaylist(playlist_id, track_id, liked_state) 
   }
 
   // it might be in the recommendations list
-  item = recommendationInfo.tracks.find((n) => n.id === track_id);
+  item = recommendationInfo.tracks?.find((n) => n.id === track_id);
   if (item) {
     item["liked"] = liked_state;
   }
@@ -223,7 +223,7 @@ export function getPlaylistById(playlist_id) {
   if (SOFTWARE_TOP_40_PLAYLIST_ID === playlist_id) {
     return softwareTop40Playlist;
   }
-  return spotifyPlaylists.find((n) => n.id === playlist_id);
+  return spotifyPlaylists?.find((n) => n.id === playlist_id);
 }
 
 export function isLikedSongPlaylistSelected() {
@@ -657,19 +657,19 @@ export async function showReconnectPrompt(email) {
  * Either of these values can be null
  */
 export function getDeviceSet() {
-  const webPlayer = currentDevices.find((d: PlayerDevice) => d.name.toLowerCase().includes("web player"));
+  const webPlayer = currentDevices?.find((d: PlayerDevice) => d.name.toLowerCase().includes("web player"));
 
-  const desktop = currentDevices.find((d: PlayerDevice) => d.type.toLowerCase() === "computer" && !d.name.toLowerCase().includes("web player"));
+  const desktop = currentDevices?.find((d: PlayerDevice) => d.type.toLowerCase() === "computer" && !d.name.toLowerCase().includes("web player"));
 
-  const activeDevice = currentDevices.find((d: PlayerDevice) => d.is_active);
+  const activeDevice = currentDevices?.find((d: PlayerDevice) => d.is_active);
 
-  const activeComputerDevice = currentDevices.find((d: PlayerDevice) => d.is_active && d.type.toLowerCase() === "computer");
+  const activeComputerDevice = currentDevices?.find((d: PlayerDevice) => d.is_active && d.type.toLowerCase() === "computer");
 
-  const activeWebPlayerDevice = currentDevices.find(
+  const activeWebPlayerDevice = currentDevices?.find(
     (d: PlayerDevice) => d.is_active && d.type.toLowerCase() === "computer" && d.name.toLowerCase().includes("web player")
   );
 
-  const activeDesktopPlayerDevice = currentDevices.find(
+  const activeDesktopPlayerDevice = currentDevices?.find(
     (d: PlayerDevice) => d.is_active && d.type.toLowerCase() === "computer" && !d.name.toLowerCase().includes("web player")
   );
 
@@ -832,7 +832,7 @@ export async function isLikedSong(song: any) {
     // fetch the liked tracks
     await populateLikedSongs();
   }
-  const foundSong = !!spotifyLikedTracks.find((n) => n.id === trackId);
+  const foundSong = !!spotifyLikedTracks?.find((n) => n.id === trackId);
   return foundSong;
 }
 

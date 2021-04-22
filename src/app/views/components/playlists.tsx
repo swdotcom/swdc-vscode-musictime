@@ -26,7 +26,6 @@ const useStyles = makeStyles((theme) => ({
     padding: 2,
   },
   cardHeaderText: {
-    color: "#FFF",
     fontWeight: 500,
   },
   cardHeaderIcon: {
