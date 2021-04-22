@@ -27,6 +27,11 @@ const useStyles = makeStyles((theme) => ({
     fontSize: 10,
     color: "white",
   },
+  recommendationsTab: {
+    fontSize: 10,
+    color: "white",
+    minWidth: 120,
+  },
   tabIndicator: {
     backgroundColor: "#ffffff",
   },
@@ -227,7 +232,7 @@ export default function SideBar(props) {
           >
             <Tab value="playlists" label="Playlists" className={classes.tab} />
 
-            <Tab value="recommendations" label="Recommendations" className={classes.tab} />
+            <Tab value="recommendations" label="Recommendations" className={classes.recommendationsTab} />
 
             <Tab value="metrics" label="Metrics" className={classes.tab} />
           </Tabs>
