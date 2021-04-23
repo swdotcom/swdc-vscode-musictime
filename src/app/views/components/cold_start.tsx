@@ -25,12 +25,6 @@ const useStyles = makeStyles((theme) => ({
     marginTop: 10,
     marginRight: 10,
   },
-  secondaryAction: {
-    position: "absolute",
-    right: 0,
-    padding: 0,
-    margin: 0,
-  },
   listItemIcon: {
     display: "flex",
     justifyContent: "center",

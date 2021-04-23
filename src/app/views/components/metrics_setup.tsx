@@ -25,11 +25,7 @@ const useStyles = makeStyles((theme) => ({
   setupHeader: {
     color: "#ffffff",
     display: "inline",
-    justifyContent: "center",
-    textAlign: "center",
     fontStyle: "bold",
-    paddingBottom: 0,
-    marginBottom: 0,
   },
   setupDescription: {
     color: grey[500],
@@ -63,10 +59,6 @@ const useStyles = makeStyles((theme) => ({
       textDecoration: "none",
     },
   },
-  centeredContent: {
-    justifyContent: "center",
-    textAlign: "center",
-  },
 }));
 
 export default function MetricsSetup(props) {
@@ -93,10 +85,10 @@ export default function MetricsSetup(props) {
       <Grid item key={`metrics-setup-cold-start-container`} xs={12}>
         <MetricsColdStart vscode={props.vscode} stateData={props.stateData} />
       </Grid>
-      <Grid item key={`metrics-setup-getting-started`} xs={12} style={{ justifyContent: "center", textAlign: "center", padding: 10 }}>
+      <Grid item key={`metrics-setup-getting-started`} xs={12} style={{ padding: 4 }}>
         <Card className={classes.cardRoot}>
-          <CardContent className={classes.setupHeader}>
-            <Typography>What's your best music for coding?</Typography>
+          <CardContent>
+            <Typography className={classes.setupHeader}>What's your best music for coding?</Typography>
           </CardContent>
           <CardContent>
             <Typography className={classes.setupDescription}>
@@ -112,7 +104,7 @@ export default function MetricsSetup(props) {
             <Typography className={classes.setupDescription}>Trust and data privacy matters.</Typography>
             <Typography className={classes.setupDescriptionHighlight}>Your data is always private</Typography>
           </CardContent>
-          <CardContent className={classes.centeredContent}>
+          <CardContent>
             <Typography className={classes.setupDescription}>Already installed?</Typography>
             <Link href="#" onClick={refreshClick} className={classes.link}>
               Refresh

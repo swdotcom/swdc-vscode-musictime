@@ -7,6 +7,10 @@ import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import Link from "@material-ui/core/Link";
 import Grid from "@material-ui/core/Grid";
+import Box from "@material-ui/core/Box";
+import Tooltip from "@material-ui/core/Tooltip";
+import IconButton from "@material-ui/core/IconButton";
+import { MuiRefreshIcon } from "../icons";
 import { deepPurple, grey, blue } from "@material-ui/core/colors";
 
 const useStyles = makeStyles((theme) => ({
@@ -89,7 +93,7 @@ export default function Setup(props) {
     props.vscode.postMessage(command);
   }
 
-  function refreshSpotifyHandler() {
+  function refreshHandler() {
     const command = {
       action: "musictime.refreshMusicTimeView",
       command: "command_execute",
@@ -103,6 +107,13 @@ export default function Setup(props) {
         <Paper className={classes.setup} elevation={0}>
           <CardContent className={classes.setupHeader}>
             <Typography>Getting Started with Music Time</Typography>
+            <Box style={{ position: "absolute", right: 16, top: 0 }}>
+              <Tooltip title="Already registered or logged in? Refresh">
+                <IconButton edge="end" onClick={refreshHandler}>
+                  <MuiRefreshIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
           </CardContent>
           <CardContent>
             <BorderLinearProgress variant="determinate" value={progress} />
@@ -123,7 +134,7 @@ export default function Setup(props) {
           {stateData.registered && (
             <CardContent>
               <Typography className={classes.subInfo}>Already connected Spotify?</Typography>
-              <Link href="#" onClick={refreshSpotifyHandler} className={classes.link}>
+              <Link href="#" onClick={refreshHandler} className={classes.link}>
                 Refresh
               </Link>
             </CardContent>
