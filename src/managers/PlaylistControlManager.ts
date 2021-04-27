@@ -85,9 +85,10 @@ export async function launchTrackPlayer(playerName: PlayerName = null, callback:
     await launchPlayer(playerName, options);
   }
 
-  setTimeout(() => {
+  setTimeout(async () => {
+    await play(getSelectedPlayerName());
     checkDeviceLaunch(playerName, 5, callback);
-  }, 1500);
+  }, 3000);
 }
 
 // PRIVATE FUNCTIONS
@@ -149,10 +150,6 @@ async function checkDeviceLaunch(playerName: PlayerName, tries: number = 5, call
     const devices = getCurrentDevices();
 
     if ((!devices || devices.length == 0) && tries >= 0) {
-      if (!isWindows() && tries === 1) {
-        // play it to get spotify to update the device ID
-        await play(getSelectedPlayerName());
-      }
       tries--;
       checkDeviceLaunch(playerName, tries, callback);
     } else {
@@ -167,7 +164,7 @@ async function checkDeviceLaunch(playerName: PlayerName, tries: number = 5, call
         callback();
       }
     }
-  }, 1500);
+  }, 1100);
 }
 
 async function checkPlayingState(deviceId: string, tries = 3) {

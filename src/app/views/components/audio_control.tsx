@@ -9,7 +9,6 @@ import {
   MuiSkipPreviousIcon,
   MuiPlayArrowIcon,
   MuiSkipNextIcon,
-  MuiRepeatIcon,
   MuiShuffleIcon,
   MuiRepeatOneIcon,
   MuiStopIcon,
@@ -117,10 +116,6 @@ function isRepeatingTrack(spotifyContext) {
   return !!(spotifyContext && spotifyContext.repeat_state === "track");
 }
 
-function isRepeatingPlaylist(spotifyContext) {
-  return !!(spotifyContext && spotifyContext.repeat_state === "context");
-}
-
 function isShuffling(spotifyContext) {
   return !!(spotifyContext && spotifyContext.shuffle_state === true);
 }
@@ -170,7 +165,6 @@ export default function AudioControl(props) {
   const runningTrackStatus = getTrackDescription(currentTrack);
   const enableControls = isTrackAvailable(currentTrack);
   const repeatingTrack = isRepeatingTrack(spotifyContext);
-  const repeatingPlaylist = isRepeatingPlaylist(spotifyContext);
   const shuffling = isShuffling(spotifyContext);
   const paused = isPaused(currentTrack);
   const playing = isPlaying(currentTrack);
@@ -215,16 +209,6 @@ export default function AudioControl(props) {
     };
     props.vscode.postMessage(command);
     props.handleCloseCallback();
-  }
-
-  function repeatPlaylistClick() {
-    const command = {
-      action: "musictime.repeatPlaylist",
-      command: "command_execute",
-    };
-    props.vscode.postMessage(command);
-    props.handleCloseCallback();
-    spotifyContext.repeat_state = "context";
   }
 
   function repeatOneClick() {
@@ -441,25 +425,19 @@ export default function AudioControl(props) {
 
                 <Tooltip title={shuffling ? "Disable shuffle" : "Enable shuffle"}>
                   <IconButton onClick={shuffling ? disableShuffleClick : enableShuffleClick} className={classes.margin} size="small">
-                    <MuiShuffleIcon color={shuffling ? "secondary" : "primary"} fontSize="small" />
+                    <MuiShuffleIcon color={shuffling ? "action" : "primary"} fontSize="small" />
                   </IconButton>
                 </Tooltip>
                 {repeatingTrack ? (
                   <Tooltip title="Disable repeat">
                     <IconButton onClick={disableRepeatClick} className={classes.margin} size="small">
-                      <MuiRepeatOneIcon color="secondary" fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                ) : repeatingPlaylist ? (
-                  <Tooltip title="Enable repeat one">
-                    <IconButton onClick={repeatOneClick} className={classes.margin} size="small">
-                      <MuiRepeatIcon color="secondary" fontSize="small" />
+                      <MuiRepeatOneIcon color="action" fontSize="small" />
                     </IconButton>
                   </Tooltip>
                 ) : (
-                  <Tooltip title="Enable playlist repeat">
-                    <IconButton onClick={repeatPlaylistClick} className={classes.margin} size="small">
-                      <MuiRepeatIcon color="primary" fontSize="small" />
+                  <Tooltip title="Enable repeat one">
+                    <IconButton onClick={repeatOneClick} className={classes.margin} size="small">
+                      <MuiRepeatOneIcon color="primary" fontSize="small" />
                     </IconButton>
                   </Tooltip>
                 )}

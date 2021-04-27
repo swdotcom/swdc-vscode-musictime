@@ -56,14 +56,27 @@ export default function PlaylistItem(props) {
   }
 
   return (
-    <TreeItem nodeId={props.playlistItem.id} className={classes.root} label={<PlaylistItemNode vscode={props.vscode} item={props.playlistItem} />}>
+    <TreeItem
+      nodeId={props.playlistItem.id}
+      className={classes.root}
+      label={<PlaylistItemNode spotifyPlayerContext={props.spotifyPlayerContext} vscode={props.vscode} item={props.playlistItem} />}
+    >
       {props.playlistTracks && props.playlistTracks.length ? (
         props.playlistTracks.map((item, index) => {
           if (item.track) {
             // it's a software top 40 track item
-            return <PlaylistItemNode vscode={props.vscode} item={item.track} key={`track_${item.track.id}_${item.playlist_id}`} />;
+            return (
+              <PlaylistItemNode
+                spotifyPlayerContext={props.spotifyPlayerContext}
+                vscode={props.vscode}
+                item={item.track}
+                key={`track_${item.track.id}_${item.playlist_id}`}
+              />
+            );
           } else {
-            return <PlaylistItemNode vscode={props.vscode} item={item} key={`playlist_${item.id}`} />;
+            return (
+              <PlaylistItemNode spotifyPlayerContext={props.spotifyPlayerContext} vscode={props.vscode} item={item} key={`playlist_${item.id}`} />
+            );
           }
         })
       ) : !props.playlistTracks ? (

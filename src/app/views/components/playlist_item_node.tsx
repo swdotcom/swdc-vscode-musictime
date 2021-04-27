@@ -18,7 +18,16 @@ import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import Tooltip from "@material-ui/core/Tooltip";
 import Divider from "@material-ui/core/Divider";
-import { BeakerIcon, MuiAlbumIcon, MuiShareIcon, MuiCloseIcon, MuiRemoveCircleIcon, MuiAddCircleIcon } from "../icons";
+import {
+  BeakerIcon,
+  MuiAlbumIcon,
+  MuiShareIcon,
+  MuiCloseIcon,
+  MuiRemoveCircleIcon,
+  MuiAddCircleIcon,
+  MuiRepeatIcon,
+  MuiRepeatOneIcon,
+} from "../icons";
 import { DARK_BG_COLOR, MAX_MENU_HEIGHT, RECOMMENDATION_PLAYLIST_ID } from "../../utils/view_constants";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -110,13 +119,19 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
+function isRepeatingTrack(spotifyContext) {
+  return !!(spotifyContext && spotifyContext.repeat_state === "track");
+}
+
 export default function PlaylistItemNode(props) {
   const classes = useStyles();
   const [show, setShow] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
 
-  const { item } = props;
+  const { item, spotifyPlayerContext } = props;
+
+  const repeatingTrack = isRepeatingTrack(spotifyPlayerContext);
 
   let timeout = undefined;
 
@@ -186,6 +201,24 @@ export default function PlaylistItemNode(props) {
       action: !item.liked ? "musictime.like" : "musictime.unlike",
       command: "command_execute",
       arguments: [item],
+    };
+    props.vscode.postMessage(command);
+    handleClose();
+  }
+
+  function repeatTrackClick(event) {
+    const command = {
+      action: "musictime.repeatTrack",
+      command: "command_execute",
+    };
+    props.vscode.postMessage(command);
+    handleClose();
+  }
+
+  function disableRepeatClick() {
+    const command = {
+      action: "musictime.repeatOff",
+      command: "command_execute",
     };
     props.vscode.postMessage(command);
     handleClose();
@@ -308,6 +341,7 @@ export default function PlaylistItemNode(props) {
               style: {
                 maxHeight: MAX_MENU_HEIGHT,
                 backgroundColor: DARK_BG_COLOR,
+                padding: 2,
               },
             }}
           >
@@ -348,6 +382,22 @@ export default function PlaylistItemNode(props) {
                 </ListItemIcon>
                 <ListItemText primary="Get recommendations" className={classes.listItemText} />
               </ListItem>
+              {repeatingTrack ? (
+                <ListItem key="repeat-track" button onClick={repeatTrackClick} disableGutters={true} dense={true}>
+                  <ListItemIcon className={classes.listItemIcon}>
+                    <MuiRepeatIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Disable repeat" className={classes.listItemText} />
+                </ListItem>
+              ) : (
+                <ListItem key="repeat-track" button onClick={disableRepeatClick} disableGutters={true} dense={true}>
+                  <ListItemIcon className={classes.listItemIcon}>
+                    <MuiRepeatOneIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Repeat track" className={classes.listItemText} />
+                </ListItem>
+              )}
+
               <ListItem key="share-track" button onClick={shareTrack} disableGutters={true} dense={true}>
                 <ListItemIcon className={classes.listItemIcon}>
                   <MuiShareIcon />
@@ -386,6 +436,7 @@ export default function PlaylistItemNode(props) {
 }
 
 PlaylistItemNode.propTypes = {
+  spotifyPlayerContext: PropTypes.any.isRequired,
   item: PropTypes.any.isRequired,
   vscode: PropTypes.any.isRequired,
 };

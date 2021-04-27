@@ -128,6 +128,7 @@ export default function Playlists(props) {
           {props.stateData.softwareTop40Playlist && props.stateData.softwareTop40Playlist.tracks && (
             <PlaylistItem
               vscode={props.vscode}
+              spotifyPlayerContext={props.stateData.spotifyPlayerContext}
               playlistItem={props.stateData.softwareTop40Playlist}
               key={props.stateData.softwareTop40Playlist.id}
               playlistTracks={props.stateData.softwareTop40Playlist.tracks.items}
@@ -136,6 +137,7 @@ export default function Playlists(props) {
 
           <PlaylistItem
             vscode={props.vscode}
+            spotifyPlayerContext={props.stateData.spotifyPlayerContext}
             playlistItem={props.stateData.likedSongsPlaylist}
             key={props.stateData.likedSongsPlaylist.id}
             playlistTracks={props.stateData.playlistTracks[props.stateData.likedSongsPlaylist.id]}
@@ -146,6 +148,7 @@ export default function Playlists(props) {
           {props.stateData.spotifyPlaylists.map((item, index) => {
             return (
               <PlaylistItem
+                spotifyPlayerContext={props.stateData.spotifyPlayerContext}
                 vscode={props.vscode}
                 playlistItem={item}
                 key={`playlist_${index}`}

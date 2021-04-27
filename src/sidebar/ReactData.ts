@@ -7,7 +7,7 @@ import {
   getCachedRecommendationInfo,
   getCachedRunningTrack,
   getCachedSoftwareTop40Playlist,
-  getCachedSpotifyPlayerContext,
+  getPlayerContext,
   getCachedSpotifyPlaylists,
   getCachedUserMetricsData,
   getDeviceMenuInfo,
@@ -39,7 +39,7 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
   let currentlyRunningTrack = undefined;
   let deviceMenuInfo = getDeviceMenuInfo();
   if (spotifyUser) {
-    spotifyPlayerContext = await getCachedSpotifyPlayerContext();
+    spotifyPlayerContext = await getPlayerContext();
     currentlyRunningTrack = getCachedRunningTrack();
 
     if (currentlyRunningTrack) {

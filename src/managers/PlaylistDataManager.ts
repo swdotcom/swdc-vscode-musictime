@@ -191,11 +191,8 @@ export function getCachedRecommendationMetadata() {
   return recommendationMetadata;
 }
 
-export async function getCachedSpotifyPlayerContext() {
-  if (!spotifyContext) {
-    await populatePlayerContext();
-  }
-  return spotifyContext;
+export async function getPlayerContext() {
+  return await getSpotifyPlayerContext();
 }
 
 export function getCachedRunningTrack() {
@@ -765,7 +762,7 @@ export async function initializeSpotify(refreshUser = false) {
 export async function isTrackRepeating(): Promise<boolean> {
   // get the current repeat state
   if (!spotifyContext) {
-    spotifyContext = await getCachedSpotifyPlayerContext();
+    spotifyContext = await getSpotifyPlayerContext();
   }
   // "off", "track", "context", ""
   const repeatState = spotifyContext ? spotifyContext.repeat_state : "";
