@@ -100,9 +100,11 @@ function getTrackName(currentTrack) {
 
 function getTrackDescription(currentTrack) {
   let description = "";
-  if (isTrackAvailable(currentTrack)) {
-    description += currentTrack?.artist && "";
-    if (currentTrack.album) {
+  if (currentTrack && isTrackAvailable(currentTrack)) {
+    if (currentTrack.artist && typeof currentTrack.artist === "string") {
+      description += currentTrack.artist;
+    }
+    if (currentTrack.album && typeof currentTrack.album === "string") {
       if (description.length) {
         description += " - ";
       }
