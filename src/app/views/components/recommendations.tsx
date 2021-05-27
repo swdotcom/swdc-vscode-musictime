@@ -7,7 +7,6 @@ import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import IconButton from "@material-ui/core/IconButton";
 import { BeakerIcon, MuiSearchIcon, FilterIcon, MuiRefreshIcon } from "../icons";
-import CircularProgress from "@material-ui/core/CircularProgress";
 import Tooltip from "@material-ui/core/Tooltip";
 import { orange } from "@material-ui/core/colors";
 import Paper from "@material-ui/core/Paper";
@@ -155,9 +154,7 @@ export default function Recommendations(props) {
               return <PlaylistItemNode vscode={props.vscode} item={item} key={item.id} />;
             })
           ) : !props.stateData.recommendationInfo ? (
-            <div className={classes.loadingIcon}>
-              <CircularProgress disableShrink />
-            </div>
+            <Typography>Loading recommendations...</Typography>
           ) : (
             <Paper className={classes.paperContent} elevation={0}>
               <Typography className={classes.setupDescription}>No tracks available. You can try again or check back later.</Typography>

@@ -14,6 +14,7 @@ import { grey } from "@material-ui/core/colors";
 import FormGroup from "@material-ui/core/FormGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormControl from "@material-ui/core/FormControl";
+import ScatterChart from "./metric_feature_scatter_chart";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -289,6 +290,9 @@ export default function MetricAudioDashboard(props) {
                 </Grid>
               );
             })}
+        </Grid>
+        <Grid>
+          <ScatterChart vscode={props.vscode} stateData={props.stateData} />
         </Grid>
       </Grid>
     </Card>

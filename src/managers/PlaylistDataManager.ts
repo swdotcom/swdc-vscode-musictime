@@ -25,6 +25,7 @@ import { RECOMMENDATION_LIMIT, RECOMMENDATION_PLAYLIST_ID, SOFTWARE_TOP_40_PLAYL
 import { OK_LABEL, SPOTIFY_LIKED_SONGS_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME, YES_LABEL } from "../app/utils/view_constants";
 import { isResponseOk, softwareGet } from "../HttpClient";
 import MusicMetrics from "../model/MusicMetrics";
+import MusicScatterData from "../model/MusicScatterData";
 import { MusicCommandManager } from "../music/MusicCommandManager";
 import { MusicCommandUtil } from "../music/MusicCommandUtil";
 import { MusicControlManager } from "../music/MusicControlManager";
@@ -39,6 +40,7 @@ let spotifyPlaylists: PlaylistItem[] = undefined;
 let softwareTop40Playlist: PlaylistItem = undefined;
 let recommendedTracks: PlaylistItem[] = undefined;
 let playlistTracks: any = {};
+let musicScatterData: MusicScatterData = undefined;
 let userMusicMetrics: MusicMetrics[] = undefined;
 let globalMusicMetrics: MusicMetrics[] = undefined;
 let averageMusicMetrics: MusicMetrics = undefined;
@@ -184,7 +186,7 @@ export async function getCachedUserMetricsData() {
   if (!userMusicMetrics) {
     await getUserMusicMetrics();
   }
-  return { userMusicMetrics, averageMusicMetrics };
+  return { userMusicMetrics, averageMusicMetrics, musicScatterData };
 }
 
 export function getCachedRecommendationMetadata() {
@@ -367,12 +369,14 @@ export async function getUserMusicMetrics() {
     userMusicMetrics = resp.data.user_music_metrics;
     if (userMusicMetrics) {
       averageMusicMetrics = new MusicMetrics();
+      musicScatterData = new MusicScatterData();
       userMusicMetrics = userMusicMetrics.map((n, index) => {
         n["keystrokes"] = n.keystrokes ? Math.ceil(n.keystrokes) : 0;
         n["keystrokes_formatted"] = new Intl.NumberFormat().format(n.keystrokes);
         n["id"] = n.song_id;
         n["trackId"] = n.song_id;
         averageMusicMetrics.increment(n);
+        musicScatterData.addMetric(n);
         return n;
       });
       averageMusicMetrics.setAverages(userMusicMetrics.length);
