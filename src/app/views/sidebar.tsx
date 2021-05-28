@@ -26,11 +26,17 @@ const useStyles = makeStyles((theme) => ({
   tab: {
     fontSize: 10,
     color: "white",
+    "&:hover": {
+      backgroundColor: deepPurple[300],
+    },
   },
   recommendationsTab: {
     fontSize: 10,
     color: "white",
     minWidth: 120,
+    "&:hover": {
+      backgroundColor: deepPurple[300],
+    },
   },
   tabIndicator: {
     backgroundColor: "#ffffff",
@@ -230,11 +236,11 @@ export default function SideBar(props) {
             aria-label="musictime-tabs"
             classes={{ indicator: classes.tabIndicator }}
           >
-            <Tab value="playlists" label="Playlists" className={classes.tab} />
+            <Tab value="playlists" label="Playlists" className={classes.tab} disableRipple />
 
-            <Tab value="recommendations" label="Recommendations" className={classes.recommendationsTab} />
+            <Tab value="recommendations" label="Recommendations" className={classes.recommendationsTab} disableRipple />
 
-            <Tab value="metrics" label="Metrics" className={classes.tab} />
+            <Tab value="metrics" label="Metrics" className={classes.tab} disableRipple />
           </Tabs>
         )}
       </AppBar>
