@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { makeStyles, withStyles } from "@material-ui/core/styles";
+import { grey } from "@material-ui/core/colors";
 import Grid from "@material-ui/core/Grid";
 import Card from "@material-ui/core/Card";
 import Select from "@material-ui/core/Select";
@@ -7,7 +8,7 @@ import MenuItem from "@material-ui/core/MenuItem";
 import Typography from "@material-ui/core/Typography";
 import InputBase from "@material-ui/core/InputBase";
 import { Chart, ScatterSeries, ArgumentAxis, ValueAxis, Tooltip } from "@devexpress/dx-react-chart-material-ui";
-import { Animation } from "@devexpress/dx-react-chart";
+import { EventTracker, Animation } from "@devexpress/dx-react-chart";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -75,7 +76,7 @@ export default function MetricFeatureScatterChart(props) {
         <Grid item xs={12}>
           <Grid container direction="row" justify="flex-start" alignItems="flex-start">
             <Grid item xs={3}>
-              <Typography color="primary">Feature:</Typography>
+              <Typography style={{ color: grey[500], fontWeight: 600 }}>Feature:</Typography>
             </Grid>
             <Grid item xs={9}>
               <Select
@@ -100,8 +101,9 @@ export default function MetricFeatureScatterChart(props) {
           <Chart data={chartData}>
             <ArgumentAxis showLabels={false} showTicks={false} />
             <ValueAxis />
-            <ScatterSeries valueField="value" argumentField="name" />
+            <ScatterSeries valueField="value" argumentField="name" color="#b39ddb" />
             <Animation />
+            <EventTracker />
             <Tooltip />
           </Chart>
         </Grid>

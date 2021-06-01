@@ -155,7 +155,7 @@ export default function Metrics(props) {
       )}
 
       {props.stateData.codeTimeInstalled ? (
-        <div>
+        <div style={{ marginBottom: 100 }}>
           {tabView === 0 ? (
             <>
               <Typography className={classes.descriptionText}>

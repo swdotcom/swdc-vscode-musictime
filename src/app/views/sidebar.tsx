@@ -55,6 +55,7 @@ const useStyles = makeStyles((theme) => ({
     top: "auto",
     bottom: 0,
     left: 0,
+    zIndex: 100,
   },
   bottomNavLabel: {
     marginTop: 5,
