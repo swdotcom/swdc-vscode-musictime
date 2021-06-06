@@ -68,6 +68,7 @@ export default function SideBar(props) {
 
   const [tabValue, setTabValue] = useState(0);
   const [bottomHeight, setBottomHeight] = useState(40);
+  const [loading, setLoading] = useState(undefined);
 
   useEffect(() => {
     if (tabValue !== props.stateData.selectedTabView) {
@@ -200,6 +201,7 @@ export default function SideBar(props) {
   );
 
   function changeTabView(event, newValue) {
+    setLoading(newValue);
     // update the tab view
     const updateCmd = {
       action: "musictime.updateSelectedTabView",
@@ -254,31 +256,37 @@ export default function SideBar(props) {
           bottom: !props.stateData.spotifyUser ? 0 : bottomHeight,
         }}
       >
-        {!props.stateData.spotifyUser && (
+        {loading && (
+          <Grid item key="playlists-grid-item" xs={12}>
+            <Typography style={{ marginTop: 15, marginLeft: 10 }}>Loading {loading}...</Typography>
+          </Grid>
+        )}
+
+        {!loading && !props.stateData.spotifyUser && (
           <Grid item key="cold-start-grid-item" xs={12}>
             <ColdStart vscode={props.vscode} stateData={props.stateData} />
           </Grid>
         )}
 
-        {props.stateData.loading && (
+        {!loading && props.stateData.loading && (
           <Grid item key="playlists-grid-item" xs={12}>
             <Typography style={{ marginTop: 15, marginLeft: 10 }}>Loading playlists...</Typography>
           </Grid>
         )}
 
-        {!props.stateData.loading && props.stateData.selectedTabView === "playlists" && props.stateData.spotifyUser && (
+        {!loading && !props.stateData.loading && props.stateData.selectedTabView === "playlists" && props.stateData.spotifyUser && (
           <Grid item key="playlists-grid-item" xs={12}>
             <Playlists vscode={props.vscode} stateData={props.stateData} />
           </Grid>
         )}
 
-        {!props.stateData.loading && props.stateData.selectedTabView === "recommendations" && props.stateData.spotifyUser && (
+        {!loading && !props.stateData.loading && props.stateData.selectedTabView === "recommendations" && props.stateData.spotifyUser && (
           <Grid item key="recommendations-grid-item" xs={12}>
             <Recommendations vscode={props.vscode} stateData={props.stateData} />
           </Grid>
         )}
 
-        {!props.stateData.loading && props.stateData.selectedTabView === "metrics" && props.stateData.spotifyUser && (
+        {!loading && !props.stateData.loading && props.stateData.selectedTabView === "metrics" && props.stateData.spotifyUser && (
           <Grid item key="metrics-grid-item" xs={12}>
             <Metrics vscode={props.vscode} stateData={props.stateData} />
           </Grid>
