@@ -10,6 +10,13 @@ import { initializeSpotify } from "./PlaylistDataManager";
 
 const queryString = require("query-string");
 
+let authAdded = false;
+const lazy_poll_millis = 16000;
+
+export function updatedAuthAdded(val: boolean) {
+  authAdded = val;
+}
+
 export async function getUser(jwt) {
   if (jwt) {
     let api = `/users/me`;
@@ -114,6 +121,36 @@ export async function launchLogin(loginType: string = "software", switching_acco
   url = `${url}?${qryStr}`;
 
   launchWebUrl(url);
+
+  updatedAuthAdded(false);
+  setTimeout(() => {
+    lazilyPollForAuth();
+  }, lazy_poll_millis);
+}
+
+export async function lazilyPollForAuth(tries: number = 20) {
+  authAdded = !authAdded ? await getUserRegistrationInfo() : authAdded;
+  if (!authAdded && tries > 0) {
+    // try again
+    tries--;
+    setTimeout(() => {
+      lazilyPollForAuth(tries);
+    }, lazy_poll_millis);
+  }
+}
+
+async function getUserRegistrationInfo() {
+  const token = getAuthCallbackState(false) || getItem("jwt");
+  // fetch the user
+  let resp = await softwareGet("/users/plugin/state", token);
+  let user = isResponseOk(resp) && resp.data ? resp.data.user : null;
+
+  // only update if its a registered, not anon user
+  if (user && user.registered === 1) {
+    await authenticationCompleteHandler(user);
+    return true;
+  }
+  return false;
 }
 
 export async function authenticationCompleteHandler(user) {

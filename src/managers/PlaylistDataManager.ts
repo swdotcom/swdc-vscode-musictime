@@ -688,7 +688,7 @@ export function getDeviceSet() {
 export function getDeviceMenuInfo() {
   const { webPlayer, desktop, activeDevice, activeComputerDevice, activeWebPlayerDevice } = getDeviceSet();
 
-  const devices: PlayerDevice[] = getCurrentDevices();
+  const devices: PlayerDevice[] = getCurrentDevices() || [];
 
   let primaryText = "";
   let secondaryText = "";

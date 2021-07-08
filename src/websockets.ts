@@ -7,8 +7,10 @@ import { getItem, getPluginUuid } from "./managers/FileManager";
 const WebSocket = require("ws");
 
 let retryTimeout = undefined;
-let maxRetries = 20;
-let retryCount = 0;
+
+// This is the server interval to ping this client. If the server
+// interval changes, this interval should change with it to match.
+const SERVER_PING_INTERVAL_MILLIS = 1000 * 60 * 2;
 
 export function initializeWebsockets() {
   const jwt = getItem("jwt");
@@ -16,7 +18,7 @@ export function initializeWebsockets() {
     // try again later
     setTimeout(() => {
       initializeWebsockets();
-    }, 1000 * 60);
+    }, 1000 * 60 * 2);
     return;
   }
   const options = {
@@ -32,19 +34,40 @@ export function initializeWebsockets() {
     },
   };
 
+  function heartbeat() {
+    if (this.pingTimeout) {
+      // Received a ping from the server. Clear the timeout so
+      // our client doesn't terminate the connection
+      clearTimeout(this.pingTimeout);
+    }
+
+    // Use `WebSocket#terminate()`, which immediately destroys the connection,
+    // instead of `WebSocket#close()`, which waits for the close timer.
+    // Delay should be equal to the interval at which your server
+    // sends out pings plus a conservative assumption of the latency.
+    this.pingTimeout = setTimeout(() => {
+      // uncomment when the backend server is pinging the client
+      // this.terminate();
+    }, SERVER_PING_INTERVAL_MILLIS + 5000);
+  }
+
   const ws = new WebSocket(websockets_url, options);
 
   ws.on("open", function open() {
     console.debug("[MusicTime] websockets connection open");
+    heartbeat();
   });
 
   ws.on("message", function incoming(data) {
     handleIncomingMessage(data);
   });
 
+  ws.on("ping", heartbeat);
+
   ws.on("close", function close(code, reason) {
     console.debug("[MusicTime] websockets connection closed");
-
+    // clear this client side timeout
+    clearTimeout(this.pingTimeout);
     retryConnection();
   });
 
@@ -64,11 +87,6 @@ export function initializeWebsockets() {
 }
 
 function retryConnection() {
-  if (retryCount > maxRetries) {
-    return;
-  }
-  retryCount++;
-
   console.debug("[MusicTime] retrying websockets connecting in 10 seconds");
 
   retryTimeout = setTimeout(() => {
@@ -79,6 +97,7 @@ function retryConnection() {
 
 export function clearWebsocketConnectionRetryTimeout() {
   clearTimeout(retryTimeout);
+  clearTimeout(this.pingTimeout);
 }
 
 const handleIncomingMessage = (data: any) => {
