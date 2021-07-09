@@ -46,8 +46,7 @@ export function initializeWebsockets() {
     // Delay should be equal to the interval at which your server
     // sends out pings plus a conservative assumption of the latency.
     this.pingTimeout = setTimeout(() => {
-      // uncomment when the backend server is pinging the client
-      // this.terminate();
+      this.terminate();
     }, SERVER_PING_INTERVAL_MILLIS + 5000);
   }
 

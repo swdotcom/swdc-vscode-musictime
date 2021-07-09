@@ -2084,10 +2084,10 @@ figgy-pudding@^3.5.1:
   resolved "https://registry.yarnpkg.com/figgy-pudding/-/figgy-pudding-3.5.2.tgz#b4eee8148abb01dcf1d1ac34367d59e12fa61d6e"
   integrity sha512-0btnI/H8f2pavGMN8w40mlSKOfTK2SVJmBfBeVIj3kNw0swwgzyRq0d5TJVOwodFmtvpPeWPN/MCcfuWF0Ezbw==
 
-file-it@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/file-it/-/file-it-1.1.1.tgz#35260f9da20a39575df5549ffa683e91f771f49e"
-  integrity sha512-MeeuXiYLk3A1Mk4mJshy3+r/dpAZGu6THxADrXqKzVphbH4ZZmJwZh/vNVuYRmMsSoKTsVUNG0+HaPMplqtsgg==
+file-it@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/file-it/-/file-it-1.1.2.tgz#147a53d81e27ce5ee098d1f39a74828c9b302437"
+  integrity sha512-q3BwbtstLid6Buz/ECVQB+GASZmHaukHKzivi04mH5aNsuOSpVZDZCQCbW6PoiVnlvRvEZjTTHySuW8ZDZkAkQ==
   dependencies:
     "@types/universalify" "^1.0.0"
     universalify "^2.0.0"
