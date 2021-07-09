@@ -5,7 +5,7 @@ import { handleIntegrationConnectionSocketEvent } from "./message_handlers/integ
 import { getItem, getPluginUuid } from "./managers/FileManager";
 
 const WebSocket = require("ws");
-
+let pingTimeout = undefined;
 let retryTimeout = undefined;
 
 // This is the server interval to ping this client. If the server
@@ -35,17 +35,17 @@ export function initializeWebsockets() {
   };
 
   function heartbeat() {
-    if (this.pingTimeout) {
+    if (pingTimeout) {
       // Received a ping from the server. Clear the timeout so
       // our client doesn't terminate the connection
-      clearTimeout(this.pingTimeout);
+      clearTimeout(pingTimeout);
     }
 
     // Use `WebSocket#terminate()`, which immediately destroys the connection,
     // instead of `WebSocket#close()`, which waits for the close timer.
     // Delay should be equal to the interval at which your server
     // sends out pings plus a conservative assumption of the latency.
-    this.pingTimeout = setTimeout(() => {
+    pingTimeout = setTimeout(() => {
       this.terminate();
     }, SERVER_PING_INTERVAL_MILLIS + 5000);
   }
@@ -66,7 +66,7 @@ export function initializeWebsockets() {
   ws.on("close", function close(code, reason) {
     console.debug("[MusicTime] websockets connection closed");
     // clear this client side timeout
-    clearTimeout(this.pingTimeout);
+    clearTimeout(pingTimeout);
     retryConnection();
   });
 
@@ -96,7 +96,7 @@ function retryConnection() {
 
 export function clearWebsocketConnectionRetryTimeout() {
   clearTimeout(retryTimeout);
-  clearTimeout(this.pingTimeout);
+  clearTimeout(pingTimeout);
 }
 
 const handleIncomingMessage = (data: any) => {
