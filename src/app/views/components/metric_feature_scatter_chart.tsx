@@ -1,12 +1,11 @@
 import React, { useState } from "react";
-import { makeStyles, withStyles } from "@material-ui/core/styles";
-import { grey } from "@material-ui/core/colors";
+import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import Card from "@material-ui/core/Card";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
-import Typography from "@material-ui/core/Typography";
-import InputBase from "@material-ui/core/InputBase";
+import { deepPurple } from "@material-ui/core/colors";
+
 import { Chart, ScatterSeries, ArgumentAxis, ValueAxis, Tooltip } from "@devexpress/dx-react-chart-material-ui";
 import { EventTracker, Animation } from "@devexpress/dx-react-chart";
 
@@ -37,24 +36,15 @@ const useStyles = makeStyles((theme) => ({
     marginTop: 10,
     marginRight: 10,
   },
+  selectControl: {
+    color: deepPurple[400],
+    fontWeight: 700,
+    paddingLeft: 4,
+    paddingTop: 5,
+    paddingBottom: 4,
+    marginLeft: 2
+  }
 }));
-
-const SelectInputStyle = withStyles((theme) => ({
-  root: {
-    "label + &": {
-      marginTop: theme.spacing(1),
-    },
-  },
-  input: {
-    borderRadius: 2,
-    position: "relative",
-    padding: 2,
-    transition: theme.transitions.create(["border-color", "box-shadow"]),
-    "&:focus": {
-      borderRadius: 2,
-    },
-  },
-}))(InputBase);
 
 export default function MetricFeatureScatterChart(props) {
   const classes = useStyles();
@@ -74,30 +64,26 @@ export default function MetricFeatureScatterChart(props) {
     <Card className={classes.root} elevation={0}>
       <Grid container spacing={1}>
         <Grid item xs={12}>
-          <Grid container direction="row" justify="flex-start" alignItems="flex-start">
-            <Grid item xs={3}>
-              <Typography style={{ color: grey[500], fontWeight: 600 }}>Feature:</Typography>
-            </Grid>
-            <Grid item xs={9}>
-              <Select
-                labelId="audio-feature-selection"
-                id="audio-feature-selection"
-                value={selectLabel}
-                onChange={handleChange}
-                input={<SelectInputStyle />}
-              >
-                {feature_keys.map((key, index) => {
-                  return (
-                    <MenuItem value={key} key={`feature-chart-key-${key}`}>
-                      {key}
-                    </MenuItem>
-                  );
-                })}
-              </Select>
-            </Grid>
-          </Grid>
+          <Select
+            labelId="audio-feature-selection"
+            id="audio-feature-selection"
+            value={selectLabel}
+            onChange={handleChange}
+            classes={{
+              root: classes.selectControl
+            }}
+            disableUnderline
+          >
+            {feature_keys.map((key, index) => {
+              return (
+                <MenuItem value={key} key={`feature-chart-key-${key}`}>
+                  {key}
+                </MenuItem>
+              );
+            })}
+          </Select>
         </Grid>
-        <Grid item key="scatter-chart-grid-item" xs={12} style={{ padding: 2 }}>
+        <Grid item key="scatter-chart-grid-item" xs={12}>
           <Chart data={chartData}>
             <ArgumentAxis showLabels={false} showTicks={false} />
             <ValueAxis />
