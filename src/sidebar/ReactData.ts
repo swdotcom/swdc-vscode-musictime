@@ -61,10 +61,12 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
     }
   }
 
+  const registered = !!(name || spotifyUser);
+
   const reactData = {
     authType,
     loading,
-    registered: !!name,
+    registered,
     email: name,
     spotifyPlaylists,
     selectedTabView,

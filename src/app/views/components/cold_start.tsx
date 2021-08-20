@@ -22,7 +22,7 @@ const useStyles = makeStyles((theme) => ({
     padding: 2,
   },
   cardHeaderIcon: {
-    marginTop: 10,
+    marginTop: 20,
     marginRight: 10,
   },
   listItemIcon: {
