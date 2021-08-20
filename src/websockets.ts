@@ -20,7 +20,7 @@ export function initializeWebsockets() {
     // try again later
     setTimeout(() => {
       initializeWebsockets();
-    }, 1000 * 60 * 2);
+    }, 1000 * 60);
     return;
   }
   const options = {
