@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
+import { createTheme, ThemeProvider } from '@material-ui/core/styles'
 import CssBaseline from "@material-ui/core/CssBaseline";
 import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
@@ -66,7 +66,7 @@ const useStyles = makeStyles((theme) => ({
 export default function SideBar(props) {
   const classes = useStyles();
 
-  const [tabValue, setTabValue] = useState(0);
+  const [tabValue, setTabValue] = useState("playlists");
   const [bottomHeight, setBottomHeight] = useState(40);
   const [loading, setLoading] = useState(undefined);
 
@@ -81,7 +81,7 @@ export default function SideBar(props) {
 
   const theme = React.useMemo(
     () =>
-      createMuiTheme({
+      createTheme({
         typography: {
           fontFamily: [
             "Inter",

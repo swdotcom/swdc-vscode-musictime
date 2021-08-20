@@ -5,12 +5,14 @@ import { handleIntegrationConnectionSocketEvent } from "./message_handlers/integ
 import { getItem, getPluginUuid } from "./managers/FileManager";
 
 const WebSocket = require("ws");
+
+// The server should send its timeout to allow the client to adjust.
+const ONE_MIN_MILLIS = 1000 * 60;
+// Default of 30 minutes
+const DEFAULT_PING_INTERVAL_MILLIS = ONE_MIN_MILLIS * 30;
+let SERVER_PING_INTERVAL_MILLIS = DEFAULT_PING_INTERVAL_MILLIS + ONE_MIN_MILLIS;
 let pingTimeout = undefined;
 let retryTimeout = undefined;
-
-// This is the server interval to ping this client. If the server
-// interval changes, this interval should change with it to match.
-const SERVER_PING_INTERVAL_MILLIS = 1000 * 60 * 2;
 
 export function initializeWebsockets() {
   const jwt = getItem("jwt");
@@ -18,7 +20,7 @@ export function initializeWebsockets() {
     // try again later
     setTimeout(() => {
       initializeWebsockets();
-    }, 1000 * 60 * 2);
+    }, 1000 * 60);
     return;
   }
   const options = {
@@ -36,7 +38,24 @@ export function initializeWebsockets() {
 
   const ws = new WebSocket(websockets_url, options);
 
-  function heartbeat() {
+  function heartbeat(buf) {
+    try {
+      // convert the buffer to the json payload containing the server timeout
+      const data = JSON.parse(buf.toString());
+      if (data?.timeout) {
+        // add a 1 minute buffer to the millisconds timeout the server provides
+        const interval = data.timeout;
+        if (interval > DEFAULT_PING_INTERVAL_MILLIS) {
+          SERVER_PING_INTERVAL_MILLIS = interval + ONE_MIN_MILLIS;
+        } else {
+          SERVER_PING_INTERVAL_MILLIS = DEFAULT_PING_INTERVAL_MILLIS + ONE_MIN_MILLIS;
+        }
+      }
+    } catch (e) {
+      // defaults to the DEFAULT_PING_INTERVAL_MILLIS
+      SERVER_PING_INTERVAL_MILLIS = DEFAULT_PING_INTERVAL_MILLIS + ONE_MIN_MILLIS;
+    }
+
     if (pingTimeout) {
       // Received a ping from the server. Clear the timeout so
       // our client doesn't terminate the connection
@@ -51,12 +70,11 @@ export function initializeWebsockets() {
       if (ws) {
         ws.terminate();
       }
-    }, SERVER_PING_INTERVAL_MILLIS + 5000);
+    }, SERVER_PING_INTERVAL_MILLIS);
   }
 
   ws.on("open", function open() {
     console.debug("[MusicTime] websockets connection open");
-    heartbeat();
   });
 
   ws.on("message", function incoming(data) {

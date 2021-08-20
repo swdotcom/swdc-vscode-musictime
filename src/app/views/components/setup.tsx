@@ -123,15 +123,14 @@ export default function Setup(props) {
               {!stateData.registered ? "Register your account" : "Connect Spotify"}
             </Button>
           </CardContent>
-          {!stateData.registered && (
+          {!stateData.registered ? (
             <CardContent>
               <Typography className={classes.subInfo}>Already have a software account?</Typography>
               <Link href="#" onClick={loginClickHandler} className={classes.link}>
                 Log in
               </Link>
             </CardContent>
-          )}
-          {stateData.registered && (
+          ) : (
             <CardContent>
               <Typography className={classes.subInfo}>Already connected Spotify?</Typography>
               <Link href="#" onClick={refreshHandler} className={classes.link}>

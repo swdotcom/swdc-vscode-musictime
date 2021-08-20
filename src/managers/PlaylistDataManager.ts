@@ -42,7 +42,6 @@ let recommendedTracks: PlaylistItem[] = undefined;
 let playlistTracks: any = {};
 let musicScatterData: MusicScatterData = undefined;
 let userMusicMetrics: MusicMetrics[] = undefined;
-let globalMusicMetrics: MusicMetrics[] = undefined;
 let averageMusicMetrics: MusicMetrics = undefined;
 let selectedPlaylistId = undefined;
 let selectedTrackItem: PlaylistItem = undefined;

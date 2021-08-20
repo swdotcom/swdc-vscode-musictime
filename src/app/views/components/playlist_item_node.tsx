@@ -253,7 +253,7 @@ export default function PlaylistItemNode(props) {
   }
 
   return (
-    <Grid container direction="row" justify="space-between" onMouseOver={showMenu} onMouseOut={hideMenu} key={item.id} className={classes.root}>
+    <Grid container direction="row" justifyContent="space-between" onMouseOver={showMenu} onMouseOut={hideMenu} key={item.id} className={classes.root}>
       {item.type === "track" ? (
         <Grid item xs={9}>
           <List
@@ -436,7 +436,7 @@ export default function PlaylistItemNode(props) {
 }
 
 PlaylistItemNode.propTypes = {
-  spotifyPlayerContext: PropTypes.any.isRequired,
+  spotifyPlayerContext: PropTypes.any,
   item: PropTypes.any.isRequired,
   vscode: PropTypes.any.isRequired,
 };

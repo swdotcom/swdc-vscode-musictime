@@ -13,7 +13,7 @@ import { commands, window } from "vscode";
 import { RECOMMENDATION_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from "../app/utils/view_constants";
 import { MusicCommandUtil } from "../music/MusicCommandUtil";
 import { MusicStateManager } from "../music/MusicStateManager";
-import { createSpotifyIdFromUri, createUriFromPlaylistId, createUriFromTrackId, isMac, isWindows } from "../Util";
+import { createSpotifyIdFromUri, createUriFromPlaylistId, createUriFromTrackId, isMac } from "../Util";
 import {
   getBestActiveDevice,
   getCachedLikedSongsTracks,
