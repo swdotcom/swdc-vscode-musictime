@@ -1,5 +1,5 @@
 import { commands, Disposable, window, ExtensionContext } from "vscode";
-import { MusicControlManager, displayMusicTimeMetricsMarkdownDashboard } from "./music/MusicControlManager";
+import { MusicControlManager } from "./music/MusicControlManager";
 import { launchMusicAnalytics, launchWebUrl } from "./Util";
 import { PlaylistItem, PlayerName, PlayerDevice, playSpotifyDevice } from "cody-music";
 import { SocialShareManager } from "./social/SocialShareManager";
@@ -52,13 +52,6 @@ export function createCommands(
   cmds.push(
     commands.registerCommand("musictime.launchReadme", () => {
       displayReadmeIfNotExists(true /*override*/);
-    })
-  );
-
-  // DISPLAY REPORT DASHBOARD CMD
-  cmds.push(
-    commands.registerCommand("musictime.displayDashboard", () => {
-      displayMusicTimeMetricsMarkdownDashboard();
     })
   );
 

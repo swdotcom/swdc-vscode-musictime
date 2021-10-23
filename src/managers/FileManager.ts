@@ -1,11 +1,9 @@
-import { isWindows, getNowTimes, isLinux } from "../Util";
+import { isWindows, getNowTimes } from "../Util";
 import { v4 as uuidv4 } from "uuid";
 import { commands, Uri, ViewColumn } from "vscode";
 import * as path from "path";
-import { softwareGet, softwarePost } from "../HttpClient";
+import { softwarePost } from "../HttpClient";
 import { SOFTWARE_FOLDER } from "../Constants";
-
-const moment = require("moment-timezone");
 
 const fileIt = require("file-it");
 const fs = require("fs");
@@ -224,33 +222,4 @@ export function isNewDay() {
   const { day } = getNowTimes();
   const currentDay = getItem("currentDay");
   return currentDay !== day ? true : false;
-}
-
-export async function fetchMusicTimeMetricsMarkdownDashboard() {
-  let file = getMusicTimeMarkdownFile();
-
-  const dayOfMonth = moment().startOf("day").date();
-  if (!fs.existsSync(file) || lastDayOfMonth !== dayOfMonth) {
-    lastDayOfMonth = dayOfMonth;
-    await fetchDashboardData(file, true);
-  }
-}
-
-export async function fetchMusicTimeMetricsDashboard() {
-  let file = getMusicTimeFile();
-
-  const dayOfMonth = moment().startOf("day").date();
-  if (fs.existsSync(file) || lastDayOfMonth !== dayOfMonth) {
-    lastDayOfMonth = dayOfMonth;
-    await fetchDashboardData(file, false);
-  }
-}
-
-async function fetchDashboardData(fileName: string, isHtml: boolean) {
-  const musicSummary = await softwareGet(`/dashboard/music?linux=${isLinux()}&html=${isHtml}`, getItem("jwt"));
-
-  // get the content
-  let content = musicSummary && musicSummary.data ? musicSummary.data : NO_DATA;
-
-  fileIt.writeContentFileSync(fileName, content);
 }

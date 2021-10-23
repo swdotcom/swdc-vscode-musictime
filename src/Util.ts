@@ -13,9 +13,6 @@ const os = require("os");
 const crypto = require("crypto");
 
 export const alpha = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-export const DASHBOARD_LABEL_WIDTH = 25;
-export const DASHBOARD_VALUE_WIDTH = 25;
-export const MARKER_WIDTH = 4;
 
 const NUMBER_IN_EMAIL_REGEX = new RegExp("^\\d+\\+");
 const dayFormat = "YYYY-MM-DD";

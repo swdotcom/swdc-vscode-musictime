@@ -23,7 +23,6 @@ import {
   DocumentIcon,
   SpotifyIcon,
   MuiHeadsetIcon,
-  MuiDashboardIcon,
   MuiSettingsRemoteIcon,
   MuiSettingsIcon,
   SlackFolderIcon,
@@ -73,14 +72,6 @@ export default function UserAccount(props) {
   function documentationClickHandler() {
     const command = {
       action: "musictime.launchReadme",
-      command: "command_execute",
-    };
-    props.vscode.postMessage(command);
-  }
-
-  function dashboardClickHandler() {
-    const command = {
-      action: "musictime.displayDashboard",
       command: "command_execute",
     };
     props.vscode.postMessage(command);
@@ -214,13 +205,6 @@ export default function UserAccount(props) {
                   </IconButton>
                 </Tooltip>
               </ListItemSecondaryAction>
-            </ListItem>
-
-            <ListItem key="dashboard-li" disableGutters={true} dense={true} button onClick={dashboardClickHandler}>
-              <ListItemIcon className={classes.listItemIcon}>
-                <MuiDashboardIcon />
-              </ListItemIcon>
-              <ListItemText id="report-dashboard-li" primary="Dashboard" />
             </ListItem>
 
             <ListItem key="documentation" disableGutters={true} dense={true} button onClick={documentationClickHandler}>
