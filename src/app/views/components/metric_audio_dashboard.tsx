@@ -158,7 +158,7 @@ export default function MetricAudioDashboard(props) {
   }
 
   function sliderText(value) {
-    return value.toFixed(2);
+    return value ? value.toFixed(2) : 0;
   }
 
   function generateRecommendations() {
