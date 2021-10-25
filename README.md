@@ -57,7 +57,7 @@ You can play, pause, rewind, and skip songs from the status bar of your editor u
 
 ### Explore song recommendations
 
-Music Time recommends songs by genre and mood based on your listening history. You can see a list of recommended songs in thee **Recommendations** section of the Music Time side panel.
+Music Time recommends songs by genre and mood based on your listening history. You can see a list of recommended songs in the **Recommendations** section of the Music Time side panel.
 
 You can adjust the mood of Music Time's recommendations by hovering over **Recommendations** and clicking the beaker icon. Try happy, energetic, or danceable music for upbeat work or classical or jazz for slower, more complex tasks. For more granular controls, click the filter icon next to **Recommendations** to filter by 100+ different genres.
 
