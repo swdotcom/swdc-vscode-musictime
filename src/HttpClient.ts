@@ -1,4 +1,5 @@
 import axios from "axios";
+import { version } from 'vscode';
 
 import { api_endpoint } from "./Constants";
 import { getPluginUuid } from "./managers/FileManager";
@@ -9,22 +10,28 @@ import {
     getVersion,
     getOs,
     getOffsetSeconds,
+    getEditorName,
 } from "./Util";
 
 // build the axios api base url
-const beApi = axios.create({
+const beApi: any = axios.create({
     baseURL: `${api_endpoint}`,
 });
 
-beApi.defaults.headers.common["X-SWDC-Plugin-Id"] = getPluginId();
-beApi.defaults.headers.common["X-SWDC-Plugin-Name"] = getPluginName();
-beApi.defaults.headers.common["X-SWDC-Plugin-Version"] = getVersion();
-beApi.defaults.headers.common["X-SWDC-Plugin-OS"] = getOs();
-beApi.defaults.headers.common[
-    "X-SWDC-Plugin-TZ"
-] = Intl.DateTimeFormat().resolvedOptions().timeZone;
-beApi.defaults.headers.common["X-SWDC-Plugin-Offset"] = getOffsetSeconds() / 60;
-beApi.defaults.headers.common["X-SWDC-Plugin-UUID"] = getPluginUuid();
+const headers: any = {
+    'X-SWDC-Plugin-Id': getPluginId(),
+    'X-SWDC-Plugin-Name': getPluginName(),
+    'X-SWDC-Plugin-Version': getVersion(),
+    'X-SWDC-Plugin-OS': getOs(),
+    'X-SWDC-Plugin-TZ': Intl.DateTimeFormat().resolvedOptions().timeZone,
+    'X-SWDC-Plugin-Offset': getOffsetSeconds() / 60,
+    'X-SWDC-Plugin-UUID': getPluginUuid(),
+    'X-SWDC-Plugin-Type': 'codetime',
+    'X-SWDC-Plugin-Editor': getEditorName(),
+    'X-SWDC-Plugin-Editor-Version': version
+  };
+
+  beApi.defaults.headers.common = {...beApi.defaults.headers.common, ...headers};
 
 /**
  * Response returns a paylod with the following

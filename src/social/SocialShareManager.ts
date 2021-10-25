@@ -10,6 +10,7 @@ import {
     hasSlackWorkspaces,
 } from "../managers/SlackManager";
 import { window } from "vscode";
+import { logIt } from '../managers/FileManager';
 
 const queryString = require("query-string");
 const { WebClient } = require("@slack/web-api");
@@ -237,9 +238,8 @@ export class SocialShareManager {
                 window.showInformationMessage(`Successfully shared the message to Slack.`);
             })
             .catch(err => {
-                console.log(
-                    "error posting slack message: ",
-                    err.message
+                logIt(
+                    "error posting slack message: " + err.message
                 );
             });
     }

@@ -1,9 +1,12 @@
 import { isWindows, getNowTimes, isLinux } from "../Util";
 import { v4 as uuidv4 } from "uuid";
-import { commands, Uri, ViewColumn } from "vscode";
+import { commands, Uri, ViewColumn, window } from "vscode";
 import * as path from "path";
 import { softwareGet, softwarePost } from "../HttpClient";
 import { SOFTWARE_FOLDER } from "../Constants";
+import { formatISO } from 'date-fns';
+
+const outputChannel = window.createOutputChannel('MusicTime');
 
 const moment = require("moment-timezone");
 
@@ -211,8 +214,12 @@ export function displayReadmeIfNotExists(override = false) {
   }
 }
 
-export function logIt(message) {
-  console.log(`${getExtensionName()}: ${message}`);
+export function getLogId() {
+  return 'MusicTime';
+}
+
+export function logIt(message: string) {
+  outputChannel.appendLine(`${formatISO(new Date())} ${getLogId()}: ${message}`);
 }
 
 export function getSoftwareSessionAsJson() {
