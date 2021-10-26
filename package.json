@@ -1,7 +1,7 @@
 {
   "name": "music-time",
   "displayName": "Music Time for Spotify",
-  "version": "2.2.3",
+  "version": "2.2.23",
   "publisher": "softwaredotcom",
   "description": "Music Time for Spotify is a VS Code extension that discovers the most productive music to listen to as you code.",
   "author": {
@@ -243,6 +243,6 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "uuid": "^8.3.2",
-    "ws": "^8.0.0"
+    "ws": "^8.2.3"
   }
 }
