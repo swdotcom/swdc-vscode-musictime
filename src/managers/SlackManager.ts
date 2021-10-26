@@ -3,7 +3,7 @@ import { getPluginId, getPluginType, getVersion, launchWebUrl } from "../Util";
 import { showQuickPick } from "../MenuManager";
 import { commands, window } from "vscode";
 import { softwareDelete } from "../HttpClient";
-import { getAuthCallbackState, getIntegrations, getItem, getPluginUuid, syncSlackIntegrations } from "./FileManager";
+import { getAuthCallbackState, getIntegrations, getItem, getPluginUuid, logIt, syncSlackIntegrations } from "./FileManager";
 
 const queryString = require("query-string");
 const { WebClient } = require("@slack/web-api");
@@ -161,7 +161,7 @@ async function getChannels() {
   }
   const web = new WebClient(access_token);
   const result = await web.conversations.list({ exclude_archived: true, limit: 1000 }).catch((err) => {
-    console.log("Unable to retrieve slack channels: ", err.message);
+    logIt("Unable to retrieve slack channels: " + err.message);
     return [];
   });
   if (result && result.ok) {

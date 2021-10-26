@@ -1,4 +1,4 @@
-import { getIntegrations, syncSlackIntegrations, syncSpotifyIntegration } from "./FileManager";
+import { getIntegrations, logIt, syncSlackIntegrations, syncSpotifyIntegration } from "./FileManager";
 
 const { WebClient } = require("@slack/web-api");
 
@@ -53,7 +53,7 @@ export async function updateSlackIntegrations(user) {
           // get the workspace domain using the authId
           const web = new WebClient(integration.access_token);
           const usersIdentify = await web.users.identity().catch((e) => {
-            console.log("Error fetching slack team info: ", e.message);
+            logIt("Error fetching slack team info: " + e.message);
             return null;
           });
           if (usersIdentify) {

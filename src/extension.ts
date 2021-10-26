@@ -6,7 +6,7 @@ import { commands, ExtensionContext, window } from "vscode";
 import { onboardPlugin } from "./OnboardManager";
 import { getVersion, getPluginName } from "./Util";
 import { createCommands } from "./command-helper";
-import { displayReadmeIfNotExists } from "./managers/FileManager";
+import { displayReadmeIfNotExists, logIt } from "./managers/FileManager";
 import { migrateAccessInfo } from "./managers/SpotifyManager";
 import { clearWebsocketConnectionRetryTimeout, initializeWebsockets } from "./websockets";
 import { initializeSpotify } from "./managers/PlaylistDataManager";
@@ -23,7 +23,7 @@ export async function activate(ctx: ExtensionContext) {
 }
 
 export async function intializePlugin(ctx: ExtensionContext) {
-  console.log(`Loaded ${getPluginName()} v${getVersion()}`);
+  logIt(`Loaded ${getPluginName()} v${getVersion()}`);
 
   //
   // add the player commands before we show the playlist

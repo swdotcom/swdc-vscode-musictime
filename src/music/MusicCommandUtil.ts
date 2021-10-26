@@ -1,4 +1,5 @@
 import { accessExpired } from "cody-music";
+import { logIt } from '../managers/FileManager';
 import { getDeviceSet } from "../managers/PlaylistDataManager";
 
 export class MusicCommandUtil {
@@ -31,7 +32,7 @@ export class MusicCommandUtil {
       const error = this.getResponseError(result);
 
       if (this.isTooManyRequestsError(result)) {
-        console.log("Currently experiencing frequent spotify requests, please try again soon.");
+        logIt("Currently experiencing frequent spotify requests, please try again soon.");
         return { status: 429 };
       } else if (error !== null) {
         return error;
@@ -50,7 +51,7 @@ export class MusicCommandUtil {
     } else {
       const error = this.getResponseError(result);
       if (error) {
-        console.log("Spotify access expired error: ", error);
+        logIt("Spotify access expired error: " + error.message);
       }
     }
   }
