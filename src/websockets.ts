@@ -30,6 +30,8 @@ export function initializeWebsockets() {
     return;
   }
 
+  clearWebsocketRetryTimeout();
+
   logIt('initializing websocket connection');
   if (ws) {
     // 1000 indicates a normal closure, meaning that the purpose for
@@ -125,20 +127,22 @@ export function initializeWebsockets() {
 }
 
 function retryConnection() {
-  const delay: number = getDelay();
+  if (!retryTimeout) {
+    const delay: number = getDelay();
 
-  if (currentReconnectDelay < MAX_RECONNECT_DELAY) {
-    // multiply until we've reached the max reconnect
-    currentReconnectDelay *= 2;
-  } else {
-    currentReconnectDelay = Math.min(currentReconnectDelay, MAX_RECONNECT_DELAY);
+    if (currentReconnectDelay < MAX_RECONNECT_DELAY) {
+      // multiply until we've reached the max reconnect
+      currentReconnectDelay *= 2;
+    } else {
+      currentReconnectDelay = Math.min(currentReconnectDelay, MAX_RECONNECT_DELAY);
+    }
+
+    logIt(`retrying websocket connection in ${delay / 1000} second(s)`);
+
+    retryTimeout = setTimeout(() => {
+      initializeWebsockets();
+    }, delay);
   }
-
-  logIt(`retrying websocket connection in ${delay / 1000} second(s)`);
-
-  retryTimeout = setTimeout(() => {
-    initializeWebsockets();
-  }, delay);
 }
 
 function getDelay() {
@@ -155,8 +159,18 @@ function getRandomNumberWithinRange(min: number, max: number) {
 }
 
 export function clearWebsocketConnectionRetryTimeout() {
-  clearTimeout(retryTimeout);
-  clearTimeout(pingTimeout);
+  clearWebsocketRetryTimeout();
+  if (pingTimeout) {
+    clearTimeout(pingTimeout);
+    pingTimeout = null;
+  }
+}
+
+function clearWebsocketRetryTimeout() {
+  if (retryTimeout) {
+    clearTimeout(retryTimeout);
+    retryTimeout = undefined;
+  }
 }
 
 const handleIncomingMessage = (data: any) => {
