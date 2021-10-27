@@ -14,8 +14,8 @@ let SERVER_PING_INTERVAL_MILLIS = DEFAULT_PING_INTERVAL_MILLIS + ONE_MIN_MILLIS;
 let pingTimeout = undefined;
 let retryTimeout = undefined;
 
-const INITIAL_RECONNECT_DELAY: number = 1000;
-const MAX_RECONNECT_DELAY: number = 22000;
+const INITIAL_RECONNECT_DELAY: number = 12000;
+const MAX_RECONNECT_DELAY: number = 25000;
 // websocket reconnect delay
 let currentReconnectDelay: number = INITIAL_RECONNECT_DELAY;
 
