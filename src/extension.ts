@@ -8,13 +8,13 @@ import { getVersion, getPluginName } from "./Util";
 import { createCommands } from "./command-helper";
 import { displayReadmeIfNotExists, logIt } from "./managers/FileManager";
 import { migrateAccessInfo } from "./managers/SpotifyManager";
-import { clearWebsocketConnectionRetryTimeout, initializeWebsockets } from "./websockets";
+import { disposeWebsocketTimeouts, initializeWebsockets } from "./websockets";
 import { initializeSpotify } from "./managers/PlaylistDataManager";
 
 let currentColorKind: number = undefined;
 
 export function deactivate(ctx: ExtensionContext) {
-  clearWebsocketConnectionRetryTimeout();
+  disposeWebsocketTimeouts();
 }
 
 export async function activate(ctx: ExtensionContext) {

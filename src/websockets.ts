@@ -11,12 +11,15 @@ const ONE_MIN_MILLIS = 1000 * 60;
 // Default of 30 minutes
 const DEFAULT_PING_INTERVAL_MILLIS = ONE_MIN_MILLIS * 30;
 let SERVER_PING_INTERVAL_MILLIS = DEFAULT_PING_INTERVAL_MILLIS + ONE_MIN_MILLIS;
-let pingTimeout = undefined;
+let livenessPingTimeout = undefined;
 let retryTimeout = undefined;
 
+// Reconnect constants
 const INITIAL_RECONNECT_DELAY: number = 12000;
 const MAX_RECONNECT_DELAY: number = 25000;
-// websocket reconnect delay
+const LONG_RECONNECT_DELAY: number = ONE_MIN_MILLIS * 5;
+// Reconnect vars
+let useLongReconnectDelay: boolean = false;
 let currentReconnectDelay: number = INITIAL_RECONNECT_DELAY;
 
 let ws: any | undefined = undefined;
@@ -72,17 +75,15 @@ export function initializeWebsockets() {
       SERVER_PING_INTERVAL_MILLIS = DEFAULT_PING_INTERVAL_MILLIS + ONE_MIN_MILLIS;
     }
 
-    if (pingTimeout) {
-      // Received a ping from the server. Clear the timeout so
-      // our client doesn't terminate the connection
-      clearTimeout(pingTimeout);
-    }
+    // Received a ping from the server. Clear the timeout so
+    // our client doesn't terminate the connection
+    clearLivenessPingTimeout();
 
     // Use `WebSocket#terminate()`, which immediately destroys the connection,
     // instead of `WebSocket#close()`, which waits for the close timer.
     // Delay should be equal to the interval at which your server
     // sends out pings plus a conservative assumption of the latency.
-    pingTimeout = setTimeout(() => {
+    livenessPingTimeout = setTimeout(() => {
       if (ws) {
         ws.terminate();
       }
@@ -90,6 +91,12 @@ export function initializeWebsockets() {
   }
 
   ws.on("open", function open() {
+    // clear out the retry timeout
+    clearWebsocketRetryTimeout();
+
+    // reset long reconnect flag
+    useLongReconnectDelay = false;
+
     // RESET reconnect delay
     currentReconnectDelay = INITIAL_RECONNECT_DELAY;
     logIt("websockets connection open");
@@ -103,20 +110,18 @@ export function initializeWebsockets() {
 
   ws.on("close", function close(code, reason) {
     if (code !== 1000) {
-      // clear this client side timeout
-      if (pingTimeout) {
-        clearTimeout(pingTimeout);
-      }
+      useLongReconnectDelay = false;
       retryConnection();
     }
   });
 
-  ws.on("unexpected-response", function unexpectedResponse(request, response) {
-    logIt(`unexpected websockets response: ${response.statusCode}`);
+  ws.on('unexpected-response', function unexpectedResponse(request: any, response: any) {
+    logIt(`unexpected websocket response: ${response.statusCode}`);
 
     if (response.statusCode === 426) {
-      console.error("websockets request had invalid headers. Are you behind a proxy?");
-    } else {
+      logIt('websocket request had invalid headers. Are you behind a proxy?');
+    } else if (response.statusCode >= 500) {
+      useLongReconnectDelay = true;
       retryConnection();
     }
   });
@@ -128,13 +133,22 @@ export function initializeWebsockets() {
 
 function retryConnection() {
   if (!retryTimeout) {
-    const delay: number = getDelay();
 
-    if (currentReconnectDelay < MAX_RECONNECT_DELAY) {
-      // multiply until we've reached the max reconnect
-      currentReconnectDelay *= 2;
+    // clear this client side liveness timeout
+    clearLivenessPingTimeout();
+
+    let delay: number = getDelay();
+    if (useLongReconnectDelay) {
+      // long reconnect (5 minutes)
+      delay = LONG_RECONNECT_DELAY;
     } else {
-      currentReconnectDelay = Math.min(currentReconnectDelay, MAX_RECONNECT_DELAY);
+      // shorter reconnect: 10 to 50 seconds
+      if (currentReconnectDelay < MAX_RECONNECT_DELAY) {
+        // multiply until we've reached the max reconnect
+        currentReconnectDelay *= 2;
+      } else {
+        currentReconnectDelay = Math.min(currentReconnectDelay, MAX_RECONNECT_DELAY);
+      }
     }
 
     logIt(`retrying websocket connection in ${delay / 1000} second(s)`);
@@ -158,11 +172,15 @@ function getRandomNumberWithinRange(min: number, max: number) {
   return Math.floor(Math.random() * (max - min) + min);
 }
 
-export function clearWebsocketConnectionRetryTimeout() {
+export function disposeWebsocketTimeouts() {
   clearWebsocketRetryTimeout();
-  if (pingTimeout) {
-    clearTimeout(pingTimeout);
-    pingTimeout = null;
+  clearLivenessPingTimeout();
+}
+
+function clearLivenessPingTimeout() {
+  if (livenessPingTimeout) {
+    clearTimeout(livenessPingTimeout);
+    livenessPingTimeout = undefined;
   }
 }
 
@@ -184,8 +202,6 @@ const handleIncomingMessage = (data: any) => {
       case "user_integration_connection":
         handleIntegrationConnectionSocketEvent(message.body);
         break;
-      default:
-        console.warn("received unhandled websocket message type", data);
     }
   } catch (e) {
     let dataStr: string = '';
