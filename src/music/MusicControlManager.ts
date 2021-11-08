@@ -24,7 +24,7 @@ import {
   getTrack,
   getRunningTrack,
 } from "cody-music";
-import { window, ViewColumn, commands } from "vscode";
+import { window, ViewColumn, commands, WebviewPanel } from "vscode";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { showQuickPick } from "../MenuManager";
 import { playInitialization, playNextLikedSong, playPreviousLikedSongs } from "../managers/PlaylistControlManager";
@@ -639,17 +639,24 @@ export function buildSpotifyLink(id: string, isPlaylist: boolean) {
   return link;
 }
 
+let currentPanel: WebviewPanel | undefined = undefined;
+
 export async function displayMusicTimeMetricsMarkdownDashboard() {
   const isRegistered = checkRegistration();
   if (!isRegistered) {
     return;
   }
 
+  if (currentPanel) {
+    // dipose the previous one
+    currentPanel.dispose();
+  }
+
   const viewOptions = {
     viewColumn: ViewColumn.One,
     preserveFocus: false,
   };
-  const panel = window.createWebviewPanel(
+  currentPanel = window.createWebviewPanel(
     "music-time-preview",
     "Music Time Dashboard",
     viewOptions, {
@@ -659,9 +666,9 @@ export async function displayMusicTimeMetricsMarkdownDashboard() {
 
   const resp = await appGet("/plugin/music");
   if (isResponseOk(resp)) {
-    panel.webview.html = resp.data;
+    currentPanel.webview.html = resp.data;
   } else {
     window.showErrorMessage('Unable to generate dashboard. Please try again later.');
-    panel.webview.html = await getConnectionErrorHtml();
+    currentPanel.webview.html = await getConnectionErrorHtml();
   }
 }
