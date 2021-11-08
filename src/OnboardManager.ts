@@ -1,8 +1,8 @@
 import { window, ExtensionContext } from "vscode";
-import { serverIsAvailable } from "./DataController";
 import { showOfflinePrompt, getOsUsername, getHostname } from "./Util";
 import { softwarePost, isResponseOk } from "./HttpClient";
 import { getAuthCallbackState, getItem, getPluginUuid, setAuthCallbackState, setItem } from "./managers/FileManager";
+import { serverIsAvailable } from './DataController';
 
 let retry_counter = 0;
 const one_min_millis = 1000 * 60;

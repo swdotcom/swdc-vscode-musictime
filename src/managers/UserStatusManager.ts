@@ -1,5 +1,5 @@
 import { commands, window } from "vscode";
-import { api_endpoint, launch_url } from "../Constants";
+import { api_endpoint, app_endpoint } from "../Constants";
 import { isResponseOk, softwareGet } from "../HttpClient";
 import { showQuickPick } from "../MenuManager";
 import { launchWebUrl, getPluginType, getVersion, getPluginId } from "../Util";
@@ -20,7 +20,7 @@ export function updatedAuthAdded(val: boolean) {
 export async function getUser(jwt) {
   if (jwt) {
     let api = `/users/me`;
-    let resp = await softwareGet(api, jwt);
+    let resp = await softwareGet(api);
     if (isResponseOk(resp)) {
       if (resp && resp.data && resp.data.data) {
         const user = resp.data.data;
@@ -98,11 +98,11 @@ export async function launchLogin(loginType: string = "software", switching_acco
 
   if (loginType === "github") {
     // github signup/login flow
-    obj["redirect"] = launch_url;
+    obj["redirect"] = app_endpoint;
     url = `${api_endpoint}/auth/github`;
   } else if (loginType === "google") {
     // google signup/login flow
-    obj["redirect"] = launch_url;
+    obj["redirect"] = app_endpoint;
     url = `${api_endpoint}/auth/google`;
   } else {
     // email login
@@ -110,9 +110,9 @@ export async function launchLogin(loginType: string = "software", switching_acco
     obj["auth"] = "software";
     if (switching_account) {
       obj["login"] = true;
-      url = `${launch_url}/onboarding`;
+      url = `${app_endpoint}/onboarding`;
     } else {
-      url = `${launch_url}/email-signup`;
+      url = `${app_endpoint}/email-signup`;
     }
   }
 
@@ -142,7 +142,7 @@ export async function lazilyPollForAuth(tries: number = 20) {
 async function getUserRegistrationInfo() {
   const token = getAuthCallbackState(false) || getItem("jwt");
   // fetch the user
-  let resp = await softwareGet("/users/plugin/state", token);
+  let resp = await softwareGet("/users/plugin/state", {}, token);
   let user = isResponseOk(resp) && resp.data ? resp.data.user : null;
 
   // only update if its a registered, not anon user

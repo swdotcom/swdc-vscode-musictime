@@ -1,5 +1,5 @@
 import { workspace, extensions, window, WorkspaceFolder, commands } from "vscode";
-import { MUSIC_TIME_EXT_ID, launch_url, MUSIC_TIME_PLUGIN_ID, MUSIC_TIME_TYPE, SOFTWARE_FOLDER, CODE_TIME_EXT_ID } from "./Constants";
+import { MUSIC_TIME_EXT_ID, app_endpoint, MUSIC_TIME_PLUGIN_ID, MUSIC_TIME_TYPE, SOFTWARE_FOLDER, CODE_TIME_EXT_ID } from "./Constants";
 import { CodyResponse, CodyResponseType } from "cody-music";
 import { getItem } from "./managers/FileManager";
 import { isGitProject } from "./repo/GitUtil";
@@ -9,6 +9,7 @@ const fileIt = require("file-it");
 const moment = require("moment-timezone");
 const open = require("open");
 const fs = require("fs");
+const path = require('path');
 const os = require("os");
 const crypto = require("crypto");
 
@@ -372,7 +373,7 @@ export function launchMusicAnalytics() {
   if (!isRegistered) {
     return;
   }
-  open(`${launch_url}/music`);
+  open(`${app_endpoint}/music`);
 }
 
 export function checkRegistration(showSignup = true) {
@@ -468,4 +469,10 @@ export function getCodyErrorMessage(response: CodyResponse) {
 export function getFileDataArray(file) {
   let payloads: any[] = fileIt.readJsonArraySync(file);
   return payloads;
+}
+
+export function getImage(name: string) {
+  const resourcePath: string = path.join(__dirname, 'images');
+  const file = path.join(resourcePath, name);
+  return file;
 }

@@ -54,12 +54,12 @@ export async function disconnectSlack() {
     if (selection === DISCONNECT_LABEL) {
       if (selectedItem === "all") {
         for await (const workspace of workspaces) {
-          await softwareDelete(`/integrations/${workspace.id}`, getItem("jwt"));
+          await softwareDelete(`/integrations/${workspace.id}`);
           removeSlackIntegration(workspace.authId);
         }
         window.showInformationMessage("Disconnected selected Slack integrations");
       } else {
-        await softwareDelete(`/integrations/${selectedItem}`, getItem("jwt"));
+        await softwareDelete(`/integrations/${selectedItem}`);
         removeSlackIntegration(selectedItem);
         window.showInformationMessage("Disconnected selected Slack integration");
       }
@@ -88,7 +88,7 @@ export async function disconnectSlackAuth(authId) {
   );
 
   if (selection === DISCONNECT_LABEL) {
-    await softwareDelete(`/integrations/${integration.id}`, getItem("jwt"));
+    await softwareDelete(`/integrations/${integration.id}`);
     // disconnected, remove it from the integrations
     removeSlackIntegration(authId);
 

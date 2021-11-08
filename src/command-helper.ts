@@ -11,7 +11,6 @@ import { MusicCommandUtil } from "./music/MusicCommandUtil";
 import { showSearchInput } from "./selector/SearchSelectorManager";
 import { MusicStateManager } from "./music/MusicStateManager";
 import { connectSpotify, disconnectSpotify, switchSpotifyAccount } from "./managers/SpotifyManager";
-import { displayReadmeIfNotExists } from "./managers/FileManager";
 import { launchLogin, showLogInMenuOptions, showSignUpMenuOptions } from "./managers/UserStatusManager";
 import { MusicTimeWebviewSidebar } from "./sidebar/MusicTimeWebviewSidebar";
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from "./app/utils/view_constants";
@@ -35,6 +34,7 @@ import {
 } from "./managers/PlaylistDataManager";
 import { launchTrackPlayer, playSelectedItem } from "./managers/PlaylistControlManager";
 import { vscode_mt_issues_url } from "./Constants";
+import { displayReadmeIfNotExists } from './DataController';
 
 /**
  * add the commands to vscode....

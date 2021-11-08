@@ -24,7 +24,7 @@ import {
   getTrack,
   getRunningTrack,
 } from "cody-music";
-import { window, ViewColumn, Uri, commands } from "vscode";
+import { window, ViewColumn, commands } from "vscode";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { showQuickPick } from "../MenuManager";
 import { playInitialization, playNextLikedSong, playPreviousLikedSongs } from "../managers/PlaylistControlManager";
@@ -37,10 +37,8 @@ import {
 } from "../app/utils/view_constants";
 import { MusicStateManager } from "./MusicStateManager";
 import { SocialShareManager } from "../social/SocialShareManager";
-import { tmpdir } from "os";
 import { MusicPlaylistManager } from "./MusicPlaylistManager";
 import { MusicCommandUtil } from "./MusicCommandUtil";
-import { fetchMusicTimeMetricsMarkdownDashboard, getMusicTimeMarkdownFile, getSoftwareDir } from "../managers/FileManager";
 import { connectSpotify, isPremiumUser } from "../managers/SpotifyManager";
 import {
   getBestActiveDevice,
@@ -60,8 +58,9 @@ import {
   updateLikedStatusInPlaylist,
 } from "../managers/PlaylistDataManager";
 import { connectSlackWorkspace, hasSlackWorkspaces } from "../managers/SlackManager";
+import { appGet, isResponseOk } from '../HttpClient';
+import { getConnectionErrorHtml } from './404';
 
-const fileIt = require("file-it");
 const clipboardy = require("clipboardy");
 
 export class MusicControlManager {
@@ -646,20 +645,23 @@ export async function displayMusicTimeMetricsMarkdownDashboard() {
     return;
   }
 
-  const musicTimeFile = getMusicTimeMarkdownFile();
-  await fetchMusicTimeMetricsMarkdownDashboard();
-
   const viewOptions = {
     viewColumn: ViewColumn.One,
     preserveFocus: false,
   };
-  const localResourceRoots = [Uri.file(getSoftwareDir()), Uri.file(tmpdir())];
-  const panel = window.createWebviewPanel("music-time-preview", `Music Time Dashboard`, viewOptions, {
-    enableFindWidget: true,
-    localResourceRoots,
-    enableScripts: true, // enables javascript that may be in the content
-  });
+  const panel = window.createWebviewPanel(
+    "music-time-preview",
+    "Music Time Dashboard",
+    viewOptions, {
+      enableScripts: true
+    }
+  );
 
-  const content = fileIt.readContentFileSync(musicTimeFile);
-  panel.webview.html = content;
+  const resp = await appGet("/plugin/music");
+  if (isResponseOk(resp)) {
+    panel.webview.html = resp.data;
+  } else {
+    window.showErrorMessage('Unable to generate dashboard. Please try again later.');
+    panel.webview.html = await getConnectionErrorHtml();
+  }
 }

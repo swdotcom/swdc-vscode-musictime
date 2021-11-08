@@ -10,21 +10,11 @@ export const UNTITLED_WORKSPACE = "UntitledWorkspace";
 export const NO_PROJ_NAME = "Unnamed";
 export const DEFAULT_DURATION = 60;
 export const DEFAULT_DURATION_MILLIS = DEFAULT_DURATION * 1000;
-export const MILLIS_PER_HOUR = 1000 * 60 * 60;
-export const MILLIS_PER_MINUTE = 1000 * 60;
-export const LONG_THRESHOLD_HOURS = 12;
-export const SHORT_THRESHOLD_HOURS = 1;
-export const CODE_TIME_PLUGIN_ID = 2;
 export const MUSIC_TIME_PLUGIN_ID = 13;
 
 export const SOFTWARE_FOLDER = ".software";
-
-// API ENDPOINT
 export const api_endpoint = "https://api.software.com";
-
-// DASHBOARD URL
-export const launch_url = "https://app.software.com";
-
+export const app_endpoint = "https://app.software.com";
 export const websockets_url = "wss://api.software.com/websockets";
 
 export const vscode_mt_issues_url = "https://github.com/swdotcom/swdc-vscode-musictime/issues";

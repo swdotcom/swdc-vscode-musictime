@@ -363,7 +363,7 @@ export async function fetchTracksForPlaylist(playlist_id) {
 ////////////////////////////////////////////////////////////////
 
 export async function getUserMusicMetrics() {
-  const resp = await softwareGet("/music/metrics", getItem("jwt"));
+  const resp = await softwareGet("/music/metrics");
   if (isResponseOk(resp) && resp.data) {
     userMusicMetrics = resp.data.user_music_metrics;
     if (userMusicMetrics) {
