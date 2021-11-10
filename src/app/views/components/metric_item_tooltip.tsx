@@ -2,22 +2,31 @@ import React from "react";
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import List from "@material-ui/core/List";
 import ListItemText from "@material-ui/core/ListItemText";
+import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import ListItem from "@material-ui/core/ListItem";
 import PropTypes from "prop-types";
-import Grid from "@material-ui/core/Grid";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    primaryListText: {
-      fontWeight: 300,
+    labelText: {
+      wrap: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
     },
-    secondaryListText: {
-      fontWeight: 600,
+    primaryListText: {
+      fontWeight: 700,
+      color: "white",
+    },
+    mainSecondaryListText: {
+      fontWeight: 500,
+      wrap: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
     },
     statItem: {
       display: "flex",
-      justifyContent: "center",
-      textAlign: "center",
+      justifyContent: "right",
+      textAlign: "right"
     },
   })
 );
@@ -26,34 +35,20 @@ export default function MetricItemTooltip(props) {
   const classes = useStyles();
 
   return (
-    <Grid container direction="row">
-      <Grid item key={`metric-item-tooltip-grid-item-container`} xs={12}>
-        <Grid container direction="row">
-          <Grid item key={`metric-item-tooltip-grid-item-plays`} xs>
-            <List dense>
-              <ListItem key="plays-info" className={classes.statItem}>
-                <ListItemText
-                  primary="plays"
-                  secondary={props.item.plays}
-                  classes={{ primary: classes.primaryListText, secondary: classes.secondaryListText }}
-                />
-              </ListItem>
-            </List>
-          </Grid>
-          <Grid item key={`metric-item-tooltip-grid-item-productivity`} xs>
-            <List dense>
-              <ListItem key="productivity-info" className={classes.statItem}>
-                <ListItemText
-                  primary="productivity"
-                  secondary={props.item.productivity_score}
-                  classes={{ primary: classes.primaryListText, secondary: classes.secondaryListText }}
-                />
-              </ListItem>
-            </List>
-          </Grid>
-        </Grid>
-      </Grid>
-    </Grid>
+    <List disablePadding={true} dense={true}>
+      <ListItem key={`metric-item-tooltip-grid-item-container`} disableGutters={true} dense={true}>
+        <ListItemText
+          primary="Active Code Time"
+          secondary={Math.max((props.item.active_codetime_seconds / 60), 1).toFixed(0) + "m"}
+          classes={{ primary: classes.primaryListText, secondary: classes.mainSecondaryListText }}
+          style={{ paddingRight: 50 }}
+        />
+        <ListItemSecondaryAction className={classes.statItem}>
+          <ListItemText primary="Plays" secondary={props.item.song_plays}
+          classes={{ primary: classes.primaryListText, secondary: classes.mainSecondaryListText }} />
+        </ListItemSecondaryAction>
+      </ListItem>
+    </List>
   );
 }
 

@@ -198,16 +198,21 @@ async function playMusicSelection() {
   const isLikedSong = !!(playlist_id === SPOTIFY_LIKED_SONGS_PLAYLIST_ID);
   const desktopSelected = !!(selectedPlayer === PlayerName.SpotifyDesktop);
   const isRecommendationTrack = !!(
-    selectedPlaylistItem.type === "recommendation" || selectedPlaylistItem["playlist_id"] === RECOMMENDATION_PLAYLIST_ID
+    selectedPlaylistItem.type === "recommendation" ||
+    selectedPlaylistItem["playlist_id"] === RECOMMENDATION_PLAYLIST_ID
   );
+  const isRankedTrack = !!(selectedPlaylistItem["rank"])
 
-  const trackId = createSpotifyIdFromUri(selectedPlaylistItem.id);
-  const trackUri = createUriFromTrackId(selectedPlaylistItem.id);
+  const songId = selectedPlaylistItem.id ? selectedPlaylistItem.id : selectedPlaylistItem["song_id"];
+  const trackId = createSpotifyIdFromUri(songId);
+  const trackUri = createUriFromTrackId(songId);
   let result = undefined;
 
-  if (isRecommendationTrack || isLikedSong) {
+  if (isRecommendationTrack || isLikedSong || isRankedTrack) {
     try {
-      if (isRecommendationTrack) {
+      if (isRankedTrack) {
+        play(PlayerName.SpotifyWeb, { device_id: device?.id, uris: [trackUri], offset: 0 });
+      } else if (isRecommendationTrack) {
         const recommendationTrackUris = getRecommendationURIsFromTrackId(trackId);
         play(PlayerName.SpotifyWeb, { device_id: device?.id, uris: recommendationTrackUris, offset: 0 });
       } else {

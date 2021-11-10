@@ -15,7 +15,6 @@ export const MUSIC_TIME_PLUGIN_ID = 13;
 export const SOFTWARE_FOLDER = ".software";
 export const api_endpoint = "https://api.software.com";
 export const app_endpoint = "https://app.software.com";
-export const websockets_url = "wss://api.software.com/websockets";
 
 export const vscode_mt_issues_url = "https://github.com/swdotcom/swdc-vscode-musictime/issues";
 

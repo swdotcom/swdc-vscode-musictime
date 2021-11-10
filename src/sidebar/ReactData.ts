@@ -107,6 +107,7 @@ async function getViewData(selectedTabView, playlist_id, spotifyUser) {
   let softwareTop40Playlist = undefined;
   let selectedPlaylistId = undefined;
   let userMusicMetrics = [];
+  let globalMusicMetrics = [];
   let averageMusicMetrics = undefined;
   let recommendationInfo = [];
   let musicScatterData = undefined;
@@ -124,6 +125,7 @@ async function getViewData(selectedTabView, playlist_id, spotifyUser) {
     } else if (selectedTabView === "metrics") {
       const metricsData = await getCachedUserMetricsData();
       userMusicMetrics = metricsData.userMusicMetrics ?? [];
+      globalMusicMetrics = metricsData.globalMusicMetrics ?? [];
       averageMusicMetrics = metricsData.averageMusicMetrics ?? [];
       musicScatterData = metricsData.musicScatterData;
     } else if (selectedTabView === "recommendations") {
@@ -138,6 +140,7 @@ async function getViewData(selectedTabView, playlist_id, spotifyUser) {
     softwareTop40Playlist,
     selectedPlaylistId,
     userMusicMetrics,
+    globalMusicMetrics,
     musicScatterData,
     averageMusicMetrics,
     recommendationInfo,

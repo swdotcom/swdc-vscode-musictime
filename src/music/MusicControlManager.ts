@@ -24,11 +24,11 @@ import {
   getTrack,
   getRunningTrack,
 } from "cody-music";
-import { window, ViewColumn, commands, WebviewPanel } from "vscode";
+import { window, commands } from "vscode";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { showQuickPick } from "../MenuManager";
 import { playInitialization, playNextLikedSong, playPreviousLikedSongs } from "../managers/PlaylistControlManager";
-import { createSpotifyIdFromUri, createUriFromTrackId, isMac, getCodyErrorMessage, isWindows, checkRegistration } from "../Util";
+import { createSpotifyIdFromUri, createUriFromTrackId, isMac, getCodyErrorMessage, isWindows } from "../Util";
 import {
   SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
   OK_LABEL,
@@ -58,8 +58,6 @@ import {
   updateLikedStatusInPlaylist,
 } from "../managers/PlaylistDataManager";
 import { connectSlackWorkspace, hasSlackWorkspaces } from "../managers/SlackManager";
-import { appGet, isResponseOk } from '../HttpClient';
-import { getConnectionErrorHtml } from './404';
 
 const clipboardy = require("clipboardy");
 
@@ -458,12 +456,6 @@ export class MusicControlManager {
     const hasSlackAccess = hasSlackWorkspaces();
 
     menuOptions.items.push({
-      label: "Dashboard",
-      detail: "View your latest music metrics right here in your editor",
-      cb: displayMusicTimeMetricsMarkdownDashboard,
-    });
-
-    menuOptions.items.push({
       label: "Submit an issue on GitHub",
       detail: "Encounter a bug? Submit an issue on our GitHub page",
       url: "https://github.com/swdotcom/swdc-vscode-musictime/issues",
@@ -637,38 +629,4 @@ export function buildSpotifyLink(id: string, isPlaylist: boolean) {
   }
 
   return link;
-}
-
-let currentPanel: WebviewPanel | undefined = undefined;
-
-export async function displayMusicTimeMetricsMarkdownDashboard() {
-  const isRegistered = checkRegistration();
-  if (!isRegistered) {
-    return;
-  }
-
-  if (currentPanel) {
-    // dipose the previous one
-    currentPanel.dispose();
-  }
-
-  const viewOptions = {
-    viewColumn: ViewColumn.One,
-    preserveFocus: false,
-  };
-  currentPanel = window.createWebviewPanel(
-    "music-time-preview",
-    "Music Time Dashboard",
-    viewOptions, {
-      enableScripts: true
-    }
-  );
-
-  const resp = await appGet("/plugin/music");
-  if (isResponseOk(resp)) {
-    currentPanel.webview.html = resp.data;
-  } else {
-    window.showErrorMessage('Unable to generate dashboard. Please try again later.');
-    currentPanel.webview.html = await getConnectionErrorHtml();
-  }
 }

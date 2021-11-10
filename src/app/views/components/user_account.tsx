@@ -13,7 +13,7 @@ import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import IconButton from "@material-ui/core/IconButton";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import AudioControl from "./audio_control";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import ExpandLessIcon from "@material-ui/icons/ExpandLess";
 import SlackWorkspaces from "./slack_workspaces";
 import {
   GoogleIcon,
@@ -23,10 +23,9 @@ import {
   DocumentIcon,
   SpotifyIcon,
   MuiHeadsetIcon,
-  MuiDashboardIcon,
   MuiSettingsRemoteIcon,
   MuiSettingsIcon,
-  SlackFolderIcon,
+  SlackFolderIcon
 } from "../icons";
 import { grey } from "@material-ui/core/colors";
 
@@ -73,14 +72,6 @@ export default function UserAccount(props) {
   function documentationClickHandler() {
     const command = {
       action: "musictime.launchReadme",
-      command: "command_execute",
-    };
-    props.vscode.postMessage(command);
-  }
-
-  function dashboardClickHandler() {
-    const command = {
-      action: "musictime.displayDashboard",
       command: "command_execute",
     };
     props.vscode.postMessage(command);
@@ -139,7 +130,7 @@ export default function UserAccount(props) {
       <Accordion defaultExpanded={false} className={classes.containerRoot} square={true}>
         <AccordionSummary
           classes={{ root: classes.root, content: classes.root }}
-          expandIcon={<ExpandMoreIcon style={{ color: "white" }} />}
+          expandIcon={<ExpandLessIcon style={{ color: "white" }} />}
           IconButtonProps={{ edge: false }}
           aria-controls="panel1c-content"
           id="panel1c-header"
@@ -214,13 +205,6 @@ export default function UserAccount(props) {
                   </IconButton>
                 </Tooltip>
               </ListItemSecondaryAction>
-            </ListItem>
-
-            <ListItem key="dashboard-li" disableGutters={true} dense={true} button onClick={dashboardClickHandler}>
-              <ListItemIcon className={classes.listItemIcon}>
-                <MuiDashboardIcon />
-              </ListItemIcon>
-              <ListItemText id="report-dashboard-li" primary="Dashboard" />
             </ListItem>
 
             <ListItem key="documentation" disableGutters={true} dense={true} button onClick={documentationClickHandler}>
