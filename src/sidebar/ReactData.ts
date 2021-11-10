@@ -34,6 +34,7 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
   let selectedPlaylistId = undefined;
   let recommendationInfo = [];
   let userMusicMetrics = [];
+  let globalMusicMetrics = [];
   let averageMusicMetrics = undefined;
   let spotifyPlayerContext = undefined;
   let currentlyRunningTrack = undefined;
@@ -55,6 +56,7 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
       softwareTop40Playlist = data.softwareTop40Playlist;
       selectedPlaylistId = data.selectedPlaylistId;
       userMusicMetrics = data.userMusicMetrics;
+      globalMusicMetrics = data.globalMusicMetrics;
       averageMusicMetrics = data.averageMusicMetrics;
       recommendationInfo = data.recommendationInfo;
       musicScatterData = data.musicScatterData;
@@ -72,6 +74,7 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
     selectedTabView,
     recommendationInfo,
     userMusicMetrics,
+    globalMusicMetrics,
     averageMusicMetrics,
     musicScatterData,
     likedSongsTracks,

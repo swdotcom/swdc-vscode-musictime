@@ -6,7 +6,7 @@ import CardHeader from "@material-ui/core/CardHeader";
 import MetricItemNode from "./metric_item_node";
 import Typography from "@material-ui/core/Typography";
 import MetricsSetup from "./metrics_setup";
-import { grey, orange } from "@material-ui/core/colors";
+import { grey, orange, deepPurple } from "@material-ui/core/colors";
 import FormGroup from '@material-ui/core/FormGroup';
 import Switch from '@material-ui/core/Switch';
 import Grid from '@material-ui/core/Grid';
@@ -191,12 +191,12 @@ export default function Metrics(props) {
             <div className={classes.headerActionButtons}>
               <FormGroup>
                 <Typography component="div">
-                  <Grid component="label" container alignItems="center" spacing={1} xs={12}>
-                    <Grid item xs={4}>You</Grid>
+                  <Grid component="label" container alignItems="center" spacing={1}>
+                    <Grid item xs={5} style={{marginRight: 2}}>Global</Grid>
                     <Grid item xs={4}>
                       <AntSwitch checked={state.userChecked} onChange={handleChange} name="userChecked" />
                     </Grid>
-                    <Grid item xs={4}>Global</Grid>
+                    <Grid item xs={2} style={{color: deepPurple[300] }}>You</Grid>
                   </Grid>
                 </Typography>
               </FormGroup>
