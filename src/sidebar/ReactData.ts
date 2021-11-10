@@ -15,6 +15,7 @@ import {
   getSelectedTabView,
   getSpotifyLikedPlaylist,
   isLikedSong,
+  isUserMetricsSelected,
 } from "../managers/PlaylistDataManager";
 import { getSlackWorkspaces, hasSlackWorkspaces } from "../managers/SlackManager";
 import { getConnectedSpotifyUser } from "../managers/SpotifyManager";
@@ -26,6 +27,7 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
   const spotifyUser = getConnectedSpotifyUser();
 
   const selectedTabView = tab_view ? tab_view : getSelectedTabView();
+  const userMetricsSelected = isUserMetricsSelected();
 
   let spotifyPlaylists = [];
   let likedSongsTracks = [];
@@ -72,6 +74,7 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
     email: name,
     spotifyPlaylists,
     selectedTabView,
+    userMetricsSelected,
     recommendationInfo,
     userMusicMetrics,
     globalMusicMetrics,

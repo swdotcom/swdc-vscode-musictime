@@ -51,7 +51,8 @@ let cachedRunningTrack: Track = undefined;
 let spotifyContext: PlayerContext = undefined;
 let selectedPlayerName = PlayerName.SpotifyWeb;
 // playlists, recommendations, metrics
-let selectedTabView = "playlists";
+let selectedTabView: string = "playlists";
+let userMetricsSelected: boolean = true;
 let recommendationMetadata: any = undefined;
 let recommendationInfo: any = undefined;
 let sortAlphabetically: boolean = false;
@@ -126,6 +127,10 @@ export function updateSelectedPlayer(player: PlayerName) {
 
 export function updateSelectedTabView(tabView: string) {
   selectedTabView = tabView;
+}
+
+export function updateSelectedMetricSelection(selected: boolean) {
+  userMetricsSelected = selected;
 }
 
 export function updateSort(alphabetically: boolean) {
@@ -216,6 +221,10 @@ export function getSelectedTrackItem() {
 
 export function getSelectedTabView() {
   return selectedTabView;
+}
+
+export function isUserMetricsSelected() {
+  return userMetricsSelected;
 }
 
 // only playlists (not liked or recommendations)

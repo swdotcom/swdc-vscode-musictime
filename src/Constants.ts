@@ -12,9 +12,9 @@ export const DEFAULT_DURATION = 60;
 export const DEFAULT_DURATION_MILLIS = DEFAULT_DURATION * 1000;
 export const MUSIC_TIME_PLUGIN_ID = 13;
 
-export const SOFTWARE_FOLDER = ".software";
-export const api_endpoint = "https://api.software.com";
-export const app_endpoint = "https://app.software.com";
+export const SOFTWARE_FOLDER = '.software-local';//".software";
+export const api_endpoint = 'http://localhost:5000';//"https://api.software.com";
+export const app_endpoint = 'http://localhost:3000';//"https://app.software.com";
 
 export const vscode_mt_issues_url = "https://github.com/swdotcom/swdc-vscode-musictime/issues";
 

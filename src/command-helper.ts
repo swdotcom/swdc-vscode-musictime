@@ -28,6 +28,7 @@ import {
   refreshRecommendations,
   removeTrackFromPlaylist,
   requiresSpotifyAccess,
+  updateSelectedMetricSelection,
   updateSelectedPlaylistId,
   updateSelectedTabView,
   updateSort,
@@ -440,7 +441,13 @@ export function createCommands(
   );
 
   cmds.push(
-    commands.registerCommand("musictime.updateSelectedTabView", async (tabView: string) => {
+    commands.registerCommand("musictime.updateMetricSelection", async (userMetricsSelection) => {
+      updateSelectedMetricSelection(userMetricsSelection);
+    })
+  )
+
+  cmds.push(
+    commands.registerCommand("musictime.updateSelectedTabView", async (tabView) => {
       updateSelectedTabView(tabView);
       if (tabView === "recommendations") {
         // populate familiar recs, but don't refreshMusicTimeView

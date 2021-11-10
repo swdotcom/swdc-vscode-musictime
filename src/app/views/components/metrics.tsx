@@ -1,18 +1,17 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
-import { makeStyles, withStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 import MetricItemNode from "./metric_item_node";
 import Typography from "@material-ui/core/Typography";
 import MetricsSetup from "./metrics_setup";
-import { grey, orange, deepPurple } from "@material-ui/core/colors";
-import FormGroup from '@material-ui/core/FormGroup';
-import Switch from '@material-ui/core/Switch';
-import Grid from '@material-ui/core/Grid';
+import { grey, orange } from "@material-ui/core/colors";
 import Box from "@material-ui/core/Box";
 import Link from "@material-ui/core/Link";
 import Paper from "@material-ui/core/Paper";
+import Button from "@material-ui/core/Button";
+import ButtonGroup from "@material-ui/core/ButtonGroup";
 import MetricAudioDashboard from "./metric_audio_dashboard";
 
 const useStyles = makeStyles((theme) => {
@@ -41,10 +40,6 @@ const useStyles = makeStyles((theme) => {
       fontWeight: 300,
       color: grey[500],
       fontSize: 12,
-    },
-    cardHeaderIcon: {
-      marginTop: 10,
-      marginRight: 10,
     },
     headerActionButtons: {
       marginTop: 10,
@@ -95,58 +90,25 @@ TabPanel.propTypes = {
 
 let origAudioFeatures = undefined;
 
-const AntSwitch = withStyles((theme) => ({
-  root: {
-    width: 28,
-    height: 16,
-    padding: 0,
-    display: 'flex',
-  },
-  switchBase: {
-    padding: 2,
-    color: theme.palette.grey[500],
-    '&$checked': {
-      transform: 'translateX(12px)',
-      color: theme.palette.common.white,
-      '& + $track': {
-        opacity: 1,
-        backgroundColor: theme.palette.primary.main,
-        borderColor: theme.palette.primary.main,
-      },
-    },
-  },
-  thumb: {
-    width: 12,
-    height: 12,
-    boxShadow: 'none',
-  },
-  track: {
-    border: `1px solid ${theme.palette.grey[500]}`,
-    borderRadius: 16 / 2,
-    opacity: 1,
-    backgroundColor: theme.palette.common.white,
-  },
-  checked: {},
-}))(Switch);
-
 export default function Metrics(props) {
   const classes = useStyles();
   const [tabView, setTabView] = useState(0);
-  const [state, setState] = useState({
-    userChecked: true,
-  });
-  const [songMetrics, setSongMetrics] = useState(props.stateData.userMusicMetrics);
+  const [showUserMetrics, setShowUserMetrics] = useState(props.stateData.userMetricsSelected);
+  const metrics = props.stateData.userMetricsSelected ? props.stateData.userMusicMetrics: props.stateData.globalMusicMetrics;
+  const [songMetrics, setSongMetrics] = useState(metrics);
   const [liveAudioFeatures, setLiveAudioFeatures] = useState(props.stateData.averageMusicMetrics);
 
-  const handleChange = (event) => {
-    if (!event.target.checked) {
-      setSongMetrics(props.stateData.globalMusicMetrics);
-    } else {
+  function handleMetricsToggle(value) {
+    if (value === 'you') {
       setSongMetrics(props.stateData.userMusicMetrics);
+      setShowUserMetrics(true);
+      updateUserMetricsSelection(false);
+    } else {
+      setSongMetrics(props.stateData.globalMusicMetrics);
+      setShowUserMetrics(false);
+      updateUserMetricsSelection(false);
     }
-
-    setState({ ...state, [event.target.name]: event.target.checked });
-  };
+  }
 
   if (!origAudioFeatures) {
     origAudioFeatures = { ...props.stateData.averageMusicMetrics };
@@ -177,6 +139,15 @@ export default function Metrics(props) {
     props.vscode.postMessage(command);
   }
 
+  function updateUserMetricsSelection(value) {
+    const command = {
+      action: "musictime.updateMetricSelection",
+      command: "command_execute",
+      arguments: [value],
+    };
+    props.vscode.postMessage(command);
+  }
+
   return (
     <Card className={classes.root} elevation={0}>
       {props.stateData.codeTimeInstalled && (
@@ -189,17 +160,34 @@ export default function Metrics(props) {
           }
           action={
             <div className={classes.headerActionButtons}>
-              <FormGroup>
-                <Typography component="div">
-                  <Grid component="label" container alignItems="center" spacing={1}>
-                    <Grid item xs={5} style={{marginRight: 2}}>Global</Grid>
-                    <Grid item xs={4}>
-                      <AntSwitch checked={state.userChecked} onChange={handleChange} name="userChecked" />
-                    </Grid>
-                    <Grid item xs={2} style={{color: deepPurple[300] }}>You</Grid>
-                  </Grid>
-                </Typography>
-              </FormGroup>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center'
+                }}
+              >
+                <ButtonGroup size="small" variant="outlined"
+                  aria-label="You vs. global playlist metrics">
+                  {[
+                    <Button
+                      key="you_metrics"
+                      color={showUserMetrics ? "primary" : "default"}
+                      variant={showUserMetrics ? "contained" : "outlined"}
+                      onClick={()=>handleMetricsToggle('you')}>
+                      You
+                    </Button>,
+                    <Button
+                      key="global_metrics"
+                      value="global"
+                      color={showUserMetrics ? "default" : "primary"}
+                      variant={showUserMetrics ? "outlined" : "contained"}
+                      onClick={()=>handleMetricsToggle('global')}>
+                      Global
+                    </Button>,
+                  ]}
+                </ButtonGroup>
+              </Box>
               {/* <Tooltip title="Your productivity ranking">
                 <IconButton onClick={showRanking}>
                   <MuiEmojiEventsIcon color={tabView === 0 ? "primary" : "disabled"} />

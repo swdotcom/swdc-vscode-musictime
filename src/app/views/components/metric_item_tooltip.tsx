@@ -38,8 +38,8 @@ export default function MetricItemTooltip(props) {
     <List disablePadding={true} dense={true}>
       <ListItem key={`metric-item-tooltip-grid-item-container`} disableGutters={true} dense={true}>
         <ListItemText
-          primary="Active Code Time"
-          secondary={Math.max((props.item.active_codetime_seconds / 60), 1).toFixed(0) + "m"}
+          primary="Score"
+          secondary={props.item.keystrokes_per_minute}
           classes={{ primary: classes.primaryListText, secondary: classes.mainSecondaryListText }}
           style={{ paddingRight: 50 }}
         />
