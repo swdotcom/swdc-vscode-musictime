@@ -24,11 +24,11 @@ import {
   getTrack,
   getRunningTrack,
 } from "cody-music";
-import { window, ViewColumn, Uri, commands } from "vscode";
+import { window, commands } from "vscode";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { showQuickPick } from "../MenuManager";
 import { playInitialization, playNextLikedSong, playPreviousLikedSongs } from "../managers/PlaylistControlManager";
-import { createSpotifyIdFromUri, createUriFromTrackId, isMac, getCodyErrorMessage, isWindows, checkRegistration } from "../Util";
+import { createSpotifyIdFromUri, createUriFromTrackId, isMac, getCodyErrorMessage, isWindows } from "../Util";
 import {
   SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
   OK_LABEL,
@@ -37,10 +37,8 @@ import {
 } from "../app/utils/view_constants";
 import { MusicStateManager } from "./MusicStateManager";
 import { SocialShareManager } from "../social/SocialShareManager";
-import { tmpdir } from "os";
 import { MusicPlaylistManager } from "./MusicPlaylistManager";
 import { MusicCommandUtil } from "./MusicCommandUtil";
-import { fetchMusicTimeMetricsMarkdownDashboard, getMusicTimeMarkdownFile, getSoftwareDir } from "../managers/FileManager";
 import { connectSpotify, isPremiumUser } from "../managers/SpotifyManager";
 import {
   getBestActiveDevice,
@@ -61,7 +59,6 @@ import {
 } from "../managers/PlaylistDataManager";
 import { connectSlackWorkspace, hasSlackWorkspaces } from "../managers/SlackManager";
 
-const fileIt = require("file-it");
 const clipboardy = require("clipboardy");
 
 export class MusicControlManager {
@@ -459,12 +456,6 @@ export class MusicControlManager {
     const hasSlackAccess = hasSlackWorkspaces();
 
     menuOptions.items.push({
-      label: "Dashboard",
-      detail: "View your latest music metrics right here in your editor",
-      cb: displayMusicTimeMetricsMarkdownDashboard,
-    });
-
-    menuOptions.items.push({
       label: "Submit an issue on GitHub",
       detail: "Encounter a bug? Submit an issue on our GitHub page",
       url: "https://github.com/swdotcom/swdc-vscode-musictime/issues",
@@ -638,28 +629,4 @@ export function buildSpotifyLink(id: string, isPlaylist: boolean) {
   }
 
   return link;
-}
-
-export async function displayMusicTimeMetricsMarkdownDashboard() {
-  const isRegistered = checkRegistration();
-  if (!isRegistered) {
-    return;
-  }
-
-  const musicTimeFile = getMusicTimeMarkdownFile();
-  await fetchMusicTimeMetricsMarkdownDashboard();
-
-  const viewOptions = {
-    viewColumn: ViewColumn.One,
-    preserveFocus: false,
-  };
-  const localResourceRoots = [Uri.file(getSoftwareDir()), Uri.file(tmpdir())];
-  const panel = window.createWebviewPanel("music-time-preview", `Music Time Dashboard`, viewOptions, {
-    enableFindWidget: true,
-    localResourceRoots,
-    enableScripts: true, // enables javascript that may be in the content
-  });
-
-  const content = fileIt.readContentFileSync(musicTimeFile);
-  panel.webview.html = content;
 }

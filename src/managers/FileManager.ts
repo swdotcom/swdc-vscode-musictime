@@ -1,20 +1,16 @@
-import { isWindows, getNowTimes, isLinux } from "../Util";
+import { isWindows, getNowTimes } from "../Util";
 import { v4 as uuidv4 } from "uuid";
-import { commands, Uri, ViewColumn, window } from "vscode";
+import { window } from "vscode";
 import * as path from "path";
-import { softwareGet, softwarePost } from "../HttpClient";
 import { SOFTWARE_FOLDER } from "../Constants";
 import { formatISO } from 'date-fns';
 
 const outputChannel = window.createOutputChannel('MusicTime');
 
-const moment = require("moment-timezone");
-
 const fileIt = require("file-it");
 const fs = require("fs");
 const os = require("os");
 
-let lastDayOfMonth = -1;
 const NO_DATA = `MUSIC TIME
     Listen to Spotify while coding to generate this playlist`;
 
@@ -195,25 +191,6 @@ export function getLocalREADMEFile() {
   return file;
 }
 
-export function displayReadmeIfNotExists(override = false) {
-  const vscode_musictime_initialized = getItem("displayedMtReadme");
-  if (!vscode_musictime_initialized) {
-    // activate the plugin
-    softwarePost("/plugins/activate", {}, getItem("jwt"));
-  }
-
-  if (!vscode_musictime_initialized || override) {
-    setTimeout(() => {
-      commands.executeCommand("musictime.displaySidebar");
-    }, 1000);
-
-    const readmeUri = Uri.file(getLocalREADMEFile());
-
-    commands.executeCommand("markdown.showPreview", readmeUri, ViewColumn.One);
-    setItem("displayedMtReadme", true);
-  }
-}
-
 export function getLogId() {
   return 'MusicTime';
 }
@@ -231,33 +208,4 @@ export function isNewDay() {
   const { day } = getNowTimes();
   const currentDay = getItem("currentDay");
   return currentDay !== day ? true : false;
-}
-
-export async function fetchMusicTimeMetricsMarkdownDashboard() {
-  let file = getMusicTimeMarkdownFile();
-
-  const dayOfMonth = moment().startOf("day").date();
-  if (!fs.existsSync(file) || lastDayOfMonth !== dayOfMonth) {
-    lastDayOfMonth = dayOfMonth;
-    await fetchDashboardData(file, true);
-  }
-}
-
-export async function fetchMusicTimeMetricsDashboard() {
-  let file = getMusicTimeFile();
-
-  const dayOfMonth = moment().startOf("day").date();
-  if (fs.existsSync(file) || lastDayOfMonth !== dayOfMonth) {
-    lastDayOfMonth = dayOfMonth;
-    await fetchDashboardData(file, false);
-  }
-}
-
-async function fetchDashboardData(fileName: string, isHtml: boolean) {
-  const musicSummary = await softwareGet(`/dashboard/music?linux=${isLinux()}&html=${isHtml}`, getItem("jwt"));
-
-  // get the content
-  let content = musicSummary && musicSummary.data ? musicSummary.data : NO_DATA;
-
-  fileIt.writeContentFileSync(fileName, content);
 }

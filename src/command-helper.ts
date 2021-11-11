@@ -1,5 +1,5 @@
 import { commands, Disposable, window, ExtensionContext } from "vscode";
-import { MusicControlManager, displayMusicTimeMetricsMarkdownDashboard } from "./music/MusicControlManager";
+import { MusicControlManager } from "./music/MusicControlManager";
 import { launchMusicAnalytics, launchWebUrl } from "./Util";
 import { PlaylistItem, PlayerName, PlayerDevice, playSpotifyDevice } from "cody-music";
 import { SocialShareManager } from "./social/SocialShareManager";
@@ -11,7 +11,6 @@ import { MusicCommandUtil } from "./music/MusicCommandUtil";
 import { showSearchInput } from "./selector/SearchSelectorManager";
 import { MusicStateManager } from "./music/MusicStateManager";
 import { connectSpotify, disconnectSpotify, switchSpotifyAccount } from "./managers/SpotifyManager";
-import { displayReadmeIfNotExists } from "./managers/FileManager";
 import { launchLogin, showLogInMenuOptions, showSignUpMenuOptions } from "./managers/UserStatusManager";
 import { MusicTimeWebviewSidebar } from "./sidebar/MusicTimeWebviewSidebar";
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from "./app/utils/view_constants";
@@ -29,12 +28,14 @@ import {
   refreshRecommendations,
   removeTrackFromPlaylist,
   requiresSpotifyAccess,
+  updateSelectedMetricSelection,
   updateSelectedPlaylistId,
   updateSelectedTabView,
   updateSort,
 } from "./managers/PlaylistDataManager";
 import { launchTrackPlayer, playSelectedItem } from "./managers/PlaylistControlManager";
 import { vscode_mt_issues_url } from "./Constants";
+import { displayReadmeIfNotExists } from './DataController';
 
 /**
  * add the commands to vscode....
@@ -52,13 +53,6 @@ export function createCommands(
   cmds.push(
     commands.registerCommand("musictime.launchReadme", () => {
       displayReadmeIfNotExists(true /*override*/);
-    })
-  );
-
-  // DISPLAY REPORT DASHBOARD CMD
-  cmds.push(
-    commands.registerCommand("musictime.displayDashboard", () => {
-      displayMusicTimeMetricsMarkdownDashboard();
     })
   );
 
@@ -447,7 +441,13 @@ export function createCommands(
   );
 
   cmds.push(
-    commands.registerCommand("musictime.updateSelectedTabView", async (tabView: string) => {
+    commands.registerCommand("musictime.updateMetricSelection", async (userMetricsSelection) => {
+      updateSelectedMetricSelection(userMetricsSelection);
+    })
+  )
+
+  cmds.push(
+    commands.registerCommand("musictime.updateSelectedTabView", async (tabView) => {
       updateSelectedTabView(tabView);
       if (tabView === "recommendations") {
         // populate familiar recs, but don't refreshMusicTimeView

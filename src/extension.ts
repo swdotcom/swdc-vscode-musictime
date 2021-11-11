@@ -6,10 +6,11 @@ import { commands, ExtensionContext, window } from "vscode";
 import { onboardPlugin } from "./OnboardManager";
 import { getVersion, getPluginName } from "./Util";
 import { createCommands } from "./command-helper";
-import { displayReadmeIfNotExists, logIt } from "./managers/FileManager";
+import { logIt } from "./managers/FileManager";
 import { migrateAccessInfo } from "./managers/SpotifyManager";
 import { disposeWebsocketTimeouts, initializeWebsockets } from "./websockets";
 import { initializeSpotify } from "./managers/PlaylistDataManager";
+import { displayReadmeIfNotExists } from './DataController';
 
 let currentColorKind: number = undefined;
 

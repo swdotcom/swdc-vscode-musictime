@@ -162,10 +162,6 @@ export class ProviderItemManager {
     );
   }
 
-  getGenerateDashboardButton() {
-    return this.buildKpmItem("Dashboard", "View your latest music metrics right here in your editor", null, "musictime.displayDashboard");
-  }
-
   getSlackIntegrationsTree(): KpmItem {
     const parentItem = this.buildKpmItem("Slack workspaces", "");
     parentItem.contextValue = "musictime_slack_folder_parent";

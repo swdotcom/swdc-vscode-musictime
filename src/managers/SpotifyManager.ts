@@ -50,7 +50,7 @@ export async function isPremiumUser() {
 }
 
 export async function updateSpotifyClientInfo() {
-  const resp = await softwareGet("/auth/spotify/clientInfo", getItem("jwt"));
+  const resp = await softwareGet("/auth/spotify/clientInfo");
   if (isResponseOk(resp)) {
     // get the clientId and clientSecret
     spotifyClientId = resp.data.clientId;
@@ -149,7 +149,7 @@ export async function disconnectSpotify(confirmDisconnect = true) {
     : YES_LABEL;
 
   if (selection === YES_LABEL) {
-    await softwarePut(`/auth/spotify/disconnect`, {}, getItem("jwt"));
+    await softwarePut(`/auth/spotify/disconnect`, {});
 
     // remove the integration
     removeSpotifyIntegration();

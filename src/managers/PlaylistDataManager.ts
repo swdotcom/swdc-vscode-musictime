@@ -23,9 +23,10 @@ import {
 import { commands, window } from "vscode";
 import { RECOMMENDATION_LIMIT, RECOMMENDATION_PLAYLIST_ID, SOFTWARE_TOP_40_PLAYLIST_ID } from "../app/utils/view_constants";
 import { OK_LABEL, SPOTIFY_LIKED_SONGS_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME, YES_LABEL } from "../app/utils/view_constants";
-import { isResponseOk, softwareGet } from "../HttpClient";
+import { appGet, isResponseOk, softwareGet } from "../HttpClient";
 import MusicMetrics from "../model/MusicMetrics";
 import MusicScatterData from "../model/MusicScatterData";
+import SongMetric from '../model/SongMetric';
 import { MusicCommandManager } from "../music/MusicCommandManager";
 import { MusicCommandUtil } from "../music/MusicCommandUtil";
 import { MusicControlManager } from "../music/MusicControlManager";
@@ -41,7 +42,8 @@ let softwareTop40Playlist: PlaylistItem = undefined;
 let recommendedTracks: PlaylistItem[] = undefined;
 let playlistTracks: any = {};
 let musicScatterData: MusicScatterData = undefined;
-let userMusicMetrics: MusicMetrics[] = undefined;
+let userMusicMetrics: SongMetric[] = undefined;
+let globalMusicMetrics: SongMetric[] = undefined;
 let averageMusicMetrics: MusicMetrics = undefined;
 let selectedPlaylistId = undefined;
 let selectedTrackItem: PlaylistItem = undefined;
@@ -49,7 +51,8 @@ let cachedRunningTrack: Track = undefined;
 let spotifyContext: PlayerContext = undefined;
 let selectedPlayerName = PlayerName.SpotifyWeb;
 // playlists, recommendations, metrics
-let selectedTabView = "playlists";
+let selectedTabView: string = "playlists";
+let userMetricsSelected: boolean = true;
 let recommendationMetadata: any = undefined;
 let recommendationInfo: any = undefined;
 let sortAlphabetically: boolean = false;
@@ -126,6 +129,10 @@ export function updateSelectedTabView(tabView: string) {
   selectedTabView = tabView;
 }
 
+export function updateSelectedMetricSelection(selected: boolean) {
+  userMetricsSelected = selected;
+}
+
 export function updateSort(alphabetically: boolean) {
   sortAlphabetically = alphabetically;
   sortPlaylists(spotifyPlaylists, alphabetically);
@@ -185,7 +192,7 @@ export async function getCachedUserMetricsData() {
   if (!userMusicMetrics) {
     await getUserMusicMetrics();
   }
-  return { userMusicMetrics, averageMusicMetrics, musicScatterData };
+  return { userMusicMetrics, globalMusicMetrics, averageMusicMetrics, musicScatterData };
 }
 
 export function getCachedRecommendationMetadata() {
@@ -214,6 +221,10 @@ export function getSelectedTrackItem() {
 
 export function getSelectedTabView() {
   return selectedTabView;
+}
+
+export function isUserMetricsSelected() {
+  return userMetricsSelected;
 }
 
 // only playlists (not liked or recommendations)
@@ -363,24 +374,29 @@ export async function fetchTracksForPlaylist(playlist_id) {
 ////////////////////////////////////////////////////////////////
 
 export async function getUserMusicMetrics() {
-  const resp = await softwareGet("/music/metrics", getItem("jwt"));
+  averageMusicMetrics = new MusicMetrics();
+  musicScatterData = new MusicScatterData();
+  userMusicMetrics = [];
+  globalMusicMetrics = [];
+
+  const resp = await appGet("/plugin/music/metrics");
   if (isResponseOk(resp) && resp.data) {
     userMusicMetrics = resp.data.user_music_metrics;
-    if (userMusicMetrics) {
-      averageMusicMetrics = new MusicMetrics();
-      musicScatterData = new MusicScatterData();
-      userMusicMetrics = userMusicMetrics.map((n, index) => {
-        n["keystrokes"] = n.keystrokes ? Math.ceil(n.keystrokes) : 0;
-        n["keystrokes_formatted"] = new Intl.NumberFormat().format(n.keystrokes);
-        n["id"] = n.song_id;
-        n["trackId"] = n.song_id;
-        averageMusicMetrics.increment(n);
-        musicScatterData.addMetric(n);
-        return n;
-      });
-      averageMusicMetrics.setAverages(userMusicMetrics.length);
-      userMusicMetrics = userMusicMetrics.filter((n) => n.song_name);
-    }
+    globalMusicMetrics = resp.data.global_music_metrics;
+    // TODO: we'll need the audio features to show the scatter plot chart
+    // if (userMusicMetrics) {
+      // userMusicMetrics = userMusicMetrics.map((n: SongMetric, index: number) => {
+      //   n["keystrokes"] = n.keystrokes ? Math.ceil(n.keystrokes) : 0;
+      //   n["keystrokes_formatted"] = new Intl.NumberFormat().format(n.keystrokes);
+      //   n["id"] = n.song_id;
+      //   n["trackId"] = n.song_id;
+      //   averageMusicMetrics.increment(n);
+      //   musicScatterData.addMetric(n);
+      //   return n;
+      // });
+      // averageMusicMetrics.setAverages(userMusicMetrics.length);
+      // userMusicMetrics = userMusicMetrics.filter((n) => n.song_name);
+    // }
   }
 }
 

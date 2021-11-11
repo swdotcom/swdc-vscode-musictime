@@ -6,13 +6,12 @@ import CardHeader from "@material-ui/core/CardHeader";
 import MetricItemNode from "./metric_item_node";
 import Typography from "@material-ui/core/Typography";
 import MetricsSetup from "./metrics_setup";
-import { MuiTuneIcon, MuiEmojiEventsIcon } from "../icons";
 import { grey, orange } from "@material-ui/core/colors";
-import Tooltip from "@material-ui/core/Tooltip";
-import IconButton from "@material-ui/core/IconButton";
 import Box from "@material-ui/core/Box";
 import Link from "@material-ui/core/Link";
 import Paper from "@material-ui/core/Paper";
+import Button from "@material-ui/core/Button";
+import ButtonGroup from "@material-ui/core/ButtonGroup";
 import MetricAudioDashboard from "./metric_audio_dashboard";
 
 const useStyles = makeStyles((theme) => {
@@ -42,18 +41,16 @@ const useStyles = makeStyles((theme) => {
       color: grey[500],
       fontSize: 12,
     },
-    cardHeaderIcon: {
-      marginTop: 10,
-      marginRight: 10,
-    },
     headerActionButtons: {
       marginTop: 10,
       marginRight: 10,
+      paddingRight: 4
     },
     paperContent: {
       background: "transparent",
       justifyContent: "center",
       textAlign: "center",
+      paddingTop: 20
     },
     setupDescription: {
       display: "inline",
@@ -96,19 +93,34 @@ let origAudioFeatures = undefined;
 export default function Metrics(props) {
   const classes = useStyles();
   const [tabView, setTabView] = useState(0);
+  const [showUserMetrics, setShowUserMetrics] = useState(props.stateData.userMetricsSelected);
+  const metrics = props.stateData.userMetricsSelected ? props.stateData.userMusicMetrics: props.stateData.globalMusicMetrics;
+  const [songMetrics, setSongMetrics] = useState(metrics);
+  const [liveAudioFeatures, setLiveAudioFeatures] = useState(props.stateData.averageMusicMetrics);
+
+  function handleMetricsToggle(value) {
+    if (value === 'you') {
+      setSongMetrics(props.stateData.userMusicMetrics);
+      setShowUserMetrics(true);
+      updateUserMetricsSelection(false);
+    } else {
+      setSongMetrics(props.stateData.globalMusicMetrics);
+      setShowUserMetrics(false);
+      updateUserMetricsSelection(false);
+    }
+  }
 
   if (!origAudioFeatures) {
     origAudioFeatures = { ...props.stateData.averageMusicMetrics };
   }
-  const [liveAudioFeatures, setLiveAudioFeatures] = useState(props.stateData.averageMusicMetrics);
 
-  function showRanking() {
-    setTabView(0);
-  }
+  // function showRanking() {
+  //   setTabView(0);
+  // }
 
-  function showDashboard() {
-    setTabView(1);
-  }
+  // function showDashboard() {
+  //   setTabView(1);
+  // }
 
   function resetAudioFeaturesHandler() {
     setLiveAudioFeatures(origAudioFeatures);
@@ -127,6 +139,15 @@ export default function Metrics(props) {
     props.vscode.postMessage(command);
   }
 
+  function updateUserMetricsSelection(value) {
+    const command = {
+      action: "musictime.updateMetricSelection",
+      command: "command_execute",
+      arguments: [value],
+    };
+    props.vscode.postMessage(command);
+  }
+
   return (
     <Card className={classes.root} elevation={0}>
       {props.stateData.codeTimeInstalled && (
@@ -139,16 +160,44 @@ export default function Metrics(props) {
           }
           action={
             <div className={classes.headerActionButtons}>
-              <Tooltip title="Your productivity ranking">
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center'
+                }}
+              >
+                <ButtonGroup size="small" variant="outlined"
+                  aria-label="You vs. global playlist metrics">
+                  {[
+                    <Button
+                      key="you_metrics"
+                      color={showUserMetrics ? "primary" : "default"}
+                      variant={showUserMetrics ? "contained" : "outlined"}
+                      onClick={()=>handleMetricsToggle('you')}>
+                      You
+                    </Button>,
+                    <Button
+                      key="global_metrics"
+                      value="global"
+                      color={showUserMetrics ? "default" : "primary"}
+                      variant={showUserMetrics ? "outlined" : "contained"}
+                      onClick={()=>handleMetricsToggle('global')}>
+                      Global
+                    </Button>,
+                  ]}
+                </ButtonGroup>
+              </Box>
+              {/* <Tooltip title="Your productivity ranking">
                 <IconButton onClick={showRanking}>
                   <MuiEmojiEventsIcon color={tabView === 0 ? "primary" : "disabled"} />
                 </IconButton>
-              </Tooltip>
-              <Tooltip title="Your audio feature averages">
+              </Tooltip> */}
+              {/* <Tooltip title="Your audio feature averages">
                 <IconButton onClick={showDashboard}>
                   <MuiTuneIcon color={tabView === 1 ? "primary" : "disabled"} />
                 </IconButton>
-              </Tooltip>
+              </Tooltip> */}
             </div>
           }
         />
@@ -161,11 +210,15 @@ export default function Metrics(props) {
               <Typography className={classes.descriptionText}>
                 As you listen to music while you code, Music Time ranks your top songs by comparing your coding metrics with your listening history.
               </Typography>
-              {props.stateData.userMusicMetrics && props.stateData.userMusicMetrics.length ? (
-                props.stateData.userMusicMetrics.map((item, index) => {
-                  return <MetricItemNode key={`metric-item-node-idx-${index}`} vscode={props.vscode} stateData={props.stateData} item={item} />;
+              {songMetrics?.length ? (
+                songMetrics.map((item, index) => {
+                  return <MetricItemNode
+                          key={`metric-item-node-idx-${index}`}
+                          vscode={props.vscode}
+                          stateData={props.stateData}
+                          item={item} />;
                 })
-              ) : !liveAudioFeatures ? (
+              ) : !songMetrics ? (
                 <Typography>Loading metrics...</Typography>
               ) : (
                 <Paper className={classes.paperContent} elevation={0}>

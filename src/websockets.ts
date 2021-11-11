@@ -1,4 +1,4 @@
-import { websockets_url } from "./Constants";
+import { api_endpoint } from "./Constants";
 import { getPluginId, getPluginName, getVersion, getOs, getOffsetSeconds } from "./Util";
 import { handleAuthenticatedPluginUser } from "./message_handlers/authenticated_plugin_user";
 import { handleIntegrationConnectionSocketEvent } from "./message_handlers/integration_connection";
@@ -55,6 +55,10 @@ export function initializeWebsockets() {
     },
     perMessageDeflate: false
   };
+
+  const scheme = api_endpoint.includes('https') ? 'wss://' : 'ws://';
+  const host = api_endpoint.split('//')[1];
+  const websockets_url = `${scheme}${host}/websockets`;
 
   ws = new WebSocket(websockets_url, options);
 

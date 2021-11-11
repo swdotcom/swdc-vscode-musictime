@@ -105,7 +105,7 @@ export default function SideBar(props) {
         palette: {
           type: prefersDarkMode ? "dark" : "light",
           primary: deepPurple,
-          secondary: grey,
+          secondary: grey
         },
         overrides: {
           MuiAccordionSummary: {

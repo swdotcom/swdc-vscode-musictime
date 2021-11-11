@@ -12,6 +12,7 @@ import MetricItemTooltip from "./metric_item_tooltip";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import { DARK_BG_COLOR } from "../../utils/view_constants";
 
+
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
@@ -40,9 +41,14 @@ const useStyles = makeStyles((theme: Theme) =>
       display: "flex",
       justifyContent: "center",
       textAlign: "center",
-      marginRight: 0,
-      marginLeft: 0,
+      margin: 0,
+      padding: 0,
+      minWidth: "28px",
     },
+    listNode: {
+      paddingLeft: 0,
+      paddingRight: 8
+    }
   })
 );
 
@@ -50,8 +56,10 @@ const HtmlTooltip = withStyles((theme) => ({
   tooltip: {
     backgroundColor: DARK_BG_COLOR,
     color: grey[500],
-    maxWidth: 200,
-    padding: 8,
+    flexGrow: 1,
+    width: "100%",
+    paddingRight: 12,
+    paddingLeft: 12
   },
 }))(Tooltip);
 
@@ -68,7 +76,7 @@ export default function MetricItemNode(props) {
   }
 
   return (
-    <List disablePadding={true} dense={true}>
+    <List disablePadding={true} dense={true} className={classes.listNode}>
       <ListItem key={`metric_rank_item_${props.item.song_name}`} disableGutters={true} dense={true} button onClick={playTrack}>
         <ListItemIcon className={classes.listItemIcon}>
           <SpotifyIcon />
@@ -76,12 +84,12 @@ export default function MetricItemNode(props) {
         <HtmlTooltip placement="bottom" title={<MetricItemTooltip vscode={props.vscode} item={props.item} />}>
           <ListItemText
             primary={props.item.song_name}
-            secondary={props.item.primary_artist_name}
+            secondary={props.item.artists?.length ? props.item.artists[0].artist_name : ''}
             classes={{ primary: classes.primaryListText, secondary: classes.mainSecondaryListText }}
           />
         </HtmlTooltip>
         <ListItemSecondaryAction className={classes.statItem}>
-          <ListItemText primary="rank" secondary={props.item.song_rank} classes={{ primary: classes.labelText, secondary: classes.labelText }} />
+          <ListItemText primary="rank" secondary={props.item.rank} classes={{ primary: classes.labelText, secondary: classes.labelText }} />
         </ListItemSecondaryAction>
       </ListItem>
     </List>
