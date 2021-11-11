@@ -6,7 +6,7 @@ import PlaylistItemNode from "./playlist_item_node";
 import Typography from "@material-ui/core/Typography";
 import Grid from "@material-ui/core/Grid";
 import IconButton from "@material-ui/core/IconButton";
-import { BeakerIcon, MuiSearchIcon, FilterIcon, MuiRefreshIcon } from "../icons";
+import { BeakerIcon, MuiSearchIcon, FilterIcon, MuiPlayCircleOutlineIcon } from "../icons";
 import Tooltip from "@material-ui/core/Tooltip";
 import { orange } from "@material-ui/core/colors";
 import Paper from "@material-ui/core/Paper";
@@ -96,14 +96,6 @@ export default function Recommendations(props) {
     props.vscode.postMessage(command);
   }
 
-  function refreshRecommendationsClick() {
-    const command = {
-      action: "musictime.refreshRecommendations",
-      command: "command_execute",
-    };
-    props.vscode.postMessage(command);
-  }
-
   function refreshClick() {
     const command = {
       action: "musictime.updateSelectedTabView",
@@ -113,14 +105,32 @@ export default function Recommendations(props) {
     props.vscode.postMessage(command);
   }
 
+  function playPlaylist() {
+    const command = {
+      action: "musictime.playPlaylist",
+      command: "command_execute",
+      arguments: [props.stateData.recommendationInfo.tracks],
+    };
+    props.vscode.postMessage(command);
+  }
+
   return (
     <Card className={classes.root} elevation={0}>
       <CardHeader
         className={classes.cardHeader}
         title={
-          <Typography noWrap gutterBottom={false} className={classes.cardHeaderText}>
-            {props.stateData.recommendationInfo ? props.stateData.recommendationInfo.label : "Recommendations"}
-          </Typography>
+          <div style={{ display: 'inline-flex' }}>
+            <div>
+              <IconButton onClick={playPlaylist} style={{minWidth: "28px"}}>
+                <MuiPlayCircleOutlineIcon />
+              </IconButton>
+            </div>
+            <div style={{ alignSelf: 'center' }}>
+              <Typography noWrap gutterBottom={false} className={classes.cardHeaderText}>
+                {props.stateData.recommendationInfo?.label ? props.stateData.recommendationInfo.label : "Recommendations"}
+              </Typography>
+            </div>
+          </div>
         }
         action={
           <div className={classes.headerActionButtons}>
@@ -139,11 +149,11 @@ export default function Recommendations(props) {
                 <FilterIcon />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Refresh recommendations">
+            {/* <Tooltip title="Refresh recommendations">
               <IconButton onClick={refreshRecommendationsClick}>
                 <MuiRefreshIcon />
               </IconButton>
-            </Tooltip>
+            </Tooltip> */}
           </div>
         }
       />

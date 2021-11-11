@@ -33,7 +33,7 @@ import {
   updateSelectedTabView,
   updateSort,
 } from "./managers/PlaylistDataManager";
-import { launchTrackPlayer, playSelectedItem } from "./managers/PlaylistControlManager";
+import { launchTrackPlayer, playSelectedItem, playSelectedItems } from "./managers/PlaylistControlManager";
 import { vscode_mt_issues_url } from "./Constants";
 import { displayReadmeIfNotExists } from './DataController';
 
@@ -441,10 +441,17 @@ export function createCommands(
   );
 
   cmds.push(
+    commands.registerCommand("musictime.playPlaylist", async (items: PlaylistItem[]) => {
+      updateSelectedPlaylistId(null);
+      playSelectedItems(items);
+    })
+  );
+
+  cmds.push(
     commands.registerCommand("musictime.updateMetricSelection", async (userMetricsSelection) => {
       updateSelectedMetricSelection(userMetricsSelection);
     })
-  )
+  );
 
   cmds.push(
     commands.registerCommand("musictime.updateSelectedTabView", async (tabView) => {
