@@ -36,7 +36,7 @@
     "time"
   ],
   "activationEvents": [
-    "*"
+    "onStartupFinished"
   ],
   "engines": {
     "vscode": "^1.52.0"
