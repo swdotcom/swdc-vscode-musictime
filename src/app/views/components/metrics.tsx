@@ -12,6 +12,8 @@ import Link from "@material-ui/core/Link";
 import Paper from "@material-ui/core/Paper";
 import Button from "@material-ui/core/Button";
 import ButtonGroup from "@material-ui/core/ButtonGroup";
+import IconButton from "@material-ui/core/IconButton";
+import { MuiPlayCircleOutlineIcon } from "../icons";
 import MetricAudioDashboard from "./metric_audio_dashboard";
 
 const useStyles = makeStyles((theme) => {
@@ -148,15 +150,33 @@ export default function Metrics(props) {
     props.vscode.postMessage(command);
   }
 
+  function playPlaylist() {
+    const command = {
+      action: "musictime.playPlaylist",
+      command: "command_execute",
+      arguments: [songMetrics],
+    };
+    props.vscode.postMessage(command);
+  }
+
   return (
     <Card className={classes.root} elevation={0}>
       {props.stateData.codeTimeInstalled && (
         <CardHeader
           className={classes.cardHeader}
           title={
-            <Typography noWrap gutterBottom={false} className={classes.cardHeaderText}>
-              Metrics
-            </Typography>
+            <div style={{ display: 'inline-flex' }}>
+              <div>
+                <IconButton onClick={playPlaylist} style={{minWidth: "28px"}}>
+                  <MuiPlayCircleOutlineIcon />
+                </IconButton>
+              </div>
+              <div style={{ alignSelf: 'center' }}>
+                <Typography noWrap gutterBottom={false} className={classes.cardHeaderText}>
+                Metrics
+                </Typography>
+              </div>
+            </div>
           }
           action={
             <div className={classes.headerActionButtons}>

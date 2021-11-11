@@ -28,11 +28,20 @@ import {
   getCurrentDevices,
   getLikedURIsFromTrackId,
   getRecommendationURIsFromTrackId,
+  clearSelectedTrackInfo,
+  getSelectedTrackItems,
+  updateSelectedTrackItems,
 } from "./PlaylistDataManager";
 import { hasSpotifyUser, isPremiumUser, populateSpotifyUser } from "./SpotifyManager";
 
-// PLAY SELECTED TRACK
+// Play selected tracks
+export async function playSelectedItems(playlistItems: PlaylistItem[]) {
+  updateSelectedTrackItems(playlistItems);
+  // ask to launch web or desktop if neither are running
+  await playInitialization(playSelectedTrackItems);
+}
 
+// PLAY SELECTED TRACK
 export async function playSelectedItem(playlistItem: PlaylistItem) {
   updateSelectedTrackItem(playlistItem);
 
@@ -181,6 +190,24 @@ async function checkPlayingState(deviceId: string, tries = 3) {
       play(getSelectedPlayerName());
     }
   }
+}
+
+async function playSelectedTrackItems() {
+  const selectedTrackItems = getSelectedTrackItems();
+  const device = getBestActiveDevice();
+  const uris: any[] = selectedTrackItems.map((item: PlaylistItem) => {
+    let track_id = item.id ? item.id : item["song_id"];
+    if (track_id && !track_id.includes("spotify:track:")) {
+      track_id = `spotify:track:${track_id}`;
+    }
+
+    return track_id;
+  });
+  play(PlayerName.SpotifyWeb, { device_id: device?.id, uris, offset: 0 });
+  setTimeout(() => {
+    MusicStateManager.getInstance().fetchTrack();
+    checkPlayingState(device.id);
+  }, 1000);
 }
 
 async function playMusicSelection() {

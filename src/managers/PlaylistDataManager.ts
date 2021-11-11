@@ -47,6 +47,7 @@ let globalMusicMetrics: SongMetric[] = undefined;
 let averageMusicMetrics: MusicMetrics = undefined;
 let selectedPlaylistId = undefined;
 let selectedTrackItem: PlaylistItem = undefined;
+let selectedTrackItems: PlaylistItem[] = undefined;
 let cachedRunningTrack: Track = undefined;
 let spotifyContext: PlayerContext = undefined;
 let selectedPlayerName = PlayerName.SpotifyWeb;
@@ -112,9 +113,18 @@ export function updateSpotifyPlaylistTracks(playlist_id, songs) {
   playlistTracks[playlist_id] = songs;
 }
 
+export function clearSelectedTrackInfo() {
+  selectedPlaylistId = undefined;
+  selectedTrackItem = undefined;
+}
+
 export function updateSelectedTrackItem(item) {
   selectedTrackItem = item;
   selectedPlaylistId = item["playlist_id"];
+}
+
+export function updateSelectedTrackItems(items: PlaylistItem[]) {
+  selectedTrackItems = items;
 }
 
 export function updateSelectedPlaylistId(playlist_id) {
@@ -217,6 +227,10 @@ export function getSelectedPlayerName() {
 
 export function getSelectedTrackItem() {
   return selectedTrackItem;
+}
+
+export function getSelectedTrackItems() {
+  return selectedTrackItems;
 }
 
 export function getSelectedTabView() {
