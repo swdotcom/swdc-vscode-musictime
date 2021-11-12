@@ -785,7 +785,7 @@ export function requiresSpotifyAccess() {
   return !spotifyIntegration ? true : false;
 }
 
-export async function initializeSpotify(refreshUser = false) {
+export async function initializeSpotify() {
   // get the client id and secret
   await updateSpotifyClientInfo();
 
@@ -793,7 +793,7 @@ export async function initializeSpotify(refreshUser = false) {
   updateCodyConfig();
 
   // first get the spotify user
-  await populateSpotifyUser(refreshUser);
+  await populateSpotifyUser(true);
 
   await populateSpotifyDevices(false);
 

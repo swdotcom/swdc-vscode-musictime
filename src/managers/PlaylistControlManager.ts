@@ -28,7 +28,6 @@ import {
   getCurrentDevices,
   getLikedURIsFromTrackId,
   getRecommendationURIsFromTrackId,
-  clearSelectedTrackInfo,
   getSelectedTrackItems,
   updateSelectedTrackItems,
 } from "./PlaylistDataManager";

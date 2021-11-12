@@ -4,6 +4,7 @@ import { window } from "vscode";
 import * as path from "path";
 import { SOFTWARE_FOLDER } from "../Constants";
 import { formatISO } from 'date-fns';
+import { isActiveIntegration } from './IntegrationManager';
 
 const outputChannel = window.createOutputChannel('MusicTime');
 
@@ -167,13 +168,13 @@ export function getIntegrations() {
 }
 
 export function syncSlackIntegrations(integrations) {
-  const nonSlackIntegrations = getIntegrations().filter((integration) => integration.name.toLowerCase() != "slack");
+  const nonSlackIntegrations = getIntegrations().filter((n) => isActiveIntegration("slack", n));
   integrations = integrations?.length ? [...integrations, ...nonSlackIntegrations] : nonSlackIntegrations;
   fileIt.writeJsonFileSync(getIntegrationsFile(), integrations);
 }
 
 export function syncSpotifyIntegration(integration) {
-  const nonSpotifyIntegrations = getIntegrations().filter((integration) => integration.name.toLowerCase() != "spotify");
+  const nonSpotifyIntegrations = getIntegrations().filter((n) => isActiveIntegration("spotify", n));
   const integrations = integration ? [...nonSpotifyIntegrations, integration] : nonSpotifyIntegrations;
   fileIt.writeJsonFileSync(getIntegrationsFile(), integrations);
 }

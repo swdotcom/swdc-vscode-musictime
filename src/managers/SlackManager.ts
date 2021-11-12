@@ -4,6 +4,7 @@ import { showQuickPick } from "../MenuManager";
 import { commands, window } from "vscode";
 import { softwareDelete } from "../HttpClient";
 import { getAuthCallbackState, getIntegrations, getItem, getPluginUuid, logIt, syncSlackIntegrations } from "./FileManager";
+import { isActiveIntegration } from './IntegrationManager';
 
 const queryString = require("query-string");
 const { WebClient } = require("@slack/web-api");
@@ -122,7 +123,7 @@ export async function showSlackChannelMenu() {
 
 // get saved slack integrations
 export function getSlackWorkspaces() {
-  return getIntegrations().filter((n) => n.name.toLowerCase() === "slack" && n.status.toLowerCase() === "active");
+  return getIntegrations().filter((n) => isActiveIntegration("slack", n));
 }
 
 export function hasSlackWorkspaces() {

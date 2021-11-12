@@ -204,7 +204,7 @@ export async function processNewSpotifyIntegration() {
   window.showInformationMessage(`Successfully connected to Spotify. Loading playlists...`);
 
   // initialize spotify and playlists
-  await initializeSpotify(true /*refreshUser*/);
+  await initializeSpotify();
 
   // initiate the playlist build
   setTimeout(() => {
