@@ -153,18 +153,7 @@ export function setAuthCallbackState(value: string) {
 
 export function getIntegrations() {
   let integrations = getFileDataAsJson(getIntegrationsFile());
-  if (!integrations) {
-    integrations = [];
-    fileIt.writeJsonFileSync(getIntegrationsFile(), integrations);
-  }
-  const integrationsLen = integrations.length;
-  // check to see if there are any [] values and remove them
-  integrations = integrations.filter((n) => n && n.authId);
-  if (integrations.length !== integrationsLen) {
-    // update the file with the latest
-    fileIt.writeJsonFileSync(getIntegrationsFile(), integrations);
-  }
-  return integrations;
+  return integrations?.length ? integrations : [];
 }
 
 export function syncSlackIntegrations(integrations) {

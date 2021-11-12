@@ -89,12 +89,19 @@ export async function connectSpotify() {
   addedNewIntegration = false;
   setTimeout(() => {
     lazilyPollForSpotifyConnection();
-  }, 15000);
+  }, 25000);
 }
 
-export async function lazilyPollForSpotifyConnection(tries: number = 20) {
-  addedNewIntegration = !addedNewIntegration ? await updateSpotifyIntegration(await getUser(getItem("jwt"))) : addedNewIntegration;
-  if (!addedNewIntegration) {
+export async function lazilyPollForSpotifyConnection(tries: number = 10) {
+  if (addedNewIntegration) {
+    return;
+  }
+
+  await updateSpotifyIntegration(await getUser(getItem("jwt")));
+  const spotifyIntegrations = getIntegrations().filter(
+    (n) => isActiveIntegration("spotify", n)
+  );
+  if (!spotifyIntegrations || spotifyIntegrations.length === 0) {
     // try again
     tries--;
     setTimeout(() => {
@@ -134,7 +141,8 @@ export async function switchSpotifyAccount() {
 }
 
 export function getSpotifyIntegration(): SoftwareIntegration {
-  const spotifyIntegrations: SoftwareIntegration[] = getIntegrations().filter(
+  const integrations = getIntegrations();
+  const spotifyIntegrations: SoftwareIntegration[] = integrations.filter(
     (n) => isActiveIntegration("spotify", n)
   );
   if (spotifyIntegrations?.length) {

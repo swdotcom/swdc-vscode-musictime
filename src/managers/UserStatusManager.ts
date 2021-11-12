@@ -180,19 +180,18 @@ export async function authenticationCompleteHandler(user) {
     }
 
     // update the slack and spotify integrations
-    const addedNewSlackIntegration = await updateSlackIntegrations(user);
+    await updateSlackIntegrations(user);
 
-    const addedNewIntegration = await updateSpotifyIntegration(user);
-    if (addedNewIntegration) {
-      // this will refresh the playlist for both slack and spotify
-      processNewSpotifyIntegration();
-    } else if (addedNewSlackIntegration) {
-      // refresh the tree view
-      setTimeout(() => {
-        // refresh the playlist to show the device button update
-        commands.executeCommand("musictime.refreshMusicTimeView");
-      }, 1000);
-    }
+    await updateSpotifyIntegration(user);
+
+    // this will refresh the playlist for both slack and spotify
+    processNewSpotifyIntegration(false, false);
+
+    // refresh the tree view
+    setTimeout(() => {
+      // refresh the playlist to show the device button update
+      commands.executeCommand("musictime.refreshMusicTimeView");
+    }, 1000);
   }
 
   // initiate the playlist build
@@ -201,17 +200,22 @@ export async function authenticationCompleteHandler(user) {
   }, 1000);
 }
 
-export async function processNewSpotifyIntegration() {
+export async function processNewSpotifyIntegration(showSuccess = true, refreshPlaylist = true) {
   setItem("requiresSpotifyReAuth", false);
 
-  // update the login status
-  window.showInformationMessage(`Successfully connected to Spotify. Loading playlists...`);
+  if (showSuccess) {
+    // update the login status
+    window.showInformationMessage(`Successfully connected to Spotify. Loading playlists...`);
+  }
+
 
   // initialize spotify and playlists
   await initializeSpotify();
 
-  // initiate the playlist build
-  setTimeout(() => {
-    commands.executeCommand("musictime.refreshMusicTimeView");
-  }, 2000);
+  if (refreshPlaylist) {
+    // initiate the playlist build
+    setTimeout(() => {
+      commands.executeCommand("musictime.refreshMusicTimeView");
+    }, 2000);
+  }
 }

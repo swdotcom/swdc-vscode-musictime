@@ -789,11 +789,11 @@ export async function initializeSpotify() {
   // get the client id and secret
   await updateSpotifyClientInfo();
 
+  // get the spotify user
+  await populateSpotifyUser(true);
+
   // update cody music with all access info
   updateCodyConfig();
-
-  // first get the spotify user
-  await populateSpotifyUser(true);
 
   await populateSpotifyDevices(false);
 

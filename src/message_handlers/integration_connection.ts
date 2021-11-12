@@ -32,10 +32,10 @@ export async function handleIntegrationConnectionSocketEvent(body: any) {
     setAuthCallbackState(null);
 
     // update the spotify integrations before populating the spotify user
-    const updatedNewIntegration = await updateSpotifyIntegration(user);
+    await updateSpotifyIntegration(user);
 
     // clear the polling timer
-    updateAddedNewIntegration(updatedNewIntegration);
+    updateAddedNewIntegration(true);
 
     processNewSpotifyIntegration();
   }

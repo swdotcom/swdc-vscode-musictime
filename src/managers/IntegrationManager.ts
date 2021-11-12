@@ -3,8 +3,6 @@ import { getIntegrations, logIt, syncSlackIntegrations, syncSpotifyIntegration }
 const { WebClient } = require("@slack/web-api");
 
 export async function updateSpotifyIntegration(user) {
-  const existingSpotifyIntegrations = getIntegrations().filter((n) => isActiveIntegration("spotify", n));
-  const existingSpotifyIntegration = getLatestSpotifyIntegration(existingSpotifyIntegrations);
   if (user?.integration_connections?.length) {
     const spotifyIntegrations = user.integration_connections.filter(
       (n) => isActiveIntegration("spotify", n)
@@ -13,13 +11,9 @@ export async function updateSpotifyIntegration(user) {
       const spotifyIntegration = getLatestSpotifyIntegration(spotifyIntegrations);
       if (spotifyIntegration) {
         syncSpotifyIntegration(spotifyIntegration);
-        if (!existingSpotifyIntegration || existingSpotifyIntegration.authId !== spotifyIntegration.authId) {
-          return true;
-        }
       }
     }
   }
-  return false;
 }
 
 function getLatestSpotifyIntegration(spotifyIntegrations) {
