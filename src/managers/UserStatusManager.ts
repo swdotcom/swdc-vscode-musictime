@@ -11,7 +11,7 @@ import { initializeSpotify } from "./PlaylistDataManager";
 const queryString = require("query-string");
 
 let authAdded = false;
-const lazy_poll_millis = 16000;
+const lazy_poll_millis = 20000;
 
 export function updatedAuthAdded(val: boolean) {
   authAdded = val;
@@ -123,14 +123,19 @@ export async function launchLogin(loginType: string = "software", switching_acco
   launchWebUrl(url);
 
   updatedAuthAdded(false);
+
   setTimeout(() => {
     lazilyPollForAuth();
   }, lazy_poll_millis);
 }
 
 export async function lazilyPollForAuth(tries: number = 20) {
-  authAdded = !authAdded ? await getUserRegistrationInfo() : authAdded;
-  if (!authAdded && tries > 0) {
+  if (authAdded) {
+    return;
+  }
+
+  const foundRegisteredUser = await getUserRegistrationInfo();
+  if (!foundRegisteredUser && tries > 0) {
     // try again
     tries--;
     setTimeout(() => {
@@ -159,8 +164,7 @@ export async function authenticationCompleteHandler(user) {
 
   // set the email and jwt
   if (user?.registered === 1) {
-    const currName = getItem("name");
-    if (currName != user.email) {
+    if (!getItem("name")) {
       if (user.plugin_jwt) {
         setItem("jwt", user.plugin_jwt);
       }
