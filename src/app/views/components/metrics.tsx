@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import PropTypes from "prop-types";
 import { makeStyles } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
@@ -70,31 +69,10 @@ const useStyles = makeStyles((theme) => {
   };
 });
 
-function TabPanel(props) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div role="tabpanel" hidden={value !== index} id={`simple-tabpanel-${index}`} aria-labelledby={`simple-tab-${index}`} {...other}>
-      {value === index && (
-        <Box p={3}>
-          <Typography>{children}</Typography>
-        </Box>
-      )}
-    </div>
-  );
-}
-
-TabPanel.propTypes = {
-  children: PropTypes.node,
-  index: PropTypes.any.isRequired,
-  value: PropTypes.any.isRequired,
-};
-
 let origAudioFeatures = undefined;
 
 export default function Metrics(props) {
   const classes = useStyles();
-  const [tabView, setTabView] = useState(0);
   const [metricsType, setMetricsType] = useState(props.stateData.metricsTypeSelected);
 
   let metrics = [];
@@ -107,8 +85,6 @@ export default function Metrics(props) {
   }
 
   const [songMetrics, setSongMetrics] = useState(metrics);
-
-
   const [liveAudioFeatures, setLiveAudioFeatures] = useState(props.stateData.averageMusicMetrics);
 
   function handleMetricsToggle(value) {
@@ -127,10 +103,6 @@ export default function Metrics(props) {
 
   function resetAudioFeaturesHandler() {
     setLiveAudioFeatures(origAudioFeatures);
-    setTabView(3);
-    setTimeout(() => {
-      setTabView(1);
-    }, 2000);
   }
 
   function refreshClick() {
