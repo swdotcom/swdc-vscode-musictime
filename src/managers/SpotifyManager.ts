@@ -8,7 +8,7 @@ import { SpotifyUser } from "cody-music/dist/lib/profile";
 import { MusicCommandManager } from "../music/MusicCommandManager";
 import { getAuthCallbackState, getIntegrations, getItem, getPluginUuid, setItem } from "./FileManager";
 import { getUser } from "./UserStatusManager";
-import { clearSpotifyIntegrations, updateSpotifyIntegration } from "./IntegrationManager";
+import { clearSpotifyIntegrations, isActiveIntegration, updateSpotifyIntegration } from "./IntegrationManager";
 import { processNewSpotifyIntegration } from "./UserStatusManager";
 import { clearAllData } from "./PlaylistDataManager";
 
@@ -107,7 +107,18 @@ export async function lazilyPollForSpotifyConnection(tries: number = 20) {
 }
 
 export async function populateSpotifyUser(hardRefresh = false) {
-  const spotifyIntegration = getSpotifyIntegration();
+  let spotifyIntegration = getSpotifyIntegration();
+  if (!spotifyIntegration) {
+    // get the user
+    const user = await getUser(getItem("jwt"));
+    if (user) {
+      // update the integrations
+      await updateSpotifyIntegration(user);
+      updateCodyConfig();
+    }
+    spotifyIntegration = getSpotifyIntegration();
+  }
+
   if (spotifyIntegration && (hardRefresh || !spotifyUser || !spotifyUser.id)) {
     // get the user
     spotifyUser = await getUserProfile();
@@ -124,7 +135,7 @@ export async function switchSpotifyAccount() {
 
 export function getSpotifyIntegration(): SoftwareIntegration {
   const spotifyIntegrations: SoftwareIntegration[] = getIntegrations().filter(
-    (n) => n.name.toLowerCase() === "spotify" && n.status.toLowerCase() === "active"
+    (n) => isActiveIntegration("spotify", n)
   );
   if (spotifyIntegrations?.length) {
     // get the last one in case we have more than one.

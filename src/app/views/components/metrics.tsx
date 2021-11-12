@@ -95,34 +95,35 @@ let origAudioFeatures = undefined;
 export default function Metrics(props) {
   const classes = useStyles();
   const [tabView, setTabView] = useState(0);
-  const [showUserMetrics, setShowUserMetrics] = useState(props.stateData.userMetricsSelected);
-  const metrics = props.stateData.userMetricsSelected ? props.stateData.userMusicMetrics: props.stateData.globalMusicMetrics;
+  const [metricsType, setMetricsType] = useState(props.stateData.metricsTypeSelected);
+
+  let metrics = [];
+  if (props.stateData.metricsTypeSelected === 'you') {
+    metrics = props.stateData.userMusicMetrics;
+  } else if (props.stateData.metricsTypeSelected === 'global') {
+    metrics = props.stateData.globalMusicMetrics;
+  } else {
+    metrics = props.stateData.audioFeatures;
+  }
+
   const [songMetrics, setSongMetrics] = useState(metrics);
+
+
   const [liveAudioFeatures, setLiveAudioFeatures] = useState(props.stateData.averageMusicMetrics);
 
   function handleMetricsToggle(value) {
+    setMetricsType(value);
+    updateUserMetricsSelection(value);
     if (value === 'you') {
       setSongMetrics(props.stateData.userMusicMetrics);
-      setShowUserMetrics(true);
-      updateUserMetricsSelection(false);
-    } else {
+    } else if (value === 'global') {
       setSongMetrics(props.stateData.globalMusicMetrics);
-      setShowUserMetrics(false);
-      updateUserMetricsSelection(false);
     }
   }
 
   if (!origAudioFeatures) {
     origAudioFeatures = { ...props.stateData.averageMusicMetrics };
   }
-
-  // function showRanking() {
-  //   setTabView(0);
-  // }
-
-  // function showDashboard() {
-  //   setTabView(1);
-  // }
 
   function resetAudioFeaturesHandler() {
     setLiveAudioFeatures(origAudioFeatures);
@@ -192,32 +193,30 @@ export default function Metrics(props) {
                   {[
                     <Button
                       key="you_metrics"
-                      color={showUserMetrics ? "primary" : "default"}
-                      variant={showUserMetrics ? "contained" : "outlined"}
+                      color={metricsType === 'you' ? "primary" : "default"}
+                      variant={metricsType === 'you' ? "contained" : "outlined"}
                       onClick={()=>handleMetricsToggle('you')}>
                       You
                     </Button>,
                     <Button
                       key="global_metrics"
                       value="global"
-                      color={showUserMetrics ? "default" : "primary"}
-                      variant={showUserMetrics ? "outlined" : "contained"}
+                      color={metricsType === 'global' ? "primary" : "default"}
+                      variant={metricsType === 'global' ? "contained" : "outlined"}
                       onClick={()=>handleMetricsToggle('global')}>
                       Global
                     </Button>,
+                    <Button
+                      key="audio_features"
+                      value="features"
+                      color={metricsType === 'features' ? "primary" : "default"}
+                      variant={metricsType === 'features' ? "contained" : "outlined"}
+                      onClick={()=>handleMetricsToggle('features')}>
+                      Audio
+                    </Button>
                   ]}
                 </ButtonGroup>
               </Box>
-              {/* <Tooltip title="Your productivity ranking">
-                <IconButton onClick={showRanking}>
-                  <MuiEmojiEventsIcon color={tabView === 0 ? "primary" : "disabled"} />
-                </IconButton>
-              </Tooltip> */}
-              {/* <Tooltip title="Your audio feature averages">
-                <IconButton onClick={showDashboard}>
-                  <MuiTuneIcon color={tabView === 1 ? "primary" : "disabled"} />
-                </IconButton>
-              </Tooltip> */}
             </div>
           }
         />
@@ -225,31 +224,10 @@ export default function Metrics(props) {
 
       {props.stateData.codeTimeInstalled ? (
         <div style={{ marginBottom: 100 }}>
-          {tabView === 0 ? (
-            <>
-              <Typography className={classes.descriptionText}>
-                As you listen to music while you code, Music Time ranks your top songs by comparing your coding metrics with your listening history.
-              </Typography>
-              {songMetrics?.length ? (
-                songMetrics.map((item, index) => {
-                  return <MetricItemNode
-                          key={`metric-item-node-idx-${index}`}
-                          vscode={props.vscode}
-                          stateData={props.stateData}
-                          item={item} />;
-                })
-              ) : !songMetrics ? (
-                <Typography>Loading metrics...</Typography>
-              ) : (
-                <Paper className={classes.paperContent} elevation={0}>
-                  <Typography className={classes.setupDescription}>No data available yet. You can try again or check back later.</Typography>
-                  <Link href="#" onClick={refreshClick} className={classes.link}>
-                    Refresh
-                  </Link>
-                </Paper>
-              )}
-            </>
-          ) : tabView === 1 ? (
+          <Typography className={classes.descriptionText}>
+            As you listen to music while you code, Music Time ranks your top songs by comparing your coding metrics with your listening history.
+          </Typography>
+          {metricsType === 'features' ? (
             <MetricAudioDashboard
               vscode={props.vscode}
               stateData={props.stateData}
@@ -257,7 +235,24 @@ export default function Metrics(props) {
               resetAudioFeatures={resetAudioFeaturesHandler}
             />
           ) : (
-            <Typography className={classes.resetFeaturesText}>Resetting your audio metric averages...</Typography>
+            songMetrics?.length ? (
+              songMetrics.map((item, index) => {
+                return <MetricItemNode
+                        key={`metric-item-node-idx-${index}`}
+                        vscode={props.vscode}
+                        stateData={props.stateData}
+                        item={item} />;
+              })
+            ) : !songMetrics ? (
+              <Typography>Loading metrics...</Typography>
+            ) : (
+              <Paper className={classes.paperContent} elevation={0}>
+                <Typography className={classes.setupDescription}>No data available yet. You can try again or check back later.</Typography>
+                <Link href="#" onClick={refreshClick} className={classes.link}>
+                  Refresh
+                </Link>
+              </Paper>
+            )
           )}
         </div>
       ) : (

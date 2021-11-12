@@ -44,6 +44,7 @@ let playlistTracks: any = {};
 let musicScatterData: MusicScatterData = undefined;
 let userMusicMetrics: SongMetric[] = undefined;
 let globalMusicMetrics: SongMetric[] = undefined;
+let audioFeatures: MusicMetrics[] = undefined;
 let averageMusicMetrics: MusicMetrics = undefined;
 let selectedPlaylistId = undefined;
 let selectedTrackItem: PlaylistItem = undefined;
@@ -53,7 +54,7 @@ let spotifyContext: PlayerContext = undefined;
 let selectedPlayerName = PlayerName.SpotifyWeb;
 // playlists, recommendations, metrics
 let selectedTabView: string = "playlists";
-let userMetricsSelected: boolean = true;
+let metricsTypeSelected: string = "you";
 let recommendationMetadata: any = undefined;
 let recommendationInfo: any = undefined;
 let sortAlphabetically: boolean = false;
@@ -139,8 +140,8 @@ export function updateSelectedTabView(tabView: string) {
   selectedTabView = tabView;
 }
 
-export function updateSelectedMetricSelection(selected: boolean) {
-  userMetricsSelected = selected;
+export function updateSelectedMetricSelection(type: string) {
+  metricsTypeSelected = type;
 }
 
 export function updateSort(alphabetically: boolean) {
@@ -202,7 +203,7 @@ export async function getCachedUserMetricsData() {
   if (!userMusicMetrics) {
     await getUserMusicMetrics();
   }
-  return { userMusicMetrics, globalMusicMetrics, averageMusicMetrics, musicScatterData };
+  return { userMusicMetrics, globalMusicMetrics, averageMusicMetrics, musicScatterData, audioFeatures };
 }
 
 export function getCachedRecommendationMetadata() {
@@ -237,8 +238,8 @@ export function getSelectedTabView() {
   return selectedTabView;
 }
 
-export function isUserMetricsSelected() {
-  return userMetricsSelected;
+export function getUserMetricsSelected() {
+  return metricsTypeSelected;
 }
 
 // only playlists (not liked or recommendations)
@@ -392,25 +393,33 @@ export async function getUserMusicMetrics() {
   musicScatterData = new MusicScatterData();
   userMusicMetrics = [];
   globalMusicMetrics = [];
+  audioFeatures = [];
 
-  const resp = await appGet("/plugin/music/metrics");
+  let resp = await appGet("/plugin/music/metrics");
   if (isResponseOk(resp) && resp.data) {
     userMusicMetrics = resp.data.user_music_metrics;
     globalMusicMetrics = resp.data.global_music_metrics;
-    // TODO: we'll need the audio features to show the scatter plot chart
-    // if (userMusicMetrics) {
-      // userMusicMetrics = userMusicMetrics.map((n: SongMetric, index: number) => {
-      //   n["keystrokes"] = n.keystrokes ? Math.ceil(n.keystrokes) : 0;
-      //   n["keystrokes_formatted"] = new Intl.NumberFormat().format(n.keystrokes);
-      //   n["id"] = n.song_id;
-      //   n["trackId"] = n.song_id;
-      //   averageMusicMetrics.increment(n);
-      //   musicScatterData.addMetric(n);
-      //   return n;
-      // });
-      // averageMusicMetrics.setAverages(userMusicMetrics.length);
-      // userMusicMetrics = userMusicMetrics.filter((n) => n.song_name);
-    // }
+  }
+  resp = await appGet("/plugin/music/features");
+  if (isResponseOk(resp)) {
+    audioFeatures = resp.data;
+    if (audioFeatures?.length) {
+      audioFeatures = audioFeatures.map((n: MusicMetrics, index: number) => {
+        if (n.acousticness === undefined || n.acousticness === null) {
+          return null;
+        }
+        n["keystrokes"] = n.keystrokes ? Math.ceil(n.keystrokes) : 0;
+        n["keystrokes_formatted"] = new Intl.NumberFormat().format(n.keystrokes);
+        n["id"] = n.song_id;
+        n["trackId"] = n.song_id;
+        averageMusicMetrics.increment(n);
+        musicScatterData.addMetric(n);
+        return n;
+      });
+
+      averageMusicMetrics.setAverages(audioFeatures.length);
+      audioFeatures = audioFeatures.filter((n:MusicMetrics) => n);
+    }
   }
 }
 
@@ -776,7 +785,7 @@ export function requiresSpotifyAccess() {
   return !spotifyIntegration ? true : false;
 }
 
-export async function initializeSpotify(refreshUser = false) {
+export async function initializeSpotify() {
   // get the client id and secret
   await updateSpotifyClientInfo();
 
@@ -784,7 +793,7 @@ export async function initializeSpotify(refreshUser = false) {
   updateCodyConfig();
 
   // first get the spotify user
-  await populateSpotifyUser(refreshUser);
+  await populateSpotifyUser(true);
 
   await populateSpotifyDevices(false);
 

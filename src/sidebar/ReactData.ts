@@ -15,7 +15,7 @@ import {
   getSelectedTabView,
   getSpotifyLikedPlaylist,
   isLikedSong,
-  isUserMetricsSelected,
+  getUserMetricsSelected,
 } from "../managers/PlaylistDataManager";
 import { getSlackWorkspaces, hasSlackWorkspaces } from "../managers/SlackManager";
 import { getConnectedSpotifyUser } from "../managers/SpotifyManager";
@@ -27,7 +27,7 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
   const spotifyUser = getConnectedSpotifyUser();
 
   const selectedTabView = tab_view ? tab_view : getSelectedTabView();
-  const userMetricsSelected = isUserMetricsSelected();
+  const metricsTypeSelected = getUserMetricsSelected();
 
   let spotifyPlaylists = [];
   let likedSongsTracks = [];
@@ -36,6 +36,7 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
   let selectedPlaylistId = undefined;
   let recommendationInfo = [];
   let userMusicMetrics = [];
+  let audioFeatures = [];
   let globalMusicMetrics = [];
   let averageMusicMetrics = undefined;
   let spotifyPlayerContext = undefined;
@@ -58,6 +59,7 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
       softwareTop40Playlist = data.softwareTop40Playlist;
       selectedPlaylistId = data.selectedPlaylistId;
       userMusicMetrics = data.userMusicMetrics;
+      audioFeatures = data.audioFeatures;
       globalMusicMetrics = data.globalMusicMetrics;
       averageMusicMetrics = data.averageMusicMetrics;
       recommendationInfo = data.recommendationInfo;
@@ -74,10 +76,11 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
     email: name,
     spotifyPlaylists,
     selectedTabView,
-    userMetricsSelected,
+    metricsTypeSelected,
     recommendationInfo,
     userMusicMetrics,
     globalMusicMetrics,
+    audioFeatures,
     averageMusicMetrics,
     musicScatterData,
     likedSongsTracks,
@@ -114,6 +117,7 @@ async function getViewData(selectedTabView, playlist_id, spotifyUser) {
   let selectedPlaylistId = undefined;
   let userMusicMetrics = [];
   let globalMusicMetrics = [];
+  let audioFeatures = [];
   let averageMusicMetrics = undefined;
   let recommendationInfo = [];
   let musicScatterData = undefined;
@@ -133,6 +137,7 @@ async function getViewData(selectedTabView, playlist_id, spotifyUser) {
       userMusicMetrics = metricsData.userMusicMetrics ?? [];
       globalMusicMetrics = metricsData.globalMusicMetrics ?? [];
       averageMusicMetrics = metricsData.averageMusicMetrics ?? [];
+      audioFeatures = metricsData.audioFeatures ?? [];
       musicScatterData = metricsData.musicScatterData;
     } else if (selectedTabView === "recommendations") {
       recommendationInfo = getCachedRecommendationInfo();
@@ -146,6 +151,7 @@ async function getViewData(selectedTabView, playlist_id, spotifyUser) {
     softwareTop40Playlist,
     selectedPlaylistId,
     userMusicMetrics,
+    audioFeatures,
     globalMusicMetrics,
     musicScatterData,
     averageMusicMetrics,

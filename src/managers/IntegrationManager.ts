@@ -3,11 +3,11 @@ import { getIntegrations, logIt, syncSlackIntegrations, syncSpotifyIntegration }
 const { WebClient } = require("@slack/web-api");
 
 export async function updateSpotifyIntegration(user) {
-  const existingSpotifyIntegrations = getIntegrations().filter((n) => n.name.toLowerCase() === "spotify");
+  const existingSpotifyIntegrations = getIntegrations().filter((n) => isActiveIntegration("spotify", n));
   const existingSpotifyIntegration = getLatestSpotifyIntegration(existingSpotifyIntegrations);
-  if (user?.integrations?.length) {
-    const spotifyIntegrations = user.integrations.filter(
-      (n) => n.name.toLowerCase() === "spotify" && n.status.toLowerCase() === "active" && n.access_token
+  if (user?.integration_connections?.length) {
+    const spotifyIntegrations = user.integration_connections.filter(
+      (n) => isActiveIntegration("spotify", n)
     );
     if (spotifyIntegrations.length) {
       const spotifyIntegration = getLatestSpotifyIntegration(spotifyIntegrations);
@@ -39,14 +39,10 @@ function getLatestSpotifyIntegration(spotifyIntegrations) {
 export async function updateSlackIntegrations(user) {
   let foundNewIntegration: boolean = false;
   const slackIntegrations = [];
-  if (user && user.integrations) {
+  if (user?.integration_connections?.length) {
     const currentIntegrations = getIntegrations();
-    for (const integration of user.integrations) {
-      const isSlackIntegration = !!(
-        integration.name.toLowerCase() === "slack" &&
-        integration.status.toLowerCase() === "active" &&
-        integration.access_token
-      );
+    for (const integration of user.integration_connections) {
+      const isSlackIntegration = isActiveIntegration("slack", integration);
       if (isSlackIntegration) {
         const currentIntegration = currentIntegrations?.find((n) => n.authId === integration.authId);
         if (!currentIntegration || !currentIntegration.team_domain) {
@@ -82,4 +78,14 @@ export async function updateSlackIntegrations(user) {
 
 export function clearSpotifyIntegrations() {
   syncSpotifyIntegration(null);
+}
+
+export function isActiveIntegration(type: string, integration: any) {
+  if (integration && integration.status.toLowerCase() === "active" && integration.access_token) {
+    if (integration.integration_type) {
+      return !!(integration.integration_type.type.toLowerCase() === type.toLowerCase())
+    }
+    return !!(integration.name.toLowerCase() === type.toLowerCase())
+  }
+  return false;
 }
