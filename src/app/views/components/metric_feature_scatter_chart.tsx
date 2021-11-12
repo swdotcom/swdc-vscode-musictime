@@ -84,10 +84,13 @@ export default function MetricFeatureScatterChart(props) {
           </Select>
         </Grid>
         <Grid item key="scatter-chart-grid-item" xs={12}>
-          <Chart data={chartData}>
-            <ArgumentAxis showLabels={false} showTicks={false} />
-            <ValueAxis />
-            <ScatterSeries valueField="value" argumentField="name" color="#b39ddb" />
+          <Chart data={chartData} height={325}>
+            <ArgumentAxis showLine={true} showLabels={false} showTicks={false}/>
+            <ValueAxis showLine={true} showLabels={true}/>
+            <ScatterSeries
+              valueField="value"
+              argumentField="name"
+              color="#b39ddb" />
             <Animation />
             <EventTracker />
             <Tooltip />
