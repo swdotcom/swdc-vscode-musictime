@@ -157,13 +157,13 @@ export function getIntegrations() {
 }
 
 export function syncSlackIntegrations(integrations) {
-  const nonSlackIntegrations = getIntegrations().filter((n) => isActiveIntegration("slack", n));
+  const nonSlackIntegrations = getIntegrations().filter((n) => !isActiveIntegration("slack", n));
   integrations = integrations?.length ? [...integrations, ...nonSlackIntegrations] : nonSlackIntegrations;
   fileIt.writeJsonFileSync(getIntegrationsFile(), integrations);
 }
 
 export function syncSpotifyIntegration(integration) {
-  const nonSpotifyIntegrations = getIntegrations().filter((n) => isActiveIntegration("spotify", n));
+  const nonSpotifyIntegrations = getIntegrations().filter((n) => !isActiveIntegration("spotify", n));
   const integrations = integration ? [...nonSpotifyIntegrations, integration] : nonSpotifyIntegrations;
   fileIt.writeJsonFileSync(getIntegrationsFile(), integrations);
 }
