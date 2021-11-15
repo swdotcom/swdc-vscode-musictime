@@ -199,11 +199,8 @@ export function getCachedRecommendationInfo() {
   return recommendationInfo;
 }
 
-export async function getCachedUserMetricsData() {
-  if (!userMusicMetrics) {
-    await getUserMusicMetrics();
-  }
-  return { userMusicMetrics, globalMusicMetrics, averageMusicMetrics, musicScatterData, audioFeatures };
+export async function getUserMetricsData() {
+  return await getUserMusicMetrics();
 }
 
 export function getCachedRecommendationMetadata() {
@@ -421,6 +418,8 @@ export async function getUserMusicMetrics() {
       audioFeatures = audioFeatures.filter((n:MusicMetrics) => n);
     }
   }
+
+  return { userMusicMetrics, globalMusicMetrics, averageMusicMetrics, musicScatterData, audioFeatures };
 }
 
 export async function populateLikedSongs() {

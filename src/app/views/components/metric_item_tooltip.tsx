@@ -8,11 +8,6 @@ import PropTypes from "prop-types";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    labelText: {
-      wrap: "nowrap",
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-    },
     primaryListText: {
       fontWeight: 700,
       color: "white",
