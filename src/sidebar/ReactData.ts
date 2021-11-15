@@ -9,7 +9,7 @@ import {
   getCachedSoftwareTop40Playlist,
   getPlayerContext,
   getCachedSpotifyPlaylists,
-  getCachedUserMetricsData,
+  getUserMusicMetrics,
   getDeviceMenuInfo,
   getSelectedPlaylistId,
   getSelectedTabView,
@@ -133,7 +133,7 @@ async function getViewData(selectedTabView, playlist_id, spotifyUser) {
 
       selectedPlaylistId = playlist_id ? playlist_id : getSelectedPlaylistId();
     } else if (selectedTabView === "metrics") {
-      const metricsData = await getCachedUserMetricsData();
+      const metricsData = await getUserMusicMetrics();
       userMusicMetrics = metricsData.userMusicMetrics ?? [];
       globalMusicMetrics = metricsData.globalMusicMetrics ?? [];
       averageMusicMetrics = metricsData.averageMusicMetrics ?? [];

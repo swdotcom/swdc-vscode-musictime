@@ -119,7 +119,7 @@ export default function Recommendations(props) {
       <CardHeader
         className={classes.cardHeader}
         title={
-          <div style={{ display: 'inline-flex' }}>
+          <div style={{ display: 'inline-flex', marginLeft: "-6px" }}>
             <div>
               <IconButton onClick={playPlaylist} style={{minWidth: "28px"}}>
                 <MuiPlayCircleOutlineIcon />

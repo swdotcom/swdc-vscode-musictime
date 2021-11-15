@@ -6,7 +6,6 @@ import MetricItemNode from "./metric_item_node";
 import Typography from "@material-ui/core/Typography";
 import MetricsSetup from "./metrics_setup";
 import { grey, orange } from "@material-ui/core/colors";
-import Box from "@material-ui/core/Box";
 import Link from "@material-ui/core/Link";
 import Paper from "@material-ui/core/Paper";
 import Button from "@material-ui/core/Button";
@@ -24,6 +23,17 @@ const useStyles = makeStyles((theme) => {
       overflowX: "hidden",
       background: "transparent",
       marginBottom: 5,
+    },
+    buttonGroupDiv: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      paddingTop: 4
+    },
+    buttonGroupItem: {
+      fontSize: 11,
+      padding: 1,
+      margin: 0
     },
     cardHeader: {
       margin: 0,
@@ -138,10 +148,10 @@ export default function Metrics(props) {
         <CardHeader
           className={classes.cardHeader}
           title={
-            <div style={{ display: 'inline-flex' }}>
+            <div style={{ display: 'inline-flex', marginLeft: "-6px" }}>
               <div>
                 <IconButton onClick={playPlaylist} style={{minWidth: "28px"}}>
-                  <MuiPlayCircleOutlineIcon />
+                  <MuiPlayCircleOutlineIcon/>
                 </IconButton>
               </div>
               <div style={{ alignSelf: 'center' }}>
@@ -153,18 +163,13 @@ export default function Metrics(props) {
           }
           action={
             <div className={classes.headerActionButtons}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center'
-                }}
-              >
+              <div className={classes.buttonGroupDiv}>
                 <ButtonGroup size="small" variant="outlined"
                   aria-label="You vs. global playlist metrics">
                   {[
                     <Button
                       key="you_metrics"
+                      className={classes.buttonGroupItem}
                       color={metricsType === 'you' ? "primary" : "default"}
                       variant={metricsType === 'you' ? "contained" : "outlined"}
                       onClick={()=>handleMetricsToggle('you')}>
@@ -173,6 +178,7 @@ export default function Metrics(props) {
                     <Button
                       key="global_metrics"
                       value="global"
+                      className={classes.buttonGroupItem}
                       color={metricsType === 'global' ? "primary" : "default"}
                       variant={metricsType === 'global' ? "contained" : "outlined"}
                       onClick={()=>handleMetricsToggle('global')}>
@@ -181,6 +187,7 @@ export default function Metrics(props) {
                     <Button
                       key="audio_features"
                       value="features"
+                      className={classes.buttonGroupItem}
                       color={metricsType === 'features' ? "primary" : "default"}
                       variant={metricsType === 'features' ? "contained" : "outlined"}
                       onClick={()=>handleMetricsToggle('features')}>
@@ -188,7 +195,7 @@ export default function Metrics(props) {
                     </Button>
                   ]}
                 </ButtonGroup>
-              </Box>
+              </div>
             </div>
           }
         />

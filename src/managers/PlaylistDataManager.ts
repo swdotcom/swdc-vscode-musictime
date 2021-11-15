@@ -199,13 +199,6 @@ export function getCachedRecommendationInfo() {
   return recommendationInfo;
 }
 
-export async function getCachedUserMetricsData() {
-  if (!userMusicMetrics) {
-    await getUserMusicMetrics();
-  }
-  return { userMusicMetrics, globalMusicMetrics, averageMusicMetrics, musicScatterData, audioFeatures };
-}
-
 export function getCachedRecommendationMetadata() {
   return recommendationMetadata;
 }
@@ -395,14 +388,17 @@ export async function getUserMusicMetrics() {
   globalMusicMetrics = [];
   audioFeatures = [];
 
-  let resp = await appGet("/plugin/music/metrics");
-  if (isResponseOk(resp) && resp.data) {
-    userMusicMetrics = resp.data.user_music_metrics;
-    globalMusicMetrics = resp.data.global_music_metrics;
+  const metricsRespP = appGet("/plugin/music/metrics");
+  const featuresRespP = appGet("/plugin/music/features");
+
+  const metricsResp = await metricsRespP;
+  if (isResponseOk(metricsResp) && metricsResp.data) {
+    userMusicMetrics = metricsResp.data.user_music_metrics;
+    globalMusicMetrics = metricsResp.data.global_music_metrics;
   }
-  resp = await appGet("/plugin/music/features");
-  if (isResponseOk(resp)) {
-    audioFeatures = resp.data;
+  const featuresResp = await featuresRespP;
+  if (isResponseOk(featuresResp)) {
+    audioFeatures = featuresResp.data;
     if (audioFeatures?.length) {
       audioFeatures = audioFeatures.map((n: MusicMetrics, index: number) => {
         if (n.acousticness === undefined || n.acousticness === null) {
@@ -421,6 +417,8 @@ export async function getUserMusicMetrics() {
       audioFeatures = audioFeatures.filter((n:MusicMetrics) => n);
     }
   }
+
+  return { userMusicMetrics, globalMusicMetrics, averageMusicMetrics, musicScatterData, audioFeatures };
 }
 
 export async function populateLikedSongs() {
