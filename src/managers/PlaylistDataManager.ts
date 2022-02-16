@@ -23,7 +23,7 @@ import {
 import { commands, window } from "vscode";
 import { RECOMMENDATION_LIMIT, RECOMMENDATION_PLAYLIST_ID, SOFTWARE_TOP_40_PLAYLIST_ID } from "../app/utils/view_constants";
 import { OK_LABEL, SPOTIFY_LIKED_SONGS_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME, YES_LABEL } from "../app/utils/view_constants";
-import { appGet, isResponseOk, softwareGet } from "../HttpClient";
+import { appGet, isResponseOk } from "../HttpClient";
 import MusicMetrics from "../model/MusicMetrics";
 import MusicScatterData from "../model/MusicScatterData";
 import SongMetric from '../model/SongMetric';
@@ -299,7 +299,7 @@ function getTracksFromTrackId(trackId, existingTracks) {
 
 // PLAYLISTS
 export async function getSpotifyPlaylists(clear = false): Promise<PlaylistItem[]> {
-  if (requiresSpotifyAccess()) {
+  if (await requiresSpotifyAccess()) {
     return [];
   }
 
@@ -777,8 +777,8 @@ export async function populatePlayerContext() {
 // UTIL FUNCTIONS
 ////////////////////////////////////////////////////////////////
 
-export function requiresSpotifyAccess() {
-  const spotifyIntegration = getSpotifyIntegration();
+export async function requiresSpotifyAccess() {
+  const spotifyIntegration = await getSpotifyIntegration();
   // no spotify access token then return true, the user requires spotify access
   return !spotifyIntegration ? true : false;
 }

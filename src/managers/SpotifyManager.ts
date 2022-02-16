@@ -6,9 +6,8 @@ import SoftwareIntegration from "../model/SoftwareIntegration";
 import { getPluginId, getPluginType, getVersion, isMac, launchWebUrl } from "../Util";
 import { SpotifyUser } from "cody-music/dist/lib/profile";
 import { MusicCommandManager } from "../music/MusicCommandManager";
-import { getAuthCallbackState, getIntegrations, getItem, getPluginUuid, setItem } from "./FileManager";
-import { getUser } from "./UserStatusManager";
-import { clearSpotifyIntegrations, isActiveIntegration, updateSpotifyIntegration } from "./IntegrationManager";
+import { getAuthCallbackState, getItem, getPluginUuid, setItem } from "./FileManager";
+import { getCachedSpotifyIntegrations, getUser } from "./UserStatusManager";
 import { processNewSpotifyIntegration } from "./UserStatusManager";
 import { clearAllData } from "./PlaylistDataManager";
 
@@ -97,10 +96,8 @@ export async function lazilyPollForSpotifyConnection(tries: number = 10) {
     return;
   }
 
-  await updateSpotifyIntegration(await getUser(getItem("jwt")));
-  const spotifyIntegrations = getIntegrations().filter(
-    (n) => isActiveIntegration("spotify", n)
-  );
+  await getUser(getItem("jwt"))
+  const spotifyIntegrations = getCachedSpotifyIntegrations();
   if (!spotifyIntegrations || spotifyIntegrations.length === 0) {
     // try again
     tries--;
@@ -120,7 +117,6 @@ export async function populateSpotifyUser(hardRefresh = false) {
     const user = await getUser(getItem("jwt"));
     if (user) {
       // update the integrations
-      await updateSpotifyIntegration(user);
       updateCodyConfig();
     }
     spotifyIntegration = getSpotifyIntegration();
@@ -141,25 +137,13 @@ export async function switchSpotifyAccount() {
 }
 
 export function getSpotifyIntegration(): SoftwareIntegration {
-  const integrations = getIntegrations();
-  const spotifyIntegrations: SoftwareIntegration[] = integrations.filter(
-    (n) => isActiveIntegration("spotify", n)
-  );
+  const spotifyIntegrations: SoftwareIntegration[] = getCachedSpotifyIntegrations();
   if (spotifyIntegrations?.length) {
     // get the last one in case we have more than one.
     // the last one is the the latest one created.
     return spotifyIntegrations[spotifyIntegrations.length - 1];
   }
   return null;
-}
-
-export function removeSpotifyIntegration() {
-  clearSpotifyIntegrations();
-
-  // clear the tokens from cody config
-  updateCodyConfig();
-  // update the spotify user to null
-  spotifyUser = null;
 }
 
 export async function disconnectSpotify(confirmDisconnect = true) {
@@ -169,9 +153,11 @@ export async function disconnectSpotify(confirmDisconnect = true) {
 
   if (selection === YES_LABEL) {
     await softwarePut(`/auth/spotify/disconnect`, {});
-
-    // remove the integration
-    removeSpotifyIntegration();
+    await getUser(getItem("jwt"));
+    // clear the tokens from cody config
+    updateCodyConfig();
+    // update the spotify user to null
+    spotifyUser = null;
 
     // clear the spotify playlists
     clearAllData();
@@ -193,7 +179,7 @@ export async function disconnectSpotify(confirmDisconnect = true) {
  * Update the cody config settings for cody-music
  */
 export async function updateCodyConfig() {
-  const spotifyIntegration: SoftwareIntegration = getSpotifyIntegration();
+  const spotifyIntegration: SoftwareIntegration = await getSpotifyIntegration();
 
   if (!spotifyIntegration) {
     spotifyUser = null;
@@ -215,12 +201,8 @@ export async function migrateAccessInfo() {
     const legacyAccessToken = getItem("spotify_access_token");
     if (legacyAccessToken) {
       // get the user
-      const user = await getUser(getItem("jwt"));
-      if (user) {
-        // update the integrations
-        await updateSpotifyIntegration(user);
-        updateCodyConfig();
-      }
+      await getUser(getItem("jwt"));
+      updateCodyConfig();
     }
 
     // remove the legacy spotify_access_token to so we don't have to check

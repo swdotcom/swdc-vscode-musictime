@@ -4,7 +4,6 @@ import { MusicCommandManager } from "./MusicCommandManager";
 import { execCmd } from "../managers/ExecManager";
 import { getBestActiveDevice, requiresSpotifyAccess, updateCachedRunningTrack } from "../managers/PlaylistDataManager";
 const path = require("path");
-const moment = require("moment-timezone");
 
 const resourcePath: string = path.join(__dirname, "resources");
 
@@ -97,7 +96,7 @@ export class MusicStateManager {
 
   public async updateRunningTrackToMostRecentlyPlayed() {
     // get the most recently played track
-    const before = moment().utc().valueOf();
+    const before = new Date().getTime();
     const resp: CodyResponse = await getSpotifyRecentlyPlayedBefore(1, before);
     if (resp && resp.data && resp.data.tracks && resp.data.tracks.length) {
       return resp.data.tracks[0];

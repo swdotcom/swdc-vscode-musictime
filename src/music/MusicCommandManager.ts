@@ -58,7 +58,7 @@ export class MusicCommandManager {
     const musictimeMenuTooltip = this.getMusicMenuTooltip();
 
     let requiresReAuth = requiresSpotifyReAuthentication();
-    const requiresAccessToken = requiresSpotifyAccess();
+    const requiresAccessToken = await requiresSpotifyAccess();
 
     if (!requiresAccessToken && requiresReAuth) {
       setItem("requiresSpotifyReAuth", false);
@@ -106,7 +106,7 @@ export class MusicCommandManager {
 
     this._isLoading = showLoading;
 
-    const requiresAccessToken = requiresSpotifyAccess();
+    const requiresAccessToken = await requiresSpotifyAccess();
     let requiresReAuth = requiresSpotifyReAuthentication();
 
     if (!requiresAccessToken && requiresReAuth) {
@@ -158,7 +158,7 @@ export class MusicCommandManager {
       return;
     }
 
-    const requiresAccessToken = requiresSpotifyAccess();
+    const requiresAccessToken = await requiresSpotifyAccess();
     let requiresReAuth = requiresSpotifyReAuthentication();
 
     if (!requiresAccessToken && requiresReAuth) {

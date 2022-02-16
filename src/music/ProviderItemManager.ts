@@ -2,7 +2,6 @@ import { PlayerType, PlaylistItem, PlaylistTrackInfo, PlayerDevice } from "cody-
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../app/utils/view_constants";
 import { isMac } from "../Util";
 import { KpmItem } from "../model/models";
-import { getSlackWorkspaces } from "../managers/SlackManager";
 import { getItem } from "../managers/FileManager";
 import { getCurrentDevices, getDeviceSet, requiresSpotifyReAuthentication } from "../managers/PlaylistDataManager";
 
@@ -160,21 +159,6 @@ export class ProviderItemManager {
       "",
       null
     );
-  }
-
-  getSlackIntegrationsTree(): KpmItem {
-    const parentItem = this.buildKpmItem("Slack workspaces", "");
-    parentItem.contextValue = "musictime_slack_folder_parent";
-    parentItem.children = [];
-    const workspaces = getSlackWorkspaces();
-    for (const integration of workspaces) {
-      const workspaceItem = this.buildKpmItem(integration.team_domain, "");
-      workspaceItem.contextValue = "musictime_slack_workspace_node";
-      workspaceItem.description = `(${integration.team_name})`;
-      workspaceItem.value = integration.authId;
-      parentItem.children.push(workspaceItem);
-    }
-    return parentItem;
   }
 
   createSpotifyDevicesButton(title, tooltip, loggedIn, command = null) {
