@@ -236,8 +236,8 @@ export async function getLatestSpotifyIntegration() {
   const spotifyIntegrations: any[] = getCachedSpotifyIntegrations();
   if (spotifyIntegrations?.length) {
     const sorted = spotifyIntegrations.sort((a, b) => {
-      const aDate = new Date(a.updatedAt).getTime();
-      const bDate = new Date(b.updatedAt).getTime();
+      const aDate = a.updatedAt ? new Date(a.updatedAt).getTime() : new Date(a.updated_at).getTime();
+      const bDate = b.updatedAt ? new Date(b.updatedAt).getTime() : new Date(b.updated_at).getTime();
       if (aDate > bDate) return 1;
       if (aDate < bDate) return -1;
       return 0;
