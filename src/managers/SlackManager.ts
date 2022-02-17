@@ -183,8 +183,8 @@ async function showSlackWorkspaceSelection() {
       });
     } else if (integration.meta) {
       menuOptions.items.push({
-        label: JSON.parse(integration.meta).team_name,
-        value: JSON.parse(integration.meta).team_name,
+        label: JSON.parse(integration.meta).team.name,
+        value: JSON.parse(integration.meta).team.name,
       });
     }
   });
@@ -210,7 +210,7 @@ async function getWorkspaceAccessToken(team_domain) {
   const integration = (await getSlackWorkspaces()).find((n) => {
     if (n.team_domain && n.team_domain === team_domain) {
       return n;
-    } else if (n.meta && JSON.parse(n.meta).team_name === team_domain) {
+    } else if (n.meta && JSON.parse(n.meta).team.name === team_domain) {
       return n;
     }
   });
