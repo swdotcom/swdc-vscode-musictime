@@ -3,7 +3,6 @@ import { MusicControlManager } from "./music/MusicControlManager";
 import { launchMusicAnalytics, launchWebUrl } from "./Util";
 import { PlaylistItem, PlayerName, PlayerDevice, playSpotifyDevice } from "cody-music";
 import { SocialShareManager } from "./social/SocialShareManager";
-import { connectSlackWorkspace, disconnectSlack, disconnectSlackAuth } from "./managers/SlackManager";
 import { showGenreSelections, showMoodSelections } from "./selector/RecTypeSelectorManager";
 import { showSortPlaylistMenu } from "./selector/SortPlaylistSelectorManager";
 import { showDeviceSelectorMenu } from "./selector/SpotifyDeviceSelectorManager";
@@ -34,7 +33,7 @@ import {
   updateSort,
 } from "./managers/PlaylistDataManager";
 import { launchTrackPlayer, playSelectedItem, playSelectedItems } from "./managers/PlaylistControlManager";
-import { vscode_mt_issues_url } from "./Constants";
+import { app_endpoint, vscode_mt_issues_url } from "./Constants";
 import { displayReadmeIfNotExists } from './DataController';
 
 /**
@@ -232,7 +231,13 @@ export function createCommands(
   // CONNECT SLACK
   cmds.push(
     commands.registerCommand("musictime.connectSlack", () => {
-      connectSlackWorkspace();
+      launchWebUrl(`${app_endpoint}/data_sources/integration_types/slack`);
+    })
+  );
+
+  cmds.push(
+    commands.registerCommand("musictime.connectSlackWorkspace", () => {
+      launchWebUrl(`${app_endpoint}/data_sources/integration_types/slack`);
     })
   );
 
@@ -246,11 +251,7 @@ export function createCommands(
   // DISCONNECT SLACK
   cmds.push(
     commands.registerCommand("musictime.disconnectSlack", (item: any) => {
-      if (!item) {
-        disconnectSlack();
-      } else {
-        disconnectSlackAuth(item.value);
-      }
+      launchWebUrl(`${app_endpoint}/data_sources/integration_types/slack`);
     })
   );
 

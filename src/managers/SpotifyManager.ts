@@ -22,7 +22,10 @@ export function updateAddedNewIntegration(val: boolean) {
   addedNewIntegration = val;
 }
 
-export function getConnectedSpotifyUser() {
+export async function getConnectedSpotifyUser() {
+  if (!spotifyUser || !spotifyUser.id) {
+    spotifyUser = await getUserProfile();
+  }
   return spotifyUser;
 }
 

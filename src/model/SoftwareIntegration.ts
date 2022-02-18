@@ -4,6 +4,7 @@ export default class SoftwareIntegration {
   public value: string; // i.e. <email>
   public status: string; // i.e. ACTIVE
   public authId: string;
+  public auth_id: string;
   public access_token: string;
   public refresh_token: string;
   public pluginId: number;
@@ -12,4 +13,5 @@ export default class SoftwareIntegration {
   public integration_id: string;
   public plugin_uuid: string;
   public scopes: string[] = [];
+  public team: any;
 }

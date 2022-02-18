@@ -24,7 +24,7 @@ import { isCodeTimeTimeInstalled } from "../Util";
 export async function getReactData(tab_view = undefined, playlist_id = undefined, loading = false) {
   const name = getItem("name");
   const authType = getItem("authType");
-  const spotifyUser = getConnectedSpotifyUser();
+  const spotifyUser = await getConnectedSpotifyUser();
 
   const selectedTabView = tab_view ? tab_view : getSelectedTabView();
   const metricsTypeSelected = getUserMetricsSelected();
@@ -90,8 +90,8 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
     spotifyPlayerContext,
     currentlyRunningTrack,
     deviceMenuInfo,
+    spotifyUser,
     likedSongsPlaylist: getSpotifyLikedPlaylist(),
-    spotifyUser: getConnectedSpotifyUser(),
     slackConnected: !!(await hasSlackWorkspaces()),
     slackWorkspaces: await getSlackWorkspaces(),
     currentColorKind: getCurrentColorKind(),

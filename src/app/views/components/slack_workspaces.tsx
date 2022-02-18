@@ -130,6 +130,7 @@ export default function SlackWorkspaces(props) {
 
       <List disablePadding={true} dense={true} className={classes.root}>
         {props.stateData.slackWorkspaces.map((workspace, index) => {
+          const team_name = workspace.meta ? JSON.parse(workspace.meta).team.name : workspace.team_name
           return (
             <ListItem key={`slack_workspace_li_${index}`} disableGutters={true} dense={true}>
               <ListItemIcon className={classes.listItemIcon}>
@@ -137,8 +138,7 @@ export default function SlackWorkspaces(props) {
               </ListItemIcon>
               <ListItemText
                 key={`slack_workspace_li_text_${index}`}
-                primary={workspace.team_domain}
-                secondary={workspace.team_name || null}
+                primary={team_name || "Slack"}
                 classes={{ primary: classes.primaryContent }}
               />
               <ListItemSecondaryAction classes={{ root: classes.secondaryAction }}>

@@ -66,14 +66,15 @@ export async function disconnectSlack() {
 // disconnect slack flow
 export async function disconnectSlackAuth(authId) {
   // get the domain
-  const integration = (await getSlackWorkspaces()).find((n) => n.authId === authId);
+  const integration = (await getSlackWorkspaces()).find((n) => n.auth_id === authId || n.authId === authId);
   if (!integration) {
     window.showErrorMessage("Unable to find selected integration to disconnect");
     return;
   }
+  const team_name = integration.meta ? JSON.parse(integration.meta).team.name : integration.team_name
   // ask before disconnecting
   const selection = await window.showInformationMessage(
-    `Are you sure you would like to disconnect the '${integration.team_domain}' Slack workspace?`,
+    `Are you sure you would like to disconnect the '${team_name}' Slack workspace?`,
     ...[DISCONNECT_LABEL]
   );
 
@@ -223,7 +224,11 @@ async function getWorkspaceAccessToken(team_domain) {
 async function showSlackWorkspacesToDisconnect() {
   const workspaces = await getSlackWorkspaces();
   const items = workspaces.map((n) => {
-    return { label: n.team_domain, value: n.authId };
+    if (n.meta) {
+      return { label: JSON.parse(n.meta).team.name, value: n.auth_id };
+    } else {
+      return { label: n.team_domain, value: n.authId };
+    }
   });
   items.push({ label: "all", value: "all" });
   let menuOptions = {
