@@ -257,7 +257,7 @@ export function createCommands(
   // this should only be attached to the refresh button
   cmds.push(
     commands.registerCommand("musictime.refreshDeviceInfo", async () => {
-      if (!requiresSpotifyAccess()) {
+      if (!await requiresSpotifyAccess()) {
         await populateSpotifyDevices(false);
       }
     })

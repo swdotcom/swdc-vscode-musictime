@@ -1,12 +1,11 @@
-import { api_endpoint, DISCONNECT_LABEL } from "../Constants";
-import { getPluginId, getPluginType, getVersion, launchWebUrl } from "../Util";
+import { app_endpoint, DISCONNECT_LABEL } from "../Constants";
+import { launchWebUrl } from "../Util";
 import { showQuickPick } from "../MenuManager";
 import { commands, window } from "vscode";
 import { softwareDelete } from "../HttpClient";
-import { getAuthCallbackState, getIntegrations, getItem, getPluginUuid, logIt, syncSlackIntegrations } from "./FileManager";
-import { isActiveIntegration } from './IntegrationManager';
+import { getItem, logIt } from "./FileManager";
+import { getCachedSlackIntegrations, getUser } from './UserStatusManager';
 
-const queryString = require("query-string");
 const { WebClient } = require("@slack/web-api");
 
 export async function connectSlackWorkspace() {
@@ -15,25 +14,14 @@ export async function connectSlackWorkspace() {
     return;
   }
 
-  // make sure the user is logged in before connecting slack
-  const qryStr = queryString.stringify({
-    plugin: getPluginType(),
-    plugin_uuid: getPluginUuid(),
-    pluginVersion: getVersion(),
-    plugin_id: getPluginId(),
-    auth_callback_state: getAuthCallbackState(),
-    integrate: "slack",
-    plugin_token: getItem("jwt"),
-  });
-
-  const url = `${api_endpoint}/auth/slack?${qryStr}`;
+  const url = `${app_endpoint}/data_sources/integration_types/slack`;
 
   // authorize the user for slack
   launchWebUrl(url);
 }
 
 export async function disconnectSlack() {
-  const workspaces = getSlackWorkspaces();
+  const workspaces = await getSlackWorkspaces();
   if (workspaces.length === 0) {
     window.showErrorMessage("Unable to find Slack integration to disconnect");
     return;
@@ -56,14 +44,15 @@ export async function disconnectSlack() {
       if (selectedItem === "all") {
         for await (const workspace of workspaces) {
           await softwareDelete(`/integrations/${workspace.id}`);
-          removeSlackIntegration(workspace.authId);
         }
         window.showInformationMessage("Disconnected selected Slack integrations");
       } else {
         await softwareDelete(`/integrations/${selectedItem}`);
-        removeSlackIntegration(selectedItem);
         window.showInformationMessage("Disconnected selected Slack integration");
       }
+
+      // fetch the user with the new integration set
+      await getUser(getItem("jwt"))
 
       // refresh the tree view
       setTimeout(() => {
@@ -77,7 +66,7 @@ export async function disconnectSlack() {
 // disconnect slack flow
 export async function disconnectSlackAuth(authId) {
   // get the domain
-  const integration = getSlackWorkspaces().find((n) => n.authId === authId);
+  const integration = (await getSlackWorkspaces()).find((n) => n.authId === authId);
   if (!integration) {
     window.showErrorMessage("Unable to find selected integration to disconnect");
     return;
@@ -90,8 +79,7 @@ export async function disconnectSlackAuth(authId) {
 
   if (selection === DISCONNECT_LABEL) {
     await softwareDelete(`/integrations/${integration.id}`);
-    // disconnected, remove it from the integrations
-    removeSlackIntegration(authId);
+    await getUser(getItem("jwt"));
 
     commands.executeCommand("musictime.refreshMusicTimeView");
   }
@@ -122,12 +110,12 @@ export async function showSlackChannelMenu() {
 }
 
 // get saved slack integrations
-export function getSlackWorkspaces() {
-  return getIntegrations().filter((n) => isActiveIntegration("slack", n));
+export async function getSlackWorkspaces() {
+  return await getCachedSlackIntegrations();
 }
 
-export function hasSlackWorkspaces() {
-  return !!getSlackWorkspaces().length;
+export async function hasSlackWorkspaces() {
+  return !!(await getSlackWorkspaces()).length;
 }
 
 // get the access token of a selected slack workspace
@@ -135,20 +123,9 @@ export async function getSlackAccessToken() {
   const selectedTeamDomain = await showSlackWorkspaceSelection();
 
   if (selectedTeamDomain) {
-    return getWorkspaceAccessToken(selectedTeamDomain);
+    return await getWorkspaceAccessToken(selectedTeamDomain);
   }
   return null;
-}
-
-/**
- * Remove an integration from the local copy
- * @param authId
- */
-export function removeSlackIntegration(authId) {
-  const currentIntegrations = getIntegrations();
-
-  const newIntegrations = currentIntegrations.filter((n) => n.authId !== authId);
-  syncSlackIntegrations(newIntegrations);
 }
 
 //////////////////////////
@@ -197,12 +174,19 @@ async function showSlackWorkspaceSelection() {
     placeholder: `Select a Slack workspace`,
   };
 
-  const integrations = getSlackWorkspaces();
+  const integrations = await getSlackWorkspaces();
   integrations.forEach((integration) => {
-    menuOptions.items.push({
-      label: integration.team_domain,
-      value: integration.team_domain,
-    });
+    if (integration.team_domain) {
+      menuOptions.items.push({
+        label: integration.team_domain,
+        value: integration.team_domain,
+      });
+    } else if (integration.meta) {
+      menuOptions.items.push({
+        label: JSON.parse(integration.meta).team.name,
+        value: JSON.parse(integration.meta).team.name,
+      });
+    }
   });
 
   menuOptions.items.push({
@@ -222,8 +206,14 @@ async function showSlackWorkspaceSelection() {
   return null;
 }
 
-function getWorkspaceAccessToken(team_domain) {
-  const integration = getSlackWorkspaces().find((n) => n.team_domain === team_domain);
+async function getWorkspaceAccessToken(team_domain) {
+  const integration = (await getSlackWorkspaces()).find((n) => {
+    if (n.team_domain && n.team_domain === team_domain) {
+      return n;
+    } else if (n.meta && JSON.parse(n.meta).team.name === team_domain) {
+      return n;
+    }
+  });
   if (integration) {
     return integration.access_token;
   }
@@ -231,7 +221,7 @@ function getWorkspaceAccessToken(team_domain) {
 }
 
 async function showSlackWorkspacesToDisconnect() {
-  const workspaces = getSlackWorkspaces();
+  const workspaces = await getSlackWorkspaces();
   const items = workspaces.map((n) => {
     return { label: n.team_domain, value: n.authId };
   });

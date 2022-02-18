@@ -1,10 +1,9 @@
-import { isWindows, getNowTimes } from "../Util";
+import { isWindows } from "../Util";
 import { v4 as uuidv4 } from "uuid";
 import { window } from "vscode";
 import * as path from "path";
 import { SOFTWARE_FOLDER } from "../Constants";
 import { formatISO } from 'date-fns';
-import { isActiveIntegration } from './IntegrationManager';
 
 const outputChannel = window.createOutputChannel('MusicTime');
 
@@ -12,19 +11,12 @@ const fileIt = require("file-it");
 const fs = require("fs");
 const os = require("os");
 
-const NO_DATA = `MUSIC TIME
-    Listen to Spotify while coding to generate this playlist`;
-
 export function getSoftwareSessionFile() {
   return getFile("session.json");
 }
 
 export function getDeviceFile() {
   return getFile("device.json");
-}
-
-export function getIntegrationsFile() {
-  return getFile("integrations.json");
 }
 
 export function getSoftwareDataStoreFile() {
@@ -151,23 +143,6 @@ export function setAuthCallbackState(value: string) {
   fileIt.setJsonValue(getDeviceFile(), "auth_callback_state", value);
 }
 
-export function getIntegrations() {
-  let integrations = getFileDataAsJson(getIntegrationsFile());
-  return integrations?.length ? integrations : [];
-}
-
-export function syncSlackIntegrations(integrations) {
-  const nonSlackIntegrations = getIntegrations().filter((n) => !isActiveIntegration("slack", n));
-  integrations = integrations?.length ? [...integrations, ...nonSlackIntegrations] : nonSlackIntegrations;
-  fileIt.writeJsonFileSync(getIntegrationsFile(), integrations);
-}
-
-export function syncSpotifyIntegration(integration) {
-  const nonSpotifyIntegrations = getIntegrations().filter((n) => !isActiveIntegration("spotify", n));
-  const integrations = integration ? [...nonSpotifyIntegrations, integration] : nonSpotifyIntegrations;
-  fileIt.writeJsonFileSync(getIntegrationsFile(), integrations);
-}
-
 export function softwareSessionFileExists() {
   // don't auto create the file
   const file = getSoftwareSessionFile();
@@ -192,10 +167,4 @@ export function logIt(message: string) {
 export function getSoftwareSessionAsJson() {
   let data = fileIt.readJsonFileSync(getSoftwareSessionFile());
   return data ? data : {};
-}
-
-export function isNewDay() {
-  const { day } = getNowTimes();
-  const currentDay = getItem("currentDay");
-  return currentDay !== day ? true : false;
 }

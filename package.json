@@ -1,7 +1,7 @@
 {
   "name": "music-time",
   "displayName": "Music Time for Spotify",
-  "version": "2.2.35",
+  "version": "2.2.36",
   "publisher": "softwaredotcom",
   "description": "Music Time for Spotify is a VS Code extension that discovers the most productive music to listen to as you code.",
   "author": {
@@ -228,19 +228,18 @@
     "@material-ui/core": "^4.12.3",
     "@material-ui/icons": "^4.11.2",
     "@material-ui/lab": "^4.0.0-alpha.60",
-    "@slack/web-api": "^6.1.0",
-    "@types/ws": "^8.2.0",
-    "axios": "^0.24.0",
+    "@slack/web-api": "^6.5.0",
+    "@types/ws": "^8.2.1",
+    "axios": "^0.26.0",
     "clipboardy": "^2.1.0",
     "cody-music": "2.10.4",
     "date-fns": "^2.25.0",
     "file-it": "^1.1.5",
-    "moment-timezone": "^0.5.25",
     "open": "^8.4.0",
     "query-string": "^7.0.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "uuid": "^8.3.2",
-    "ws": "^8.2.3"
+    "ws": "^8.3.0"
   }
 }

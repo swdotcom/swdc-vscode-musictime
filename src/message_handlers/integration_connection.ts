@@ -1,6 +1,5 @@
 import { commands, window } from "vscode";
 import { getItem, setAuthCallbackState } from "../managers/FileManager";
-import { updateSlackIntegrations, updateSpotifyIntegration } from "../managers/IntegrationManager";
 import { updateAddedNewIntegration } from "../managers/SpotifyManager";
 import { getUser, processNewSpotifyIntegration } from "../managers/UserStatusManager";
 
@@ -9,10 +8,9 @@ export async function handleIntegrationConnectionSocketEvent(body: any) {
   // action = add, update, remove
   const { integration_type_id, integration_type, action } = body;
 
-  const user = await getUser(getItem("jwt"));
+  await getUser(getItem("jwt"));
 
   if (integration_type_id === 14) {
-    await updateSlackIntegrations(user);
 
     if (action === "add") {
       // clear the auth callback state
@@ -26,13 +24,9 @@ export async function handleIntegrationConnectionSocketEvent(body: any) {
       }, 1000);
     }
 
-    await updateSlackIntegrations(user);
   } else if (integration_type_id === 12) {
     // clear the auth callback state
     setAuthCallbackState(null);
-
-    // update the spotify integrations before populating the spotify user
-    await updateSpotifyIntegration(user);
 
     // clear the polling timer
     updateAddedNewIntegration(true);

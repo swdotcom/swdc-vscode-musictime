@@ -112,21 +112,13 @@ export class SocialShareManager {
             })
         });
 
-        if (hasSlackWorkspaces()) {
+        if (await hasSlackWorkspaces()) {
             menuOptions.items.push({
                 label: "Slack",
                 detail: `Share '${label}' on Slack`,
                 cb: this.shareSlack
             });
         }
-
-        // menuOptions.items.push({
-        //     label: "LinkedIn",
-        //     detail: `Share your ${context.toLowerCase()}, ${label}, on LinkedIn.`,
-        //     url: this.getShareUrl("linkedin", {
-        //         url: spotifyLinkUrl
-        //     })
-        // });
 
         menuOptions.items.push({
             label: "Tumblr",
@@ -165,7 +157,7 @@ export class SocialShareManager {
             cb: this.copyLink
         });
 
-        const hasSlackAccess = hasSlackWorkspaces();
+        const hasSlackAccess = await hasSlackWorkspaces();
         if (!hasSlackAccess) {
             // show divider
             menuOptions.items.push({

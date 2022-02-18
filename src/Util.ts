@@ -6,7 +6,6 @@ import { isGitProject } from "./repo/GitUtil";
 import { execCmd } from "./managers/ExecManager";
 
 const fileIt = require("file-it");
-const moment = require("moment-timezone");
 const open = require("open");
 const fs = require("fs");
 const path = require('path');
@@ -17,9 +16,6 @@ export const alpha = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 export const MARKER_WIDTH = 4;
 
 const NUMBER_IN_EMAIL_REGEX = new RegExp("^\\d+\\+");
-const dayFormat = "YYYY-MM-DD";
-const dayTimeFormat = "LLLL";
-
 export function getPluginId() {
   return MUSIC_TIME_PLUGIN_ID;
 }
@@ -238,30 +234,6 @@ export function nowInSecs() {
 export function getOffsetSeconds() {
   let d = new Date();
   return d.getTimezoneOffset() * 60;
-}
-
-export function getNowTimes() {
-  const now = moment.utc();
-  const now_in_sec = now.unix();
-  const offset_in_sec = moment().utcOffset() * 60;
-  const local_now_in_sec = now_in_sec + offset_in_sec;
-  const utcDay = now.format(dayFormat);
-  const day = moment().format(dayFormat);
-  const localDayTime = moment().format(dayTimeFormat);
-
-  return {
-    now,
-    now_in_sec,
-    offset_in_sec,
-    local_now_in_sec,
-    utcDay,
-    day,
-    localDayTime,
-  };
-}
-
-export function getFormattedDay(unixSeconds) {
-  return moment.unix(unixSeconds).format(dayFormat);
 }
 
 export function coalesceNumber(val, defaultVal = 0) {

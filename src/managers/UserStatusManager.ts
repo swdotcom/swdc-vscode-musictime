@@ -1,16 +1,16 @@
 import { commands, window } from "vscode";
-import { api_endpoint, app_endpoint } from "../Constants";
+import { app_endpoint } from "../Constants";
 import { isResponseOk, softwareGet } from "../HttpClient";
 import { showQuickPick } from "../MenuManager";
-import { launchWebUrl, getPluginType, getVersion, getPluginId } from "../Util";
+import { launchWebUrl, getPluginId } from "../Util";
 import { initializeWebsockets } from "../websockets";
 import { getAuthCallbackState, getItem, getPluginUuid, setAuthCallbackState, setItem } from "./FileManager";
-import { updateSlackIntegrations, updateSpotifyIntegration } from "./IntegrationManager";
 import { initializeSpotify } from "./PlaylistDataManager";
 
 const queryString = require("query-string");
 
 let authAdded = false;
+let currentUser: any | null = null;
 const lazy_poll_millis = 20000;
 
 export function updatedAuthAdded(val: boolean) {
@@ -23,8 +23,8 @@ export async function getUser(jwt) {
     let resp = await softwareGet(api);
     if (isResponseOk(resp)) {
       if (resp && resp.data && resp.data.data) {
-        const user = resp.data.data;
-        return user;
+        currentUser = resp.data.data;
+        return currentUser;
       }
     }
   }
@@ -84,8 +84,6 @@ export async function launchLogin(loginType: string = "software", switching_acco
   let url = "";
 
   let obj = {
-    plugin: getPluginType(),
-    pluginVersion: getVersion(),
     plugin_id: getPluginId(),
     plugin_uuid: getPluginUuid(),
     auth_callback_state,
@@ -98,12 +96,10 @@ export async function launchLogin(loginType: string = "software", switching_acco
 
   if (loginType === "github") {
     // github signup/login flow
-    obj["redirect"] = app_endpoint;
-    url = `${api_endpoint}/auth/github`;
+    url = `${app_endpoint}/auth/github`;
   } else if (loginType === "google") {
     // google signup/login flow
-    obj["redirect"] = app_endpoint;
-    url = `${api_endpoint}/auth/google`;
+    url = `${app_endpoint}/auth/google`;
   } else {
     // email login
     obj["token"] = getItem("jwt");
@@ -164,6 +160,8 @@ export async function authenticationCompleteHandler(user) {
 
   // set the email and jwt
   if (user?.registered === 1) {
+    currentUser = user;
+
     if (!getItem("name")) {
       if (user.plugin_jwt) {
         setItem("jwt", user.plugin_jwt);
@@ -178,11 +176,6 @@ export async function authenticationCompleteHandler(user) {
         console.error("Failed to initialize websockets", e);
       }
     }
-
-    // update the slack and spotify integrations
-    await updateSlackIntegrations(user);
-
-    await updateSpotifyIntegration(user);
 
     // this will refresh the playlist for both slack and spotify
     processNewSpotifyIntegration(false, false);
@@ -218,4 +211,48 @@ export async function processNewSpotifyIntegration(showSuccess = true, refreshPl
       commands.executeCommand("musictime.refreshMusicTimeView");
     }, 2000);
   }
+}
+
+export async function getCachedSlackIntegrations() {
+  if (!currentUser) {
+    currentUser = await getUser(getItem("jwt"));
+  }
+  if (currentUser?.integration_connections?.length) {
+    return currentUser?.integration_connections?.filter(
+      (integration: any) => integration.status === 'ACTIVE' && (integration.integration_type_id === 14));
+  }
+  return [];
+}
+
+export function getCachedSpotifyIntegrations() {
+  if (currentUser?.integration_connections?.length) {
+    return currentUser?.integration_connections?.filter(
+      (integration: any) => integration.status === 'ACTIVE' && (integration.integration_type_id === 12));
+  }
+  return [];
+}
+
+export async function getLatestSpotifyIntegration() {
+  const spotifyIntegrations: any[] = getCachedSpotifyIntegrations();
+  if (spotifyIntegrations?.length) {
+    const sorted = spotifyIntegrations.sort((a, b) => {
+      const aDate = a.updatedAt ? new Date(a.updatedAt).getTime() : new Date(a.updated_at).getTime();
+      const bDate = b.updatedAt ? new Date(b.updatedAt).getTime() : new Date(b.updated_at).getTime();
+      if (aDate > bDate) return 1;
+      if (aDate < bDate) return -1;
+      return 0;
+    });
+    return sorted[0];
+  }
+  return null;
+}
+
+export function isActiveIntegration(type: string, integration: any) {
+  if (integration && integration.status.toLowerCase() === "active") {
+    if (integration.integration_type) {
+      return !!(integration.integration_type.type.toLowerCase() === type.toLowerCase())
+    }
+    return !!(integration.name.toLowerCase() === type.toLowerCase())
+  }
+  return false;
 }

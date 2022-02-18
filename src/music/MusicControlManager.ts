@@ -453,7 +453,7 @@ export class MusicControlManager {
     const needsSpotifyAccess = requiresSpotifyAccess();
 
     // check to see if they have the slack access token
-    const hasSlackAccess = hasSlackWorkspaces();
+    const hasSlackAccess = await hasSlackWorkspaces();
 
     menuOptions.items.push({
       label: "Submit an issue on GitHub",
