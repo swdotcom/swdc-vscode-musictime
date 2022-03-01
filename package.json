@@ -232,7 +232,7 @@
     "@types/ws": "^8.2.1",
     "axios": "^0.26.0",
     "clipboardy": "^2.1.0",
-    "cody-music": "2.10.4",
+    "cody-music": "2.10.5",
     "date-fns": "^2.25.0",
     "file-it": "^1.1.5",
     "open": "^8.4.0",
