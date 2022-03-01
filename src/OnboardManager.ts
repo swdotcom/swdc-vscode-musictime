@@ -1,8 +1,7 @@
 import { window, ExtensionContext } from "vscode";
 import { showOfflinePrompt, getOsUsername, getHostname } from "./Util";
-import { softwarePost, isResponseOk } from "./HttpClient";
+import { isResponseOk, appPost } from "./HttpClient";
 import { getAuthCallbackState, getItem, getPluginUuid, setAuthCallbackState, setItem } from "./managers/FileManager";
-import { serverIsAvailable } from './DataController';
 
 let retry_counter = 0;
 const one_min_millis = 1000 * 60;
@@ -49,17 +48,8 @@ async function primaryWindowOnboarding(ctx: ExtensionContext, callback: any) {
  * @param callback
  */
 async function secondaryWindowOnboarding(ctx: ExtensionContext, callback: any) {
-  const serverIsOnline = await serverIsAvailable();
-  if (!serverIsOnline) {
-    // not online, try again later
-    setTimeout(() => {
-      onboardPlugin(ctx, callback);
-    }, one_min_millis);
-    return;
-  } else if (retry_counter < 5) {
-    if (serverIsOnline) {
-      retry_counter++;
-    }
+  if (retry_counter < 5) {
+    retry_counter++;
     // call activate again in about 15 seconds
     setTimeout(() => {
       onboardPlugin(ctx, callback);
@@ -88,20 +78,22 @@ export async function createAnonymousUser(): Promise<string> {
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const hostname = await getHostname();
 
-    const resp = await softwarePost("/plugins/onboard", {
+    const resp = await appPost("/plugin/onboard", {
       timezone,
       username,
       plugin_uuid,
       hostname,
       auth_callback_state,
     });
-    if (isResponseOk(resp) && resp.data && resp.data.jwt) {
-      setItem("jwt", resp.data.jwt);
+    if (isResponseOk(resp) && resp.data?.user) {
+
+      setItem("jwt", resp.data.user.plugin_jwt);
       if (!resp.data.user.registered) {
-        setItem("name", null);
+        setItem('name', null);
       }
-      setAuthCallbackState(null);
-      return resp.data.jwt;
+      setItem('switching_account', false);
+      setAuthCallbackState('');
+      return resp.data.user.plugin_jwt
     }
   }
 

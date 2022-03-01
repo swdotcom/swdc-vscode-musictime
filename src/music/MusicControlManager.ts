@@ -39,7 +39,7 @@ import { MusicStateManager } from "./MusicStateManager";
 import { SocialShareManager } from "../social/SocialShareManager";
 import { MusicPlaylistManager } from "./MusicPlaylistManager";
 import { MusicCommandUtil } from "./MusicCommandUtil";
-import { connectSpotify, isPremiumUser } from "../managers/SpotifyManager";
+import { isPremiumUser } from "../managers/SpotifyManager";
 import {
   getBestActiveDevice,
   getDeviceSet,
@@ -486,7 +486,7 @@ export class MusicControlManager {
         label: "Connect Spotify",
         detail: "To see your Spotify playlists in Music Time, please connect your account",
         url: null,
-        cb: connectSpotify,
+        command: "musictime.connectSpotify",
       });
     } else {
       menuOptions.items.push({

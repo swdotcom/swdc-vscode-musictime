@@ -1,17 +1,12 @@
-import { CodyConfig, getRunningTrack, getUserProfile, setConfig } from "cody-music";
-import { commands, window } from "vscode";
-import { api_endpoint, YES_LABEL } from "../Constants";
-import { isResponseOk, softwareGet, softwarePut } from "../HttpClient";
+import { CodyConfig, getUserProfile, setConfig } from "cody-music";
+import { window } from "vscode";
+import { app_endpoint, YES_LABEL } from "../Constants";
+import { isResponseOk, softwareGet } from "../HttpClient";
 import SoftwareIntegration from "../model/SoftwareIntegration";
-import { getPluginId, getPluginType, getVersion, isMac, launchWebUrl } from "../Util";
+import { isMac, launchWebUrl } from "../Util";
 import { SpotifyUser } from "cody-music/dist/lib/profile";
-import { MusicCommandManager } from "../music/MusicCommandManager";
-import { getAuthCallbackState, getItem, getPluginUuid, setItem } from "./FileManager";
+import { getItem, setItem } from "./FileManager";
 import { getCachedSpotifyIntegrations, getUser } from "./UserStatusManager";
-import { processNewSpotifyIntegration } from "./UserStatusManager";
-import { clearAllData } from "./PlaylistDataManager";
-
-const queryString = require("query-string");
 
 let spotifyUser: SpotifyUser = null;
 let spotifyClientId: string = "";
@@ -60,59 +55,6 @@ export async function updateSpotifyClientInfo() {
   }
 }
 
-export async function connectSpotify() {
-  // check if they're already connected, if so then ask if they would
-  // like to continue as we'll need to disconnect the current connection
-  const spotifyIntegration = getSpotifyIntegration();
-  if (spotifyIntegration) {
-    // disconnectSpotify
-    const selection = await window.showInformationMessage(`Connect with a different Spotify account?`, ...[YES_LABEL]);
-    if (!selection || selection !== YES_LABEL) {
-      return;
-    }
-    // disconnect the current connection
-    await disconnectSpotify(false /*confirmDisconnect*/);
-  }
-
-  const auth_callback_state = getAuthCallbackState();
-
-  let queryStr = queryString.stringify({
-    plugin: getPluginType(),
-    plugin_uuid: getPluginUuid(),
-    pluginVersion: getVersion(),
-    plugin_id: getPluginId(),
-    mac: isMac(),
-    auth_callback_state,
-    plugin_token: getItem("jwt"),
-  });
-
-  const endpoint = `${api_endpoint}/auth/spotify?${queryStr}`;
-  launchWebUrl(endpoint);
-  addedNewIntegration = false;
-  setTimeout(() => {
-    lazilyPollForSpotifyConnection();
-  }, 25000);
-}
-
-export async function lazilyPollForSpotifyConnection(tries: number = 10) {
-  if (addedNewIntegration) {
-    return;
-  }
-
-  await getUser(getItem("jwt"))
-  const spotifyIntegrations = getCachedSpotifyIntegrations();
-  if (!spotifyIntegrations || spotifyIntegrations.length === 0) {
-    // try again
-    tries--;
-    setTimeout(() => {
-      lazilyPollForSpotifyConnection(tries);
-    }, 15000);
-  } else {
-    // reload the playlists
-    processNewSpotifyIntegration();
-  }
-}
-
 export async function populateSpotifyUser(hardRefresh = false) {
   let spotifyIntegration = getSpotifyIntegration();
   if (!spotifyIntegration) {
@@ -134,8 +76,7 @@ export async function populateSpotifyUser(hardRefresh = false) {
 export async function switchSpotifyAccount() {
   const selection = await window.showInformationMessage(`Are you sure you would like to connect to a different Spotify account?`, ...[YES_LABEL]);
   if (selection === YES_LABEL) {
-    await disconnectSpotify(false);
-    connectSpotify();
+    launchWebUrl(`${app_endpoint}/data_sources/integration_types/spotify`);
   }
 }
 
@@ -147,35 +88,6 @@ export function getSpotifyIntegration(): SoftwareIntegration {
     return spotifyIntegrations[spotifyIntegrations.length - 1];
   }
   return null;
-}
-
-export async function disconnectSpotify(confirmDisconnect = true) {
-  const selection = confirmDisconnect
-    ? await window.showInformationMessage(`Are you sure you would like to disconnect Spotify?`, ...[YES_LABEL])
-    : YES_LABEL;
-
-  if (selection === YES_LABEL) {
-    await softwarePut(`/auth/spotify/disconnect`, {});
-    await getUser(getItem("jwt"));
-    // clear the tokens from cody config
-    updateCodyConfig();
-    // update the spotify user to null
-    spotifyUser = null;
-
-    // clear the spotify playlists
-    clearAllData();
-
-    setTimeout(() => {
-      commands.executeCommand("musictime.refreshMusicTimeView");
-    }, 1000);
-
-    // update the status bar
-    MusicCommandManager.syncControls(await getRunningTrack(), false);
-
-    if (confirmDisconnect) {
-      window.showInformationMessage(`Successfully disconnected your Spotify connection.`);
-    }
-  }
 }
 
 /**

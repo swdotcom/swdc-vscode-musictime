@@ -1,10 +1,9 @@
-import { app_endpoint, DISCONNECT_LABEL } from "../Constants";
+import { app_endpoint } from "../Constants";
 import { launchWebUrl } from "../Util";
 import { showQuickPick } from "../MenuManager";
 import { commands, window } from "vscode";
-import { softwareDelete } from "../HttpClient";
 import { getItem, logIt } from "./FileManager";
-import { getCachedSlackIntegrations, getUser } from './UserStatusManager';
+import { getCachedSlackIntegrations } from './UserStatusManager';
 
 const { WebClient } = require("@slack/web-api");
 
