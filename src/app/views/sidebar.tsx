@@ -66,6 +66,8 @@ const useStyles = makeStyles((theme) => ({
 export default function SideBar(props) {
   const classes = useStyles();
 
+  const hasSpotifyUser = (props.stateData.spotifyUser && props.stateData.spotifyUser.id);
+
   const [tabValue, setTabValue] = useState("playlists");
   const [bottomHeight, setBottomHeight] = useState(40);
   const [loading, setLoading] = useState(undefined);
@@ -224,7 +226,7 @@ export default function SideBar(props) {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <AppBar position="static" color="primary" id="top-app-bar">
-        {!props.stateData.registered || !props.stateData.spotifyUser ? (
+        {!props.stateData.registered || !hasSpotifyUser ? (
           <Grid container style={{ margin: 0, padding: 0, width: "100%", height: "100%" }}>
             <Grid item key="setup-user-grid-item" xs={12} style={{ margin: 0, padding: 0 }}>
               <Setup stateData={props.stateData} vscode={props.vscode} />
@@ -252,8 +254,8 @@ export default function SideBar(props) {
         style={{
           position: "absolute",
           overflowX: "hidden",
-          top: !props.stateData.spotifyUser ? GETTING_STARTED_MIN_HEIGHT : TOP_APP_BAR_MIN_HEIGHT,
-          bottom: !props.stateData.spotifyUser ? 0 : bottomHeight,
+          top: !hasSpotifyUser ? GETTING_STARTED_MIN_HEIGHT : TOP_APP_BAR_MIN_HEIGHT,
+          bottom: !hasSpotifyUser ? 0 : bottomHeight,
         }}
       >
         {loading && (
@@ -262,7 +264,7 @@ export default function SideBar(props) {
           </Grid>
         )}
 
-        {!loading && !props.stateData.spotifyUser && (
+        {!loading && !hasSpotifyUser && (
           <Grid item key="cold-start-grid-item" xs={12}>
             <ColdStart vscode={props.vscode} stateData={props.stateData} />
           </Grid>
@@ -274,19 +276,19 @@ export default function SideBar(props) {
           </Grid>
         )}
 
-        {!loading && !props.stateData.loading && props.stateData.selectedTabView === "playlists" && props.stateData.spotifyUser && (
+        {!loading && !props.stateData.loading && props.stateData.selectedTabView === "playlists" && hasSpotifyUser && (
           <Grid item key="playlists-grid-item" xs={12}>
             <Playlists vscode={props.vscode} stateData={props.stateData} />
           </Grid>
         )}
 
-        {!loading && !props.stateData.loading && props.stateData.selectedTabView === "recommendations" && props.stateData.spotifyUser && (
+        {!loading && !props.stateData.loading && props.stateData.selectedTabView === "recommendations" && hasSpotifyUser && (
           <Grid item key="recommendations-grid-item" xs={12}>
             <Recommendations vscode={props.vscode} stateData={props.stateData} />
           </Grid>
         )}
 
-        {!loading && !props.stateData.loading && props.stateData.selectedTabView === "metrics" && props.stateData.spotifyUser && (
+        {!loading && !props.stateData.loading && props.stateData.selectedTabView === "metrics" && hasSpotifyUser && (
           <Grid item key="metrics-grid-item" xs={12}>
             <Metrics vscode={props.vscode} stateData={props.stateData} />
           </Grid>

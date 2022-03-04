@@ -78,22 +78,22 @@ export async function createAnonymousUser(): Promise<string> {
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const hostname = await getHostname();
 
-    const resp = await appPost("/plugin/onboard", {
+    const resp = await appPost("/api/v1/anonymous_user", {
       timezone,
       username,
       plugin_uuid,
       hostname,
       auth_callback_state,
     });
-    if (isResponseOk(resp) && resp.data?.user) {
+    if (isResponseOk(resp) && resp.data) {
 
-      setItem("jwt", resp.data.user.plugin_jwt);
-      if (!resp.data.user.registered) {
+      setItem("jwt", resp.data.plugin_jwt);
+      if (!resp.data.registered) {
         setItem('name', null);
       }
       setItem('switching_account', false);
       setAuthCallbackState('');
-      return resp.data.user.plugin_jwt
+      return resp.data.plugin_jwt
     }
   }
 

@@ -133,7 +133,7 @@ export default function PlaylistItemNode(props) {
 
   const repeatingTrack = isRepeatingTrack(spotifyPlayerContext);
 
-  let timeout = undefined;
+  let timeout = null;
 
   function showMenu() {
     if (item.type === "playlist") {
@@ -141,7 +141,7 @@ export default function PlaylistItemNode(props) {
     }
     if (timeout) {
       clearTimeout(timeout);
-      timeout = undefined;
+      timeout = null;
     }
     setShow(true);
   }

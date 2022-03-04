@@ -67,7 +67,7 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
     }
   }
 
-  const registered = !!(name || spotifyUser);
+  const registered = !!(name);
 
   const reactData = {
     authType,
