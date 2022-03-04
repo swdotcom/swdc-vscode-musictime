@@ -23,6 +23,7 @@ import {
 import { commands, window } from "vscode";
 import { RECOMMENDATION_LIMIT, RECOMMENDATION_PLAYLIST_ID, SOFTWARE_TOP_40_PLAYLIST_ID } from "../app/utils/view_constants";
 import { OK_LABEL, SPOTIFY_LIKED_SONGS_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME, YES_LABEL } from "../app/utils/view_constants";
+import { app_endpoint } from '../Constants';
 import { appGet, isResponseOk } from "../HttpClient";
 import MusicMetrics from "../model/MusicMetrics";
 import MusicScatterData from "../model/MusicScatterData";
@@ -31,9 +32,9 @@ import { MusicCommandManager } from "../music/MusicCommandManager";
 import { MusicCommandUtil } from "../music/MusicCommandUtil";
 import { MusicControlManager } from "../music/MusicControlManager";
 import { MusicStateManager } from "../music/MusicStateManager";
-import { getCodyErrorMessage, isMac } from "../Util";
+import { getCodyErrorMessage, isMac, launchWebUrl } from "../Util";
 import { getItem } from "./FileManager";
-import { connectSpotify, getSpotifyIntegration, populateSpotifyUser, updateCodyConfig, updateSpotifyClientInfo } from "./SpotifyManager";
+import { getSpotifyIntegration, populateSpotifyUser, updateCodyConfig, updateSpotifyClientInfo } from "./SpotifyManager";
 
 let currentDevices: PlayerDevice[] = [];
 let spotifyLikedTracks: PlaylistItem[] = undefined;
@@ -685,7 +686,7 @@ export async function showReconnectPrompt(email) {
 
   if (selection === reconnectButtonLabel) {
     // now launch re-auth
-    await connectSpotify();
+    launchWebUrl(`${app_endpoint}/data_sources/integration_types/spotify`);
   }
 }
 

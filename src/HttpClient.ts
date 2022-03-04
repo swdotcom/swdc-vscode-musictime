@@ -65,6 +65,15 @@ export async function appDelete(api: string, payload: any = {}) {
   });
 }
 
+export async function appPost(api: string, payload: any) {
+  updateOutgoingHeader();
+
+  return await appApi.post(api, payload).catch((err: any) => {
+    logIt(`error for POST ${api}, message: ${err.message}`);
+    return err;
+  });
+}
+
 export async function softwareGet(api: string, queryParams = {}, override_token = null) {
   updateOutgoingHeader(override_token);
 
@@ -72,51 +81,6 @@ export async function softwareGet(api: string, queryParams = {}, override_token 
     logIt(`error fetching data for ${api}, message: ${err.message}`);
     return err;
   });
-}
-
-export async function softwarePut(api: string, payload: any) {
-  updateOutgoingHeader();
-
-  return beApi
-    .put(api, payload)
-    .then((resp: any) => {
-      return resp;
-    })
-    .catch((err: any) => {
-      logIt(`error updating data for ${api}, message: ${err.message}`);
-      return err;
-    });
-}
-
-export async function softwarePost(api: string, payload: any) {
-  updateOutgoingHeader();
-
-  return beApi
-    .post(api, payload)
-    .then((resp: any) => {
-      return resp;
-    })
-    .catch((err: any) => {
-      logIt(`error posting data for ${api}, message: ${err.message}`);
-      return err;
-    });
-}
-
-/**
- * perform a delete request
- */
-export async function softwareDelete(api: string) {
-  updateOutgoingHeader();
-
-  return beApi
-    .delete(api)
-    .then((resp: any) => {
-      return resp;
-    })
-    .catch((err: any) => {
-      logIt(`error with delete request for ${api}, message: ${err.message}`);
-      return err;
-    });
 }
 
 export function isResponseOk(resp: any) {

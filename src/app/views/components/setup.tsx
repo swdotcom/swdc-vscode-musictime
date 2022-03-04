@@ -62,11 +62,11 @@ const BorderLinearProgress = withStyles((theme: Theme) =>
       borderRadius: 4,
     },
     colorPrimary: {
-      backgroundColor: blue[200],
+      backgroundColor: deepPurple[200],
     },
     bar: {
       borderRadius: 4,
-      backgroundColor: deepPurple[200],
+      backgroundColor: blue[300],
     },
   })
 )(LinearProgress);

@@ -1,6 +1,6 @@
 import { commands, window } from "vscode";
 import { app_endpoint } from "../Constants";
-import { isResponseOk, softwareGet } from "../HttpClient";
+import { appGet, isResponseOk, softwareGet } from "../HttpClient";
 import { showQuickPick } from "../MenuManager";
 import { launchWebUrl, getPluginId } from "../Util";
 import { initializeWebsockets } from "../websockets";
@@ -11,6 +11,7 @@ const queryString = require("query-string");
 
 let authAdded = false;
 let currentUser: any | null = null;
+let lastUserFetch: number = 0;
 const lazy_poll_millis = 20000;
 
 export function updatedAuthAdded(val: boolean) {
@@ -18,16 +19,18 @@ export function updatedAuthAdded(val: boolean) {
 }
 
 export async function getUser(jwt) {
-  if (jwt) {
-    let api = `/users/me`;
-    let resp = await softwareGet(api);
-    if (isResponseOk(resp)) {
-      if (resp && resp.data && resp.data.data) {
-        currentUser = resp.data.data;
-        return currentUser;
-      }
-    }
+  const nowMillis: number = new Date().getTime();
+  if (currentUser && nowMillis - lastUserFetch < 2000) {
+    return currentUser;
   }
+
+  const resp = await appGet('/api/v1/user');
+  if (isResponseOk(resp) && resp.data) {
+    currentUser = resp.data;
+    lastUserFetch = nowMillis;
+    return currentUser;
+  }
+
   return null;
 }
 

@@ -9,7 +9,7 @@ import { showDeviceSelectorMenu } from "./selector/SpotifyDeviceSelectorManager"
 import { MusicCommandUtil } from "./music/MusicCommandUtil";
 import { showSearchInput } from "./selector/SearchSelectorManager";
 import { MusicStateManager } from "./music/MusicStateManager";
-import { connectSpotify, disconnectSpotify, switchSpotifyAccount } from "./managers/SpotifyManager";
+import { switchSpotifyAccount } from "./managers/SpotifyManager";
 import { launchLogin, showLogInMenuOptions, showSignUpMenuOptions } from "./managers/UserStatusManager";
 import { MusicTimeWebviewSidebar } from "./sidebar/MusicTimeWebviewSidebar";
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from "./app/utils/view_constants";
@@ -224,7 +224,7 @@ export function createCommands(
   // CONNECT SPOTIFY CMD
   cmds.push(
     commands.registerCommand("musictime.connectSpotify", async () => {
-      connectSpotify();
+      launchWebUrl(`${app_endpoint}/data_sources/integration_types/spotify`);
     })
   );
 
@@ -244,7 +244,7 @@ export function createCommands(
   // DISCONNECT SPOTIFY
   cmds.push(
     commands.registerCommand("musictime.disconnectSpotify", () => {
-      disconnectSpotify();
+      launchWebUrl(`${app_endpoint}/data_sources/integration_types/spotify`);
     })
   );
 
