@@ -21,7 +21,7 @@ import { getSlackWorkspaces, hasSlackWorkspaces } from "../managers/SlackManager
 import { getConnectedSpotifyUser } from "../managers/SpotifyManager";
 import { isCodeTimeTimeInstalled } from "../Util";
 
-export async function getReactData(tab_view = undefined, playlist_id = undefined, loading = false) {
+export async function getReactData(tab_view = undefined, playlist_id = undefined) {
   const name = getItem("name");
   const authType = getItem("authType");
   const spotifyUser = await getConnectedSpotifyUser();
@@ -43,7 +43,8 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
   let currentlyRunningTrack = undefined;
   let musicScatterData = undefined;
   let deviceMenuInfo = getDeviceMenuInfo();
-  if (spotifyUser) {
+  // fetch music data if we have a spotify user
+  if (spotifyUser?.id) {
     spotifyPlayerContext = await getPlayerContext();
     currentlyRunningTrack = getCachedRunningTrack();
 
@@ -51,27 +52,25 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
       currentlyRunningTrack["liked"] = await isLikedSong(currentlyRunningTrack);
     }
 
-    if (!loading) {
-      const data = await getViewData(selectedTabView, playlist_id, spotifyUser);
-      likedSongsTracks = data.likedSongsTracks;
-      playlistTracks = data.playlistTracks;
-      spotifyPlaylists = data.spotifyPlaylists;
-      softwareTop40Playlist = data.softwareTop40Playlist;
-      selectedPlaylistId = data.selectedPlaylistId;
-      userMusicMetrics = data.userMusicMetrics;
-      audioFeatures = data.audioFeatures;
-      globalMusicMetrics = data.globalMusicMetrics;
-      averageMusicMetrics = data.averageMusicMetrics;
-      recommendationInfo = data.recommendationInfo;
-      musicScatterData = data.musicScatterData;
-    }
+    const data = await getViewData(selectedTabView, playlist_id, spotifyUser);
+    likedSongsTracks = data.likedSongsTracks;
+    playlistTracks = data.playlistTracks;
+    spotifyPlaylists = data.spotifyPlaylists;
+    softwareTop40Playlist = data.softwareTop40Playlist;
+    selectedPlaylistId = data.selectedPlaylistId;
+    userMusicMetrics = data.userMusicMetrics;
+    audioFeatures = data.audioFeatures;
+    globalMusicMetrics = data.globalMusicMetrics;
+    averageMusicMetrics = data.averageMusicMetrics;
+    recommendationInfo = data.recommendationInfo;
+    musicScatterData = data.musicScatterData;
   }
 
   const registered = !!(name);
 
   const reactData = {
     authType,
-    loading,
+    loading: false,
     registered,
     email: name,
     spotifyPlaylists,
@@ -98,14 +97,6 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
     codeTimeInstalled: isCodeTimeTimeInstalled(),
     skipSlackConnect: getItem("vscode_CtskipSlackConnect"),
   };
-  if (loading) {
-    const getDataPromise = getViewData(selectedTabView, playlist_id, spotifyUser);
-    // call this again with loading as false
-    setTimeout(async () => {
-      await getDataPromise;
-      commands.executeCommand("musictime.refreshMusicTimeView", "playlists");
-    }, 2000);
-  }
   return reactData;
 }
 
@@ -124,12 +115,13 @@ async function getViewData(selectedTabView, playlist_id, spotifyUser) {
 
   if (spotifyUser) {
     if (selectedTabView === "playlists") {
-      likedSongsTracks = getCachedLikedSongsTracks();
+      const likedSongsTracksP = getCachedLikedSongsTracks();
       playlistTracks = getCachedPlaylistTracks();
       const softwareTop40PlaylistP = getCachedSoftwareTop40Playlist();
       const spotifyPlaylistsP = getCachedSpotifyPlaylists();
       softwareTop40Playlist = await softwareTop40PlaylistP;
       spotifyPlaylists = await spotifyPlaylistsP;
+      likedSongsTracks = await likedSongsTracksP;
 
       selectedPlaylistId = playlist_id ? playlist_id : getSelectedPlaylistId();
     } else if (selectedTabView === "metrics") {

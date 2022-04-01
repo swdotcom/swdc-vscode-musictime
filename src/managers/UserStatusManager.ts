@@ -6,6 +6,7 @@ import { launchWebUrl, getPluginId } from "../Util";
 import { initializeWebsockets } from "../websockets";
 import { getAuthCallbackState, getItem, getPluginUuid, setAuthCallbackState, setItem } from "./FileManager";
 import { initializeSpotify } from "./PlaylistDataManager";
+import { updateCodyConfig } from './SpotifyManager';
 
 const queryString = require("query-string");
 
@@ -18,9 +19,14 @@ export function updatedAuthAdded(val: boolean) {
   authAdded = val;
 }
 
-export async function getUser(jwt) {
+export function getCachedUser() {
+  return currentUser;
+}
+
+export async function getUser() {
   const nowMillis: number = new Date().getTime();
   if (currentUser && nowMillis - lastUserFetch < 2000) {
+    updateCodyConfig();
     return currentUser;
   }
 
@@ -28,6 +34,7 @@ export async function getUser(jwt) {
   if (isResponseOk(resp) && resp.data) {
     currentUser = resp.data;
     lastUserFetch = nowMillis;
+    updateCodyConfig();
     return currentUser;
   }
 
@@ -180,6 +187,8 @@ export async function authenticationCompleteHandler(user) {
       }
     }
 
+    await getUser();
+
     // this will refresh the playlist for both slack and spotify
     processNewSpotifyIntegration(false, false);
 
@@ -207,18 +216,11 @@ export async function processNewSpotifyIntegration(showSuccess = true, refreshPl
 
   // initialize spotify and playlists
   await initializeSpotify();
-
-  if (refreshPlaylist) {
-    // initiate the playlist build
-    setTimeout(() => {
-      commands.executeCommand("musictime.refreshMusicTimeView");
-    }, 2000);
-  }
 }
 
 export async function getCachedSlackIntegrations() {
   if (!currentUser) {
-    currentUser = await getUser(getItem("jwt"));
+    currentUser = await getUser();
   }
   if (currentUser?.integration_connections?.length) {
     return currentUser?.integration_connections?.filter(

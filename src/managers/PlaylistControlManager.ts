@@ -268,8 +268,8 @@ async function playMusicSelection() {
 }
 
 export async function playNextLikedSong() {
-  const likedSongs: PlaylistItem[] = getCachedLikedSongsTracks();
-  const nextIdx = getNextOrPrevLikedIndex(true);
+  const likedSongs: PlaylistItem[] = await getCachedLikedSongsTracks();
+  const nextIdx = await getNextOrPrevLikedIndex(true);
 
   let nextLikedTrack = likedSongs[nextIdx];
 
@@ -278,8 +278,8 @@ export async function playNextLikedSong() {
 }
 
 export async function playPreviousLikedSongs() {
-  const likedSongs: PlaylistItem[] = getCachedLikedSongsTracks();
-  const prevIdx = getNextOrPrevLikedIndex(false);
+  const likedSongs: PlaylistItem[] = await getCachedLikedSongsTracks();
+  const prevIdx = await getNextOrPrevLikedIndex(false);
 
   let nextLikedTrack = likedSongs[prevIdx];
 
@@ -287,8 +287,8 @@ export async function playPreviousLikedSongs() {
   playTrackInContext(selectedPlayer, [createUriFromTrackId(nextLikedTrack.id)]);
 }
 
-function getNextOrPrevLikedIndex(get_next: boolean) {
-  const likedSongs: PlaylistItem[] = getCachedLikedSongsTracks();
+async function getNextOrPrevLikedIndex(get_next: boolean) {
+  const likedSongs: PlaylistItem[] = await getCachedLikedSongsTracks();
   const selectedTrack = getSelectedTrackItem();
   const nextIdx = likedSongs?.findIndex((n: PlaylistItem) => n.id === selectedTrack.id);
   if (get_next) {
