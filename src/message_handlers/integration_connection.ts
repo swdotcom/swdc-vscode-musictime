@@ -1,6 +1,5 @@
 import { commands, window } from "vscode";
-import { getItem, setAuthCallbackState } from "../managers/FileManager";
-import { updateAddedNewIntegration } from "../managers/SpotifyManager";
+import { setAuthCallbackState } from "../managers/FileManager";
 import { getUser, processNewSpotifyIntegration } from "../managers/UserStatusManager";
 
 export async function handleIntegrationConnectionSocketEvent(body: any) {
@@ -8,7 +7,7 @@ export async function handleIntegrationConnectionSocketEvent(body: any) {
   // action = add, update, remove
   const { integration_type_id, integration_type, action } = body;
 
-  await getUser(getItem("jwt"));
+  await getUser();
 
   if (integration_type_id === 14) {
 
@@ -27,9 +26,6 @@ export async function handleIntegrationConnectionSocketEvent(body: any) {
   } else if (integration_type_id === 12) {
     // clear the auth callback state
     setAuthCallbackState(null);
-
-    // clear the polling timer
-    updateAddedNewIntegration(true);
 
     processNewSpotifyIntegration();
   }

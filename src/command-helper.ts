@@ -1,6 +1,6 @@
 import { commands, Disposable, window, ExtensionContext } from "vscode";
 import { MusicControlManager } from "./music/MusicControlManager";
-import { launchMusicAnalytics, launchWebUrl } from "./Util";
+import { getPluginId, launchMusicAnalytics, launchWebUrl } from "./Util";
 import { PlaylistItem, PlayerName, PlayerDevice, playSpotifyDevice } from "cody-music";
 import { SocialShareManager } from "./social/SocialShareManager";
 import { showGenreSelections, showMoodSelections } from "./selector/RecTypeSelectorManager";
@@ -35,6 +35,9 @@ import {
 import { launchTrackPlayer, playSelectedItem, playSelectedItems } from "./managers/PlaylistControlManager";
 import { app_endpoint, vscode_mt_issues_url } from "./Constants";
 import { displayReadmeIfNotExists } from './DataController';
+import { getPluginUuid } from './managers/FileManager';
+
+const queryString = require("query-string");
 
 /**
  * add the commands to vscode....
@@ -224,7 +227,13 @@ export function createCommands(
   // CONNECT SPOTIFY CMD
   cmds.push(
     commands.registerCommand("musictime.connectSpotify", async () => {
-      launchWebUrl(`${app_endpoint}/data_sources/integration_types/spotify`);
+      const qryStr = queryString.stringify({
+        plugin_uuid: getPluginUuid(),
+        plugin_id: getPluginId()
+      });
+
+      const url = `${app_endpoint}/data_sources/integration_types/spotify}?${qryStr}`;
+      launchWebUrl(url);
     })
   );
 
@@ -370,8 +379,8 @@ export function createCommands(
   );
 
   cmds.push(
-    commands.registerCommand("musictime.refreshMusicTimeView", (tab_view: undefined, playlist_id: undefined, loading = false) => {
-      mtWebviewSidebar.refresh(tab_view, playlist_id, loading);
+    commands.registerCommand("musictime.refreshMusicTimeView", (tab_view: undefined, playlist_id: undefined) => {
+      mtWebviewSidebar.refresh(tab_view, playlist_id);
     })
   );
 

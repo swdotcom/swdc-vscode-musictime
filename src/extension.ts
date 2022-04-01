@@ -11,6 +11,7 @@ import { migrateAccessInfo } from "./managers/SpotifyManager";
 import { disposeWebsocketTimeouts, initializeWebsockets } from "./websockets";
 import { initializeSpotify } from "./managers/PlaylistDataManager";
 import { displayReadmeIfNotExists } from './DataController';
+import { getUser } from './managers/UserStatusManager';
 
 let currentColorKind: number = undefined;
 
@@ -36,6 +37,8 @@ export async function intializePlugin(ctx: ExtensionContext) {
 
   // show the readme if it doesn't exist
   displayReadmeIfNotExists();
+
+  await getUser();
 
   // This will initialize the user and spotify
   // this needs to happen first to enable spotify playlist and control logic

@@ -175,7 +175,7 @@ export function updateLikedStatusInPlaylist(playlist_id, track_id, liked_state) 
 ////////////////////////////////////////////////////////////////
 
 export async function getCachedSpotifyPlaylists() {
-  if (!spotifyPlaylists) {
+  if (!spotifyPlaylists || spotifyPlaylists.length === 0) {
     spotifyPlaylists = await getSpotifyPlaylists();
   }
   return spotifyPlaylists;
@@ -185,7 +185,10 @@ export function getCachedPlaylistTracks() {
   return playlistTracks;
 }
 
-export function getCachedLikedSongsTracks() {
+export async function getCachedLikedSongsTracks() {
+  if (!spotifyLikedTracks || spotifyLikedTracks.length === 0) {
+    await populateLikedSongs()
+  }
   return spotifyLikedTracks;
 }
 
@@ -791,13 +794,12 @@ export async function initializeSpotify() {
   // get the spotify user
   await populateSpotifyUser(true);
 
-  // update cody music with all access info
-  updateCodyConfig();
-
   await populateSpotifyDevices(false);
 
   // initialize the status bar music controls
   MusicCommandManager.initialize();
+
+  commands.executeCommand("musictime.refreshMusicTimeView");
 }
 
 export async function isTrackRepeating(): Promise<boolean> {

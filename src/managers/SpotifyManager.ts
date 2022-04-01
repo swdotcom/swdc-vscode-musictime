@@ -6,16 +6,11 @@ import SoftwareIntegration from "../model/SoftwareIntegration";
 import { isMac, launchWebUrl } from "../Util";
 import { SpotifyUser } from "cody-music/dist/lib/profile";
 import { getItem, setItem } from "./FileManager";
-import { getCachedSpotifyIntegrations, getUser } from "./UserStatusManager";
+import { getCachedSpotifyIntegrations, getCachedUser, getUser } from "./UserStatusManager";
 
 let spotifyUser: SpotifyUser = null;
 let spotifyClientId: string = "";
 let spotifyClientSecret: string = "";
-let addedNewIntegration: boolean = false;
-
-export function updateAddedNewIntegration(val: boolean) {
-  addedNewIntegration = val;
-}
 
 export async function getConnectedSpotifyUser() {
   if (!spotifyUser || !spotifyUser.id) {
@@ -58,12 +53,6 @@ export async function updateSpotifyClientInfo() {
 export async function populateSpotifyUser(hardRefresh = false) {
   let spotifyIntegration = getSpotifyIntegration();
   if (!spotifyIntegration) {
-    // get the user
-    const user = await getUser(getItem("jwt"));
-    if (user) {
-      // update the integrations
-      updateCodyConfig();
-    }
     spotifyIntegration = getSpotifyIntegration();
   }
 
@@ -100,6 +89,10 @@ export async function updateCodyConfig() {
     spotifyUser = null;
   }
 
+  if (!spotifyClientId) {
+    await updateSpotifyClientInfo();
+  }
+
   const codyConfig: CodyConfig = new CodyConfig();
   codyConfig.enableItunesDesktop = false;
   codyConfig.enableItunesDesktopSongTracking = isMac();
@@ -116,8 +109,7 @@ export async function migrateAccessInfo() {
     const legacyAccessToken = getItem("spotify_access_token");
     if (legacyAccessToken) {
       // get the user
-      await getUser(getItem("jwt"));
-      updateCodyConfig();
+      await getUser();
     }
 
     // remove the legacy spotify_access_token to so we don't have to check
