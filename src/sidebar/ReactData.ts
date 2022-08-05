@@ -1,6 +1,4 @@
-import { commands } from "vscode";
 import { getCurrentColorKind } from "../extension";
-import { getItem } from "../managers/FileManager";
 import {
   getCachedLikedSongsTracks,
   getCachedPlaylistTracks,
@@ -19,7 +17,7 @@ import {
 } from "../managers/PlaylistDataManager";
 import { getSlackWorkspaces, hasSlackWorkspaces } from "../managers/SlackManager";
 import { getConnectedSpotifyUser } from "../managers/SpotifyManager";
-import { isCodeTimeTimeInstalled } from "../Util";
+import { codeTimeExtInstalled, getItem } from "../Util";
 
 export async function getReactData(tab_view = undefined, playlist_id = undefined) {
   const name = getItem("name");
@@ -94,7 +92,7 @@ export async function getReactData(tab_view = undefined, playlist_id = undefined
     slackConnected: !!(await hasSlackWorkspaces()),
     slackWorkspaces: await getSlackWorkspaces(),
     currentColorKind: getCurrentColorKind(),
-    codeTimeInstalled: isCodeTimeTimeInstalled(),
+    codeTimeInstalled: codeTimeExtInstalled(),
     skipSlackConnect: getItem("vscode_CtskipSlackConnect"),
   };
   return reactData;
@@ -113,7 +111,7 @@ async function getViewData(selectedTabView, playlist_id, spotifyUser) {
   let recommendationInfo = [];
   let musicScatterData = undefined;
 
-  if (spotifyUser) {
+  if (spotifyUser?.id) {
     if (selectedTabView === "playlists") {
       const likedSongsTracksP = getCachedLikedSongsTracks();
       playlistTracks = getCachedPlaylistTracks();

@@ -1,4 +1,4 @@
-import { launchWebUrl } from "../Util";
+import { launchWebUrl, logIt } from "../Util";
 import { showQuickPick } from "../MenuManager";
 import {
     buildSpotifyLink,
@@ -10,7 +10,6 @@ import {
     hasSlackWorkspaces,
 } from "../managers/SlackManager";
 import { window } from "vscode";
-import { logIt } from '../managers/FileManager';
 
 const queryString = require("query-string");
 const { WebClient } = require("@slack/web-api");

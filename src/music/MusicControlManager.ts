@@ -34,7 +34,7 @@ import {
   OK_LABEL,
   SPOTIFY_LIKED_SONGS_PLAYLIST_ID,
   RECOMMENDATION_PLAYLIST_ID,
-} from "../app/utils/view_constants";
+} from "../Constants";
 import { MusicStateManager } from "./MusicStateManager";
 import { SocialShareManager } from "../social/SocialShareManager";
 import { MusicPlaylistManager } from "./MusicPlaylistManager";
@@ -385,14 +385,20 @@ export class MusicControlManager {
 
     if (isRecommendationTrack) {
       updateLikedStatusInPlaylist(selectedPlaylistId, trackId, liked);
-      commands.executeCommand("musictime.refreshMusicTimeView", "recommendations", selectedPlaylistId);
+      commands.executeCommand(
+        "musictime.refreshMusicTimeView",
+        { tabView: "recommendations", playlistId: selectedPlaylistId }
+      );
     } else {
       // update liked state in the playlist the track is in
       if (selectedPlaylistId !== SPOTIFY_LIKED_SONGS_PLAYLIST_ID) {
         updateLikedStatusInPlaylist(selectedPlaylistId, trackId, liked);
       }
       if (selectedPlaylistId) {
-        commands.executeCommand("musictime.refreshMusicTimeView", "playlists", selectedPlaylistId);
+        commands.executeCommand(
+          "musictime.refreshMusicTimeView",
+          { tabView: "playlists", playlistId: selectedPlaylistId }
+        );
       }
     }
 

@@ -1,7 +1,6 @@
 import { window, ExtensionContext } from "vscode";
-import { showOfflinePrompt, getOsUsername, getHostname } from "./Util";
+import { showOfflinePrompt, getOsUsername, getHostname, getAuthCallbackState, getItem, getPluginUuid, setAuthCallbackState, setItem } from "./Util";
 import { isResponseOk, appPost } from "./HttpClient";
-import { getAuthCallbackState, getItem, getPluginUuid, setAuthCallbackState, setItem } from "./managers/FileManager";
 
 let retry_counter = 0;
 const one_min_millis = 1000 * 60;
@@ -28,11 +27,6 @@ async function primaryWindowOnboarding(ctx: ExtensionContext, callback: any) {
     // great, it worked. call the callback
     return callback(ctx);
   } else {
-    // not online, try again in a minute
-    if (retry_counter === 0) {
-      // show the prompt that we're unable connect to our app 1 time only
-      showOfflinePrompt(true);
-    }
     // call activate again later
     setTimeout(() => {
       retry_counter++;

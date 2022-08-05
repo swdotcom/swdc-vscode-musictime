@@ -1,6 +1,6 @@
 import { commands, Disposable, window, ExtensionContext } from "vscode";
 import { MusicControlManager } from "./music/MusicControlManager";
-import { getPluginId, launchMusicAnalytics, launchWebUrl } from "./Util";
+import { getMusicTimePluginId, launchMusicAnalytics, launchWebUrl, getPluginUuid } from "./Util";
 import { PlaylistItem, PlayerName, PlayerDevice, playSpotifyDevice } from "cody-music";
 import { SocialShareManager } from "./social/SocialShareManager";
 import { showGenreSelections, showMoodSelections } from "./selector/RecTypeSelectorManager";
@@ -12,7 +12,7 @@ import { MusicStateManager } from "./music/MusicStateManager";
 import { switchSpotifyAccount } from "./managers/SpotifyManager";
 import { launchLogin, showLogInMenuOptions, showSignUpMenuOptions } from "./managers/UserStatusManager";
 import { MusicTimeWebviewSidebar } from "./sidebar/MusicTimeWebviewSidebar";
-import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from "./app/utils/view_constants";
+import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from "./Constants";
 import {
   fetchTracksForLikedSongs,
   fetchTracksForPlaylist,
@@ -35,7 +35,6 @@ import {
 import { launchTrackPlayer, playSelectedItem, playSelectedItems } from "./managers/PlaylistControlManager";
 import { app_endpoint, vscode_mt_issues_url } from "./Constants";
 import { displayReadmeIfNotExists } from './DataController';
-import { getPluginUuid } from './managers/FileManager';
 
 const queryString = require("query-string");
 
@@ -229,7 +228,7 @@ export function createCommands(
     commands.registerCommand("musictime.connectSpotify", async () => {
       const qryStr = queryString.stringify({
         plugin_uuid: getPluginUuid(),
-        plugin_id: getPluginId()
+        plugin_id: getMusicTimePluginId()
       });
 
       const url = `${app_endpoint}/data_sources/integration_types/spotify}?${qryStr}`;
@@ -379,8 +378,20 @@ export function createCommands(
   );
 
   cmds.push(
-    commands.registerCommand("musictime.refreshMusicTimeView", (tab_view: undefined, playlist_id: undefined) => {
-      mtWebviewSidebar.refresh(tab_view, playlist_id);
+    commands.registerCommand("musictime.refreshMusicTimeView", async (payload: any) => {
+      if (payload?.playlistId) {
+        await fetchTracksForPlaylist(payload.playlistId)
+      }
+      if (payload?.tabView) {
+        updateSelectedTabView(payload.tabView);
+      }
+      mtWebviewSidebar.refresh();
+    })
+  );
+
+  cmds.push(
+    commands.registerCommand("musictime.reloadMusicTimeView", () => {
+      mtWebviewSidebar.refresh(true);
     })
   );
 
@@ -464,9 +475,10 @@ export function createCommands(
   );
 
   cmds.push(
-    commands.registerCommand("musictime.updateSelectedTabView", async (tabView) => {
-      updateSelectedTabView(tabView);
-      if (tabView === "recommendations") {
+    commands.registerCommand("musictime.tabSelection", async (options) => {
+      const selectedTabView = options?.tab_view || 'playlists';
+      updateSelectedTabView(selectedTabView);
+      if (selectedTabView === "recommendations") {
         // populate familiar recs, but don't refreshMusicTimeView
         // as the final logic will make that call
         await getCurrentRecommendations();

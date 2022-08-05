@@ -3,10 +3,9 @@ import { window } from "vscode";
 import { app_endpoint, YES_LABEL } from "../Constants";
 import { isResponseOk, softwareGet } from "../HttpClient";
 import SoftwareIntegration from "../model/SoftwareIntegration";
-import { isMac, launchWebUrl } from "../Util";
+import { isMac, launchWebUrl, getItem, setItem } from "../Util";
 import { SpotifyUser } from "cody-music/dist/lib/profile";
-import { getItem, setItem } from "./FileManager";
-import { getCachedSpotifyIntegrations, getCachedUser, getUser } from "./UserStatusManager";
+import { getCachedSpotifyIntegrations, getUser } from "./UserStatusManager";
 
 let spotifyUser: SpotifyUser = null;
 let spotifyClientId: string = "";
@@ -34,11 +33,11 @@ export async function getSoftwareTop40() {
 }
 
 export async function isPremiumUser() {
-  if (spotifyUser && spotifyUser.product !== "premium") {
+  if (spotifyUser?.id && spotifyUser.product !== "premium") {
     // check 1 more time
     await populateSpotifyUser(true);
   }
-  return !!(spotifyUser && spotifyUser.product === "premium");
+  return !!(spotifyUser?.id && spotifyUser.product === "premium");
 }
 
 export async function updateSpotifyClientInfo() {

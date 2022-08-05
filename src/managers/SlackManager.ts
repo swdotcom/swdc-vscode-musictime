@@ -1,8 +1,7 @@
 import { app_endpoint } from "../Constants";
-import { launchWebUrl } from "../Util";
+import { launchWebUrl, getItem, logIt } from "../Util";
 import { showQuickPick } from "../MenuManager";
 import { commands, window } from "vscode";
-import { getItem, logIt } from "./FileManager";
 import { getCachedSlackIntegrations } from './UserStatusManager';
 
 const { WebClient } = require("@slack/web-api");

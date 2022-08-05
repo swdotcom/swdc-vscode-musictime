@@ -1,23 +1,16 @@
 import { commands, window } from "vscode";
 import { app_endpoint } from "../Constants";
-import { appGet, isResponseOk, softwareGet } from "../HttpClient";
+import { appGet, isResponseOk } from "../HttpClient";
 import { showQuickPick } from "../MenuManager";
-import { launchWebUrl, getPluginId } from "../Util";
+import { launchWebUrl, getMusicTimePluginId, codeTimeExtInstalled, editorOpsExtInstalled, getAuthCallbackState, getItem, getPluginUuid, setAuthCallbackState, setItem } from "../Util";
 import { initializeWebsockets } from "../websockets";
-import { getAuthCallbackState, getItem, getPluginUuid, setAuthCallbackState, setItem } from "./FileManager";
 import { initializeSpotify } from "./PlaylistDataManager";
 import { updateCodyConfig } from './SpotifyManager';
 
 const queryString = require("query-string");
 
-let authAdded = false;
 let currentUser: any | null = null;
 let lastUserFetch: number = 0;
-const lazy_poll_millis = 20000;
-
-export function updatedAuthAdded(val: boolean) {
-  authAdded = val;
-}
 
 export function getCachedUser() {
   return currentUser;
@@ -94,7 +87,7 @@ export async function launchLogin(loginType: string = "software", switching_acco
   let url = "";
 
   let obj = {
-    plugin_id: getPluginId(),
+    plugin_id: getMusicTimePluginId(),
     plugin_uuid: getPluginUuid(),
     auth_callback_state,
     login: true,
@@ -127,41 +120,6 @@ export async function launchLogin(loginType: string = "software", switching_acco
   url = `${url}?${qryStr}`;
 
   launchWebUrl(url);
-
-  updatedAuthAdded(false);
-
-  setTimeout(() => {
-    lazilyPollForAuth();
-  }, lazy_poll_millis);
-}
-
-export async function lazilyPollForAuth(tries: number = 20) {
-  if (authAdded) {
-    return;
-  }
-
-  const foundRegisteredUser = await getUserRegistrationInfo();
-  if (!foundRegisteredUser && tries > 0) {
-    // try again
-    tries--;
-    setTimeout(() => {
-      lazilyPollForAuth(tries);
-    }, lazy_poll_millis);
-  }
-}
-
-async function getUserRegistrationInfo() {
-  const token = getAuthCallbackState(false) || getItem("jwt");
-  // fetch the user
-  let resp = await softwareGet("/users/plugin/state", {}, token);
-  let user = isResponseOk(resp) && resp.data ? resp.data.user : null;
-
-  // only update if its a registered, not anon user
-  if (user && user.registered === 1) {
-    await authenticationCompleteHandler(user);
-    return true;
-  }
-  return false;
 }
 
 export async function authenticationCompleteHandler(user) {
@@ -172,47 +130,44 @@ export async function authenticationCompleteHandler(user) {
   if (user?.registered === 1) {
     currentUser = user;
 
-    if (!getItem("name")) {
-      if (user.plugin_jwt) {
-        setItem("jwt", user.plugin_jwt);
-      }
-      setItem("name", user.email);
-      // update the login status
-      window.showInformationMessage(`Successfully registered`);
+    if (user.plugin_jwt) {
+      setItem("jwt", user.plugin_jwt);
+    }
+    setItem('name', user.email);
 
-      try {
-        initializeWebsockets();
-      } catch (e) {
-        console.error("Failed to initialize websockets", e);
-      }
+    window.showInformationMessage(`Successfully registered`);
+
+    try {
+      initializeWebsockets();
+    } catch (e) {
+      console.error("Failed to initialize websockets", e);
     }
 
     await getUser();
 
-    // this will refresh the playlist for both slack and spotify
-    processNewSpotifyIntegration(false, false);
+    // this will reload the playlist for both slack and spotify
+    await processNewSpotifyIntegration(false);
 
-    // refresh the tree view
-    setTimeout(() => {
-      // refresh the playlist to show the device button update
-      commands.executeCommand("musictime.refreshMusicTimeView");
-    }, 1000);
+    if (codeTimeExtInstalled()) {
+      setTimeout(() => {
+        commands.executeCommand("codetime.refreshCodeTimeView");
+      }, 1000);
+    }
+    if (editorOpsExtInstalled()) {
+      setTimeout(() => {
+        commands.executeCommand("editorOps.refreshEditorOpsView");
+      }, 1000);
+    }
   }
-
-  // initiate the playlist build
-  setTimeout(() => {
-    commands.executeCommand("musictime.refreshMusicTimeView");
-  }, 1000);
 }
 
-export async function processNewSpotifyIntegration(showSuccess = true, refreshPlaylist = true) {
+export async function processNewSpotifyIntegration(showSuccess = true) {
   setItem("requiresSpotifyReAuth", false);
 
   if (showSuccess) {
     // update the login status
     window.showInformationMessage(`Successfully connected to Spotify. Loading playlists...`);
   }
-
 
   // initialize spotify and playlists
   await initializeSpotify();

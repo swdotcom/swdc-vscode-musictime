@@ -21,8 +21,7 @@ import {
   Track,
 } from "cody-music";
 import { commands, window } from "vscode";
-import { RECOMMENDATION_LIMIT, RECOMMENDATION_PLAYLIST_ID, SOFTWARE_TOP_40_PLAYLIST_ID } from "../app/utils/view_constants";
-import { OK_LABEL, SPOTIFY_LIKED_SONGS_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME, YES_LABEL } from "../app/utils/view_constants";
+import { RECOMMENDATION_LIMIT, RECOMMENDATION_PLAYLIST_ID, SOFTWARE_TOP_40_PLAYLIST_ID, OK_LABEL, SPOTIFY_LIKED_SONGS_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME, YES_LABEL } from "../Constants";
 import { app_endpoint } from '../Constants';
 import { appGet, isResponseOk } from "../HttpClient";
 import MusicMetrics from "../model/MusicMetrics";
@@ -32,9 +31,8 @@ import { MusicCommandManager } from "../music/MusicCommandManager";
 import { MusicCommandUtil } from "../music/MusicCommandUtil";
 import { MusicControlManager } from "../music/MusicControlManager";
 import { MusicStateManager } from "../music/MusicStateManager";
-import { getCodyErrorMessage, isMac, launchWebUrl } from "../Util";
-import { getItem } from "./FileManager";
-import { getSpotifyIntegration, populateSpotifyUser, updateCodyConfig, updateSpotifyClientInfo } from "./SpotifyManager";
+import { getCodyErrorMessage, isMac, launchWebUrl, getItem, logIt } from "../Util";
+import { getSpotifyIntegration, populateSpotifyUser, updateSpotifyClientInfo } from "./SpotifyManager";
 
 let currentDevices: PlayerDevice[] = [];
 let spotifyLikedTracks: PlaylistItem[] = undefined;
@@ -92,10 +90,6 @@ export function clearSpotifyPlayerContext() {
 ////////////////////////////////////////////////////////////////
 // UPDATE EXPORTS
 ////////////////////////////////////////////////////////////////
-
-export function updateSpotifyPlaylists(playlists) {
-  spotifyPlaylists = playlists;
-}
 
 export function updateSpotifyLikedTracks(songs) {
   spotifyLikedTracks = songs;
@@ -182,7 +176,7 @@ export async function getCachedSpotifyPlaylists() {
 }
 
 export function getCachedPlaylistTracks() {
-  return playlistTracks;
+  return playlistTracks ?? {};
 }
 
 export async function getCachedLikedSongsTracks() {
@@ -307,10 +301,14 @@ export async function getSpotifyPlaylists(clear = false): Promise<PlaylistItem[]
     return [];
   }
 
-  if (!clear && spotifyPlaylists) {
+  if (!clear && spotifyPlaylists?.length) {
     return spotifyPlaylists;
   }
-  spotifyPlaylists = await getPlaylists(PlayerName.SpotifyWeb, { all: true });
+  try {
+    spotifyPlaylists = await getPlaylists(PlayerName.SpotifyWeb, { all: true });
+  } catch (e) {
+    logIt(`Error fetching playlists. ${e.message}`)
+  }
   spotifyPlaylists = spotifyPlaylists?.map((n, index) => {
     return { ...n, index };
   });
@@ -318,12 +316,12 @@ export async function getSpotifyPlaylists(clear = false): Promise<PlaylistItem[]
 }
 
 // LIKED SONGS
-export function getSpotifyLikedPlaylist() {
+export function getSpotifyLikedPlaylist(): PlaylistItem {
   const item: PlaylistItem = new PlaylistItem();
   item.type = "playlist";
   item.id = SPOTIFY_LIKED_SONGS_PLAYLIST_ID;
   item.tracks = new PlaylistTrackInfo();
-  // set set a number so it shows up
+  // set a number so it shows up
   item.tracks.total = 1;
   item.playerType = PlayerType.WebSpotify;
   item.tag = "spotify-liked-songs";
@@ -377,8 +375,6 @@ export async function fetchTracksForPlaylist(playlist_id) {
     }
     playlistTracks[playlist_id] = tracks;
   }
-  // refresh the webview
-  commands.executeCommand("musictime.refreshMusicTimeView");
 }
 
 ////////////////////////////////////////////////////////////////
@@ -426,7 +422,7 @@ export async function getUserMusicMetrics() {
 }
 
 export async function populateLikedSongs() {
-  const tracks: Track[] = (await getSpotifyLikedSongs()) || [];
+  const tracks: Track[] = (await getSpotifyLikedSongs()) ?? [];
   // add the playlist id to the tracks
   if (tracks?.length) {
     spotifyLikedTracks = tracks.map((t, idx) => {
@@ -607,7 +603,10 @@ export function populateRecommendationTracks(label: string, tracks: PlaylistItem
   };
 
   // refresh the webview
-  commands.executeCommand("musictime.refreshMusicTimeView", "recommendations");
+  commands.executeCommand(
+    "musictime.refreshMusicTimeView",
+    { tabView: "recommendations" }
+  );
 }
 
 export function removeTracksFromRecommendations(trackId) {
@@ -669,7 +668,7 @@ export async function populateSpotifyDevices(tryAgain = false) {
 
     setTimeout(() => {
       MusicStateManager.getInstance().fetchTrack();
-    }, 3000);
+    }, 4000);
   }
 }
 
@@ -728,7 +727,7 @@ export function getDeviceSet() {
 export function getDeviceMenuInfo() {
   const { webPlayer, desktop, activeDevice, activeComputerDevice, activeWebPlayerDevice } = getDeviceSet();
 
-  const devices: PlayerDevice[] = getCurrentDevices() || [];
+  const devices: PlayerDevice[] = getCurrentDevices() ?? [];
 
   let primaryText = "";
   let secondaryText = "";
@@ -799,7 +798,9 @@ export async function initializeSpotify() {
   // initialize the status bar music controls
   MusicCommandManager.initialize();
 
-  commands.executeCommand("musictime.refreshMusicTimeView");
+  setTimeout(() => {
+    commands.executeCommand("musictime.reloadMusicTimeView");
+  }, 2000)
 }
 
 export async function isTrackRepeating(): Promise<boolean> {

@@ -1,8 +1,7 @@
 import { PlayerType, PlaylistItem, PlaylistTrackInfo, PlayerDevice } from "cody-music";
-import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../app/utils/view_constants";
-import { isMac } from "../Util";
+import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
+import { isMac, getItem } from "../Util";
 import { KpmItem } from "../model/models";
-import { getItem } from "../managers/FileManager";
 import { getCurrentDevices, getDeviceSet, requiresSpotifyReAuthentication } from "../managers/PlaylistDataManager";
 
 export class ProviderItemManager {

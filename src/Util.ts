@@ -1,9 +1,11 @@
-import { workspace, extensions, window, WorkspaceFolder, commands } from "vscode";
-import { MUSIC_TIME_EXT_ID, app_endpoint, MUSIC_TIME_PLUGIN_ID, MUSIC_TIME_TYPE, SOFTWARE_FOLDER, CODE_TIME_EXT_ID } from "./Constants";
+import { workspace, extensions, window, commands } from "vscode";
+import { MUSIC_TIME_EXT_ID, app_endpoint, MUSIC_TIME_PLUGIN_ID, MUSIC_TIME_TYPE, CODE_TIME_EXT_ID, EDITOR_OPS_EXT_ID, SOFTWARE_DIRECTORY } from "./Constants";
 import { CodyResponse, CodyResponseType } from "cody-music";
-import { getItem } from "./managers/FileManager";
-import { isGitProject } from "./repo/GitUtil";
+import { storeJsonData } from "./managers/FileManager";
 import { execCmd } from "./managers/ExecManager";
+import { formatISO } from 'date-fns';
+import { v4 as uuidv4 } from "uuid";
+import { initializeWebsockets, websocketAlive } from './websockets';
 
 const fileIt = require("file-it");
 const open = require("open");
@@ -12,11 +14,14 @@ const path = require('path');
 const os = require("os");
 const crypto = require("crypto");
 
+const outputChannel = window.createOutputChannel('MusicTime');
+
 export const alpha = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 export const MARKER_WIDTH = 4;
 
 const NUMBER_IN_EMAIL_REGEX = new RegExp("^\\d+\\+");
-export function getPluginId() {
+
+export function getMusicTimePluginId() {
   return MUSIC_TIME_PLUGIN_ID;
 }
 
@@ -26,6 +31,93 @@ export function getPluginName() {
 
 export function getEditorName() {
   return 'vscode';
+}
+
+export function getSoftwareSessionFile() {
+  return getFile("session.json");
+}
+
+export function getDeviceFile() {
+  return getFile("device.json");
+}
+
+export function getSoftwareDataStoreFile() {
+  return getFile("data.json");
+}
+
+export function getPluginEventsFile() {
+  return getFile("events.json");
+}
+
+export function getTimeCounterFile() {
+  return getFile("timeCounter.json");
+}
+
+export function getDashboardFile() {
+  return getFile("CodeTime.txt");
+}
+
+export function getCommitSummaryFile() {
+  return getFile("CommitSummary.txt");
+}
+
+export function getSummaryInfoFile() {
+  return getFile("SummaryInfo.txt");
+}
+
+export function getProjectCodeSummaryFile() {
+  return getFile("ProjectCodeSummary.txt");
+}
+
+export function getDailyReportSummaryFile() {
+  return getFile("DailyReportSummary.txt");
+}
+
+export function getFileChangeSummaryFile() {
+  return getFile("fileChangeSummary.json");
+}
+
+export function getMusicTimeFile() {
+  return getFile("MusicTime.txt");
+}
+
+export function getMusicTimeMarkdownFile() {
+  return getFile("MusicTime.html");
+}
+
+export function getSoftwareDir() {
+  const homedir = os.homedir();
+  const softwareDataDir = isWindows() ? `${homedir}\\${SOFTWARE_DIRECTORY}` : `${homedir}/${SOFTWARE_DIRECTORY}`;
+
+  if (!fs.existsSync(softwareDataDir)) {
+    fs.mkdirSync(softwareDataDir);
+  }
+  return softwareDataDir;
+}
+
+function getFile(name: string, default_data: any = {}) {
+  const file_path = getSoftwareDir();
+  const file = isWindows() ? `${file_path}\\${name}` : `${file_path}/${name}`;
+  if (!fs.existsSync(file)) {
+    storeJsonData(file, default_data);
+  }
+  return file;
+}
+
+export function setItem(key, value) {
+  fileIt.setJsonValue(getSoftwareSessionFile(), key, value);
+}
+
+export function getItem(key) {
+  return fileIt.getJsonValue(getSoftwareSessionFile(), key);
+}
+
+export function getExtensionDisplayName() {
+  return "Music Time";
+}
+
+export function getExtensionName() {
+  return "music-time";
 }
 
 export function getPluginType() {
@@ -39,101 +131,18 @@ export function getVersion() {
 
 export function isCodeTimeMetricsFile(fileName) {
   fileName = fileName || "";
-  if (fileName.includes(SOFTWARE_FOLDER) && fileName.includes("CodeTime")) {
+  if (fileName.includes(SOFTWARE_DIRECTORY) && fileName.includes("CodeTime")) {
     return true;
   }
   return false;
 }
 
-export function isCodeTimeTimeInstalled() {
-  const codeTimeExt = extensions.getExtension(CODE_TIME_EXT_ID);
-  return !!codeTimeExt;
+export function codeTimeExtInstalled() {
+  return !!extensions.getExtension(CODE_TIME_EXT_ID);
 }
 
-export function musicTimeExtInstalled() {
-  const musicTimeExt = extensions.getExtension(MUSIC_TIME_EXT_ID);
-  return musicTimeExt ? true : false;
-}
-
-/**
- * These will return the workspace folders.
- * use the uri.fsPath to get the full path
- * use the name to get the folder name
- */
-export function getWorkspaceFolders(): WorkspaceFolder[] {
-  let folders = [];
-  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-    for (let i = 0; i < workspace.workspaceFolders.length; i++) {
-      let workspaceFolder = workspace.workspaceFolders[i];
-      let folderUri = workspaceFolder.uri;
-      if (folderUri && folderUri.fsPath) {
-        folders.push(workspaceFolder);
-      }
-    }
-  }
-  return folders;
-}
-
-export function getActiveProjectWorkspace(): WorkspaceFolder {
-  const activeDocPath = findFirstActiveDirectoryOrWorkspaceDirectory();
-  if (activeDocPath) {
-    if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-      for (let i = 0; i < workspace.workspaceFolders.length; i++) {
-        const workspaceFolder = workspace.workspaceFolders[i];
-        const folderPath = workspaceFolder.uri.fsPath;
-        if (activeDocPath.indexOf(folderPath) !== -1) {
-          return workspaceFolder;
-        }
-      }
-    }
-  }
-  return null;
-}
-
-export function findFirstActiveDirectoryOrWorkspaceDirectory(): string {
-  if (getNumberOfTextDocumentsOpen() > 0) {
-    // check if the .software/CodeTime has already been opened
-    for (let i = 0; i < workspace.textDocuments.length; i++) {
-      let docObj = workspace.textDocuments[i];
-      if (docObj.fileName) {
-        const dir = getRootPathForFile(docObj.fileName);
-        if (dir) {
-          return dir;
-        }
-      }
-    }
-  }
-  const folder: WorkspaceFolder = getFirstWorkspaceFolder();
-  if (folder) {
-    return folder.uri.fsPath;
-  }
-  return "";
-}
-
-export function getFirstWorkspaceFolder(): WorkspaceFolder {
-  const workspaceFolders: WorkspaceFolder[] = getWorkspaceFolders();
-  if (workspaceFolders && workspaceFolders.length) {
-    return workspaceFolders[0];
-  }
-  return null;
-}
-
-export function getRootPaths() {
-  let paths = [];
-  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-    for (let i = 0; i < workspace.workspaceFolders.length; i++) {
-      let workspaceFolder = workspace.workspaceFolders[i];
-      let folderUri = workspaceFolder.uri;
-      if (folderUri && folderUri.fsPath) {
-        paths.push(folderUri.fsPath);
-      }
-    }
-  }
-  return paths;
-}
-
-export function getNumberOfTextDocumentsOpen() {
-  return workspace.textDocuments ? workspace.textDocuments.length : 0;
+export function editorOpsExtInstalled() {
+  return !!extensions.getExtension(EDITOR_OPS_EXT_ID);
 }
 
 export function getRootPathForFile(fileName) {
@@ -215,6 +224,43 @@ export async function getOsUsername() {
   return username;
 }
 
+export function getPluginUuid() {
+  let plugin_uuid = fileIt.getJsonValue(getDeviceFile(), "plugin_uuid");
+  if (!plugin_uuid) {
+    // set it for the 1st and only time
+    plugin_uuid = uuidv4();
+    fileIt.setJsonValue(getDeviceFile(), "plugin_uuid", plugin_uuid);
+  }
+  return plugin_uuid;
+}
+
+export function getAuthCallbackState(autoCreate = true) {
+  let auth_callback_state = fileIt.getJsonValue(getDeviceFile(), "auth_callback_state");
+  if (!auth_callback_state && autoCreate) {
+    auth_callback_state = uuidv4();
+    fileIt.setJsonValue(getDeviceFile(), "auth_callback_state", auth_callback_state);
+  }
+  return auth_callback_state;
+}
+
+export function getLocalREADMEFile() {
+  const resourcePath: string = path.join(__dirname, "resources");
+  const file = path.join(resourcePath, "README.md");
+  return file;
+}
+
+export function setAuthCallbackState(value: string) {
+  fileIt.setJsonValue(getDeviceFile(), "auth_callback_state", value);
+}
+
+export function getLogId() {
+  return 'MusicTime';
+}
+
+export function logIt(message: string) {
+  outputChannel.appendLine(`${formatISO(new Date())} ${getLogId()}: ${message}`);
+}
+
 export async function showOfflinePrompt(addReconnectMsg = false) {
   // shows a prompt that we're not able to communicate with the app server
   let infoMsg = "Our service is temporarily unavailable. ";
@@ -234,13 +280,6 @@ export function nowInSecs() {
 export function getOffsetSeconds() {
   let d = new Date();
   return d.getTimezoneOffset() * 60;
-}
-
-export function coalesceNumber(val, defaultVal = 0) {
-  if (val === null || val === undefined || isNaN(val)) {
-    return defaultVal;
-  }
-  return val;
 }
 
 export function randomCode() {
@@ -310,33 +349,14 @@ export function getSongDisplayName(name) {
   return displayName.trim();
 }
 
-export async function getGitEmail() {
-  let projectDirs = getRootPaths();
-
-  if (!projectDirs || projectDirs.length === 0) {
-    return null;
-  }
-
-  for (let i = 0; i < projectDirs.length; i++) {
-    let projectDir = projectDirs[i];
-
-    if (projectDir && isGitProject(projectDir)) {
-      let email = execCmd("git config user.email", projectDir);
-      if (email) {
-        /**
-         * // normalize the email, possible github email types
-         * shupac@users.noreply.github.com
-         * 37358488+rick-software@users.noreply.github.com
-         */
-        email = normalizeGithubEmail(email);
-        return email;
-      }
+export function launchWebUrl(url) {
+  if (!websocketAlive()) {
+    try {
+      initializeWebsockets();
+    } catch (e) {
+      console.error("Failed to initialize websockets", e);
     }
   }
-  return null;
-}
-
-export function launchWebUrl(url) {
   open(url);
 }
 
@@ -372,30 +392,6 @@ export function showModalSignupPrompt(msg: string) {
         commands.executeCommand("musictime.signUpAccount");
       }
     });
-}
-
-/**
- * humanize the minutes
- */
-export function humanizeMinutes(min) {
-  min = parseInt(min, 0) || 0;
-  let str = "";
-  if (min === 60) {
-    str = "1 hr";
-  } else if (min > 60) {
-    let hrs = parseFloat(min) / 60;
-    if (hrs % 1 === 0) {
-      str = hrs.toFixed(0) + " hrs";
-    } else {
-      str = (Math.round(hrs * 10) / 10).toFixed(1) + " hrs";
-    }
-  } else if (min === 1) {
-    str = "1 min";
-  } else {
-    // less than 60 seconds
-    str = min.toFixed(0) + " min";
-  }
-  return str;
 }
 
 export function showInformationMessage(message: string) {
@@ -436,11 +432,6 @@ export function getCodyErrorMessage(response: CodyResponse) {
     return response.message;
   }
   return "";
-}
-
-export function getFileDataArray(file) {
-  let payloads: any[] = fileIt.readJsonArraySync(file);
-  return payloads;
 }
 
 export function getImage(name: string) {

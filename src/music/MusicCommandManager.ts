@@ -1,9 +1,8 @@
 import { window, StatusBarAlignment, StatusBarItem } from "vscode";
-import { getSongDisplayName } from "../Util";
+import { getSongDisplayName, getItem, setItem } from "../Util";
 import { TrackStatus, Track, getRunningTrack } from "cody-music";
-import { getItem, setItem } from "../managers/FileManager";
 import { getBestActiveDevice, isLikedSong, requiresSpotifyAccess, requiresSpotifyReAuthentication } from "../managers/PlaylistDataManager";
-import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from "../app/utils/view_constants";
+import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from '../Constants';
 
 export interface Button {
   /**
