@@ -54,7 +54,7 @@ export class MusicCommandManager {
       return;
     }
     this._initialized = true;
-    const musictimeMenuTooltip = this.getMusicMenuTooltip();
+    const musictimeMenuTooltip = await this.getMusicMenuTooltip();
 
     let requiresReAuth = requiresSpotifyReAuthentication();
     const requiresAccessToken = await requiresSpotifyAccess();
@@ -165,6 +165,8 @@ export class MusicCommandManager {
       requiresReAuth = false;
     }
 
+    const tooltip = await this.getMusicMenuTooltip();
+
     // hide all except for the launch player button and possibly connect spotify button
     this._buttons = this._buttons.map((button) => {
       const btnCmd = button.statusBarItem.command;
@@ -173,7 +175,7 @@ export class MusicCommandManager {
       const isConnectButton = btnCmd === "musictime.connectSpotify";
 
       if (isMusicTimeMenuButton) {
-        button.tooltip = this.getMusicMenuTooltip();
+        button.tooltip = tooltip;
         // always show the headphones button for the launch controls function
         button.statusBarItem.show();
       } else if (isConnectButton && requiresReAuth) {
@@ -205,7 +207,7 @@ export class MusicCommandManager {
 
     const trackName = trackInfo ? trackInfo.name : "";
     const songInfo = trackInfo && trackInfo.id ? `${trackInfo.name} (${trackInfo.artist})` : "";
-
+    const tooltip = await this.getMusicMenuTooltip();
     const isLiked = !!((trackInfo && trackInfo["playlist_id"] === SPOTIFY_LIKED_SONGS_PLAYLIST_ID) || (await isLikedSong(trackInfo)));
 
     this._buttons.map((button) => {
@@ -220,7 +222,7 @@ export class MusicCommandManager {
 
       if (isMusicTimeMenuButton || isPrevButton || isNextButton) {
         if (isMusicTimeMenuButton) {
-          button.tooltip = this.getMusicMenuTooltip();
+          button.tooltip = tooltip;
         }
         // always show the headphones menu icon
         button.statusBarItem.show();
@@ -272,7 +274,7 @@ export class MusicCommandManager {
 
     const trackName = trackInfo ? trackInfo.name : "";
     const songInfo = trackInfo && trackInfo.id ? `${trackInfo.name} (${trackInfo.artist})` : "";
-
+    const tooltip = await this.getMusicMenuTooltip();
     const isLiked = !!((trackInfo && trackInfo["playlist_id"] === SPOTIFY_LIKED_SONGS_PLAYLIST_ID) || (await isLikedSong(trackInfo)));
 
     this._buttons.map((button) => {
@@ -287,7 +289,7 @@ export class MusicCommandManager {
 
       if (isMusicTimeMenuButton || isPrevButton || isNextButton) {
         if (isMusicTimeMenuButton) {
-          button.tooltip = this.getMusicMenuTooltip();
+          button.tooltip = tooltip;
         }
         // always show the headphones menu icon
         button.statusBarItem.show();
@@ -321,10 +323,10 @@ export class MusicCommandManager {
     this.hideCurrentSong();
   }
 
-  private static getMusicMenuTooltip() {
+  private static async getMusicMenuTooltip() {
     const name = getItem("name");
 
-    const requiresAccessToken = requiresSpotifyAccess();
+    const requiresAccessToken = await requiresSpotifyAccess();
     let requiresReAuth = requiresSpotifyReAuthentication();
 
     if (!requiresAccessToken && requiresReAuth) {

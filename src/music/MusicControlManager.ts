@@ -456,7 +456,7 @@ export class MusicControlManager {
     };
 
     // check if they need to connect to spotify
-    const needsSpotifyAccess = requiresSpotifyAccess();
+    const needsSpotifyAccess = await requiresSpotifyAccess();
 
     // check to see if they have the slack access token
     const hasSlackAccess = await hasSlackWorkspaces();

@@ -22,11 +22,6 @@ export function hasSpotifyUser() {
   return !!(spotifyUser && spotifyUser.product);
 }
 
-export function getSpotifyEmail() {
-  const spotifyIntegration = getSpotifyIntegration();
-  return spotifyIntegration?.value;
-}
-
 export async function getSoftwareTop40() {
   const data = await softwareGet("/music/top40");
   return isResponseOk(data) ? data.data : null;
@@ -50,9 +45,9 @@ export async function updateSpotifyClientInfo() {
 }
 
 export async function populateSpotifyUser(hardRefresh = false) {
-  let spotifyIntegration = getSpotifyIntegration();
+  let spotifyIntegration = await getSpotifyIntegration();
   if (!spotifyIntegration) {
-    spotifyIntegration = getSpotifyIntegration();
+    spotifyIntegration = await getSpotifyIntegration();
   }
 
   if (spotifyIntegration && (hardRefresh || !spotifyUser || !spotifyUser.id)) {
@@ -68,8 +63,8 @@ export async function switchSpotifyAccount() {
   }
 }
 
-export function getSpotifyIntegration(): SoftwareIntegration {
-  const spotifyIntegrations: SoftwareIntegration[] = getCachedSpotifyIntegrations();
+export async function getSpotifyIntegration(): Promise<SoftwareIntegration> {
+  const spotifyIntegrations: SoftwareIntegration[] = await getCachedSpotifyIntegrations();
   if (spotifyIntegrations?.length) {
     // get the last one in case we have more than one.
     // the last one is the the latest one created.
@@ -104,7 +99,7 @@ export async function updateCodyConfig() {
 }
 
 export async function migrateAccessInfo() {
-  if (!getSpotifyIntegration()) {
+  if (await !getSpotifyIntegration()) {
     const legacyAccessToken = getItem("spotify_access_token");
     if (legacyAccessToken) {
       // get the user

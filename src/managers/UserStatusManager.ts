@@ -184,7 +184,10 @@ export async function getCachedSlackIntegrations() {
   return [];
 }
 
-export function getCachedSpotifyIntegrations() {
+export async function getCachedSpotifyIntegrations() {
+  if (!currentUser) {
+    currentUser = await getUser();
+  }
   if (currentUser?.integration_connections?.length) {
     return currentUser?.integration_connections?.filter(
       (integration: any) => integration.status === 'ACTIVE' && (integration.integration_type_id === 12));
@@ -193,7 +196,7 @@ export function getCachedSpotifyIntegrations() {
 }
 
 export async function getLatestSpotifyIntegration() {
-  const spotifyIntegrations: any[] = getCachedSpotifyIntegrations();
+  const spotifyIntegrations: any[] = await getCachedSpotifyIntegrations();
   if (spotifyIntegrations?.length) {
     const sorted = spotifyIntegrations.sort((a, b) => {
       const aDate = a.updatedAt ? new Date(a.updatedAt).getTime() : new Date(a.updated_at).getTime();

@@ -15,8 +15,9 @@ import {getConnectionErrorHtml} from '../local/404';
 import { MusicCommandManager } from "../music/MusicCommandManager";
 import { appGet, isResponseOk } from '../HttpClient';
 import { getConnectedSpotifyUser } from '../managers/SpotifyManager';
-import { getSelectedTabView, getSelectedPlaylistId, getCachedSpotifyPlaylists, getCachedSoftwareTop40Playlist, getCachedPlaylistTracks, getUserMusicMetrics, getCachedRecommendationInfo, getSpotifyLikedPlaylist, getCachedLikedSongsTracks } from '../managers/PlaylistDataManager';
+import { getSelectedTabView, getSelectedPlaylistId, getCachedSpotifyPlaylists, getCachedSoftwareTop40Playlist, getCachedPlaylistTracks, getUserMusicMetrics, getCachedRecommendationInfo, getSpotifyLikedPlaylist, getCachedLikedSongsTracks, getExpandedPlaylistId, updateExpandedPlaylistId, sortingAlphabetically, getSelectedTrackItem } from '../managers/PlaylistDataManager';
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from '../Constants';
+import { PlaylistItem } from 'cody-music';
 
 export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider {
   private _webview: WebviewView | undefined;
@@ -27,7 +28,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
     //
   }
 
-  public async refresh(reloadData = false) {
+  public async refresh(reloadData: boolean, refreshOpenFolder: boolean = false) {
     if (!this._webview) {
       // its not available to refresh yet
       return;
@@ -35,7 +36,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
     if (!this._origHtml || reloadData) {
       this._webview.webview.html = await this.getHtml();
     } else {
-      this._webview.webview.html = await this.buildPlaylistItems(this._origHtml);
+      this._webview.webview.html = await this.buildPlaylistItems(this._origHtml, refreshOpenFolder);
     }
   }
 
@@ -122,7 +123,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
     return await getConnectionErrorHtml();
   }
 
-  private async buildPlaylistItems(html: string) {
+  private async buildPlaylistItems(html: string, refreshOpenFolder: boolean = false) {
     const spotifyUser = await getConnectedSpotifyUser();
     const selectedTabView = getSelectedTabView();
     const playlistId = getSelectedPlaylistId();
@@ -137,72 +138,145 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
       }
     }
 
-    let playlistSidebar = '';
-    if (data?.spotifyPlaylists?.length) {
-      const likedFolder = this.buildPlaylistItem(data.likedPlaylistItem, playlistId, tracks);
+    let sidebarContent = '';
+    if (selectedTabView === 'playlists' && data?.spotifyPlaylists?.length) {
+      const likedFolder = this.buildPlaylistItem(data.likedPlaylistItem, playlistId, tracks, refreshOpenFolder);
       const playlistFolders = data.spotifyPlaylists.map(
-        (item: any) => this.buildPlaylistItem(item, playlistId, tracks)
+        (item: any) => this.buildPlaylistItem(item, playlistId, tracks, refreshOpenFolder)
       ).join('\n')
-      playlistSidebar = this.buildPlaylistSidebar(likedFolder, playlistFolders);
+      sidebarContent = this.buildPlaylistSidebar(likedFolder, playlistFolders);
     }
 
-    html = html.replace('__playlist_items_placeholder__', playlistSidebar);
+    html = html.replace('__playlist_items_placeholder__', sidebarContent);
     return html;
   }
 
   private buildPlaylistSidebar(likedFolder, playlistFolders) {
     return `<div class="divide-y dark:divide-gray-100 dark:divide-opacity-25">
-      <div>
+      <div class="flex flex-col w-full">
+        <div class="flex justify-between items-center space-x-2 mt-2">
+          <div class="text-xs font-semibold">Playlists</div>
+          <div class="flex items-center space-x-2">
+            ${this.getSearchIconButton()}
+            ${this.getSortButton()}
+          </div>
+        </div>
         ${likedFolder}
       </div>
-      <div>
+      <div class="flex flex-col">
         ${playlistFolders}
       </div>
     </div>`
   }
 
-  private buildPlaylistItem(item: any, playlistId: any, tracks: any) {
+  private getSearchIconButton() {
+    return `<button type="button" onclick="onCmdClick('searchTracks')"
+      class="relative font-medium focus:outline-none">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+      </svg>
+    </button>`
+  }
+
+  private getSortButton() {
+    if (sortingAlphabetically()) {
+      return this.getSortByCreationButton();
+    }
+    return this.getSortAlphaButton();
+  }
+
+  private getSortAlphaButton() {
+    return `<button type="button" onclick="onCmdClick('sortAlphabetically')"
+      class="relative font-medium focus:outline-none">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M3 3a1 1 0 000 2h11a1 1 0 100-2H3zM3 7a1 1 0 000 2h7a1 1 0 100-2H3zM3 11a1 1 0 100 2h4a1 1 0 100-2H3zM15 8a1 1 0 10-2 0v5.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L15 13.586V8z" />
+      </svg>
+    </button>`
+  }
+
+  private getSortByCreationButton() {
+    return `<button type="button" onclick="onCmdClick('sortToOriginal')"
+      class="relative font-medium focus:outline-none">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 48 48" fill="none">
+        <rect class="h-5 w-5 text-gray-400" fill="white" fill-opacity="0.01"/>
+        <path d="M6 5V30.0036H42V5" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M30 37L24 43L18 37" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M24 30V43" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M18.9604 10.9786L23.9972 15.9928L18.9604 21.0903" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M29 10.002V22.0001" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+    </button>`
+  }
+
+  private buildPlaylistItem(item: any, playlistId: any, tracks: any, refreshOpenFolder: boolean = false) {
     let chevronSvg = this.getChevronRight();
     let tracksHtml = '';
     if (item.id === playlistId) {
-      chevronSvg = this.getChevronDown();
+      if ((getExpandedPlaylistId() !== playlistId) || getExpandedPlaylistId() === playlistId && refreshOpenFolder) {
+        // expand or refresh
+        updateExpandedPlaylistId(playlistId);
+        chevronSvg = this.getChevronDown();
 
-      if (tracks.length) {
-        tracksHtml = [
-          '<div class="space-y-1" id="sub-menu-1">',
-          ...tracks.map((item: any) => this.buildTrackItem(item)),
-          '</div>'
-        ].join('\n');
+        if (tracks.length) {
+          const selectedTrackItem:PlaylistItem = getSelectedTrackItem();
+          tracksHtml = [
+            '<div class="pl-2 -m-1">',
+            ...tracks.map((item: any) => this.buildTrackItem(item, playlistId, selectedTrackItem)),
+            '</div>'
+          ].join('\n');
+        }
+      } else {
+        // clear it
+        updateExpandedPlaylistId('')
       }
     }
-
     return `
-      <div class="space-y-1">
-        <button type="button" onclick="onCmdClick('refreshMusicTimeView', { tabView: 'playlists', playlistId: '${item.id}' })"
-          class="w-full flex items-center p-2 text-left text-xs rounded-sm focus:outline-none text-gray-700 dark:text-gray-100 hover:text-blue-500">
-          ${chevronSvg}
-          <span class="truncate">${item.name}</span>
-        </button>${tracksHtml}
+      <div class="flex flex-col">
+        <div class="w-full flex justify-between items-center py-1">
+          <button type="button" onclick="onCmdClick('refreshMusicTimeView', { tabView: 'playlists', playlistId: '${item.id}' })"
+            class="flex truncate items-center space-x-2 focus:outline-none">
+            ${chevronSvg}
+            <span class="truncate text-xs hover:text-green-500">${item.name}</span>
+          </button>
+        </div>
+        ${tracksHtml}
       </div>`
   }
 
-  private buildTrackItem(item: any) {
-    return `<a href onclick="onCmdClick('playTrack')"
-      class="w-full flex items-center p-1 text-xs">
-      ${item.name}
-    </a>`
+  private buildTrackItem(item: any, playlistId: string, selectedTrackItem: PlaylistItem) {
+    const itemCss = selectedTrackItem && selectedTrackItem.id == item.id ? 'text-green-600' : ''
+    return `<div class="w-full flex justify-between items-center">
+      <button onclick="onCmdClick('playTrack', { playlistId: '${playlistId}', trackId: '${item.id}' })"
+        class="w-full flex truncate items-center pl-2 p-1 space-x-2 focus:outline-none">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-green-600" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
+        </svg>
+        <span class="text-xs truncate ${itemCss} hover:text-green-500">
+          ${item.name}
+        </span>
+      </button>
+      ${this.getDotsVerticalMenuButton()}
+    </div>`
   }
 
   private getChevronDown() {
-    return `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+    return `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" viewBox="0 0 20 20" fill="currentColor">
       <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
     </svg>`;
   }
 
   private getChevronRight() {
-    return `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+    return `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" viewBox="0 0 20 20" fill="currentColor">
       <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
     </svg>`;
+  }
+
+  private getDotsVerticalMenuButton() {
+    return `<button type="button" onclick="onCmdClick('refreshMusicTimeView')">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+      </svg>
+    </button>`
   }
 
   private async getViewData(selectedTabView, playlist_id, spotifyUser) {

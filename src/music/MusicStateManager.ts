@@ -32,7 +32,7 @@ export class MusicStateManager {
    */
   public async fetchTrack(): Promise<any> {
     try {
-      const requiresAccess = requiresSpotifyAccess();
+      const requiresAccess = await requiresSpotifyAccess();
 
       if (requiresAccess) {
         // either no device ID, requires spotify connection,

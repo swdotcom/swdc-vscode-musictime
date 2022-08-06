@@ -22,6 +22,8 @@ import {
   getCurrentRecommendations,
   getMixedAudioFeatureRecs,
   getRecommendations,
+  getSelectedPlaylistId,
+  getTrackByPlaylistIdAndTrackId,
   getTrackRecommendations,
   populateSpotifyDevices,
   refreshRecommendations,
@@ -380,12 +382,15 @@ export function createCommands(
   cmds.push(
     commands.registerCommand("musictime.refreshMusicTimeView", async (payload: any) => {
       if (payload?.playlistId) {
-        await fetchTracksForPlaylist(payload.playlistId)
+        if (getSelectedPlaylistId() !== payload.playlistId) {
+          await fetchTracksForPlaylist(payload.playlistId)
+        }
       }
       if (payload?.tabView) {
         updateSelectedTabView(payload.tabView);
       }
-      mtWebviewSidebar.refresh();
+      const refreshOpenFolder: boolean = !!payload.refreshOpenFolder;
+      mtWebviewSidebar.refresh(false, refreshOpenFolder);
     })
   );
 
@@ -455,9 +460,14 @@ export function createCommands(
   );
 
   cmds.push(
-    commands.registerCommand("musictime.playTrack", async (item: PlaylistItem) => {
-      updateSelectedPlaylistId(item["playlist_id"]);
-      playSelectedItem(item);
+    commands.registerCommand("musictime.playTrack", async (payload: any) => {
+      const trackItem: PlaylistItem = await getTrackByPlaylistIdAndTrackId(payload.playlistId, payload.trackId);
+      updateSelectedPlaylistId(trackItem["playlist_id"]);
+      playSelectedItem(trackItem);
+      commands.executeCommand(
+        "musictime.refreshMusicTimeView",
+        { tabView: 'playlists', playlistId: trackItem["playlist_id"],  refreshOpenFolder: true }
+      )
     })
   );
 
