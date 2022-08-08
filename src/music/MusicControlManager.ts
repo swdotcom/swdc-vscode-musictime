@@ -161,10 +161,6 @@ export class MusicControlManager {
     if (result && (result.status < 300 || result === "ok")) {
       MusicCommandManager.syncControls(await getRunningTrack(), true, TrackStatus.Paused);
     }
-
-    setTimeout(() => {
-      MusicStateManager.getInstance().fetchTrack();
-    }, 1000);
   }
 
   async setShuffleOn() {

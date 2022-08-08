@@ -1,7 +1,7 @@
 import { commands, Disposable, window, ExtensionContext } from "vscode";
 import { MusicControlManager } from "./music/MusicControlManager";
 import { getMusicTimePluginId, launchMusicAnalytics, launchWebUrl, getPluginUuid } from "./Util";
-import { PlaylistItem, PlayerName, PlayerDevice, playSpotifyDevice } from "cody-music";
+import { PlaylistItem, PlayerName, PlayerDevice, playSpotifyDevice, TrackStatus } from "cody-music";
 import { SocialShareManager } from "./social/SocialShareManager";
 import { showGenreSelections, showMoodSelections } from "./selector/RecTypeSelectorManager";
 import { showSortPlaylistMenu } from "./selector/SortPlaylistSelectorManager";
@@ -19,10 +19,12 @@ import {
   followSpotifyPlaylist,
   getAlbumForTrack,
   getBestActiveDevice,
+  getCachedRecommendationInfo,
   getCurrentRecommendations,
   getMixedAudioFeatureRecs,
   getRecommendations,
   getSelectedPlaylistId,
+  getSelectedTabView,
   getTrackByPlaylistIdAndTrackId,
   getTrackRecommendations,
   populateSpotifyDevices,
@@ -32,6 +34,7 @@ import {
   updateSelectedMetricSelection,
   updateSelectedPlaylistId,
   updateSelectedTabView,
+  updateSelectedTrackStatus,
   updateSort,
 } from "./managers/PlaylistDataManager";
 import { launchTrackPlayer, playSelectedItem, playSelectedItems } from "./managers/PlaylistControlManager";
@@ -76,6 +79,7 @@ export function createCommands(
   // PLAY CMD
   cmds.push(
     commands.registerCommand("musictime.play", async () => {
+      updateSelectedTrackStatus(TrackStatus.Playing);
       controller.playSong(1);
     })
   );
@@ -118,8 +122,13 @@ export function createCommands(
 
   // PAUSE CMD
   cmds.push(
-    commands.registerCommand("musictime.pause", () => {
-      controller.pauseSong();
+    commands.registerCommand("musictime.pause", async () => {
+      updateSelectedTrackStatus(TrackStatus.Paused);
+      await controller.pauseSong();
+      commands.executeCommand(
+        "musictime.refreshMusicTimeView",
+        { tabView: getSelectedTabView(), playlistId: getSelectedPlaylistId(),  refreshOpenFolder: true }
+      )
     })
   );
 
@@ -381,16 +390,20 @@ export function createCommands(
 
   cmds.push(
     commands.registerCommand("musictime.refreshMusicTimeView", async (payload: any) => {
+      let reload: boolean = false;
       if (payload?.playlistId) {
         if (getSelectedPlaylistId() !== payload.playlistId) {
           await fetchTracksForPlaylist(payload.playlistId)
         }
       }
       if (payload?.tabView) {
+        if (getSelectedTabView() !== payload.tabView) {
+          reload = true;
+        }
         updateSelectedTabView(payload.tabView);
       }
       const refreshOpenFolder: boolean = !!payload.refreshOpenFolder;
-      mtWebviewSidebar.refresh(false, refreshOpenFolder);
+      mtWebviewSidebar.refresh(reload, refreshOpenFolder);
     })
   );
 
@@ -463,6 +476,7 @@ export function createCommands(
     commands.registerCommand("musictime.playTrack", async (payload: any) => {
       const trackItem: PlaylistItem = await getTrackByPlaylistIdAndTrackId(payload.playlistId, payload.trackId);
       updateSelectedPlaylistId(trackItem["playlist_id"]);
+      updateSelectedTrackStatus(TrackStatus.Playing);
       playSelectedItem(trackItem);
       commands.executeCommand(
         "musictime.refreshMusicTimeView",
@@ -479,6 +493,21 @@ export function createCommands(
   );
 
   cmds.push(
+    commands.registerCommand("musictime.playRecommendations", async (payload: any) => {
+      const recs: any = getCachedRecommendationInfo();
+      // find the track index
+      const offset: number = recs.tracks.findIndex(n => {
+        return n.id === payload.trackId;
+      });
+      const slicedTracks: PlaylistItem[] = [
+        ...recs.tracks.slice(offset),
+        ...recs.tracks.slice(0, offset)
+      ]
+      playSelectedItems(slicedTracks.slice(0, 100))
+    })
+  );
+
+  cmds.push(
     commands.registerCommand("musictime.updateMetricSelection", async (userMetricsSelection) => {
       updateSelectedMetricSelection(userMetricsSelection);
     })
@@ -487,14 +516,13 @@ export function createCommands(
   cmds.push(
     commands.registerCommand("musictime.tabSelection", async (options) => {
       const selectedTabView = options?.tab_view || 'playlists';
-      updateSelectedTabView(selectedTabView);
       if (selectedTabView === "recommendations") {
         // populate familiar recs, but don't refreshMusicTimeView
         // as the final logic will make that call
         await getCurrentRecommendations();
       } else {
         // refresh the music time view
-        commands.executeCommand("musictime.refreshMusicTimeView");
+        commands.executeCommand("musictime.refreshMusicTimeView", { tabView: selectedTabView });
       }
     })
   );

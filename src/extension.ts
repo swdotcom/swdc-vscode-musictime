@@ -11,6 +11,7 @@ import { clearWebsocketClient, initializeWebsockets } from "./websockets";
 import { initializeSpotify } from "./managers/PlaylistDataManager";
 import { displayReadmeIfNotExists } from './DataController';
 import { getUser } from './managers/UserStatusManager';
+import { getRunningTrack } from 'cody-music';
 
 let currentColorKind: number = undefined;
 

@@ -42,7 +42,7 @@ export async function playSelectedItems(playlistItems: PlaylistItem[]) {
 
 // PLAY SELECTED TRACK
 export async function playSelectedItem(playlistItem: PlaylistItem) {
-  updateSelectedTrackItem(playlistItem);
+  updateSelectedTrackItem(playlistItem, TrackStatus.Playing);
 
   // ask to launch web or desktop if neither are running
   await playInitialization(playMusicSelection);

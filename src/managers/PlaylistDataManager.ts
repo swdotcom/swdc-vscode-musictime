@@ -19,6 +19,7 @@ import {
   PlaylistTrackInfo,
   removeTracksFromPlaylist,
   Track,
+  TrackStatus,
 } from "cody-music";
 import { commands, window } from "vscode";
 import { RECOMMENDATION_LIMIT, RECOMMENDATION_PLAYLIST_ID, SOFTWARE_TOP_40_PLAYLIST_ID, OK_LABEL, SPOTIFY_LIKED_SONGS_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME, YES_LABEL } from "../Constants";
@@ -86,8 +87,15 @@ export function clearSelectedTrackInfo() {
   selectedTrackItem = undefined;
 }
 
-export function updateSelectedTrackItem(item) {
+export function updateSelectedTrackStatus(status: TrackStatus) {
+  if (selectedTrackItem) {
+    selectedTrackItem.state = status;
+  }
+}
+
+export function updateSelectedTrackItem(item, status: TrackStatus) {
   selectedTrackItem = item;
+  selectedTrackItem.state = status;
   selectedPlaylistId = item["playlist_id"];
 }
 
@@ -230,7 +238,7 @@ export async function getTrackByPlaylistIdAndTrackId(playlist_id, track_id) {
   } else {
     tracks = playlistTracks[playlist_id];
   }
-  let trackItem: PlaylistItem = tracks.find(n => n.id === track_id);
+  let trackItem: PlaylistItem = tracks.find(n => { return n.id === track_id; });
   return trackItem;
 }
 
@@ -531,15 +539,13 @@ export function refreshRecommendations() {
 }
 
 export async function getRecommendations(
-  label: string,
+  label: string = "Familiar",
   seedLimit: number = 5,
   seed_genres: string[] = [],
   features: any = {},
   offset: number = 0,
   seedTracks = []
 ) {
-  // set the selectedTabView to "recommendations"
-  selectedTabView = "recommendations";
 
   // fetching recommendations based on a set of genre requires 0 seed track IDs
   seedLimit = seed_genres.length ? 0 : Math.max(seedLimit, 5);

@@ -17,7 +17,7 @@ import { appGet, isResponseOk } from '../HttpClient';
 import { getConnectedSpotifyUser } from '../managers/SpotifyManager';
 import { getSelectedTabView, getSelectedPlaylistId, getCachedSpotifyPlaylists, getCachedSoftwareTop40Playlist, getCachedPlaylistTracks, getUserMusicMetrics, getCachedRecommendationInfo, getSpotifyLikedPlaylist, getCachedLikedSongsTracks, getExpandedPlaylistId, updateExpandedPlaylistId, sortingAlphabetically, getSelectedTrackItem } from '../managers/PlaylistDataManager';
 import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from '../Constants';
-import { PlaylistItem } from 'cody-music';
+import { PlaylistItem, TrackStatus } from 'cody-music';
 
 export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider {
   private _webview: WebviewView | undefined;
@@ -112,7 +112,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
 
   private async getHtml(): Promise<string> {
     const params = {
-      nav_view: 'playlists'
+      nav_view: getSelectedTabView()
     };
     const resp = await appGet('/plugin/sidebar', params);
     if (isResponseOk(resp)) {
@@ -145,6 +145,9 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
         (item: any) => this.buildPlaylistItem(item, playlistId, tracks, refreshOpenFolder)
       ).join('\n')
       sidebarContent = this.buildPlaylistSidebar(likedFolder, playlistFolders);
+    } else if (selectedTabView === 'recommendations') {
+      const tracksHtml: string = this.buildRecommendationTracks(data.recommendationInfo);
+      sidebarContent = this.buildRecommendationSidebar(data.recommendationInfo.label, tracksHtml);
     }
 
     html = html.replace('__playlist_items_placeholder__', sidebarContent);
@@ -153,7 +156,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
 
   private buildPlaylistSidebar(likedFolder, playlistFolders) {
     return `<div class="divide-y dark:divide-gray-100 dark:divide-opacity-25">
-      <div class="flex flex-col w-full">
+      <div class="flex flex-col w-full pb-2">
         <div class="flex justify-between items-center space-x-2 mt-2">
           <div class="text-xs font-semibold">Playlists</div>
           <div class="flex items-center space-x-2">
@@ -163,10 +166,17 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
         </div>
         ${likedFolder}
       </div>
-      <div class="flex flex-col">
+      <div class="flex flex-col pt-2">
         ${playlistFolders}
       </div>
     </div>`
+  }
+
+  private buildRecommendationSidebar(label: string, tracksHtml: string) {
+    return `<div class="flex flex-col w-full space-x-2">
+      <div class="text-xs font-semibold p-2">${label}</div>
+      ${tracksHtml}
+    </div>`;
   }
 
   private getSearchIconButton() {
@@ -221,7 +231,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
           const selectedTrackItem:PlaylistItem = getSelectedTrackItem();
           tracksHtml = [
             '<div class="pl-2 -m-1">',
-            ...tracks.map((item: any) => this.buildTrackItem(item, playlistId, selectedTrackItem)),
+            ...tracks.map((item: any) => this.buildTrackItem(item, playlistId)),
             '</div>'
           ].join('\n');
         }
@@ -243,19 +253,43 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
       </div>`
   }
 
-  private buildTrackItem(item: any, playlistId: string, selectedTrackItem: PlaylistItem) {
-    const itemCss = selectedTrackItem && selectedTrackItem.id == item.id ? 'text-green-600' : ''
+  private buildRecommendationTracks(recommendationInfo: any) {
+    return [
+      '<div class="py-2">',
+      ...recommendationInfo.tracks.map((item: any) => this.buildRecommendationTrackItem(item)),
+      '</div>'
+    ].join('\n');
+  }
+
+  private buildTrackItem(item: any, playlistId: string = '') {
+    const trackDomId = `${item.id}_${playlistId}`;
     return `<div class="w-full flex justify-between items-center">
       <button onclick="onCmdClick('playTrack', { playlistId: '${playlistId}', trackId: '${item.id}' })"
+        data-track-id="${trackDomId}"
         class="w-full flex truncate items-center pl-2 p-1 space-x-2 focus:outline-none">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-green-600" viewBox="0 0 20 20" fill="currentColor">
           <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
         </svg>
-        <span class="text-xs truncate ${itemCss} hover:text-green-500">
+        <span class="text-xs truncate hover:text-green-500">
           ${item.name}
         </span>
       </button>
-      ${this.getDotsVerticalMenuButton()}
+      ${this.getDotsVerticalMenuButton(trackDomId)}
+    </div>`
+  }
+
+  private buildRecommendationTrackItem(item: any) {
+    return `<div class="w-full flex justify-between items-center">
+      <button onclick="onCmdClick('playRecommendations', { trackId: '${item.id}' })"
+        class="w-full flex truncate items-center pl-2 p-1 space-x-2 focus:outline-none">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-green-600" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
+        </svg>
+        <span class="text-xs truncate hover:text-green-500">
+          ${item.name}
+        </span>
+      </button>
+      ${this.getDotsVerticalMenuButton(item.id)}
     </div>`
   }
 
@@ -271,8 +305,8 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
     </svg>`;
   }
 
-  private getDotsVerticalMenuButton() {
-    return `<button type="button" onclick="onCmdClick('refreshMusicTimeView')">
+  private getDotsVerticalMenuButton(buttonId: string = 'menu-button') {
+    return `<button type="button" id="${buttonId}" class="hidden" data-action="click->plugin--application#openModal" data-plugin--modal-id="playlist-menu">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
       </svg>
