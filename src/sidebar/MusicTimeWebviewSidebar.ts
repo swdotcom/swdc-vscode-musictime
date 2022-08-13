@@ -262,10 +262,11 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
   }
 
   private buildTrackItem(item: any, playlistId: string = '') {
-    const trackDomId = `${item.id}_${playlistId}`;
-    return `<div class="w-full flex justify-between items-center">
+    const trackPlaylistId = `${item.id}_${playlistId}`;
+    return `<div data-track-container="${trackPlaylistId}" class="w-full flex justify-between items-center">
       <button onclick="onCmdClick('playTrack', { playlistId: '${playlistId}', trackId: '${item.id}' })"
-        data-track-id="${trackDomId}"
+        data-track-id="${trackPlaylistId}"
+        data-name="trackItem"
         class="w-full flex truncate items-center pl-2 p-1 space-x-2 focus:outline-none">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-green-600" viewBox="0 0 20 20" fill="currentColor">
           <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
@@ -274,7 +275,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
           ${item.name}
         </span>
       </button>
-      ${this.getDotsVerticalMenuButton(trackDomId)}
+      ${this.getDotsVerticalMenuButton(playlistId, item.id, item.name)}
     </div>`
   }
 
@@ -305,12 +306,51 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
     </svg>`;
   }
 
-  private getDotsVerticalMenuButton(buttonId: string = 'menu-button') {
-    return `<button type="button" id="${buttonId}" class="hidden" data-action="click->plugin--application#openModal" data-plugin--modal-id="playlist-menu">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-      </svg>
-    </button>`
+  private getDotsVerticalMenuButton(playlistId, trackId, trackName) {
+    const trackPlaylistId = `${trackId}_${playlistId}`;
+    return `<div class="hidden relative inline-block text-left" id="${trackPlaylistId}">
+      <div>
+        <button
+          data-track-id="${trackPlaylistId}"
+          id="menu-button"
+          type="button"
+          class="rounded-full flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+          data-action="click->plugin--music-time--sidebar#toggleTrackOptions"
+          aria-expanded="true" aria-haspopup="true">
+          <span class="sr-only">Track menu</span>
+          <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="hidden origin-top-right absolute right-0 mt-2 rounded-lg shadow-lg bg-white dark:bg-gray-900 focus:outline-none"
+        id="${trackPlaylistId}_options"
+        role="menu"
+        aria-orientation="vertical"
+        aria-labelledby="menu-button"
+        tabindex="-1">
+        <div class="p-1 divide-y divide-gray-100 focus:outline-none" role="none" data-track-options-id="${trackPlaylistId}">
+          <div class="py-1" role="none">
+            <a href class="rounded block px-4 py-2 text-sm focus:outline-none"
+              role="menuitem" tabindex="-1" id="menu-item-0">${trackName}</a>
+          </div>
+          <div class="py-1" role="none">
+            <a href class="rounded block px-4 py-2 text-sm focus:outline-none"
+              role="menuitem" tabindex="-1" id="menu-item-1">Show album</a>
+            <a href class="rounded block px-4 py-2 text-sm focus:outline-none"
+              onclick="onCmdClick('getTrackRecommendations', { trackId: '${trackId}', playlistId: '${playlistId}' })"
+              role="menuitem" tabindex="-1" id="menu-item-2">Get recommendations</a>
+            <a href class="rounded block px-4 py-2 text-sm focus:outline-none"
+              role="menuitem" tabindex="-1" id="menu-item-1">Repeat track</a>
+            <a href class="rounded block px-4 py-2 text-sm focus:outline-none"
+              role="menuitem" tabindex="-1" id="menu-item-2">Share track</a>
+            <a href class="rounded block px-4 py-2 text-sm focus:outline-none"
+              role="menuitem" tabindex="-1" id="menu-item-2">Add to playlist</a>
+          </div>
+        </div>
+      </div>
+    </div>`
   }
 
   private async getViewData(selectedTabView, playlist_id, spotifyUser) {

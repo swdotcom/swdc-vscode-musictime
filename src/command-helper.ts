@@ -439,8 +439,9 @@ export function createCommands(
   );
 
   cmds.push(
-    commands.registerCommand("musictime.getTrackRecommendations", async (node: PlaylistItem) => {
-      getTrackRecommendations(node);
+    commands.registerCommand("musictime.getTrackRecommendations", async (payload) => {
+      const trackItem: PlaylistItem = await getTrackByPlaylistIdAndTrackId(payload.playlistId, payload.trackId);
+      getTrackRecommendations(trackItem);
     })
   );
 

@@ -220,7 +220,7 @@
     "@types/uuid": "^8.3.4",
     "axios": "^0.27.2",
     "clipboardy": "^2.1.0",
-    "cody-music": "2.10.6",
+    "cody-music": "2.10.7",
     "date-fns": "^2.29.1",
     "file-it": "^1.1.5",
     "open": "^8.4.0",
