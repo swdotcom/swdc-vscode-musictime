@@ -17,7 +17,7 @@ import { MusicCommandManager } from "../music/MusicCommandManager";
 import { appGet, isResponseOk } from '../HttpClient';
 import { getConnectedSpotifyUser, hasSpotifyUser } from '../managers/SpotifyManager';
 import { getSelectedTabView, getSelectedPlaylistId, getCachedSpotifyPlaylists, getCachedSoftwareTop40Playlist, getCachedPlaylistTracks, getUserMusicMetrics, getCachedRecommendationInfo, getSpotifyLikedPlaylist, getCachedLikedSongsTracks, getExpandedPlaylistId, updateExpandedPlaylistId, sortingAlphabetically, getSelectedTrackItem, getPlayerContext, getCurrentDevices } from '../managers/PlaylistDataManager';
-import { SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from '../Constants';
+import { RECOMMENDATION_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from '../Constants';
 import { PlayerContext, PlaylistItem } from 'cody-music';
 
 export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider {
@@ -134,17 +134,18 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
     const playlistId = getSelectedPlaylistId();
     const data: any = await this.getViewData(selectedTabView, playlistId, spotifyUser);
 
-    let tracks = [];
-    if (playlistId) {
-      if (playlistId === SPOTIFY_LIKED_SONGS_PLAYLIST_ID) {
-        tracks = data.likedTracks;
-      } else {
-        tracks = data.playlistTracks[playlistId];
-      }
-    }
-
     let sidebarContent = '';
     if (selectedTabView === 'playlists' && data?.spotifyPlaylists?.length) {
+      let tracks = [];
+
+      if (playlistId) {
+        if (playlistId === SPOTIFY_LIKED_SONGS_PLAYLIST_ID) {
+          tracks = data.likedTracks;
+        } else {
+          tracks = data.playlistTracks[playlistId];
+        }
+      }
+
       const likedFolder = this.buildPlaylistItem(data.likedPlaylistItem, playlistId, tracks, refreshOpenFolder);
       const playlistFolders = data.spotifyPlaylists.map(
         (item: any) => this.buildPlaylistItem(item, playlistId, tracks, refreshOpenFolder)
@@ -152,13 +153,50 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
       sidebarContent = this.buildPlaylistSidebar(likedFolder, playlistFolders, data.playerContext);
     } else if (selectedTabView === 'recommendations') {
       const tracksHtml: string = this.buildRecommendationTracks(data.recommendationInfo);
-      sidebarContent = this.buildRecommendationSidebar(data.recommendationInfo.label, tracksHtml);
+      sidebarContent = this.buildRecommendationSidebar(data.recommendationInfo.label, tracksHtml, data.playerContext);
     } else if (selectedTabView === 'metrics') {
       sidebarContent = '<p class="flex items-center justify-center p-4">Music Time metrics coming soon.</p>'
     }
 
     html = html.replace('__playlist_items_placeholder__', sidebarContent);
     return html;
+  }
+
+
+  private buildPlaylistSidebar(likedFolder, playlistFolders, playerContext) {
+    return `<div class="divide-y dark:divide-gray-100 dark:divide-opacity-25">
+      <div class="flex flex-col w-full pb-2">
+        <div class="flex justify-between items-center space-x-2 py-3">
+          <div class="text-xs font-semibold">Playlists</div>
+          <div class="flex items-center space-x-2">
+            ${this.getTrackControlButton(playerContext)}
+            ${this.getSearchIconButton()}
+            ${this.getSortButton()}
+          </div>
+        </div>
+        ${likedFolder}
+      </div>
+      <div class="flex flex-col pt-2">
+        ${playlistFolders}
+      </div>
+    </div>`
+  }
+
+  private buildRecommendationSidebar(label: string, tracksHtml: string, playerContext: PlayerContext) {
+    return `<div class="flex flex-col w-full space-y-2">
+      <div class="flex justify-between items-center space-x-2 py-3">
+        <div class="text-xs font-semibold">${label}</div>
+        <div class="flex items-center space-x-2">
+          ${this.getTrackControlButton(playerContext)}
+          ${this.getSearchIconButton()}
+          ${this.getMoodSelectorIconButton()}
+          ${this.getGenreSelectorIconButton()}
+        </div>
+      </div>
+      <div class="flex flex-col">
+        ${tracksHtml}
+      </div>
+    </div>`
   }
 
   private buildPlaylistItem(item: any, playlistId: any, tracks: any, refreshOpenFolder: boolean = false) {
@@ -195,35 +233,9 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
       </div>`
   }
 
-  private buildPlaylistSidebar(likedFolder, playlistFolders, playerContext) {
-    return `<div class="divide-y dark:divide-gray-100 dark:divide-opacity-25">
-      <div class="flex flex-col w-full pb-2">
-        <div class="flex justify-between items-center space-x-2 mt-2">
-          <div class="text-xs font-semibold">Playlists</div>
-          <div class="flex items-center space-x-2">
-            ${this.getTrackControlButton(playerContext)}
-            ${this.getSearchIconButton()}
-            ${this.getSortButton()}
-          </div>
-        </div>
-        ${likedFolder}
-      </div>
-      <div class="flex flex-col pt-2">
-        ${playlistFolders}
-      </div>
-    </div>`
-  }
-
-  private buildRecommendationSidebar(label: string, tracksHtml: string) {
-    return `<div class="flex flex-col w-full space-x-2">
-      <div class="text-xs font-semibold p-2">${label}</div>
-      ${tracksHtml}
-    </div>`;
-  }
-
   private buildRecommendationTracks(recommendationInfo: any) {
     return [
-      '<div class="py-2">',
+      '<div>',
       ...recommendationInfo.tracks.map((item: any) => this.buildRecommendationTrackItem(item)),
       '</div>'
     ].join('\n');
@@ -251,8 +263,11 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
   }
 
   private buildRecommendationTrackItem(track: PlaylistItem) {
+    const playlistId = RECOMMENDATION_PLAYLIST_ID;
+    const trackPlaylistId = `${track.id}_${playlistId}`;
     return `<div class="w-full flex justify-between items-center">
-      <button onclick="onCmdClick('playRecommendations', { trackId: '${track.id}' })"
+      <button onclick="onCmdClick('playRecommendations', { playlistId: '${playlistId}', trackId: '${track.id}' })"
+        data-track-id="${trackPlaylistId}"
         class="w-full truncate pl-2 p-1 focus:outline-none">
         <div class="flex items-center space-x-2">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
@@ -264,7 +279,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
         </div>
         <p class="text-left text-xs text-gray-500 font-medium">${track['description']}</p>
       </button>
-      ${this.getDotsVerticalMenuButton(track)}
+      ${this.getDotsVerticalMenuButton(track, playlistId)}
     </div>`
   }
 
@@ -343,6 +358,24 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
     </button>`
   }
 
+  private getMoodSelectorIconButton() {
+    return `<button type="button" onclick="onCmdClick('songMoodSelector')"
+      class="relative font-medium focus:outline-none">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+      </svg>
+    </button>`
+  }
+
+  private getGenreSelectorIconButton() {
+    return `<button type="button" onclick="onCmdClick('songGenreSelector')"
+      class="relative font-medium focus:outline-none">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+      </svg>
+    </button>`
+  }
+
   private getTrackControlButton(playerContext: PlayerContext) {
     return `<div class="relative inline-block text-left">
       <div>
@@ -370,13 +403,11 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
         aria-orientation="vertical"
         aria-labelledby="track-control-button"
         tabindex="-1">
-        <div
-          class="text-sm p-1 space-y-2 divide-y focus:outline-none" role="none">
-          <!-- show the player if we have it, otherwise, show the player select menu item -->
+        <div class="text-sm p-1 space-y-2 divide-y focus:outline-none" role="none">
           <div class="pl-1 pr-2 py-2 space-y-2" role="none">
             ${this.getDeviceItemInfoHtml(playerContext)}
           </div>
-          <div class="pl-1 pr-2 py-2 space-y-2" role="none">
+          <div class="flex flex-col pl-1 pr-2 py-2 space-y-2" role="none">
             ${this.getPlayingTrackItemHtml(playerContext)}
             ${this.getPlayControlButtonsItemHtml(playerContext)}
           </div>
@@ -386,24 +417,31 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
   }
 
   private getDeviceItemInfoHtml(playerContext: PlayerContext) {
-    let infoText = 'Connect to a Spotify device.'
-    if (playerContext?.device?.name) {
-      infoText = `Listening on your ${playerContext.device.name}`
+    const ctx: PlayerContext = playerContext || new PlayerContext();
+    let selectedDeviceText = 'Connect to a Spotify device';
+    let deviceInfoText = 'Launch the web or desktop player';
+    if (ctx.device?.name) {
+      selectedDeviceText = `Listening on your ${playerContext.device.name}`
+      deviceInfoText = ctx.device.is_active ? `Active at ${ctx.device.volume_percent}% volume` : `Inactive at ${ctx.device.volume_percent}% volume`;
     }
 
-    return `<p class="text-xs text-gray-500 font-medium">${infoText}</p>
+    return `<p class="text-xs text-gray-500 font-medium">${selectedDeviceText}</p>
       <a href class="rounded py-2 text-xs focus:outline-none"
         onclick="onCmdClick('deviceSelector')">
-        Launch the web or desktop player.
+        ${deviceInfoText}
       </a>`
   }
 
   private getPlayingTrackItemHtml(playerContext: PlayerContext) {
     if (playerContext?.item?.name) {
-      return `<p class="text-sm text-blue-500">${playerContext.item.name}</p>
-      <p class="text-xs text-gray-500 font-medium">${playerContext.item.artist}</p>`
+      return `<div class="flex flex-col py-2 space-y-1">
+        <p class="text-sm text-blue-500">${playerContext.item.name}</p>
+        <p class="text-xs text-gray-500 font-medium">${playerContext.item.artist}</p>
+      </div>`
     }
-    return `<p class="text-xs text-gray-500 font-medium">Click play.</p>`
+    return `<div class="flex flex-col py-2">
+      <p class="text-xs text-gray-500 font-medium">Select a track to play</p>
+    </div>`
   }
 
   private getPlayControlButtonsItemHtml(playerContext: PlayerContext) {
@@ -448,7 +486,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
 
   private getPlayPauseButton(playerContext: PlayerContext) {
     if (!playerContext || !playerContext.is_playing) {
-      return this.getPlayButton(playerContext)
+      return this.getPlayButton();
     }
     return this.getPauseButton();
   }
@@ -462,12 +500,8 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
     </button>`
   }
 
-  private getPlayButton(playerContext: PlayerContext) {
-    let cmd = `onCmdClick('play')`
-    if (playerContext?.item?.id) {
-      cmd = `onCmdClick('playTrack', { trackId: '${playerContext.item.id}' })`
-    }
-    return `<button type="button" onclick="${cmd}" title="Play"
+  private getPlayButton() {
+    return `<button type="button" onclick="onCmdClick('play')" title="Play"
       class="relative font-medium focus:outline-none">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
@@ -497,15 +531,76 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
   private getRepeatButton(playerContext: PlayerContext) {
     if (!playerContext || playerContext.repeat_state !== "track") {
       // show the repeat once button
-      return `<button type="button" onclick="onCmdClick('repeatTrack', { trackId: '${playerContext.item.id}' })" title="Repeat track"
+      return `<button type="button" onclick="onCmdClick('repeatOn')" title="Repeat track"
         class="relative font-medium focus:outline-none">
-        Repeat
+        <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+          viewBox="0 0 384.967 384.967" class="h-6 w-6 text-gray-400" xml:space="preserve">
+          <g>
+            <g id="Group_Arrows">
+              <path fill="currentColor" d="M72.18,192.479c6.641,0,12.03-5.39,12.03-12.03V84.206h199.595l-39.159,39.628c-4.728,4.752-4.728,12.439,0,17.191
+                c4.728,4.74,12.391,4.74,17.119,0l59.43-60.139c4.728-4.752,4.728-12.439,0-17.191l0,0l-59.43-60.139
+                c-4.728-4.74-12.391-4.74-17.119,0s-4.728,12.439,0,17.179l38.942,39.411H72.18c-6.641,0-12.03,5.39-12.03,12.03v108.273
+                C60.15,187.089,65.54,192.479,72.18,192.479z"/>
+              <path fill="currentColor" d="M312.786,192.395c-6.641,0-12.03,5.39-12.03,12.03v96.615H100.728l39.508-40.061c4.728-4.752,4.728-12.463,0-17.215
+                c-4.728-4.752-12.391-4.752-17.119,0L64,303.723c-5.041,4.764-5.077,12.969,0,17.733l59.129,59.947
+                c4.728,4.752,12.391,4.752,17.119,0s4.728-12.463,0-17.215l-38.533-39.074h211.072c6.641,0,12.03-5.39,12.03-12.03V204.437
+                C324.817,197.784,319.427,192.395,312.786,192.395z"/>
+            </g>
+            <g>
+            </g>
+            <g>
+            </g>
+            <g>
+            </g>
+            <g>
+            </g>
+            <g>
+            </g>
+            <g>
+            </g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+        </svg>
       </button>`
     }
     // show the repeat disable button
     return `<button type="button" onclick="onCmdClick('repeatOff')" title="Disable repeat"
       class="relative font-medium focus:outline-none">
-      Repeating
+      <svg class="h-6 w-6 text-gray-400" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <g>
+          <path fill="none" d="M0 0h24v24H0z"/>
+          <path fill="currentColor" d="M8 20v1.932a.5.5 0 0 1-.82.385l-4.12-3.433A.5.5 0 0 1 3.382 18H18a2 2 0 0 0 2-2V8h2v8a4 4 0 0 1-4 4H8zm8-16V2.068a.5.5 0 0 1 .82-.385l4.12 3.433a.5.5 0 0 1-.321.884H6a2 2 0 0 0-2 2v8H2V8a4 4 0 0 1 4-4h10zm-5 4h2v8h-2v-6H9V9l2-1z"/>
+        </g>
+      </svg>
     </button>`
   }
 

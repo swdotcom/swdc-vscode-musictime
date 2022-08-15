@@ -22,6 +22,7 @@ import {
   mute,
   unmute,
   getRunningTrack,
+  PlayerContext,
 } from "cody-music";
 import { window, commands } from "vscode";
 import { MusicCommandManager } from "./MusicCommandManager";
@@ -108,10 +109,8 @@ export class MusicControlManager {
       // initiate the device selection prompt
       await playInitialization(controlMgr.playSong);
     } else {
-      let playerContext = await getPlayerContext();
-      if (!playerContext || !playerContext.is_playing) {
-        await playInitialization(controlMgr.playSong);
-      } else {
+      let playerContext: PlayerContext = await getPlayerContext();
+      if (!playerContext.is_playing) {
         if (controlMgr.useSpotifyDesktop()) {
           result = await play(PlayerName.SpotifyDesktop);
         } else {
@@ -119,11 +118,14 @@ export class MusicControlManager {
         }
 
         if (result && (result.status < 300 || result === "ok")) {
+          playerContext = await getPlayerContext();
           MusicCommandManager.syncControls(playerContext.item, true, TrackStatus.Playing);
         }
       }
 
-      commands.executeCommand("musictime.refreshMusicTimeView");
+      setTimeout(() => {
+        commands.executeCommand("musictime.refreshMusicTimeView");
+      }, 500);
     }
   }
 

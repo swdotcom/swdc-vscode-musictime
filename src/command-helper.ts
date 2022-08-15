@@ -172,20 +172,27 @@ export function createCommands(
 
   // REPEAT OFF CMD
   cmds.push(
-    commands.registerCommand("musictime.repeatOn", () => {
-      controller.setRepeatOnOff(true);
+    commands.registerCommand("musictime.repeatOn", async() => {
+      const trackItem: PlaylistItem = getSelectedTrackItem();
+      if (trackItem) {
+        trackItem['repeat'] = true
+        updateSelectedTrackItem(trackItem, TrackStatus.Playing);
+      }
+      await controller.setRepeatOnOff(true);
+      commands.executeCommand("musictime.refreshMusicTimeView");
     })
   );
 
   cmds.push(
-    commands.registerCommand("musictime.repeatTrack", async (payload) => {
-      const playlistId = !payload.playlistId ? getSelectedPlaylistId() : payload.playlistId;
-      const trackItem: PlaylistItem = await getTrackByPlaylistIdAndTrackId(playlistId, payload.trackId);
+    commands.registerCommand("musictime.repeatTrack", async () => {
+      const trackItem: PlaylistItem = getSelectedTrackItem();
       if (trackItem) {
         trackItem['repeat'] = true
-        updateSelectedPlaylistId(trackItem["playlist_id"]);
         updateSelectedTrackItem(trackItem, TrackStatus.Playing);
         playSelectedItem(trackItem);
+      } else {
+        await controller.setRepeatOnOff(true);
+        commands.executeCommand("musictime.refreshMusicTimeView");
       }
     })
   );

@@ -237,6 +237,8 @@ export async function getTrackByPlaylistIdAndTrackId(playlist_id, track_id) {
     tracks.push(...Object.keys(playlistTracks).map((key) => {
       return playlistTracks[key]
     }))
+  } else if (playlist_id === RECOMMENDATION_PLAYLIST_ID) {
+    tracks = recommendedTracks;
   } else if (playlist_id === SPOTIFY_LIKED_SONGS_PLAYLIST_ID) {
     tracks = await getCachedLikedSongsTracks();
   } else {
@@ -607,6 +609,8 @@ export function populateRecommendationTracks(label: string, tracks: PlaylistItem
     });
   }
 
+  selectedPlaylistId = RECOMMENDATION_PLAYLIST_ID;
+
   recommendationInfo = {
     label,
     tracks,
@@ -615,7 +619,7 @@ export function populateRecommendationTracks(label: string, tracks: PlaylistItem
   // refresh the webview
   commands.executeCommand(
     "musictime.refreshMusicTimeView",
-    { tabView: "recommendations" }
+    { tabView: "recommendations", playlistId: RECOMMENDATION_PLAYLIST_ID }
   );
 }
 

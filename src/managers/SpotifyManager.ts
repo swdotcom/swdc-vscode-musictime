@@ -10,6 +10,9 @@ import { getCachedSpotifyIntegrations, getUser } from "./UserStatusManager";
 let spotifyUser: SpotifyUser = null;
 let spotifyClientId: string = "";
 let spotifyClientSecret: string = "";
+let spotifyAccessToken: string = "";
+let spotifyRefreshToken: string = ""
+
 
 export async function getConnectedSpotifyUser() {
   if (!spotifyUser || !spotifyUser.id) {
@@ -41,7 +44,23 @@ export async function updateSpotifyClientInfo() {
     // get the clientId and clientSecret
     spotifyClientId = resp.data.clientId;
     spotifyClientSecret = resp.data.clientSecret;
+
+    // TODO: use the access token and expires at value
+    spotifyAccessToken = resp.data.access_token;
+    spotifyRefreshToken = resp.data.refresh_token;
+    if (resp.data.expires_at) {
+      // start the timer
+      refetchSpotifyAccessTokenTimer(resp.data.expires_at);
+    }
   }
+}
+
+function refetchSpotifyAccessTokenTimer(expires_at: number) {
+  // get the milliseconds until the expiration time minus a 5 second buffer
+  const timeoutMillis = (new Date(expires_at * 1000)).getTime() - (new Date()).getTime() - (5000);
+  setTimeout(() => {
+    updateSpotifyClientInfo();
+  }, timeoutMillis);
 }
 
 export async function populateSpotifyUser(hardRefresh = false) {
