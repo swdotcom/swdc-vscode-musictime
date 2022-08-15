@@ -152,8 +152,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
       ).join('\n')
       sidebarContent = this.buildPlaylistSidebar(likedFolder, playlistFolders, data.playerContext);
     } else if (selectedTabView === 'recommendations') {
-      const tracksHtml: string = this.buildRecommendationTracks(data.recommendationInfo);
-      sidebarContent = this.buildRecommendationSidebar(data.recommendationInfo.label, tracksHtml, data.playerContext);
+      sidebarContent = this.buildRecommendationSidebar(data.recommendationInfo, data.playerContext);
     } else if (selectedTabView === 'metrics') {
       sidebarContent = '<p class="flex items-center justify-center p-4">Music Time metrics coming soon.</p>'
     }
@@ -182,21 +181,25 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
     </div>`
   }
 
-  private buildRecommendationSidebar(label: string, tracksHtml: string, playerContext: PlayerContext) {
-    return `<div class="flex flex-col w-full space-y-2">
-      <div class="flex justify-between items-center space-x-2 py-3">
-        <div class="text-xs font-semibold">${label}</div>
-        <div class="flex items-center space-x-2">
-          ${this.getTrackControlButton(playerContext)}
-          ${this.getSearchIconButton()}
-          ${this.getMoodSelectorIconButton()}
-          ${this.getGenreSelectorIconButton()}
+  private buildRecommendationSidebar(recommendationInfo: any, playerContext: PlayerContext) {
+    if (recommendationInfo?.tracks?.length) {
+      return `<div class="flex flex-col w-full space-y-2">
+        <div class="flex justify-between items-center space-x-2 py-3">
+          <div class="text-xs font-semibold">${recommendationInfo.label}</div>
+          <div class="flex items-center space-x-2">
+            ${this.getTrackControlButton(playerContext)}
+            ${this.getSearchIconButton()}
+            ${this.getMoodSelectorIconButton()}
+            ${this.getGenreSelectorIconButton()}
+          </div>
         </div>
-      </div>
-      <div class="flex flex-col">
-        ${tracksHtml}
-      </div>
-    </div>`
+        <div class="flex flex-col">
+          ${this.buildRecommendationTracks(recommendationInfo)}
+        </div>
+      </div>`
+    } else {
+      return `<div class="flex flex-col w-full space-y-2"></div>`
+    }
   }
 
   private buildPlaylistItem(item: any, playlistId: any, tracks: any, refreshOpenFolder: boolean = false) {
@@ -613,7 +616,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
     let globalMusicMetrics = [];
     let audioFeatures = [];
     let averageMusicMetrics = undefined;
-    let recommendationInfo = [];
+    let recommendationInfo = {tracks: [], label: ''};
     let musicScatterData = undefined;
     let likedPlaylistItem = getSpotifyLikedPlaylist();
     let likedTracks = [];
