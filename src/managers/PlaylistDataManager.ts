@@ -77,10 +77,6 @@ export function addTrackToLikedPlaylist(playlistItem: PlaylistItem) {
   spotifyLikedTracks.unshift(playlistItem);
 }
 
-export function updateSpotifyPlaylistTracks(playlist_id, songs) {
-  playlistTracks[playlist_id] = songs;
-}
-
 export function clearSelectedTrackInfo() {
   selectedPlaylistId = undefined;
   selectedTrackItem = undefined;
@@ -138,10 +134,12 @@ export function updateLikedStatusInPlaylist(playlist_id, track_id, liked_state) 
     item["liked"] = liked_state;
   }
 
-  // it might be in the recommendations list
-  item = recommendationInfo.tracks?.find((n) => n.id === track_id);
-  if (item) {
-    item["liked"] = liked_state;
+  if (recommendationInfo?.tracks) {
+    // it might be in the recommendations list
+    item = recommendationInfo.tracks?.find((n) => n.id === track_id);
+    if (item) {
+      item["liked"] = liked_state;
+    }
   }
 }
 
@@ -883,8 +881,15 @@ export async function isLikedSong(song: any) {
     // fetch the liked tracks
     await populateLikedSongs();
   }
-  const foundSong = !!spotifyLikedTracks?.find((n) => n.id === trackId);
-  return foundSong;
+  return !!spotifyLikedTracks?.find((n) => n.id === trackId);
+}
+
+export async function isLikedTrackId(trackId) {
+  if (!spotifyLikedTracks || spotifyLikedTracks.length === 0) {
+    // fetch the liked tracks
+    await populateLikedSongs();
+  }
+  return !!spotifyLikedTracks?.find((n) => n.id === trackId);
 }
 
 ////////////////////////////////////////////////////////////////

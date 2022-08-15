@@ -109,8 +109,7 @@ export function createCommands(
   // SHARE CMD
   cmds.push(
     commands.registerCommand("musictime.shareTrack", async(payload) => {
-      const playlistId = !payload.playlistId ? getSelectedPlaylistId() : payload.playlistId;
-      const trackItem: PlaylistItem = await getTrackByPlaylistIdAndTrackId(playlistId, payload.trackId);
+      const trackItem: PlaylistItem = await getTrackByPayload(payload);
       SocialShareManager.getInstance().showMenu(trackItem.id, trackItem.name, false);
     })
   );
@@ -134,15 +133,19 @@ export function createCommands(
 
   // LIKE CMD
   cmds.push(
-    commands.registerCommand("musictime.like", (track: any) => {
-      controller.setLiked(track, true);
+    commands.registerCommand("musictime.like", async (payload) => {
+      const trackItem: PlaylistItem = await getTrackByPayload(payload);
+      await controller.setLiked(trackItem, true);
+      commands.executeCommand("musictime.refreshMusicTimeView");
     })
   );
 
   // UNLIKE CMD
   cmds.push(
-    commands.registerCommand("musictime.unlike", (track: any) => {
-      controller.setLiked(track, false);
+    commands.registerCommand("musictime.unlike", async (payload) => {
+      const trackItem: PlaylistItem = await getTrackByPayload(payload);
+      await controller.setLiked(trackItem, false);
+      commands.executeCommand("musictime.refreshMusicTimeView");
     })
   );
 
@@ -468,8 +471,7 @@ export function createCommands(
 
   cmds.push(
     commands.registerCommand("musictime.getTrackRecommendations", async (payload) => {
-      const playlistId = !payload.playlistId ? getSelectedPlaylistId() : payload.playlistId;
-      const trackItem: PlaylistItem = await getTrackByPlaylistIdAndTrackId(playlistId, payload.trackId);
+      const trackItem: PlaylistItem = await getTrackByPayload(payload);
       getTrackRecommendations(trackItem);
     })
   );
@@ -482,8 +484,7 @@ export function createCommands(
 
   cmds.push(
     commands.registerCommand("musictime.showAlbum", async (payload) => {
-      const playlistId = !payload.playlistId ? getSelectedPlaylistId() : payload.playlistId;
-      const trackItem: PlaylistItem = await getTrackByPlaylistIdAndTrackId(playlistId, payload.trackId);
+      const trackItem: PlaylistItem = await getTrackByPayload(payload);
       getAlbumForTrack(trackItem);
     })
   );
@@ -505,9 +506,8 @@ export function createCommands(
   );
 
   cmds.push(
-    commands.registerCommand("musictime.playTrack", async (payload: any) => {
-      const playlistId = !payload.playlistId ? getSelectedPlaylistId() : payload.playlistId;
-      const trackItem: PlaylistItem = await getTrackByPlaylistIdAndTrackId(playlistId, payload.trackId);
+    commands.registerCommand("musictime.playTrack", async (payload) => {
+      const trackItem: PlaylistItem = await getTrackByPayload(payload);
       if (trackItem) {
         updateSelectedPlaylistId(trackItem["playlist_id"]);
         updateSelectedTrackStatus(TrackStatus.Playing);
@@ -579,11 +579,16 @@ export function createCommands(
 
   cmds.push(
     commands.registerCommand("musictime.addToPlaylist", async (payload) => {
-      const playlistId = !payload.playlistId ? getSelectedPlaylistId() : payload.playlistId;
-      const trackItem: PlaylistItem = await getTrackByPlaylistIdAndTrackId(playlistId, payload.trackId);
+      const trackItem: PlaylistItem = await getTrackByPayload(payload);
       controller.addToPlaylistMenu(trackItem);
     })
   );
 
   return Disposable.from(...cmds);
+}
+
+async function getTrackByPayload(payload: any = {}) {
+  const playlistId = !payload.playlistId ? getSelectedPlaylistId() : payload.playlistId;
+  const trackId = !payload.trackId ? getSelectedTrackItem()?.id : payload.trackId;
+  return await getTrackByPlaylistIdAndTrackId(playlistId, trackId);
 }

@@ -331,25 +331,92 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
             <p class="text-xs text-gray-500 font-medium">${track['description']}</p>
           </div>
           <div class="pl-1 pr-2" role="none">
-            <a href class="rounded block py-2 text-sm focus:outline-none"
-              onclick="onCmdClick('showAlbum', { trackId: '${track.id}', playlistId: '${playlistId}' })"
-              role="menuitem" tabindex="-1" id="menu-item-1">Show album</a>
-            <a href class="rounded block py-2 text-sm focus:outline-none"
-              onclick="onCmdClick('getTrackRecommendations', { trackId: '${track.id}', playlistId: '${playlistId}' })"
-              role="menuitem" tabindex="-1" id="menu-item-2">Get recommendations</a>
-            <a href class="rounded block py-2 text-sm focus:outline-none"
-              onclick="onCmdClick('repeatTrack', { trackId: '${track.id}', playlistId: '${playlistId}' })"
-              role="menuitem" tabindex="-1" id="menu-item-1">Repeat track</a>
-            <a href class="rounded block py-2 text-sm focus:outline-none"
-              onclick="onCmdClick('shareTrack', { trackId: '${track.id}', playlistId: '${playlistId}' })"
-              role="menuitem" tabindex="-1" id="menu-item-2">Share track</a>
-            <a href class="rounded block py-2 text-sm focus:outline-none"
-              onclick="onCmdClick('addToPlaylist', { trackId: '${track.id}', playlistId: '${playlistId}' })"
-              role="menuitem" tabindex="-1" id="menu-item-2">Add to playlist</a>
+            ${this.getLikedActionButton(track, playlistId)}
+            ${this.getAlbumButton(track, playlistId)}
+            ${this.getTrackRecommendationsButton(track, playlistId)}
+            ${this.getShareTrackButton(track, playlistId)}
+            ${this.getPlaylistAddButton(track, playlistId)}
           </div>
         </div>
       </div>
     </div>`
+  }
+
+  private getLikedActionButton(track: PlaylistItem, playlistId) {
+    if (playlistId === SPOTIFY_LIKED_SONGS_PLAYLIST_ID || track['liked'] === true) {
+      return `<a href class="rounded block py-2 text-xs focus:outline-none"
+        onclick="onCmdClick('unlike', { trackId: '${track.id}', playlistId: '${playlistId}' })"
+        role="menuitem" tabindex="-1" id="menu-item-1">
+        <div class="flex items-center space-x-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+          </svg>
+          <p>Remove from your library</p>
+        </div>
+      </a>`
+    }
+    return `<a href class="rounded block py-2 text-xs focus:outline-none"
+      onclick="onCmdClick('like', { trackId: '${track.id}', playlistId: '${playlistId}' })"
+      role="menuitem" tabindex="-1" id="menu-item-1">
+      <div class="flex items-center space-x-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+        </svg>
+        <p>Save to your library</p>
+      </div>
+    </a>`
+  }
+
+  private getShareTrackButton(track: PlaylistItem, playlistId) {
+    return `<a href class="rounded block py-2 text-xs focus:outline-none"
+      onclick="onCmdClick('shareTrack', { trackId: '${track.id}', playlistId: '${playlistId}' })"
+      role="menuitem" tabindex="-1" id="menu-item-2">
+      <div class="flex items-center space-x-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+        </svg>
+        <p>Share track</p>
+      </div>
+    </a>`
+  }
+
+  private getTrackRecommendationsButton(track: PlaylistItem, playlistId) {
+    return `<a href class="rounded block py-2 text-xs focus:outline-none"
+      onclick="onCmdClick('getTrackRecommendations', { trackId: '${track.id}', playlistId: '${playlistId}' })"
+      role="menuitem" tabindex="-1" id="menu-item-2">
+      <div class="flex items-center space-x-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+        </svg>
+        <p>Get recommendations</p>
+      </div>
+    </a>`
+  }
+
+  private getAlbumButton(track: PlaylistItem, playlistId) {
+    return `<a href class="rounded block py-2 text-xs focus:outline-none"
+      onclick="onCmdClick('showAlbum', { trackId: '${track.id}', playlistId: '${playlistId}' })"
+      role="menuitem" tabindex="-1" id="menu-item-1">
+        <div class="flex items-center space-x-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+          </svg>
+          <p>Show album</p>
+        </div>
+      </a>`
+  }
+
+  private getPlaylistAddButton(track: PlaylistItem, playlistId) {
+    return `<a href class="rounded block py-2 text-xs focus:outline-none"
+      onclick="onCmdClick('showAlbum', { trackId: '${track.id}', playlistId: '${playlistId}' })"
+      role="menuitem" tabindex="-1" id="menu-item-1">
+        <div class="flex items-center space-x-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+          </svg>
+          <p>Add to playlist</p>
+        </div>
+      </a>`
   }
 
   private getSearchIconButton() {
