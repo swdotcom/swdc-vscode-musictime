@@ -6,7 +6,6 @@ import { commands, ExtensionContext, window } from "vscode";
 import { onboardPlugin } from "./OnboardManager";
 import { getVersion, getPluginName, logIt } from "./Util";
 import { createCommands } from "./command-helper";
-import { migrateAccessInfo } from "./managers/SpotifyManager";
 import { clearWebsocketClient, initializeWebsockets } from "./websockets";
 import { initializeSpotify } from "./managers/PlaylistDataManager";
 import { displayReadmeIfNotExists } from './DataController';
@@ -26,13 +25,8 @@ export async function activate(ctx: ExtensionContext) {
 export async function intializePlugin(ctx: ExtensionContext) {
   logIt(`Loaded ${getPluginName()} v${getVersion()}`);
 
-  //
   // add the player commands before we show the playlist
-  //
   ctx.subscriptions.push(createCommands(ctx));
-
-  // migrate legacy spotify access token info to integration info
-  await migrateAccessInfo();
 
   // show the readme if it doesn't exist
   displayReadmeIfNotExists();

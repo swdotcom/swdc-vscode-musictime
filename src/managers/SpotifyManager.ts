@@ -111,22 +111,8 @@ export async function updateCodyConfig() {
   codyConfig.enableItunesDesktopSongTracking = isMac();
   codyConfig.enableSpotifyDesktop = isMac();
   codyConfig.spotifyClientId = spotifyClientId;
-  codyConfig.spotifyAccessToken = spotifyIntegration ? spotifyIntegration.access_token : null;
-  codyConfig.spotifyRefreshToken = spotifyIntegration ? spotifyIntegration.refresh_token : null;
+  codyConfig.spotifyAccessToken = spotifyAccessToken;
+  codyConfig.spotifyRefreshToken = spotifyRefreshToken;
   codyConfig.spotifyClientSecret = spotifyClientSecret;
   setConfig(codyConfig);
-}
-
-export async function migrateAccessInfo() {
-  if (await !getSpotifyIntegration()) {
-    const legacyAccessToken = getItem("spotify_access_token");
-    if (legacyAccessToken) {
-      // get the user
-      await getUser();
-    }
-
-    // remove the legacy spotify_access_token to so we don't have to check
-    // if the user needs to migrate any longer
-    setItem("spotify_access_token", null);
-  }
 }
