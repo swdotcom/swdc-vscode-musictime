@@ -111,8 +111,8 @@ export async function updateCodyConfig() {
   codyConfig.enableItunesDesktopSongTracking = isMac();
   codyConfig.enableSpotifyDesktop = isMac();
   codyConfig.spotifyClientId = spotifyClientId;
-  codyConfig.spotifyAccessToken = spotifyAccessToken;
-  codyConfig.spotifyRefreshToken = spotifyRefreshToken;
+  codyConfig.spotifyAccessToken = spotifyIntegration ? spotifyIntegration.access_token : spotifyAccessToken;
+  codyConfig.spotifyRefreshToken = spotifyIntegration ? spotifyIntegration.refresh_token : spotifyRefreshToken;
   codyConfig.spotifyClientSecret = spotifyClientSecret;
   setConfig(codyConfig);
 }
