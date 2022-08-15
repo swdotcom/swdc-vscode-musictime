@@ -10,15 +10,13 @@ import { updateCodyConfig } from './SpotifyManager';
 const queryString = require("query-string");
 
 let currentUser: any | null = null;
-let lastUserFetch: number = 0;
 
 export function getCachedUser() {
   return currentUser;
 }
 
-export async function getUser() {
-  const nowMillis: number = new Date().getTime();
-  if (currentUser && nowMillis - lastUserFetch < 2000) {
+export async function getUser(useCache = false) {
+  if (useCache && currentUser) {
     updateCodyConfig();
     return currentUser;
   }
@@ -26,7 +24,6 @@ export async function getUser() {
   const resp = await appGet('/api/v1/user');
   if (isResponseOk(resp) && resp.data) {
     currentUser = resp.data;
-    lastUserFetch = nowMillis;
     updateCodyConfig();
     return currentUser;
   }
@@ -175,7 +172,7 @@ export async function processNewSpotifyIntegration(showSuccess = true) {
 
 export async function getCachedSlackIntegrations() {
   if (!currentUser) {
-    currentUser = await getUser();
+    currentUser = await getUser(true);
   }
   if (currentUser?.integration_connections?.length) {
     return currentUser?.integration_connections?.filter(
@@ -186,7 +183,7 @@ export async function getCachedSlackIntegrations() {
 
 export async function getCachedSpotifyIntegrations() {
   if (!currentUser) {
-    currentUser = await getUser();
+    currentUser = await getUser(true);
   }
   if (currentUser?.integration_connections?.length) {
     return currentUser?.integration_connections?.filter(

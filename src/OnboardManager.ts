@@ -1,5 +1,5 @@
 import { window, ExtensionContext } from "vscode";
-import { showOfflinePrompt, getOsUsername, getHostname, getAuthCallbackState, getItem, getPluginUuid, setAuthCallbackState, setItem } from "./Util";
+import { getOsUsername, getHostname, getAuthCallbackState, getItem, getPluginUuid, setAuthCallbackState, setItem } from "./Util";
 import { isResponseOk, appPost } from "./HttpClient";
 
 let retry_counter = 0;

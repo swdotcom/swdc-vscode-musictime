@@ -810,7 +810,7 @@ export async function initializeSpotify() {
 
   setTimeout(() => {
     commands.executeCommand("musictime.reloadMusicTimeView");
-  }, 2000)
+  }, 1000)
 }
 
 export async function isTrackRepeating(): Promise<boolean> {

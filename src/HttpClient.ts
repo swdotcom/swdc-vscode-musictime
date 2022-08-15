@@ -46,15 +46,6 @@ export async function appPost(api: string, payload: any) {
   });
 }
 
-export async function softwareGet(api: string, queryParams = {}, override_token = null) {
-  updateOutgoingHeader(override_token);
-
-  return await beApi.get(api, {params: queryParams}).catch((err: any) => {
-    logIt(`Error fetching data for ${api}, message: ${err.message}`);
-    return err;
-  });
-}
-
 export function isResponseOk(resp: any) {
   let status = getResponseStatus(resp);
   if (status && resp && status < 300) {

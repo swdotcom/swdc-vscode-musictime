@@ -1,18 +1,14 @@
 import { CodyConfig, getUserProfile, setConfig } from "cody-music";
 import { window } from "vscode";
 import { app_endpoint, YES_LABEL } from "../Constants";
-import { isResponseOk, softwareGet } from "../HttpClient";
+import { appGet, isResponseOk } from "../HttpClient";
 import SoftwareIntegration from "../model/SoftwareIntegration";
-import { isMac, launchWebUrl, getItem, setItem } from "../Util";
+import { isMac, launchWebUrl } from "../Util";
 import { SpotifyUser } from "cody-music/dist/lib/profile";
-import { getCachedSpotifyIntegrations, getUser } from "./UserStatusManager";
+import { getCachedSpotifyIntegrations } from "./UserStatusManager";
 
 let spotifyUser: SpotifyUser = null;
-let spotifyClientId: string = "";
-let spotifyClientSecret: string = "";
 let spotifyAccessToken: string = "";
-let spotifyRefreshToken: string = ""
-
 
 export async function getConnectedSpotifyUser() {
   if (!spotifyUser || !spotifyUser.id) {
@@ -25,11 +21,6 @@ export function hasSpotifyUser() {
   return !!(spotifyUser && spotifyUser.product);
 }
 
-export async function getSoftwareTop40() {
-  const data = await softwareGet("/music/top40");
-  return isResponseOk(data) ? data.data : null;
-}
-
 export async function isPremiumUser() {
   if (spotifyUser?.id && spotifyUser.product !== "premium") {
     // check 1 more time
@@ -39,15 +30,9 @@ export async function isPremiumUser() {
 }
 
 export async function updateSpotifyClientInfo() {
-  const resp = await softwareGet("/auth/spotify/clientInfo");
+  const resp = await appGet("/api/v1/integration_connection/spotify/access_token");
   if (isResponseOk(resp)) {
-    // get the clientId and clientSecret
-    spotifyClientId = resp.data.clientId;
-    spotifyClientSecret = resp.data.clientSecret;
-
-    // TODO: use the access token and expires at value
     spotifyAccessToken = resp.data.access_token;
-    spotifyRefreshToken = resp.data.refresh_token;
     if (resp.data.expires_at) {
       // start the timer
       refetchSpotifyAccessTokenTimer(resp.data.expires_at);
@@ -102,7 +87,7 @@ export async function updateCodyConfig() {
     spotifyUser = null;
   }
 
-  if (!spotifyClientId) {
+  if (!spotifyAccessToken) {
     await updateSpotifyClientInfo();
   }
 
@@ -110,9 +95,6 @@ export async function updateCodyConfig() {
   codyConfig.enableItunesDesktop = false;
   codyConfig.enableItunesDesktopSongTracking = isMac();
   codyConfig.enableSpotifyDesktop = isMac();
-  codyConfig.spotifyClientId = spotifyClientId;
-  codyConfig.spotifyAccessToken = spotifyIntegration ? spotifyIntegration.access_token : spotifyAccessToken;
-  codyConfig.spotifyRefreshToken = spotifyIntegration ? spotifyIntegration.refresh_token : spotifyRefreshToken;
-  codyConfig.spotifyClientSecret = spotifyClientSecret;
+  codyConfig.spotifyAccessToken = spotifyAccessToken;
   setConfig(codyConfig);
 }
