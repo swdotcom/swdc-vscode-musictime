@@ -1,18 +1,18 @@
 import {
   launchPlayer,
   play,
+  PlayerContext,
   PlayerName,
   PlaylistItem,
   playSpotifyPlaylist,
   playTrackInContext,
-  Track,
   TrackStatus,
   transferSpotifyDevice,
 } from "cody-music";
 import { commands, window } from "vscode";
 import { RECOMMENDATION_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from "../Constants";
 import { MusicCommandUtil } from "../music/MusicCommandUtil";
-import { MusicStateManager } from "../music/MusicStateManager";
+import { MusicControlManager } from '../music/MusicControlManager';
 import { createSpotifyIdFromUri, createUriFromPlaylistId, createUriFromTrackId, isMac } from "../Util";
 import {
   getBestActiveDevice,
@@ -30,6 +30,7 @@ import {
   getRecommendationURIsFromTrackId,
   getSelectedTrackItems,
   updateSelectedTrackItems,
+  getPlayerContext,
 } from "./PlaylistDataManager";
 import { hasSpotifyUser, isPremiumUser, populateSpotifyUser } from "./SpotifyManager";
 
@@ -177,18 +178,28 @@ async function checkDeviceLaunch(playerName: PlayerName, tries: number = 5, call
 
 async function checkPlayingState(deviceId: string, tries = 3) {
   tries--;
-  const track: Track = await MusicStateManager.getInstance().fetchPlayingTrack();
-  if (!track || track.state !== TrackStatus.Playing) {
+  const playerContext: PlayerContext = await getPlayerContext();
+  if (!playerContext || !playerContext.item || playerContext.item !== TrackStatus.Playing) {
     if (tries >= 0) {
       setTimeout(() => {
         checkPlayingState(deviceId, tries);
       }, 2000);
+      return;
     } else {
       // try to play it
       await transferSpotifyDevice(deviceId, true);
       play(getSelectedPlayerName());
     }
   }
+
+  // get the selected track and execute post play commands like 'repeat'
+  setTimeout(() => {
+    const trackItem:PlaylistItem = getSelectedTrackItem();
+    if (!!trackItem['repeat']) {
+      MusicControlManager.getInstance().setRepeatTrackOn();
+    }
+    commands.executeCommand("musictime.refreshMusicTimeView");
+  }, 1000);
 }
 
 async function playSelectedTrackItems() {
@@ -204,7 +215,6 @@ async function playSelectedTrackItems() {
   });
   play(PlayerName.SpotifyWeb, { device_id: device?.id, uris, offset: 0 });
   setTimeout(() => {
-    MusicStateManager.getInstance().fetchTrack();
     checkPlayingState(device.id);
   }, 1000);
 }
@@ -262,7 +272,6 @@ async function playMusicSelection() {
   }
 
   setTimeout(() => {
-    MusicStateManager.getInstance().fetchTrack();
     checkPlayingState(device.id);
   }, 1000);
 }

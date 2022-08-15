@@ -8,7 +8,6 @@ import { showSortPlaylistMenu } from "./selector/SortPlaylistSelectorManager";
 import { showDeviceSelectorMenu } from "./selector/SpotifyDeviceSelectorManager";
 import { MusicCommandUtil } from "./music/MusicCommandUtil";
 import { showSearchInput } from "./selector/SearchSelectorManager";
-import { MusicStateManager } from "./music/MusicStateManager";
 import { switchSpotifyAccount } from "./managers/SpotifyManager";
 import { launchLogin, showLogInMenuOptions, showSignUpMenuOptions } from "./managers/UserStatusManager";
 import { MusicTimeWebviewSidebar } from "./sidebar/MusicTimeWebviewSidebar";
@@ -25,6 +24,7 @@ import {
   getRecommendations,
   getSelectedPlaylistId,
   getSelectedTabView,
+  getSelectedTrackItem,
   getTrackByPlaylistIdAndTrackId,
   getTrackRecommendations,
   populateSpotifyDevices,
@@ -34,6 +34,7 @@ import {
   updateSelectedMetricSelection,
   updateSelectedPlaylistId,
   updateSelectedTabView,
+  updateSelectedTrackItem,
   updateSelectedTrackStatus,
   updateSort,
 } from "./managers/PlaylistDataManager";
@@ -107,8 +108,10 @@ export function createCommands(
 
   // SHARE CMD
   cmds.push(
-    commands.registerCommand("musictime.shareTrack", (node: PlaylistItem) => {
-      SocialShareManager.getInstance().showMenu(node.id, node.name, false);
+    commands.registerCommand("musictime.shareTrack", async(payload) => {
+      const playlistId = !payload.playlistId ? getSelectedPlaylistId() : payload.playlistId;
+      const trackItem: PlaylistItem = await getTrackByPlaylistIdAndTrackId(playlistId, payload.trackId);
+      SocialShareManager.getInstance().showMenu(trackItem.id, trackItem.name, false);
     })
   );
 
@@ -125,10 +128,7 @@ export function createCommands(
     commands.registerCommand("musictime.pause", async () => {
       updateSelectedTrackStatus(TrackStatus.Paused);
       await controller.pauseSong();
-      commands.executeCommand(
-        "musictime.refreshMusicTimeView",
-        { tabView: getSelectedTabView(), playlistId: getSelectedPlaylistId(),  refreshOpenFolder: true }
-      )
+      commands.executeCommand("musictime.refreshMusicTimeView");
     })
   );
 
@@ -178,8 +178,15 @@ export function createCommands(
   );
 
   cmds.push(
-    commands.registerCommand("musictime.repeatTrack", () => {
-      controller.setRepeatTrackOn();
+    commands.registerCommand("musictime.repeatTrack", async (payload) => {
+      const playlistId = !payload.playlistId ? getSelectedPlaylistId() : payload.playlistId;
+      const trackItem: PlaylistItem = await getTrackByPlaylistIdAndTrackId(playlistId, payload.trackId);
+      if (trackItem) {
+        trackItem['repeat'] = true
+        updateSelectedPlaylistId(trackItem["playlist_id"]);
+        updateSelectedTrackItem(trackItem, TrackStatus.Playing);
+        playSelectedItem(trackItem);
+      }
     })
   );
 
@@ -191,8 +198,14 @@ export function createCommands(
 
   // REPEAT ON OFF CMD
   cmds.push(
-    commands.registerCommand("musictime.repeatOff", () => {
-      controller.setRepeatOnOff(false);
+    commands.registerCommand("musictime.repeatOff", async () => {
+      const trackItem: PlaylistItem = getSelectedTrackItem();
+      if (trackItem) {
+        trackItem['repeat'] = false
+        updateSelectedTrackItem(trackItem, TrackStatus.Playing);
+      }
+      await controller.setRepeatOnOff(false);
+      commands.executeCommand("musictime.refreshMusicTimeView");
     })
   );
 
@@ -223,7 +236,7 @@ export function createCommands(
       if (!device) {
         await populateSpotifyDevices(false);
       }
-      MusicStateManager.getInstance().fetchTrack();
+      commands.executeCommand("musictime.refreshMusicTimeView");
     })
   );
 
@@ -286,6 +299,12 @@ export function createCommands(
   cmds.push(
     commands.registerCommand("musictime.launchSpotify", () => {
       launchTrackPlayer(PlayerName.SpotifyWeb);
+    })
+  );
+
+  cmds.push(
+    commands.registerCommand("musictime.launchSpotifyDesktop", () => {
+      launchTrackPlayer(PlayerName.SpotifyDesktop);
     })
   );
 
@@ -389,14 +408,16 @@ export function createCommands(
   );
 
   cmds.push(
-    commands.registerCommand("musictime.refreshMusicTimeView", async (payload: any) => {
+    commands.registerCommand("musictime.refreshMusicTimeView", async (
+      payload: any = {refreshOpenFolder: true, playlistId: getSelectedPlaylistId(), tabView: getSelectedTabView()}
+    ) => {
       let reload: boolean = false;
-      if (payload?.playlistId) {
+      if (payload.playlistId) {
         if (getSelectedPlaylistId() !== payload.playlistId) {
           await fetchTracksForPlaylist(payload.playlistId)
         }
       }
-      if (payload?.tabView) {
+      if (payload.tabView) {
         if (getSelectedTabView() !== payload.tabView) {
           reload = true;
         }
@@ -440,7 +461,8 @@ export function createCommands(
 
   cmds.push(
     commands.registerCommand("musictime.getTrackRecommendations", async (payload) => {
-      const trackItem: PlaylistItem = await getTrackByPlaylistIdAndTrackId(payload.playlistId, payload.trackId);
+      const playlistId = !payload.playlistId ? getSelectedPlaylistId() : payload.playlistId;
+      const trackItem: PlaylistItem = await getTrackByPlaylistIdAndTrackId(playlistId, payload.trackId);
       getTrackRecommendations(trackItem);
     })
   );
@@ -452,8 +474,10 @@ export function createCommands(
   );
 
   cmds.push(
-    commands.registerCommand("musictime.showAlbum", async (item: PlaylistItem) => {
-      getAlbumForTrack(item);
+    commands.registerCommand("musictime.showAlbum", async (payload) => {
+      const playlistId = !payload.playlistId ? getSelectedPlaylistId() : payload.playlistId;
+      const trackItem: PlaylistItem = await getTrackByPlaylistIdAndTrackId(playlistId, payload.trackId);
+      getAlbumForTrack(trackItem);
     })
   );
 
@@ -475,14 +499,19 @@ export function createCommands(
 
   cmds.push(
     commands.registerCommand("musictime.playTrack", async (payload: any) => {
-      const trackItem: PlaylistItem = await getTrackByPlaylistIdAndTrackId(payload.playlistId, payload.trackId);
-      updateSelectedPlaylistId(trackItem["playlist_id"]);
-      updateSelectedTrackStatus(TrackStatus.Playing);
-      playSelectedItem(trackItem);
-      commands.executeCommand(
-        "musictime.refreshMusicTimeView",
-        { tabView: 'playlists', playlistId: trackItem["playlist_id"],  refreshOpenFolder: true }
-      )
+      const playlistId = !payload.playlistId ? getSelectedPlaylistId() : payload.playlistId;
+      const trackItem: PlaylistItem = await getTrackByPlaylistIdAndTrackId(playlistId, payload.trackId);
+      if (trackItem) {
+        updateSelectedPlaylistId(trackItem["playlist_id"]);
+        updateSelectedTrackStatus(TrackStatus.Playing);
+        playSelectedItem(trackItem);
+        commands.executeCommand(
+          "musictime.refreshMusicTimeView",
+          { tabView: 'playlists', playlistId: trackItem["playlist_id"],  refreshOpenFolder: true }
+        );
+      } else {
+        commands.executeCommand("musictime.play");
+      }
     })
   );
 
@@ -542,8 +571,10 @@ export function createCommands(
   );
 
   cmds.push(
-    commands.registerCommand("musictime.addToPlaylist", async (p: PlaylistItem) => {
-      controller.addToPlaylistMenu(p);
+    commands.registerCommand("musictime.addToPlaylist", async (payload) => {
+      const playlistId = !payload.playlistId ? getSelectedPlaylistId() : payload.playlistId;
+      const trackItem: PlaylistItem = await getTrackByPlaylistIdAndTrackId(playlistId, payload.trackId);
+      controller.addToPlaylistMenu(trackItem);
     })
   );
 

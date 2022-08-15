@@ -31,7 +31,6 @@ import SongMetric from '../model/SongMetric';
 import { MusicCommandManager } from "../music/MusicCommandManager";
 import { MusicCommandUtil } from "../music/MusicCommandUtil";
 import { MusicControlManager } from "../music/MusicControlManager";
-import { MusicStateManager } from "../music/MusicStateManager";
 import { getCodyErrorMessage, isMac, launchWebUrl, getItem, logIt } from "../Util";
 import { getSpotifyIntegration, populateSpotifyUser, updateSpotifyClientInfo } from "./SpotifyManager";
 
@@ -233,13 +232,23 @@ export function getPlaylistById(playlist_id) {
 
 export async function getTrackByPlaylistIdAndTrackId(playlist_id, track_id) {
   let tracks: PlaylistItem[] = [];
-  if (playlist_id === SPOTIFY_LIKED_SONGS_PLAYLIST_ID) {
+  if (!playlist_id) {
+    tracks.push(...await getCachedLikedSongsTracks())
+    tracks.push(...Object.keys(playlistTracks).map((key) => {
+      return playlistTracks[key]
+    }))
+  } else if (playlist_id === SPOTIFY_LIKED_SONGS_PLAYLIST_ID) {
     tracks = await getCachedLikedSongsTracks();
   } else {
     tracks = playlistTracks[playlist_id];
   }
-  let trackItem: PlaylistItem = tracks.find(n => { return n.id === track_id; });
-  return trackItem;
+  if (tracks?.length) {
+    const trackItem: PlaylistItem = tracks.find(n => { return n.id === track_id; });
+    if (trackItem) {
+      return trackItem;
+    }
+  }
+  return null;
 }
 
 export function isLikedSongPlaylistSelected() {
@@ -666,10 +675,6 @@ export async function populateSpotifyDevices(tryAgain = false) {
   if (diffDevices.length || currentDevices.length !== diffDevices.length) {
     // new devices available or setting to empty
     currentDevices = devices;
-
-    setTimeout(() => {
-      MusicStateManager.getInstance().fetchTrack();
-    }, 4000);
   }
 }
 
@@ -1049,20 +1054,6 @@ export function sortPlaylists(playlists, alphabetically = sortAlphabetically) {
         if (indexA > indexB) return 1;
         return 0; // default return value (no sorting)
       }
-    });
-  }
-}
-
-function sortTracks(tracks) {
-  if (tracks && tracks.length > 0) {
-    tracks.sort((a: Track, b: Track) => {
-      const nameA = a.name.toLowerCase(),
-        nameB = b.name.toLowerCase();
-      if (nameA < nameB)
-        //sort string ascending
-        return -1;
-      if (nameA > nameB) return 1;
-      return 0; //default return value (no sorting)
     });
   }
 }
