@@ -40,9 +40,9 @@ export async function updateSpotifyClientInfo() {
   }
 }
 
-function refetchSpotifyAccessTokenTimer(expires_at: number) {
+function refetchSpotifyAccessTokenTimer(expires_at: string) {
   // get the milliseconds until the expiration time minus a 5 second buffer
-  const timeoutMillis = (new Date(expires_at * 1000)).getTime() - (new Date()).getTime() - (5000);
+  const timeoutMillis = new Date(expires_at).getTime() - new Date().getTime() - 5000;
   setTimeout(() => {
     updateSpotifyClientInfo();
   }, timeoutMillis);
