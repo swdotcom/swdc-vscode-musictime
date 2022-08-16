@@ -16,7 +16,7 @@ import { getLoadingHtml } from '../local/Loading';
 import { MusicCommandManager } from "../music/MusicCommandManager";
 import { appGet, isResponseOk } from '../HttpClient';
 import { getConnectedSpotifyUser, hasSpotifyUser } from '../managers/SpotifyManager';
-import { getSelectedTabView, getSelectedPlaylistId, getCachedSpotifyPlaylists, getCachedSoftwareTop40Playlist, getCachedPlaylistTracks, getUserMusicMetrics, getCachedRecommendationInfo, getSpotifyLikedPlaylist, getCachedLikedSongsTracks, getExpandedPlaylistId, updateExpandedPlaylistId, sortingAlphabetically, getSelectedTrackItem, getPlayerContext, getCurrentDevices } from '../managers/PlaylistDataManager';
+import { getSelectedTabView, getSelectedPlaylistId, getCachedSpotifyPlaylists, getCachedSoftwareTop40Playlist, getCachedPlaylistTracks, getCachedRecommendationInfo, getSpotifyLikedPlaylist, getCachedLikedSongsTracks, getExpandedPlaylistId, updateExpandedPlaylistId, sortingAlphabetically, getPlayerContext, getCachedAudioMetrics } from '../managers/PlaylistDataManager';
 import { RECOMMENDATION_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from '../Constants';
 import { PlayerContext, PlaylistItem } from 'cody-music';
 
@@ -154,7 +154,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
     } else if (selectedTabView === 'recommendations') {
       sidebarContent = this.buildRecommendationSidebar(data.recommendationInfo, data.playerContext);
     } else if (selectedTabView === 'metrics') {
-      sidebarContent = '<p class="flex items-center justify-center p-4">Music Time metrics coming soon.</p>'
+      sidebarContent = this.getMetricsSidebar(data.audioMetrics);
     }
 
     html = html.replace('__playlist_items_placeholder__', sidebarContent);
@@ -166,11 +166,11 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
     return `<div class="divide-y dark:divide-gray-100 dark:divide-opacity-25">
       <div class="flex flex-col w-full pb-2">
         <div class="flex justify-between items-center space-x-2 py-3">
-          <div class="text-xs font-semibold">Playlists</div>
+          <div class="text-gray-500 text-xs font-semibold">Playlists</div>
           <div class="flex items-center space-x-2">
-            ${this.getTrackControlButton(playerContext)}
             ${this.getSearchIconButton()}
             ${this.getSortButton()}
+            ${this.getTrackControlButton(playerContext)}
           </div>
         </div>
         ${likedFolder}
@@ -185,12 +185,11 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
     if (recommendationInfo?.tracks?.length) {
       return `<div class="flex flex-col w-full space-y-2">
         <div class="flex justify-between items-center space-x-2 py-3">
-          <div class="text-xs font-semibold">${recommendationInfo.label}</div>
+          <div class="text-gray-500 text-xs font-semibold">${recommendationInfo.label}</div>
           <div class="flex items-center space-x-2">
-            ${this.getTrackControlButton(playerContext)}
-            ${this.getSearchIconButton()}
             ${this.getMoodSelectorIconButton()}
             ${this.getGenreSelectorIconButton()}
+            ${this.getTrackControlButton(playerContext)}
           </div>
         </div>
         <div class="flex flex-col">
@@ -252,9 +251,11 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
         data-name="trackItem"
         class="w-full truncate pl-2 p-1 focus:outline-none">
         <div class="flex items-center space-x-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
-          </svg>
+          <div class="w-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
+            </svg>
+          </div>
           <p class="text-xs hover:text-blue-500">
             ${track.name}
           </p>
@@ -273,9 +274,11 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
         data-track-id="${trackPlaylistId}"
         class="w-full truncate pl-2 p-1 focus:outline-none">
         <div class="flex items-center space-x-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
-          </svg>
+          <div class="w-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z" />
+            </svg>
+          </div>
           <p class="text-xs hover:text-blue-500">
             ${track.name}
           </p>
@@ -674,17 +677,48 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
     </button>`
   }
 
+  private getMetricsSidebar(audioMetrics: any) {
+    return `<div class="flex flex-col w-full space-y-2 pt-2 pb-4">
+      <div class="flex justify-between items-center space-x-2 py-1">
+        <div class="text-gray-500 text-xs font-semibold">Your favorite audio</div>
+        <div class="flex items-center space-x-2">
+          ${this.getGenerateFeatureRecommendationsButton()}
+        </div>
+      </div>
+      ${this.getFeatureRanges(audioMetrics)}
+    </div>`
+  }
+
+  private getFeatureRanges(audioMetrics: any) {
+    const featureRanges = Object.keys(audioMetrics).map((key) => {
+      const value = (parseFloat(audioMetrics[key].avg) / audioMetrics[key].max) * 100
+      return `<div class="text-xs px-2">
+        <label for="default-range" class="block mb-2 font-medium">${audioMetrics[key].label}</label>
+        <input data-feature-slider="${audioMetrics[key].label}" id="default-range" disabled=true type="range" value="${value}" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
+      </div>`
+    })
+    return `<div class="flex flex-col space-y-4 px-2 pt-4">
+      ${featureRanges.join('')}
+    </div>`
+  }
+
+  private getGenerateFeatureRecommendationsButton() {
+    return `<button type="button" title="Generate recommendations"
+      onclick="onCmdClick('getAudioFeatureRecommendations')"
+      class="relative text-gray-500 hover:text-blue-500 font-medium focus:outline-none">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+      </svg>
+    </button>`
+  }
+
   private async getViewData(selectedTabView, playlist_id, spotifyUser) {
     let playlistTracks = {};
     let spotifyPlaylists = [];
     let softwareTop40Playlist = undefined;
     let selectedPlaylistId = undefined;
-    let userMusicMetrics = [];
-    let globalMusicMetrics = [];
-    let audioFeatures = [];
-    let averageMusicMetrics = undefined;
+    let audioMetrics: any = {};
     let recommendationInfo = {tracks: [], label: ''};
-    let musicScatterData = undefined;
     let likedPlaylistItem = getSpotifyLikedPlaylist();
     let likedTracks = [];
     let playerContext: PlayerContext = undefined;
@@ -703,12 +737,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
 
         selectedPlaylistId = playlist_id ? playlist_id : getSelectedPlaylistId();
       } else if (selectedTabView === "metrics") {
-        const metricsData = await getUserMusicMetrics();
-        userMusicMetrics = metricsData.userMusicMetrics ?? [];
-        globalMusicMetrics = metricsData.globalMusicMetrics ?? [];
-        averageMusicMetrics = metricsData.averageMusicMetrics ?? [];
-        audioFeatures = metricsData.audioFeatures ?? [];
-        musicScatterData = metricsData.musicScatterData;
+        audioMetrics = await getCachedAudioMetrics();
       } else if (selectedTabView === "recommendations") {
         recommendationInfo = getCachedRecommendationInfo();
       }
@@ -723,11 +752,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
       spotifyPlaylists,
       softwareTop40Playlist,
       selectedPlaylistId,
-      userMusicMetrics,
-      audioFeatures,
-      globalMusicMetrics,
-      musicScatterData,
-      averageMusicMetrics,
+      audioMetrics,
       recommendationInfo,
     };
   }

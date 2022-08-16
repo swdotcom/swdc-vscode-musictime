@@ -1,6 +1,6 @@
 import axios from "axios";
 import { version, window } from 'vscode';
-import { api_endpoint, app_endpoint } from "./Constants";
+import { app_endpoint } from "./Constants";
 
 import {
     getPluginName,
@@ -14,18 +14,12 @@ import {
     getPluginUuid,
 } from "./Util";
 
-// build the axios api base url
-const beApi: any = axios.create({
-    baseURL: `${api_endpoint}`,
-});
-
 const appApi: any = axios.create({
     baseURL: `${app_endpoint}`,
 });
 
 let headers: any | undefined;
 
-beApi.defaults.headers.common = {...beApi.defaults.headers.common, ...headers};
 appApi.defaults.headers.common = {...appApi.defaults.headers.common, ...headers};
 
 export async function appGet(api: string, queryParams: any = {}) {
@@ -58,17 +52,14 @@ function updateOutgoingHeader(override_token = null) {
   addPluginHeaderInfo();
   if (override_token) {
     appApi.defaults.headers.common['Authorization'] = override_token;
-    beApi.defaults.headers.common['Authorization'] = override_token;
   } else {
     const token = getAuthorization();
     if (!override_token && token) {
       appApi.defaults.headers.common['Authorization'] = token;
-      beApi.defaults.headers.common['Authorization'] = token;
     }
   }
   const isLightMode = window.activeColorTheme.kind === 1;
   appApi.defaults.headers.common['X-SWDC-Is-Light-Mode'] = isLightMode;
-  beApi.defaults.headers.common['X-SWDC-Is-Light-Mode'] = isLightMode;
 }
 
 function addPluginHeaderInfo() {
@@ -85,7 +76,6 @@ function addPluginHeaderInfo() {
       'X-SWDC-Plugin-Editor': getEditorName(),
       'X-SWDC-Plugin-Editor-Version': version
     };
-    beApi.defaults.headers.common = {...beApi.defaults.headers.common, ...headers};
     appApi.defaults.headers.common = {...appApi.defaults.headers.common, ...headers};
   }
 }

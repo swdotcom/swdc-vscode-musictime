@@ -6,6 +6,7 @@ import {
   getPlaylistTracks,
   getRecommendationsForTracks,
   getSpotifyAlbumTracks,
+  getSpotifyAudioFeatures,
   getSpotifyDevices,
   getSpotifyLikedSongs,
   getSpotifyPlayerContext,
@@ -24,10 +25,7 @@ import {
 import { commands, window } from "vscode";
 import { RECOMMENDATION_LIMIT, RECOMMENDATION_PLAYLIST_ID, SOFTWARE_TOP_40_PLAYLIST_ID, OK_LABEL, SPOTIFY_LIKED_SONGS_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME, YES_LABEL } from "../Constants";
 import { app_endpoint } from '../Constants';
-import { appGet, isResponseOk } from "../HttpClient";
-import MusicMetrics from "../model/MusicMetrics";
-import MusicScatterData from "../model/MusicScatterData";
-import SongMetric from '../model/SongMetric';
+import AudioFeatures from '../model/AudioFeatures';
 import { MusicCommandManager } from "../music/MusicCommandManager";
 import { MusicCommandUtil } from "../music/MusicCommandUtil";
 import { MusicControlManager } from "../music/MusicControlManager";
@@ -40,11 +38,6 @@ let spotifyPlaylists: PlaylistItem[] = undefined;
 let softwareTop40Playlist: PlaylistItem = undefined;
 let recommendedTracks: PlaylistItem[] = undefined;
 let playlistTracks: any = {};
-let musicScatterData: MusicScatterData = undefined;
-let userMusicMetrics: SongMetric[] = undefined;
-let globalMusicMetrics: SongMetric[] = undefined;
-let audioFeatures: MusicMetrics[] = undefined;
-let averageMusicMetrics: MusicMetrics = undefined;
 let selectedPlaylistId = undefined;
 let expandedPlaylistId: string = '';
 let selectedTrackItem: PlaylistItem = undefined;
@@ -58,6 +51,7 @@ let metricsTypeSelected: string = "you";
 let recommendationMetadata: any = undefined;
 let recommendationInfo: any = undefined;
 let sortAlphabetically: boolean = false;
+let audioFeatures: AudioFeatures = undefined;
 
 ////////////////////////////////////////////////////////////////
 // UPDATE EXPORTS
@@ -122,6 +116,18 @@ export function updateSort(alphabetically: boolean) {
   sortAlphabetically = alphabetically;
   sortPlaylists(spotifyPlaylists, alphabetically);
   commands.executeCommand("musictime.refreshMusicTimeView");
+}
+
+export async function getCachedAudioMetrics() {
+  if (!audioFeatures || Object.keys(audioFeatures).length === 0) {
+    audioFeatures = new AudioFeatures(await getAudioFeatures())
+  }
+  return audioFeatures.getMetrics();
+}
+
+export async function getCachedFeaturesForRecomendations() {
+  await getCachedAudioMetrics();
+  return audioFeatures.getFeaturesForRecommendations();
 }
 
 export function updateCachedRunningTrack(track: Track) {
@@ -393,44 +399,11 @@ export async function fetchTracksForPlaylist(playlist_id) {
 // METRICS EXPORTS
 ////////////////////////////////////////////////////////////////
 
-export async function getUserMusicMetrics() {
-  averageMusicMetrics = new MusicMetrics();
-  musicScatterData = new MusicScatterData();
-  userMusicMetrics = [];
-  globalMusicMetrics = [];
-  audioFeatures = [];
-
-  const metricsRespP = appGet("/plugin/music/metrics");
-  const featuresRespP = appGet("/plugin/music/features");
-
-  const metricsResp = await metricsRespP;
-  if (isResponseOk(metricsResp) && metricsResp.data) {
-    userMusicMetrics = metricsResp.data.user_music_metrics;
-    globalMusicMetrics = metricsResp.data.global_music_metrics;
-  }
-  const featuresResp = await featuresRespP;
-  if (isResponseOk(featuresResp)) {
-    audioFeatures = featuresResp.data;
-    if (audioFeatures?.length) {
-      audioFeatures = audioFeatures.map((n: MusicMetrics, index: number) => {
-        if (n.acousticness === undefined || n.acousticness === null) {
-          return null;
-        }
-        n["keystrokes"] = n.keystrokes ? Math.ceil(n.keystrokes) : 0;
-        n["keystrokes_formatted"] = new Intl.NumberFormat().format(n.keystrokes);
-        n["id"] = n.song_id;
-        n["trackId"] = n.song_id;
-        averageMusicMetrics.increment(n);
-        musicScatterData.addMetric(n);
-        return n;
-      });
-
-      averageMusicMetrics.setAverages(audioFeatures.length);
-      audioFeatures = audioFeatures.filter((n:MusicMetrics) => n);
-    }
-  }
-
-  return { userMusicMetrics, globalMusicMetrics, averageMusicMetrics, musicScatterData, audioFeatures };
+export async function getAudioFeatures() {
+  const ids: string[] = (await getCachedLikedSongsTracks()).map((n) => {
+    return n.id
+  });
+  return await getSpotifyAudioFeatures(ids.slice(0, 100));
 }
 
 export async function populateLikedSongs() {
@@ -485,7 +458,7 @@ export function getInstrumentalRecs() {
 }
 
 export function getQuietMusicRecs() {
-  return getRecommendations("Quiet music", 5, [], { max_loudness: -10, target_loudness: -50 });
+  return getRecommendations("Quiet music", 5, [], { min_loudness: -40, target_loudness: 0});
 }
 
 export function getMixedAudioFeatureRecs(features) {

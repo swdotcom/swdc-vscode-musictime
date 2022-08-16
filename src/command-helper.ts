@@ -18,6 +18,7 @@ import {
   followSpotifyPlaylist,
   getAlbumForTrack,
   getBestActiveDevice,
+  getCachedFeaturesForRecomendations,
   getCachedRecommendationInfo,
   getCurrentRecommendations,
   getMixedAudioFeatureRecs,
@@ -477,7 +478,8 @@ export function createCommands(
   );
 
   cmds.push(
-    commands.registerCommand("musictime.getAudioFeatureRecommendations", async (features: any) => {
+    commands.registerCommand("musictime.getAudioFeatureRecommendations", async () => {
+      const features = await getCachedFeaturesForRecomendations();
       getMixedAudioFeatureRecs(features);
     })
   );
