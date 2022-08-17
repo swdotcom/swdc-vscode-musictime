@@ -351,7 +351,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
         onclick="onCmdClick('unlike', { trackId: '${track.id}', playlistId: '${playlistId}' })"
         role="menuitem" tabindex="-1" id="menu-item-1">
         <div class="flex items-center space-x-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 hover:text-blue-500" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
           </svg>
           <p>Remove from your library</p>
@@ -362,7 +362,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
       onclick="onCmdClick('like', { trackId: '${track.id}', playlistId: '${playlistId}' })"
       role="menuitem" tabindex="-1" id="menu-item-1">
       <div class="flex items-center space-x-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 hover:text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
         </svg>
         <p>Save to your library</p>
@@ -375,7 +375,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
       onclick="onCmdClick('shareTrack', { trackId: '${track.id}', playlistId: '${playlistId}' })"
       role="menuitem" tabindex="-1" id="menu-item-2">
       <div class="flex items-center space-x-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 hover:text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
         </svg>
         <p>Share track</p>
@@ -388,7 +388,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
       onclick="onCmdClick('getTrackRecommendations', { trackId: '${track.id}', playlistId: '${playlistId}' })"
       role="menuitem" tabindex="-1" id="menu-item-2">
       <div class="flex items-center space-x-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 hover:text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
         </svg>
         <p>Get recommendations</p>
@@ -401,7 +401,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
       onclick="onCmdClick('showAlbum', { trackId: '${track.id}', playlistId: '${playlistId}' })"
       role="menuitem" tabindex="-1" id="menu-item-1">
         <div class="flex items-center space-x-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 hover:text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
           </svg>
           <p>Show album</p>
@@ -414,7 +414,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
       onclick="onCmdClick('showAlbum', { trackId: '${track.id}', playlistId: '${playlistId}' })"
       role="menuitem" tabindex="-1" id="menu-item-1">
         <div class="flex items-center space-x-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 hover:text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
           </svg>
           <p>Add to playlist</p>
@@ -424,8 +424,8 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
 
   private getSearchIconButton() {
     return `<button type="button" onclick="onCmdClick('searchTracks')"
-      class="relative font-medium focus:outline-none">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+      class="relative font-medium focus:outline-none hover:text-blue-500">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 hover:text-blue-500" viewBox="0 0 20 20" fill="currentColor">
         <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
       </svg>
     </button>`
@@ -434,7 +434,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
   private getMoodSelectorIconButton() {
     return `<button type="button" onclick="onCmdClick('songMoodSelector')"
       class="relative font-medium focus:outline-none">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 hover:text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
       </svg>
     </button>`
@@ -443,7 +443,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
   private getGenreSelectorIconButton() {
     return `<button type="button" onclick="onCmdClick('songGenreSelector')"
       class="relative font-medium focus:outline-none">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 hover:text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
       </svg>
     </button>`
@@ -455,11 +455,11 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
         <button
           id="track-control-button"
           type="button"
-          class="rounded-full flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+          class="rounded-full flex items-center text-gray-400 hover:text-blue-500 focus:outline-none"
           data-action="click->plugin--music-time--sidebar#toggleTrackControl"
           aria-expanded="true" aria-haspopup="true">
           <span class="sr-only">Track control</span>
-          <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" class="h-5 w-5 text-gray-400" viewBox="0 0 1000 1000" enable-background="new 0 0 1000 1000" xml:space="preserve">
+          <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" class="h-5 w-5 text-gray-400 hover:text-blue-500" viewBox="0 0 1000 1000" enable-background="new 0 0 1000 1000" xml:space="preserve">
             <g><g>
               <path fill="currentColor" d="M10,315.6v368.8c0,64.1,45,90.2,100.6,58.3l322.6-185c55.6-31.9,55.6-83.5,0-115.4l-322.6-185C55,225.5,10,251.6,10,315.6z"/>
               <path fill="currentColor" d="M506.8,324.1v351.8c0,64,35.2,116,78.6,116c43.4,0,78.5-51.9,78.5-116V324.1c0-64-35.2-116-78.5-116C541.9,208.1,506.8,260.1,506.8,324.1z"/>
@@ -513,7 +513,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
       </div>`
     }
     return `<div class="flex flex-col py-2">
-      <p class="text-xs text-gray-500 font-medium">Select a track to play</p>
+      <p class="flex text-xs text-gray-500 font-medium justify-center">Select a track to play</p>
     </div>`
   }
 
@@ -537,7 +537,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
   private getSortAlphaButton() {
     return `<button type="button" onclick="onCmdClick('sortAlphabetically')" title="Sort alphabetically"
       class="relative font-medium focus:outline-none">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 hover:text-blue-500" viewBox="0 0 20 20" fill="currentColor">
         <path d="M3 3a1 1 0 000 2h11a1 1 0 100-2H3zM3 7a1 1 0 000 2h7a1 1 0 100-2H3zM3 11a1 1 0 100 2h4a1 1 0 100-2H3zM15 8a1 1 0 10-2 0v5.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L15 13.586V8z" />
       </svg>
     </button>`
@@ -546,7 +546,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
   private getSortByCreationButton() {
     return `<button type="button" onclick="onCmdClick('sortToOriginal')" title="Sort by date created"
       class="relative font-medium focus:outline-none">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 48 48" fill="none">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 hover:text-blue-500" viewBox="0 0 48 48" fill="none">
         <rect class="h-5 w-5 text-gray-400" fill="white" fill-opacity="0.01"/>
         <path d="M6 5V30.0036H42V5" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M30 37L24 43L18 37" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -567,7 +567,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
   private getPauseButton() {
     return `<button type="button" onclick="onCmdClick('pause')" title="Pause"
       class="relative font-medium focus:outline-none">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400 hover:text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     </button>`
@@ -576,7 +576,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
   private getPlayButton() {
     return `<button type="button" onclick="onCmdClick('play')" title="Play"
       class="relative font-medium focus:outline-none">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400 hover:text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
         <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
@@ -586,7 +586,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
   private getPreviousButton() {
     return `<button type="button" onclick="onCmdClick('previous')" title="Previous"
       class="relative font-medium focus:outline-none">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400 hover:text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.333 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z" />
       </svg>
     </button>`
@@ -595,7 +595,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
   private getNextButton() {
     return `<button type="button" onclick="onCmdClick('next')" title="Next"
       class="relative font-medium focus:outline-none">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400 hover:text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M11.933 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z" />
       </svg>
     </button>`
@@ -606,8 +606,8 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
       // show the repeat once button
       return `<button type="button" onclick="onCmdClick('repeatOn')" title="Repeat track"
         class="relative font-medium focus:outline-none">
-        <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-          viewBox="0 0 384.967 384.967" class="h-6 w-6 text-gray-400" xml:space="preserve">
+        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+          viewBox="0 0 384.967 384.967" class="h-5 w-5 text-gray-400 hover:text-blue-500" xml:space="preserve" stroke="currentColor" stroke-width="2">
           <g>
             <g id="Group_Arrows">
               <path fill="currentColor" d="M72.18,192.479c6.641,0,12.03-5.39,12.03-12.03V84.206h199.595l-39.159,39.628c-4.728,4.752-4.728,12.439,0,17.191
@@ -668,7 +668,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
     // show the repeat disable button
     return `<button type="button" onclick="onCmdClick('repeatOff')" title="Disable repeat"
       class="relative font-medium focus:outline-none">
-      <svg class="h-6 w-6 text-gray-400" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <svg class="h-5 w-5 text-gray-400 hover:text-blue-500" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2">
         <g>
           <path fill="none" d="M0 0h24v24H0z"/>
           <path fill="currentColor" d="M8 20v1.932a.5.5 0 0 1-.82.385l-4.12-3.433A.5.5 0 0 1 3.382 18H18a2 2 0 0 0 2-2V8h2v8a4 4 0 0 1-4 4H8zm8-16V2.068a.5.5 0 0 1 .82-.385l4.12 3.433a.5.5 0 0 1-.321.884H6a2 2 0 0 0-2 2v8H2V8a4 4 0 0 1 4-4h10zm-5 4h2v8h-2v-6H9V9l2-1z"/>
@@ -706,7 +706,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
     return `<button type="button" title="Generate recommendations"
       onclick="onCmdClick('getAudioFeatureRecommendations')"
       class="relative text-gray-500 hover:text-blue-500 font-medium focus:outline-none">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 hover:text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
       </svg>
     </button>`
