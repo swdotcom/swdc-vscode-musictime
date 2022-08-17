@@ -754,7 +754,7 @@ export function getBestActiveDevice() {
 
 export async function populatePlayerContext() {
   spotifyContext = await getSpotifyPlayerContext();
-  MusicCommandManager.syncControls(cachedRunningTrack, false);
+  MusicCommandManager.syncControls();
 }
 
 ////////////////////////////////////////////////////////////////

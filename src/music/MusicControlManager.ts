@@ -23,6 +23,7 @@ import {
   unmute,
   getRunningTrack,
   PlayerContext,
+  getSpotifyPlayerContext,
 } from "cody-music";
 import { window, commands } from "vscode";
 import { MusicCommandManager } from "./MusicCommandManager";
@@ -119,7 +120,7 @@ export class MusicControlManager {
 
         if (result && (result.status < 300 || result === "ok")) {
           playerContext = await getPlayerContext();
-          MusicCommandManager.syncControls(playerContext.item, true, TrackStatus.Playing);
+          MusicCommandManager.syncControls();
         }
       }
 
@@ -138,7 +139,7 @@ export class MusicControlManager {
     }
 
     if (result && (result.status < 300 || result === "ok")) {
-      MusicCommandManager.syncControls(await getRunningTrack(), true, TrackStatus.Paused);
+      MusicCommandManager.syncControls();
     }
   }
 

@@ -1,7 +1,7 @@
 import { commands, Disposable, window, ExtensionContext } from "vscode";
 import { MusicControlManager } from "./music/MusicControlManager";
 import { getMusicTimePluginId, launchMusicAnalytics, launchWebUrl, getPluginUuid } from "./Util";
-import { PlaylistItem, PlayerName, PlayerDevice, playSpotifyDevice, TrackStatus } from "cody-music";
+import { PlaylistItem, PlayerName, PlayerDevice, playSpotifyDevice, TrackStatus, getSpotifyPlayerContext } from "cody-music";
 import { SocialShareManager } from "./social/SocialShareManager";
 import { showGenreSelections, showMoodSelections } from "./selector/RecTypeSelectorManager";
 import { showSortPlaylistMenu } from "./selector/SortPlaylistSelectorManager";
@@ -42,6 +42,7 @@ import {
 import { launchTrackPlayer, playSelectedItem, playSelectedItems } from "./managers/PlaylistControlManager";
 import { app_endpoint, vscode_mt_issues_url } from "./Constants";
 import { displayReadmeIfNotExists } from './DataController';
+import { MusicCommandManager } from './music/MusicCommandManager';
 
 const queryString = require("query-string");
 
@@ -242,12 +243,15 @@ export function createCommands(
   );
 
   cmds.push(
-    commands.registerCommand("musictime.songTitleRefresh", async () => {
-      const device = getBestActiveDevice();
-      if (!device) {
+    commands.registerCommand("musictime.songTitleRefresh", async() => {
+      if (!getBestActiveDevice()) {
         await populateSpotifyDevices(false);
       }
-      commands.executeCommand("musictime.refreshMusicTimeView");
+      commands.executeCommand("workbench.view.extension.music-time-sidebar");
+      setTimeout(async() => {
+        commands.executeCommand("musictime.refreshMusicTimeView");
+        MusicCommandManager.syncControls();
+      }, 500);
     })
   );
 
