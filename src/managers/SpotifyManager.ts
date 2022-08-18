@@ -50,7 +50,7 @@ export async function updateSpotifyClientInfo() {
 }
 
 function refetchSpotifyAccessTokenTimer(expires_at: string) {
-  const millisTimeout = new Date(expires_at).getTime() - new Date().getTime() - 5000;
+  const millisTimeout = new Date(expires_at).getTime() - new Date().getTime();
   if (spotifyAccessTokenTimer) {
     clearTimeout(spotifyAccessTokenTimer);
     spotifyAccessTokenTimer = null;
