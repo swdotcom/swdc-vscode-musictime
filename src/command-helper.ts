@@ -28,6 +28,7 @@ import {
   getSelectedTrackItem,
   getTrackByPlaylistIdAndTrackId,
   getTrackRecommendations,
+  initializeSpotify,
   populateSpotifyDevices,
   refreshRecommendations,
   removeTrackFromPlaylist,
@@ -252,6 +253,12 @@ export function createCommands(
         commands.executeCommand("musictime.refreshMusicTimeView");
         MusicCommandManager.syncControls();
       }, 500);
+    })
+  );
+
+  cmds.push(
+    commands.registerCommand("musictime.refreshSpotifyToken", async () => {
+      await initializeSpotify()
     })
   );
 

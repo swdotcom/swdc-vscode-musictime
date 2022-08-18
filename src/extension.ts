@@ -10,11 +10,13 @@ import { clearWebsocketClient, initializeWebsockets } from "./websockets";
 import { initializeSpotify } from "./managers/PlaylistDataManager";
 import { displayReadmeIfNotExists } from './DataController';
 import { getUser } from './managers/UserStatusManager';
+import { clearSpotifyAccessToken } from './managers/SpotifyManager';
 
 let currentColorKind: number = undefined;
 
 export function deactivate(ctx: ExtensionContext) {
   clearWebsocketClient();
+  clearSpotifyAccessToken();
 }
 
 export async function activate(ctx: ExtensionContext) {

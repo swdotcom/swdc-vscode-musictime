@@ -3,12 +3,20 @@ import { window } from "vscode";
 import { app_endpoint, YES_LABEL } from "../Constants";
 import { appGet, isResponseOk } from "../HttpClient";
 import SoftwareIntegration from "../model/SoftwareIntegration";
-import { isMac, launchWebUrl } from "../Util";
+import { isMac, launchWebUrl, logIt } from "../Util";
 import { SpotifyUser } from "cody-music/dist/lib/profile";
 import { getCachedSpotifyIntegrations } from "./UserStatusManager";
 
 let spotifyUser: SpotifyUser = null;
 let spotifyAccessToken: string = "";
+let spotifyAccessTokenTimer: any = undefined;
+
+export function clearSpotifyAccessToken() {
+  if (spotifyAccessTokenTimer) {
+    clearTimeout(spotifyAccessTokenTimer);
+    spotifyAccessTokenTimer = null;
+  }
+}
 
 export async function getConnectedSpotifyUser() {
   if (!spotifyUser || !spotifyUser.id) {
@@ -41,11 +49,14 @@ export async function updateSpotifyClientInfo() {
 }
 
 function refetchSpotifyAccessTokenTimer(expires_at: string) {
-  // get the milliseconds until the expiration time minus a 5 second buffer
-  const timeoutMillis = new Date(expires_at).getTime() - new Date().getTime() - 5000;
-  setTimeout(() => {
+  const millisTimeout = new Date(expires_at).getTime() - new Date().getTime() - 5000;
+  if (spotifyAccessTokenTimer) {
+    clearTimeout(spotifyAccessTokenTimer);
+    spotifyAccessTokenTimer = null;
+  }
+  spotifyAccessTokenTimer = setTimeout(() => {
     updateSpotifyClientInfo();
-  }, timeoutMillis);
+  }, millisTimeout);
 }
 
 export async function populateSpotifyUser(hardRefresh = false) {
