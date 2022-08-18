@@ -256,12 +256,6 @@ export function createCommands(
     })
   );
 
-  cmds.push(
-    commands.registerCommand("musictime.refreshSpotifyToken", async () => {
-      await initializeSpotify()
-    })
-  );
-
   // SWITCH SPOTIFY
   cmds.push(
     commands.registerCommand("musictime.switchSpotifyAccount", async () => {

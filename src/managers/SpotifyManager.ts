@@ -6,6 +6,7 @@ import SoftwareIntegration from "../model/SoftwareIntegration";
 import { isMac, launchWebUrl, logIt } from "../Util";
 import { SpotifyUser } from "cody-music/dist/lib/profile";
 import { getCachedSpotifyIntegrations } from "./UserStatusManager";
+import { initializeSpotify } from './PlaylistDataManager';
 
 let spotifyUser: SpotifyUser = null;
 let spotifyAccessToken: string = "";
@@ -55,7 +56,8 @@ function refetchSpotifyAccessTokenTimer(expires_at: string) {
     spotifyAccessTokenTimer = null;
   }
   spotifyAccessTokenTimer = setTimeout(() => {
-    updateSpotifyClientInfo();
+    // initialize spotify access token with cody music
+    initializeSpotify(false);
   }, millisTimeout);
 }
 

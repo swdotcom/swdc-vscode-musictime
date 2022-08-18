@@ -767,7 +767,7 @@ export async function requiresSpotifyAccess() {
   return !spotifyIntegration ? true : false;
 }
 
-export async function initializeSpotify() {
+export async function initializeSpotify(reload: boolean = true) {
   // get the client id and secret
   await updateSpotifyClientInfo();
 
@@ -780,7 +780,11 @@ export async function initializeSpotify() {
   MusicCommandManager.initialize();
 
   setTimeout(() => {
-    commands.executeCommand("musictime.reloadMusicTimeView");
+    if (reload) {
+      commands.executeCommand("musictime.reloadMusicTimeView");
+    } else {
+      commands.executeCommand("musictime.refreshMusicTimeView");
+    }
   }, 1000)
 }
 
