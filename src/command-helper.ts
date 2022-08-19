@@ -68,15 +68,17 @@ export function createCommands(
 
   // PLAY NEXT CMD
   cmds.push(
-    commands.registerCommand("musictime.next", () => {
-      controller.nextSong();
+    commands.registerCommand("musictime.next", async() => {
+      await controller.nextSong();
+      commands.executeCommand("musictime.refreshMusicTimeView");
     })
   );
 
   // PLAY PREV CMD
   cmds.push(
-    commands.registerCommand("musictime.previous", () => {
-      controller.previousSong();
+    commands.registerCommand("musictime.previous", async() => {
+      await controller.previousSong();
+      commands.executeCommand("musictime.refreshMusicTimeView");
     })
   );
 

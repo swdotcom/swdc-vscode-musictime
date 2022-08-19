@@ -109,17 +109,11 @@ async function showSlackWorkspaceSelection() {
 
   const integrations = await getSlackWorkspaces();
   integrations.forEach((integration) => {
-    if (integration.team_domain) {
-      menuOptions.items.push({
-        label: integration.team_domain,
-        value: integration.team_domain,
-      });
-    } else if (integration.meta) {
-      menuOptions.items.push({
-        label: JSON.parse(integration.meta).team.name,
-        value: JSON.parse(integration.meta).team.name,
-      });
-    }
+    const teamName = integration.meta.team.name;
+    menuOptions.items.push({
+      label: teamName,
+      value: teamName,
+    });
   });
 
   menuOptions.items.push({
@@ -143,7 +137,7 @@ async function getWorkspaceAccessToken(team_domain) {
   const integration = (await getSlackWorkspaces()).find((n) => {
     if (n.team_domain && n.team_domain === team_domain) {
       return n;
-    } else if (n.meta && JSON.parse(n.meta).team.name === team_domain) {
+    } else if (n.meta.team.name === team_domain) {
       return n;
     }
   });
@@ -157,7 +151,7 @@ async function showSlackWorkspacesToDisconnect() {
   const workspaces = await getSlackWorkspaces();
   const items = workspaces.map((n) => {
     if (n.meta) {
-      return { label: JSON.parse(n.meta).team.name, value: n.auth_id };
+      return { label: n.meta.team.name, value: n.auth_id };
     } else {
       return { label: n.team_domain, value: n.authId };
     }
