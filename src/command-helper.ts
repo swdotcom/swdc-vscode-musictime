@@ -70,7 +70,9 @@ export function createCommands(
   cmds.push(
     commands.registerCommand("musictime.next", async() => {
       await controller.nextSong();
-      commands.executeCommand("musictime.refreshMusicTimeView");
+      setTimeout(() => {
+        commands.executeCommand("musictime.refreshMusicTimeView");
+      }, 500);
     })
   );
 
@@ -78,7 +80,9 @@ export function createCommands(
   cmds.push(
     commands.registerCommand("musictime.previous", async() => {
       await controller.previousSong();
-      commands.executeCommand("musictime.refreshMusicTimeView");
+      setTimeout(() => {
+        commands.executeCommand("musictime.refreshMusicTimeView");
+      }, 500);
     })
   );
 
@@ -132,7 +136,9 @@ export function createCommands(
     commands.registerCommand("musictime.pause", async () => {
       updateSelectedTrackStatus(TrackStatus.Paused);
       await controller.pauseSong();
-      commands.executeCommand("musictime.refreshMusicTimeView");
+      setTimeout(() => {
+        commands.executeCommand("musictime.refreshMusicTimeView");
+      }, 500);
     })
   );
 
@@ -141,7 +147,9 @@ export function createCommands(
     commands.registerCommand("musictime.like", async (payload) => {
       const trackItem: PlaylistItem = await getTrackByPayload(payload);
       await controller.setLiked(trackItem, true);
-      commands.executeCommand("musictime.refreshMusicTimeView");
+      setTimeout(() => {
+        commands.executeCommand("musictime.refreshMusicTimeView");
+      }, 500);
     })
   );
 
@@ -150,7 +158,9 @@ export function createCommands(
     commands.registerCommand("musictime.unlike", async (payload) => {
       const trackItem: PlaylistItem = await getTrackByPayload(payload);
       await controller.setLiked(trackItem, false);
-      commands.executeCommand("musictime.refreshMusicTimeView");
+      setTimeout(() => {
+        commands.executeCommand("musictime.refreshMusicTimeView");
+      }, 500);
     })
   );
 
@@ -187,7 +197,9 @@ export function createCommands(
         updateSelectedTrackItem(trackItem, TrackStatus.Playing);
       }
       await controller.setRepeatOnOff(true);
-      commands.executeCommand("musictime.refreshMusicTimeView");
+      setTimeout(() => {
+        commands.executeCommand("musictime.refreshMusicTimeView");
+      }, 500);
     })
   );
 
@@ -200,7 +212,9 @@ export function createCommands(
         playSelectedItem(trackItem);
       } else {
         await controller.setRepeatOnOff(true);
-        commands.executeCommand("musictime.refreshMusicTimeView");
+        setTimeout(() => {
+          commands.executeCommand("musictime.refreshMusicTimeView");
+        }, 500);
       }
     })
   );
@@ -208,6 +222,9 @@ export function createCommands(
   cmds.push(
     commands.registerCommand("musictime.repeatPlaylist", () => {
       controller.setRepeatPlaylistOn();
+      setTimeout(() => {
+        commands.executeCommand("musictime.refreshMusicTimeView");
+      }, 500);
     })
   );
 
@@ -220,7 +237,9 @@ export function createCommands(
         updateSelectedTrackItem(trackItem, TrackStatus.Playing);
       }
       await controller.setRepeatOnOff(false);
-      commands.executeCommand("musictime.refreshMusicTimeView");
+      setTimeout(() => {
+        commands.executeCommand("musictime.refreshMusicTimeView");
+      }, 500);
     })
   );
 
