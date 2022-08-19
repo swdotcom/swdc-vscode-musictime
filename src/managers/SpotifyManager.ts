@@ -1,16 +1,23 @@
 import { CodyConfig, getUserProfile, setConfig } from "cody-music";
 import { window } from "vscode";
 import { app_endpoint, YES_LABEL } from "../Constants";
-import { isResponseOk, softwareGet } from "../HttpClient";
+import { appGet, isResponseOk } from "../HttpClient";
 import SoftwareIntegration from "../model/SoftwareIntegration";
-import { isMac, launchWebUrl } from "../Util";
+import { isMac, launchWebUrl, logIt } from "../Util";
 import { SpotifyUser } from "cody-music/dist/lib/profile";
-import { getItem, setItem } from "./FileManager";
-import { getCachedSpotifyIntegrations, getCachedUser, getUser } from "./UserStatusManager";
+import { getCachedSpotifyIntegrations } from "./UserStatusManager";
+import { initializeSpotify } from './PlaylistDataManager';
 
 let spotifyUser: SpotifyUser = null;
-let spotifyClientId: string = "";
-let spotifyClientSecret: string = "";
+let spotifyAccessToken: string = "";
+let spotifyAccessTokenTimer: any = undefined;
+
+export function clearSpotifyAccessToken() {
+  if (spotifyAccessTokenTimer) {
+    clearTimeout(spotifyAccessTokenTimer);
+    spotifyAccessTokenTimer = null;
+  }
+}
 
 export async function getConnectedSpotifyUser() {
   if (!spotifyUser || !spotifyUser.id) {
@@ -23,37 +30,41 @@ export function hasSpotifyUser() {
   return !!(spotifyUser && spotifyUser.product);
 }
 
-export function getSpotifyEmail() {
-  const spotifyIntegration = getSpotifyIntegration();
-  return spotifyIntegration?.value;
-}
-
-export async function getSoftwareTop40() {
-  const data = await softwareGet("/music/top40");
-  return isResponseOk(data) ? data.data : null;
-}
-
 export async function isPremiumUser() {
-  if (spotifyUser && spotifyUser.product !== "premium") {
+  if (spotifyUser?.id && spotifyUser.product !== "premium") {
     // check 1 more time
     await populateSpotifyUser(true);
   }
-  return !!(spotifyUser && spotifyUser.product === "premium");
+  return !!(spotifyUser?.id && spotifyUser.product === "premium");
 }
 
 export async function updateSpotifyClientInfo() {
-  const resp = await softwareGet("/auth/spotify/clientInfo");
+  const resp = await appGet("/api/v1/integration_connection/spotify/access_token");
   if (isResponseOk(resp)) {
-    // get the clientId and clientSecret
-    spotifyClientId = resp.data.clientId;
-    spotifyClientSecret = resp.data.clientSecret;
+    spotifyAccessToken = resp.data.access_token;
+    if (resp.data.expires_at) {
+      // start the timer
+      refetchSpotifyAccessTokenTimer(resp.data.expires_at);
+    }
   }
 }
 
+function refetchSpotifyAccessTokenTimer(expires_at: string) {
+  const millisTimeout = new Date(expires_at).getTime() - new Date().getTime();
+  if (spotifyAccessTokenTimer) {
+    clearTimeout(spotifyAccessTokenTimer);
+    spotifyAccessTokenTimer = null;
+  }
+  spotifyAccessTokenTimer = setTimeout(() => {
+    // initialize spotify access token with cody music
+    initializeSpotify(false);
+  }, millisTimeout);
+}
+
 export async function populateSpotifyUser(hardRefresh = false) {
-  let spotifyIntegration = getSpotifyIntegration();
+  let spotifyIntegration = await getSpotifyIntegration();
   if (!spotifyIntegration) {
-    spotifyIntegration = getSpotifyIntegration();
+    spotifyIntegration = await getSpotifyIntegration();
   }
 
   if (spotifyIntegration && (hardRefresh || !spotifyUser || !spotifyUser.id)) {
@@ -69,8 +80,8 @@ export async function switchSpotifyAccount() {
   }
 }
 
-export function getSpotifyIntegration(): SoftwareIntegration {
-  const spotifyIntegrations: SoftwareIntegration[] = getCachedSpotifyIntegrations();
+export async function getSpotifyIntegration(): Promise<SoftwareIntegration> {
+  const spotifyIntegrations: SoftwareIntegration[] = await getCachedSpotifyIntegrations();
   if (spotifyIntegrations?.length) {
     // get the last one in case we have more than one.
     // the last one is the the latest one created.
@@ -89,7 +100,7 @@ export async function updateCodyConfig() {
     spotifyUser = null;
   }
 
-  if (!spotifyClientId) {
+  if (!spotifyAccessToken) {
     await updateSpotifyClientInfo();
   }
 
@@ -97,23 +108,6 @@ export async function updateCodyConfig() {
   codyConfig.enableItunesDesktop = false;
   codyConfig.enableItunesDesktopSongTracking = isMac();
   codyConfig.enableSpotifyDesktop = isMac();
-  codyConfig.spotifyClientId = spotifyClientId;
-  codyConfig.spotifyAccessToken = spotifyIntegration ? spotifyIntegration.access_token : null;
-  codyConfig.spotifyRefreshToken = spotifyIntegration ? spotifyIntegration.refresh_token : null;
-  codyConfig.spotifyClientSecret = spotifyClientSecret;
+  codyConfig.spotifyAccessToken = spotifyAccessToken;
   setConfig(codyConfig);
-}
-
-export async function migrateAccessInfo() {
-  if (!getSpotifyIntegration()) {
-    const legacyAccessToken = getItem("spotify_access_token");
-    if (legacyAccessToken) {
-      // get the user
-      await getUser();
-    }
-
-    // remove the legacy spotify_access_token to so we don't have to check
-    // if the user needs to migrate any longer
-    setItem("spotify_access_token", null);
-  }
 }

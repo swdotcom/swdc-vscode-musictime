@@ -4,19 +4,19 @@
 // Import the module and reference it with the alias vscode in your code below
 import { commands, ExtensionContext, window } from "vscode";
 import { onboardPlugin } from "./OnboardManager";
-import { getVersion, getPluginName } from "./Util";
+import { getVersion, getPluginName, logIt } from "./Util";
 import { createCommands } from "./command-helper";
-import { logIt } from "./managers/FileManager";
-import { migrateAccessInfo } from "./managers/SpotifyManager";
-import { disposeWebsocketTimeouts, initializeWebsockets } from "./websockets";
+import { clearWebsocketClient, initializeWebsockets } from "./websockets";
 import { initializeSpotify } from "./managers/PlaylistDataManager";
 import { displayReadmeIfNotExists } from './DataController';
 import { getUser } from './managers/UserStatusManager';
+import { clearSpotifyAccessToken } from './managers/SpotifyManager';
 
 let currentColorKind: number = undefined;
 
 export function deactivate(ctx: ExtensionContext) {
-  disposeWebsocketTimeouts();
+  clearWebsocketClient();
+  clearSpotifyAccessToken();
 }
 
 export async function activate(ctx: ExtensionContext) {
@@ -27,13 +27,8 @@ export async function activate(ctx: ExtensionContext) {
 export async function intializePlugin(ctx: ExtensionContext) {
   logIt(`Loaded ${getPluginName()} v${getVersion()}`);
 
-  //
   // add the player commands before we show the playlist
-  //
   ctx.subscriptions.push(createCommands(ctx));
-
-  // migrate legacy spotify access token info to integration info
-  await migrateAccessInfo();
 
   // show the readme if it doesn't exist
   displayReadmeIfNotExists();
@@ -70,7 +65,7 @@ function activateColorKindChangeListener() {
     currentColorKind = event.kind;
     // let the sidebar know the new current color kind
     setTimeout(() => {
-      commands.executeCommand("musictime.refreshMusicTimeView");
+      commands.executeCommand("musictime.reloadMusicTimeView");
     }, 250);
   });
 }

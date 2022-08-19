@@ -1,41 +1,25 @@
 import axios from "axios";
 import { version, window } from 'vscode';
-
-import { api_endpoint, app_endpoint } from "./Constants";
-import { getItem, getPluginUuid, logIt } from "./managers/FileManager";
+import { app_endpoint } from "./Constants";
 
 import {
-    getPluginId,
     getPluginName,
+    getMusicTimePluginId,
     getVersion,
     getOs,
     getOffsetSeconds,
     getEditorName,
+    logIt,
+    getItem,
+    getPluginUuid,
 } from "./Util";
-
-// build the axios api base url
-const beApi: any = axios.create({
-    baseURL: `${api_endpoint}`,
-});
 
 const appApi: any = axios.create({
     baseURL: `${app_endpoint}`,
 });
 
-const headers: any = {
-    'X-SWDC-Plugin-Id': getPluginId(),
-    'X-SWDC-Plugin-Name': getPluginName(),
-    'X-SWDC-Plugin-Version': getVersion(),
-    'X-SWDC-Plugin-OS': getOs(),
-    'X-SWDC-Plugin-TZ': Intl.DateTimeFormat().resolvedOptions().timeZone,
-    'X-SWDC-Plugin-Offset': getOffsetSeconds() / 60,
-    'X-SWDC-Plugin-UUID': getPluginUuid(),
-    'X-SWDC-Plugin-Type': 'musictime',
-    'X-SWDC-Plugin-Editor': getEditorName(),
-    'X-SWDC-Plugin-Editor-Version': version
-};
+let headers: any | undefined;
 
-beApi.defaults.headers.common = {...beApi.defaults.headers.common, ...headers};
 appApi.defaults.headers.common = {...appApi.defaults.headers.common, ...headers};
 
 export async function appGet(api: string, queryParams: any = {}) {
@@ -43,24 +27,6 @@ export async function appGet(api: string, queryParams: any = {}) {
 
   return await appApi.get(api, {params: queryParams}).catch((err: any) => {
     logIt(`error for GET ${api}, message: ${err.message}`);
-    return err;
-  });
-}
-
-export async function appPut(api: string, payload: any) {
-  updateOutgoingHeader();
-
-  return await appApi.put(api, payload).catch((err: any) => {
-    logIt(`error for PUT ${api}, message: ${err.message}`);
-    return err;
-  });
-}
-
-export async function appDelete(api: string, payload: any = {}) {
-  updateOutgoingHeader();
-
-  return await appApi.delete(api, payload).catch((err: any) => {
-    logIt(`error for DELETE ${api}, message: ${err.message}`);
     return err;
   });
 }
@@ -74,15 +40,6 @@ export async function appPost(api: string, payload: any) {
   });
 }
 
-export async function softwareGet(api: string, queryParams = {}, override_token = null) {
-  updateOutgoingHeader(override_token);
-
-  return await beApi.get(api, {params: queryParams}).catch((err: any) => {
-    logIt(`error fetching data for ${api}, message: ${err.message}`);
-    return err;
-  });
-}
-
 export function isResponseOk(resp: any) {
   let status = getResponseStatus(resp);
   if (status && resp && status < 300) {
@@ -92,19 +49,35 @@ export function isResponseOk(resp: any) {
 }
 
 function updateOutgoingHeader(override_token = null) {
+  addPluginHeaderInfo();
   if (override_token) {
     appApi.defaults.headers.common['Authorization'] = override_token;
-    beApi.defaults.headers.common['Authorization'] = override_token;
   } else {
     const token = getAuthorization();
     if (!override_token && token) {
       appApi.defaults.headers.common['Authorization'] = token;
-      beApi.defaults.headers.common['Authorization'] = token;
     }
   }
   const isLightMode = window.activeColorTheme.kind === 1;
   appApi.defaults.headers.common['X-SWDC-Is-Light-Mode'] = isLightMode;
-  beApi.defaults.headers.common['X-SWDC-Is-Light-Mode'] = isLightMode;
+}
+
+function addPluginHeaderInfo() {
+  if (!headers) {
+    headers = {
+      'X-SWDC-Plugin-Name': getPluginName(),
+      'X-SWDC-Plugin-Id': getMusicTimePluginId(),
+      'X-SWDC-Plugin-Version': getVersion(),
+      'X-SWDC-Plugin-OS': getOs(),
+      'X-SWDC-Plugin-TZ': Intl.DateTimeFormat().resolvedOptions().timeZone,
+      'X-SWDC-Plugin-Offset': getOffsetSeconds() / 60,
+      'X-SWDC-Plugin-UUID': getPluginUuid(),
+      'X-SWDC-Plugin-Type': 'musictime',
+      'X-SWDC-Plugin-Editor': getEditorName(),
+      'X-SWDC-Plugin-Editor-Version': version
+    };
+    appApi.defaults.headers.common = {...appApi.defaults.headers.common, ...headers};
+  }
 }
 
 function getResponseStatus(resp: any) {

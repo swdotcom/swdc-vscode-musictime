@@ -1,8 +1,8 @@
 import { window, commands } from "vscode";
 import { CodyResponse, CodyResponseType, addTracksToPlaylist, createPlaylist, PlaylistItem, getSpotifyLikedSongs } from "cody-music";
-import { OK_LABEL, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../app/utils/view_constants";
+import { OK_LABEL, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME } from "../Constants";
 import { getCodyErrorMessage } from "../Util";
-import { getSpotifyPlaylists, populateLikedSongs } from "../managers/PlaylistDataManager";
+import { getSelectedPlaylistId, getSelectedTabView, getSpotifyPlaylists, populateLikedSongs } from "../managers/PlaylistDataManager";
 
 export class MusicPlaylistManager {
   private static instance: MusicPlaylistManager;

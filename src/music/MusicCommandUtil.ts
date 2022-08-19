@@ -1,5 +1,5 @@
 import { accessExpired } from "cody-music";
-import { logIt } from '../managers/FileManager';
+import { logIt } from '../Util';
 import { getDeviceSet } from "../managers/PlaylistDataManager";
 
 export class MusicCommandUtil {

@@ -2,11 +2,12 @@
 
 "use strict";
 
+const webpack = require("webpack");
 const path = require("path");
 const CopyPlugin = require("copy-webpack-plugin");
 
 /**@type {import('webpack').Configuration}*/
-const extConfig = {
+const config = {
   target: "node", // vscode extensions run in a Node.js-context 📖 -> https://webpack.js.org/configuration/node/
   output: {
     // the bundle is stored in the 'dist' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
@@ -31,6 +32,7 @@ const extConfig = {
     extensions: [".ts", ".js"],
   },
   plugins: [
+    new webpack.ContextReplacementPlugin(/keyv/),
     new CopyPlugin({
       patterns: [
         { from: "./resources", to: "resources" },
@@ -53,23 +55,5 @@ const extConfig = {
     ],
   },
 };
-const webviewSidebar = {
-  target: "web",
-  entry: "./src/app/index.tsx",
-  output: {
-    path: path.resolve(__dirname, "dist"),
-    filename: "webviewSidebar.js",
-  },
-  devtool: "eval-source-map",
-  resolve: {
-    extensions: [".js", ".ts", ".tsx", "css"],
-  },
-  module: {
-    rules: [
-      { test: /\.tsx?$/, loaders: ["babel-loader", "ts-loader"] },
-      { test: /\.css$/, loaders: ["style-loader", "css-loader"] },
-    ],
-  },
-};
 
-module.exports = [webviewSidebar, extConfig];
+module.exports = config;

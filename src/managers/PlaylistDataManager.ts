@@ -6,6 +6,7 @@ import {
   getPlaylistTracks,
   getRecommendationsForTracks,
   getSpotifyAlbumTracks,
+  getSpotifyAudioFeatures,
   getSpotifyDevices,
   getSpotifyLikedSongs,
   getSpotifyPlayerContext,
@@ -19,22 +20,17 @@ import {
   PlaylistTrackInfo,
   removeTracksFromPlaylist,
   Track,
+  TrackStatus,
 } from "cody-music";
 import { commands, window } from "vscode";
-import { RECOMMENDATION_LIMIT, RECOMMENDATION_PLAYLIST_ID, SOFTWARE_TOP_40_PLAYLIST_ID } from "../app/utils/view_constants";
-import { OK_LABEL, SPOTIFY_LIKED_SONGS_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME, YES_LABEL } from "../app/utils/view_constants";
+import { RECOMMENDATION_LIMIT, RECOMMENDATION_PLAYLIST_ID, SOFTWARE_TOP_40_PLAYLIST_ID, OK_LABEL, SPOTIFY_LIKED_SONGS_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_NAME, YES_LABEL } from "../Constants";
 import { app_endpoint } from '../Constants';
-import { appGet, isResponseOk } from "../HttpClient";
-import MusicMetrics from "../model/MusicMetrics";
-import MusicScatterData from "../model/MusicScatterData";
-import SongMetric from '../model/SongMetric';
+import AudioFeatures from '../model/AudioFeatures';
 import { MusicCommandManager } from "../music/MusicCommandManager";
 import { MusicCommandUtil } from "../music/MusicCommandUtil";
 import { MusicControlManager } from "../music/MusicControlManager";
-import { MusicStateManager } from "../music/MusicStateManager";
-import { getCodyErrorMessage, isMac, launchWebUrl } from "../Util";
-import { getItem } from "./FileManager";
-import { getSpotifyIntegration, populateSpotifyUser, updateCodyConfig, updateSpotifyClientInfo } from "./SpotifyManager";
+import { getCodyErrorMessage, isMac, launchWebUrl, getItem, logIt } from "../Util";
+import { getSpotifyIntegration, populateSpotifyUser, updateSpotifyClientInfo } from "./SpotifyManager";
 
 let currentDevices: PlayerDevice[] = [];
 let spotifyLikedTracks: PlaylistItem[] = undefined;
@@ -42,12 +38,8 @@ let spotifyPlaylists: PlaylistItem[] = undefined;
 let softwareTop40Playlist: PlaylistItem = undefined;
 let recommendedTracks: PlaylistItem[] = undefined;
 let playlistTracks: any = {};
-let musicScatterData: MusicScatterData = undefined;
-let userMusicMetrics: SongMetric[] = undefined;
-let globalMusicMetrics: SongMetric[] = undefined;
-let audioFeatures: MusicMetrics[] = undefined;
-let averageMusicMetrics: MusicMetrics = undefined;
 let selectedPlaylistId = undefined;
+let expandedPlaylistId: string = '';
 let selectedTrackItem: PlaylistItem = undefined;
 let selectedTrackItems: PlaylistItem[] = undefined;
 let cachedRunningTrack: Track = undefined;
@@ -59,43 +51,11 @@ let metricsTypeSelected: string = "you";
 let recommendationMetadata: any = undefined;
 let recommendationInfo: any = undefined;
 let sortAlphabetically: boolean = false;
-
-////////////////////////////////////////////////////////////////
-// CLEAR DATA EXPORTS
-////////////////////////////////////////////////////////////////
-
-export function clearAllData() {
-  clearSpotifyLikedTracksCache();
-  clearSpotifyPlaylistsCache();
-  clearSpotifyDevicesCache();
-
-  selectedPlaylistId = undefined;
-  selectedTrackItem = undefined;
-}
-
-export function clearSpotifyLikedTracksCache() {
-  spotifyLikedTracks = undefined;
-}
-
-export function clearSpotifyPlaylistsCache() {
-  spotifyPlaylists = undefined;
-}
-
-export function clearSpotifyDevicesCache() {
-  currentDevices = undefined;
-}
-
-export function clearSpotifyPlayerContext() {
-  spotifyContext = null;
-}
+let audioFeatures: AudioFeatures = undefined;
 
 ////////////////////////////////////////////////////////////////
 // UPDATE EXPORTS
 ////////////////////////////////////////////////////////////////
-
-export function updateSpotifyPlaylists(playlists) {
-  spotifyPlaylists = playlists;
-}
 
 export function updateSpotifyLikedTracks(songs) {
   spotifyLikedTracks = songs;
@@ -111,17 +71,20 @@ export function addTrackToLikedPlaylist(playlistItem: PlaylistItem) {
   spotifyLikedTracks.unshift(playlistItem);
 }
 
-export function updateSpotifyPlaylistTracks(playlist_id, songs) {
-  playlistTracks[playlist_id] = songs;
-}
-
 export function clearSelectedTrackInfo() {
   selectedPlaylistId = undefined;
   selectedTrackItem = undefined;
 }
 
-export function updateSelectedTrackItem(item) {
+export function updateSelectedTrackStatus(status: TrackStatus) {
+  if (selectedTrackItem) {
+    selectedTrackItem.state = status;
+  }
+}
+
+export function updateSelectedTrackItem(item, status: TrackStatus) {
   selectedTrackItem = item;
+  selectedTrackItem.state = status;
   selectedPlaylistId = item["playlist_id"];
 }
 
@@ -131,6 +94,10 @@ export function updateSelectedTrackItems(items: PlaylistItem[]) {
 
 export function updateSelectedPlaylistId(playlist_id) {
   selectedPlaylistId = playlist_id;
+}
+
+export function updateExpandedPlaylistId(playlist_id: string) {
+  expandedPlaylistId = playlist_id;
 }
 
 export function updateSelectedPlayer(player: PlayerName) {
@@ -151,10 +118,20 @@ export function updateSort(alphabetically: boolean) {
   commands.executeCommand("musictime.refreshMusicTimeView");
 }
 
+export async function getCachedAudioMetrics() {
+  if (!audioFeatures || Object.keys(audioFeatures).length === 0) {
+    audioFeatures = new AudioFeatures(await getAudioFeatures())
+  }
+  return audioFeatures.getMetrics();
+}
+
+export async function getCachedFeaturesForRecomendations() {
+  await getCachedAudioMetrics();
+  return audioFeatures.getFeaturesForRecommendations();
+}
+
 export function updateCachedRunningTrack(track: Track) {
   cachedRunningTrack = track;
-  // track has been updated, refresh the webview
-  commands.executeCommand("musictime.refreshMusicTimeView");
 }
 
 export function updateLikedStatusInPlaylist(playlist_id, track_id, liked_state) {
@@ -163,10 +140,12 @@ export function updateLikedStatusInPlaylist(playlist_id, track_id, liked_state) 
     item["liked"] = liked_state;
   }
 
-  // it might be in the recommendations list
-  item = recommendationInfo.tracks?.find((n) => n.id === track_id);
-  if (item) {
-    item["liked"] = liked_state;
+  if (recommendationInfo?.tracks) {
+    // it might be in the recommendations list
+    item = recommendationInfo.tracks?.find((n) => n.id === track_id);
+    if (item) {
+      item["liked"] = liked_state;
+    }
   }
 }
 
@@ -182,7 +161,11 @@ export async function getCachedSpotifyPlaylists() {
 }
 
 export function getCachedPlaylistTracks() {
-  return playlistTracks;
+  return playlistTracks ?? {};
+}
+
+export function sortingAlphabetically() {
+  return sortAlphabetically;
 }
 
 export async function getCachedLikedSongsTracks() {
@@ -219,6 +202,10 @@ export function getSelectedPlaylistId() {
   return selectedPlaylistId;
 }
 
+export function getExpandedPlaylistId() {
+  return expandedPlaylistId;
+}
+
 export function getSelectedPlayerName() {
   return selectedPlayerName;
 }
@@ -245,6 +232,29 @@ export function getPlaylistById(playlist_id) {
     return softwareTop40Playlist;
   }
   return spotifyPlaylists?.find((n) => n.id === playlist_id);
+}
+
+export async function getTrackByPlaylistIdAndTrackId(playlist_id, track_id) {
+  let tracks: PlaylistItem[] = [];
+  if (!playlist_id) {
+    tracks.push(...await getCachedLikedSongsTracks())
+    tracks.push(...Object.keys(playlistTracks).map((key) => {
+      return playlistTracks[key]
+    }))
+  } else if (playlist_id === RECOMMENDATION_PLAYLIST_ID) {
+    tracks = recommendedTracks;
+  } else if (playlist_id === SPOTIFY_LIKED_SONGS_PLAYLIST_ID) {
+    tracks = await getCachedLikedSongsTracks();
+  } else {
+    tracks = playlistTracks[playlist_id];
+  }
+  if (tracks?.length) {
+    const trackItem: PlaylistItem = tracks.find(n => { return n.id === track_id; });
+    if (trackItem) {
+      return trackItem;
+    }
+  }
+  return null;
 }
 
 export function isLikedSongPlaylistSelected() {
@@ -307,10 +317,14 @@ export async function getSpotifyPlaylists(clear = false): Promise<PlaylistItem[]
     return [];
   }
 
-  if (!clear && spotifyPlaylists) {
+  if (!clear && spotifyPlaylists?.length) {
     return spotifyPlaylists;
   }
-  spotifyPlaylists = await getPlaylists(PlayerName.SpotifyWeb, { all: true });
+  try {
+    spotifyPlaylists = await getPlaylists(PlayerName.SpotifyWeb, { all: true });
+  } catch (e) {
+    logIt(`Error fetching playlists. ${e.message}`)
+  }
   spotifyPlaylists = spotifyPlaylists?.map((n, index) => {
     return { ...n, index };
   });
@@ -318,12 +332,12 @@ export async function getSpotifyPlaylists(clear = false): Promise<PlaylistItem[]
 }
 
 // LIKED SONGS
-export function getSpotifyLikedPlaylist() {
+export function getSpotifyLikedPlaylist(): PlaylistItem {
   const item: PlaylistItem = new PlaylistItem();
   item.type = "playlist";
   item.id = SPOTIFY_LIKED_SONGS_PLAYLIST_ID;
   item.tracks = new PlaylistTrackInfo();
-  // set set a number so it shows up
+  // set a number so it shows up
   item.tracks.total = 1;
   item.playerType = PlayerType.WebSpotify;
   item.tag = "spotify-liked-songs";
@@ -361,7 +375,7 @@ export async function fetchTracksForLikedSongs() {
 export async function fetchTracksForPlaylist(playlist_id) {
   updateSelectedPlaylistId(playlist_id);
 
-  if (!playlistTracks[playlist_id]) {
+  if (!playlistTracks[playlist_id] && playlist_id !== SPOTIFY_LIKED_SONGS_PLAYLIST_ID) {
     const results: CodyResponse = await getPlaylistTracks(PlayerName.SpotifyWeb, playlist_id);
     let tracks: PlaylistItem[] = await getPlaylistItemTracksFromCodyResponse(results);
     // add the playlist id to the tracks
@@ -376,57 +390,24 @@ export async function fetchTracksForPlaylist(playlist_id) {
       }
     }
     playlistTracks[playlist_id] = tracks;
+  } else if (playlist_id === SPOTIFY_LIKED_SONGS_PLAYLIST_ID) {
+    await getCachedLikedSongsTracks();
   }
-  // refresh the webview
-  commands.executeCommand("musictime.refreshMusicTimeView");
 }
 
 ////////////////////////////////////////////////////////////////
 // METRICS EXPORTS
 ////////////////////////////////////////////////////////////////
 
-export async function getUserMusicMetrics() {
-  averageMusicMetrics = new MusicMetrics();
-  musicScatterData = new MusicScatterData();
-  userMusicMetrics = [];
-  globalMusicMetrics = [];
-  audioFeatures = [];
-
-  const metricsRespP = appGet("/plugin/music/metrics");
-  const featuresRespP = appGet("/plugin/music/features");
-
-  const metricsResp = await metricsRespP;
-  if (isResponseOk(metricsResp) && metricsResp.data) {
-    userMusicMetrics = metricsResp.data.user_music_metrics;
-    globalMusicMetrics = metricsResp.data.global_music_metrics;
-  }
-  const featuresResp = await featuresRespP;
-  if (isResponseOk(featuresResp)) {
-    audioFeatures = featuresResp.data;
-    if (audioFeatures?.length) {
-      audioFeatures = audioFeatures.map((n: MusicMetrics, index: number) => {
-        if (n.acousticness === undefined || n.acousticness === null) {
-          return null;
-        }
-        n["keystrokes"] = n.keystrokes ? Math.ceil(n.keystrokes) : 0;
-        n["keystrokes_formatted"] = new Intl.NumberFormat().format(n.keystrokes);
-        n["id"] = n.song_id;
-        n["trackId"] = n.song_id;
-        averageMusicMetrics.increment(n);
-        musicScatterData.addMetric(n);
-        return n;
-      });
-
-      averageMusicMetrics.setAverages(audioFeatures.length);
-      audioFeatures = audioFeatures.filter((n:MusicMetrics) => n);
-    }
-  }
-
-  return { userMusicMetrics, globalMusicMetrics, averageMusicMetrics, musicScatterData, audioFeatures };
+export async function getAudioFeatures() {
+  const ids: string[] = (await getCachedLikedSongsTracks()).map((n) => {
+    return n.id
+  });
+  return await getSpotifyAudioFeatures(ids.slice(0, 100));
 }
 
 export async function populateLikedSongs() {
-  const tracks: Track[] = (await getSpotifyLikedSongs()) || [];
+  const tracks: Track[] = (await getSpotifyLikedSongs()) ?? [];
   // add the playlist id to the tracks
   if (tracks?.length) {
     spotifyLikedTracks = tracks.map((t, idx) => {
@@ -477,7 +458,7 @@ export function getInstrumentalRecs() {
 }
 
 export function getQuietMusicRecs() {
-  return getRecommendations("Quiet music", 5, [], { max_loudness: -10, target_loudness: -50 });
+  return getRecommendations("Quiet music", 5, [], { min_loudness: -40, target_loudness: 0});
 }
 
 export function getMixedAudioFeatureRecs(features) {
@@ -540,15 +521,13 @@ export function refreshRecommendations() {
 }
 
 export async function getRecommendations(
-  label: string,
+  label: string = "Familiar",
   seedLimit: number = 5,
   seed_genres: string[] = [],
   features: any = {},
   offset: number = 0,
   seedTracks = []
 ) {
-  // set the selectedTabView to "recommendations"
-  selectedTabView = "recommendations";
 
   // fetching recommendations based on a set of genre requires 0 seed track IDs
   seedLimit = seed_genres.length ? 0 : Math.max(seedLimit, 5);
@@ -601,13 +580,18 @@ export function populateRecommendationTracks(label: string, tracks: PlaylistItem
     });
   }
 
+  selectedPlaylistId = RECOMMENDATION_PLAYLIST_ID;
+
   recommendationInfo = {
     label,
     tracks,
   };
 
   // refresh the webview
-  commands.executeCommand("musictime.refreshMusicTimeView", "recommendations");
+  commands.executeCommand(
+    "musictime.refreshMusicTimeView",
+    { tabView: "recommendations", playlistId: RECOMMENDATION_PLAYLIST_ID }
+  );
 }
 
 export function removeTracksFromRecommendations(trackId) {
@@ -666,10 +650,6 @@ export async function populateSpotifyDevices(tryAgain = false) {
   if (diffDevices.length || currentDevices.length !== diffDevices.length) {
     // new devices available or setting to empty
     currentDevices = devices;
-
-    setTimeout(() => {
-      MusicStateManager.getInstance().fetchTrack();
-    }, 3000);
   }
 }
 
@@ -728,7 +708,7 @@ export function getDeviceSet() {
 export function getDeviceMenuInfo() {
   const { webPlayer, desktop, activeDevice, activeComputerDevice, activeWebPlayerDevice } = getDeviceSet();
 
-  const devices: PlayerDevice[] = getCurrentDevices() || [];
+  const devices: PlayerDevice[] = getCurrentDevices() ?? [];
 
   let primaryText = "";
   let secondaryText = "";
@@ -774,7 +754,7 @@ export function getBestActiveDevice() {
 
 export async function populatePlayerContext() {
   spotifyContext = await getSpotifyPlayerContext();
-  MusicCommandManager.syncControls(cachedRunningTrack, false);
+  MusicCommandManager.syncControls();
 }
 
 ////////////////////////////////////////////////////////////////
@@ -787,7 +767,7 @@ export async function requiresSpotifyAccess() {
   return !spotifyIntegration ? true : false;
 }
 
-export async function initializeSpotify() {
+export async function initializeSpotify(reload: boolean = true) {
   // get the client id and secret
   await updateSpotifyClientInfo();
 
@@ -799,7 +779,13 @@ export async function initializeSpotify() {
   // initialize the status bar music controls
   MusicCommandManager.initialize();
 
-  commands.executeCommand("musictime.refreshMusicTimeView");
+  setTimeout(() => {
+    if (reload) {
+      commands.executeCommand("musictime.reloadMusicTimeView");
+    } else {
+      commands.executeCommand("musictime.refreshMusicTimeView");
+    }
+  }, 1000)
 }
 
 export async function isTrackRepeating(): Promise<boolean> {
@@ -872,8 +858,15 @@ export async function isLikedSong(song: any) {
     // fetch the liked tracks
     await populateLikedSongs();
   }
-  const foundSong = !!spotifyLikedTracks?.find((n) => n.id === trackId);
-  return foundSong;
+  return !!spotifyLikedTracks?.find((n) => n.id === trackId);
+}
+
+export async function isLikedTrackId(trackId) {
+  if (!spotifyLikedTracks || spotifyLikedTracks.length === 0) {
+    // fetch the liked tracks
+    await populateLikedSongs();
+  }
+  return !!spotifyLikedTracks?.find((n) => n.id === trackId);
 }
 
 ////////////////////////////////////////////////////////////////
@@ -1047,20 +1040,6 @@ export function sortPlaylists(playlists, alphabetically = sortAlphabetically) {
         if (indexA > indexB) return 1;
         return 0; // default return value (no sorting)
       }
-    });
-  }
-}
-
-function sortTracks(tracks) {
-  if (tracks && tracks.length > 0) {
-    tracks.sort((a: Track, b: Track) => {
-      const nameA = a.name.toLowerCase(),
-        nameB = b.name.toLowerCase();
-      if (nameA < nameB)
-        //sort string ascending
-        return -1;
-      if (nameA > nameB) return 1;
-      return 0; //default return value (no sorting)
     });
   }
 }

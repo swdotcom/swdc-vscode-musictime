@@ -1,6 +1,6 @@
 
 import { commands, Uri, ViewColumn } from 'vscode';
-import { getItem, getLocalREADMEFile, setItem } from './managers/FileManager';
+import { getItem, getLocalREADMEFile, setItem } from './Util';
 
 export function displayReadmeIfNotExists(override = false) {
     const vscode_musictime_initialized = getItem("displayedMtReadme");

@@ -1,5 +1,5 @@
 import { commands, window } from "vscode";
-import { setAuthCallbackState } from "../managers/FileManager";
+import { setAuthCallbackState } from "../Util";
 import { getUser, processNewSpotifyIntegration } from "../managers/UserStatusManager";
 
 export async function handleIntegrationConnectionSocketEvent(body: any) {
@@ -19,7 +19,7 @@ export async function handleIntegrationConnectionSocketEvent(body: any) {
       // refresh the tree view
       setTimeout(() => {
         // refresh the playlist to show the device button update
-        commands.executeCommand("musictime.refreshMusicTimeView");
+        commands.executeCommand("musictime.reloadMusicTimeView");
       }, 1000);
     }
 

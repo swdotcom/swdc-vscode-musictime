@@ -3,7 +3,7 @@ import { searchTracks } from "cody-music";
 import { populateRecommendationTracks, requiresSpotifyAccess } from "../managers/PlaylistDataManager";
 
 export async function showSearchInput() {
-  if (requiresSpotifyAccess()) {
+  if (await requiresSpotifyAccess()) {
     window.showInformationMessage("Spotify connection required");
     return;
   }

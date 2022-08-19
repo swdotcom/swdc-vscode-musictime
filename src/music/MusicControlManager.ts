@@ -21,8 +21,9 @@ import {
   setRepeatTrack,
   mute,
   unmute,
-  getTrack,
   getRunningTrack,
+  PlayerContext,
+  getSpotifyPlayerContext,
 } from "cody-music";
 import { window, commands } from "vscode";
 import { MusicCommandManager } from "./MusicCommandManager";
@@ -34,8 +35,7 @@ import {
   OK_LABEL,
   SPOTIFY_LIKED_SONGS_PLAYLIST_ID,
   RECOMMENDATION_PLAYLIST_ID,
-} from "../app/utils/view_constants";
-import { MusicStateManager } from "./MusicStateManager";
+} from "../Constants";
 import { SocialShareManager } from "../social/SocialShareManager";
 import { MusicPlaylistManager } from "./MusicPlaylistManager";
 import { MusicCommandUtil } from "./MusicCommandUtil";
@@ -56,6 +56,7 @@ import {
   createPlaylistItemFromTrack,
   getSelectedPlaylistId,
   updateLikedStatusInPlaylist,
+  getPlayerContext
 } from "../managers/PlaylistDataManager";
 import { connectSlackWorkspace, hasSlackWorkspaces } from "../managers/SlackManager";
 
@@ -86,10 +87,6 @@ export class MusicControlManager {
     } else {
       await MusicCommandUtil.getInstance().runSpotifyCommand(next, [PlayerName.SpotifyWeb]);
     }
-
-    setTimeout(() => {
-      MusicStateManager.getInstance().fetchTrack();
-    }, 1000);
   }
 
   async previousSong() {
@@ -100,10 +97,6 @@ export class MusicControlManager {
     } else {
       await MusicCommandUtil.getInstance().runSpotifyCommand(previous, [PlayerName.SpotifyWeb]);
     }
-
-    setTimeout(() => {
-      MusicStateManager.getInstance().fetchTrack();
-    }, 1000);
   }
 
   /**
@@ -117,22 +110,8 @@ export class MusicControlManager {
       // initiate the device selection prompt
       await playInitialization(controlMgr.playSong);
     } else {
-      let runningTrack = await getRunningTrack();
-      if (!runningTrack || !runningTrack.id) {
-        runningTrack = await getTrack(PlayerName.SpotifyWeb);
-        if (!runningTrack || !runningTrack.id) {
-          runningTrack = await MusicStateManager.getInstance().updateRunningTrackToMostRecentlyPlayed();
-          const device = getBestActiveDevice();
-          const result: any = await MusicCommandUtil.getInstance().runSpotifyCommand(play, [
-            PlayerName.SpotifyWeb,
-            {
-              track_ids: [runningTrack.id],
-              device_id: device?.id,
-              offset: 0,
-            },
-          ]);
-        }
-      } else {
+      let playerContext: PlayerContext = await getPlayerContext();
+      if (!playerContext.is_playing) {
         if (controlMgr.useSpotifyDesktop()) {
           result = await play(PlayerName.SpotifyDesktop);
         } else {
@@ -140,13 +119,14 @@ export class MusicControlManager {
         }
 
         if (result && (result.status < 300 || result === "ok")) {
-          MusicCommandManager.syncControls(runningTrack, true, TrackStatus.Playing);
+          playerContext = await getPlayerContext();
+          MusicCommandManager.syncControls();
         }
       }
 
       setTimeout(() => {
-        MusicStateManager.getInstance().fetchTrack();
-      }, 1000);
+        commands.executeCommand("musictime.refreshMusicTimeView");
+      }, 500);
     }
   }
 
@@ -159,48 +139,28 @@ export class MusicControlManager {
     }
 
     if (result && (result.status < 300 || result === "ok")) {
-      MusicCommandManager.syncControls(await getRunningTrack(), true, TrackStatus.Paused);
+      MusicCommandManager.syncControls();
     }
-
-    setTimeout(() => {
-      MusicStateManager.getInstance().fetchTrack();
-    }, 1000);
   }
 
   async setShuffleOn() {
     const device = getBestActiveDevice();
     await setShuffle(PlayerName.SpotifyWeb, true, device?.id);
-
-    setTimeout(() => {
-      MusicStateManager.getInstance().fetchTrack();
-    }, 1000);
   }
 
   async setShuffleOff() {
     const device = getBestActiveDevice();
     await setShuffle(PlayerName.SpotifyWeb, false, device?.id);
-
-    setTimeout(() => {
-      MusicStateManager.getInstance().fetchTrack();
-    }, 1000);
   }
 
   async setRepeatTrackOn() {
     const device = getBestActiveDevice();
     await setRepeatTrack(PlayerName.SpotifyWeb, device?.id);
-
-    setTimeout(() => {
-      MusicStateManager.getInstance().fetchTrack();
-    }, 1000);
   }
 
   async setRepeatPlaylistOn() {
     const device = getBestActiveDevice();
     await setRepeatPlaylist(PlayerName.SpotifyWeb, device?.id);
-
-    setTimeout(() => {
-      MusicStateManager.getInstance().fetchTrack();
-    }, 1000);
   }
 
   async setRepeatOnOff(setToOn: boolean) {
@@ -210,27 +170,17 @@ export class MusicControlManager {
     } else {
       result = await repeatOff(PlayerName.SpotifyWeb);
     }
-
-    setTimeout(() => {
-      MusicStateManager.getInstance().fetchTrack();
-    }, 1000);
   }
 
   async setMuteOn() {
     const playerDevice: PlayerDevice = getBestActiveDevice();
     await MusicCommandUtil.getInstance().runSpotifyCommand(mute, [PlayerName.SpotifyWeb, playerDevice?.id]);
-    setTimeout(() => {
-      MusicStateManager.getInstance().fetchTrack();
-    }, 1000);
   }
 
   async setMuteOff() {
     const playerDevice: PlayerDevice = getBestActiveDevice();
     // setVolume(PlayerName.SpotifyWeb, 50);
     const result = await MusicCommandUtil.getInstance().runSpotifyCommand(unmute, [PlayerName.SpotifyWeb, playerDevice?.id]);
-    setTimeout(() => {
-      MusicStateManager.getInstance().fetchTrack();
-    }, 1000);
   }
 
   useSpotifyDesktop() {
@@ -272,10 +222,6 @@ export class MusicControlManager {
         // set it to not repeat
         commands.executeCommand("musictime.repeatOff");
       }
-
-      setTimeout(() => {
-        MusicStateManager.getInstance().fetchTrack();
-      }, 1000);
     }, 2000);
   }
 
@@ -323,10 +269,6 @@ export class MusicControlManager {
         // set it to not repeat
         commands.executeCommand("musictime.repeatOff");
       }
-
-      setTimeout(() => {
-        MusicStateManager.getInstance().fetchTrack();
-      }, 1000);
     }, 2000);
   }
 
@@ -385,20 +327,22 @@ export class MusicControlManager {
 
     if (isRecommendationTrack) {
       updateLikedStatusInPlaylist(selectedPlaylistId, trackId, liked);
-      commands.executeCommand("musictime.refreshMusicTimeView", "recommendations", selectedPlaylistId);
+      commands.executeCommand(
+        "musictime.refreshMusicTimeView",
+        { tabView: "recommendations", playlistId: selectedPlaylistId }
+      );
     } else {
       // update liked state in the playlist the track is in
       if (selectedPlaylistId !== SPOTIFY_LIKED_SONGS_PLAYLIST_ID) {
         updateLikedStatusInPlaylist(selectedPlaylistId, trackId, liked);
       }
       if (selectedPlaylistId) {
-        commands.executeCommand("musictime.refreshMusicTimeView", "playlists", selectedPlaylistId);
+        commands.executeCommand(
+          "musictime.refreshMusicTimeView",
+          { tabView: "playlists", playlistId: selectedPlaylistId, refreshOpenFolder: true }
+        );
       }
     }
-
-    setTimeout(() => {
-      MusicStateManager.getInstance().fetchTrack();
-    }, 1000);
   }
 
   async copySpotifyLink(id: string, isPlaylist: boolean) {
@@ -450,7 +394,7 @@ export class MusicControlManager {
     };
 
     // check if they need to connect to spotify
-    const needsSpotifyAccess = requiresSpotifyAccess();
+    const needsSpotifyAccess = await requiresSpotifyAccess();
 
     // check to see if they have the slack access token
     const hasSlackAccess = await hasSlackWorkspaces();
