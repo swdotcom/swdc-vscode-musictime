@@ -574,7 +574,10 @@ export function createCommands(
         ...recs.tracks.slice(offset),
         ...recs.tracks.slice(0, offset)
       ]
-      playSelectedItems(slicedTracks.slice(0, 100))
+      await playSelectedItems(slicedTracks.slice(0, 100))
+      setTimeout(async() => {
+        commands.executeCommand("musictime.refreshMusicTimeView");
+      }, 500);
     })
   );
 

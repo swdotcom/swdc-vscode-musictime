@@ -152,7 +152,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
       ).join('\n')
       sidebarContent = await this.buildPlaylistSidebar(likedFolder, playlistFolders, data.playerContext);
     } else if (selectedTabView === 'recommendations' && data.recommendationInfo?.tracks?.length) {
-      sidebarContent = this.buildRecommendationSidebar(data.recommendationInfo, data.playerContext);
+      sidebarContent = await this.buildRecommendationSidebar(data.recommendationInfo, data.playerContext);
     } else if (selectedTabView === 'metrics' && Object.keys(data.audioMetrics).length) {
       sidebarContent = this.getMetricsSidebar(data.audioMetrics);
     } else {
@@ -193,14 +193,14 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
     </div>`
   }
 
-  private buildRecommendationSidebar(recommendationInfo: any, playerContext: PlayerContext) {
+  private async buildRecommendationSidebar(recommendationInfo: any, playerContext: PlayerContext) {
     return `<div class="flex flex-col w-full space-y-2">
       <div class="flex justify-between items-center space-x-2 py-3">
         <div class="text-gray-500 text-xs font-semibold">${recommendationInfo.label}</div>
         <div class="flex items-center space-x-2">
           ${this.getMoodSelectorIconButton()}
           ${this.getGenreSelectorIconButton()}
-          ${this.getTrackControlButton(playerContext)}
+          ${await this.getTrackControlButton(playerContext)}
         </div>
       </div>
       <div class="flex flex-col">
