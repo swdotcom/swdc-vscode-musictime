@@ -57,16 +57,18 @@ export default class AudioFeatures {
 
 	constructor(features: SpotifyAudioFeature[]) {
 		this.metrics = {}
-		features.forEach(feature => {
-			Object.keys(feature).forEach(key => {
-				if (this[key]) {
-					this[key].total += feature[key];
-					this[key].count += 1
-					this[key].avg = parseFloat(this[key].total) / this[key].count
-					this.metrics[key] = this[key];
-				}
-			})
-		})
+		if (features?.length) {
+			features.forEach(feature => {
+				Object.keys(feature).forEach(key => {
+					if (this[key]) {
+						this[key].total += feature[key];
+						this[key].count += 1
+						this[key].avg = parseFloat(this[key].total) / this[key].count
+						this.metrics[key] = this[key];
+					}
+				})
+			});
+		}
 	}
 
 	getMetrics() {
