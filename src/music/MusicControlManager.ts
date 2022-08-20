@@ -80,9 +80,7 @@ export class MusicControlManager {
   }
 
   async nextSong() {
-    if (isLikedSongPlaylistSelected()) {
-      await playNextLikedSong();
-    } else if (this.useSpotifyDesktop()) {
+    if (this.useSpotifyDesktop()) {
       await next(PlayerName.SpotifyDesktop);
     } else {
       await MusicCommandUtil.getInstance().runSpotifyCommand(next, [PlayerName.SpotifyWeb]);
@@ -90,9 +88,7 @@ export class MusicControlManager {
   }
 
   async previousSong() {
-    if (isLikedSongPlaylistSelected()) {
-      await playPreviousLikedSongs();
-    } else if (this.useSpotifyDesktop()) {
+    if (this.useSpotifyDesktop()) {
       await previous(PlayerName.SpotifyDesktop);
     } else {
       await MusicCommandUtil.getInstance().runSpotifyCommand(previous, [PlayerName.SpotifyWeb]);

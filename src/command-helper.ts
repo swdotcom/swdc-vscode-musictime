@@ -1,7 +1,7 @@
 import { commands, Disposable, window, ExtensionContext } from "vscode";
 import { MusicControlManager } from "./music/MusicControlManager";
 import { getMusicTimePluginId, launchMusicAnalytics, launchWebUrl, getPluginUuid } from "./Util";
-import { PlaylistItem, PlayerName, PlayerDevice, playSpotifyDevice, TrackStatus, getSpotifyPlayerContext } from "cody-music";
+import { PlaylistItem, PlayerName, PlayerDevice, playSpotifyDevice, TrackStatus } from "cody-music";
 import { SocialShareManager } from "./social/SocialShareManager";
 import { showGenreSelections, showMoodSelections } from "./selector/RecTypeSelectorManager";
 import { showSortPlaylistMenu } from "./selector/SortPlaylistSelectorManager";
@@ -622,7 +622,7 @@ export function createCommands(
 }
 
 async function getTrackByPayload(payload: any = {}) {
-  const playlistId = !payload.playlistId ? getSelectedPlaylistId() : payload.playlistId;
-  const trackId = !payload.trackId ? getSelectedTrackItem()?.id : payload.trackId;
+  const playlistId = !payload?.playlistId ? getSelectedPlaylistId() : payload.playlistId;
+  const trackId = !payload?.trackId ? getSelectedTrackItem()?.id : payload.trackId;
   return await getTrackByPlaylistIdAndTrackId(playlistId, trackId);
 }
