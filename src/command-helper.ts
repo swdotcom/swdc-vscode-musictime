@@ -445,6 +445,12 @@ export function createCommands(
   );
 
   cmds.push(
+    commands.registerCommand("musictime.reInitializeSpotify", async() => {
+      initializeSpotify();
+    })
+  )
+
+  cmds.push(
     commands.registerCommand("musictime.refreshMusicTimeView", async (
       payload: any = {refreshOpenFolder: true, playlistId: getSelectedPlaylistId(), tabView: getSelectedTabView()}
     ) => {

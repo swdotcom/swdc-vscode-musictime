@@ -10,13 +10,13 @@ import {
   WebviewViewProvider,
   WebviewViewResolveContext,
 } from "vscode";
-import { getItem } from "../Util";
+import { getImage, getItem } from "../Util";
 import { getConnectionErrorHtml } from '../local/404';
 import { getLoadingHtml } from '../local/Loading';
 import { MusicCommandManager } from "../music/MusicCommandManager";
 import { appGet, isResponseOk } from '../HttpClient';
 import { getConnectedSpotifyUser, hasSpotifyUser } from '../managers/SpotifyManager';
-import { getSelectedTabView, getSelectedPlaylistId, getCachedSpotifyPlaylists, getCachedSoftwareTop40Playlist, getCachedPlaylistTracks, getCachedRecommendationInfo, getSpotifyLikedPlaylist, getCachedLikedSongsTracks, getExpandedPlaylistId, updateExpandedPlaylistId, sortingAlphabetically, getPlayerContext, getCachedAudioMetrics } from '../managers/PlaylistDataManager';
+import { getSelectedTabView, getSelectedPlaylistId, getCachedSpotifyPlaylists, getCachedSoftwareTop40Playlist, getCachedPlaylistTracks, getCachedRecommendationInfo, getSpotifyLikedPlaylist, getCachedLikedSongsTracks, getExpandedPlaylistId, updateExpandedPlaylistId, sortingAlphabetically, getPlayerContext, getCachedAudioMetrics, isLikedTrackId } from '../managers/PlaylistDataManager';
 import { RECOMMENDATION_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from '../Constants';
 import { PlayerContext, PlaylistItem } from 'cody-music';
 
@@ -150,19 +150,31 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
       const playlistFolders = data.spotifyPlaylists.map(
         (item: any) => this.buildPlaylistItem(item, playlistId, tracks, refreshOpenFolder)
       ).join('\n')
-      sidebarContent = this.buildPlaylistSidebar(likedFolder, playlistFolders, data.playerContext);
-    } else if (selectedTabView === 'recommendations') {
+      sidebarContent = await this.buildPlaylistSidebar(likedFolder, playlistFolders, data.playerContext);
+    } else if (selectedTabView === 'recommendations' && data.recommendationInfo?.tracks?.length) {
       sidebarContent = this.buildRecommendationSidebar(data.recommendationInfo, data.playerContext);
-    } else if (selectedTabView === 'metrics') {
+    } else if (selectedTabView === 'metrics' && Object.keys(data.audioMetrics).length) {
       sidebarContent = this.getMetricsSidebar(data.audioMetrics);
+    } else {
+      sidebarContent = this.getMusicConnectErrorHtml();
     }
 
     html = html.replace('__playlist_items_placeholder__', sidebarContent);
     return html;
   }
 
+  private getMusicConnectErrorHtml() {
+    const dancePartyImg = `vscode-resource:${getImage('404-image.png')}`;
+    return `<div class="flex flex-col items-center justify-center p-2 space-y-3">
+      <h4 class="header text-gray-500 text-sm">Oops! Something went wrong.</h4>
+      <img src="${dancePartyImg}" alt="DJ-Cody" class="rounded-xl h-64">
+      <p class="text-gray-500 text-sm">
+        <a href class="underline text-blue-500 hover:text-gray-500" onclick="onCmdClick('reInitializeSpotify')">Refresh your Spotify acces</a>
+      </p>
+    </div>`
+  }
 
-  private buildPlaylistSidebar(likedFolder, playlistFolders, playerContext) {
+  private async buildPlaylistSidebar(likedFolder, playlistFolders, playerContext) {
     return `<div class="divide-y dark:divide-gray-100 dark:divide-opacity-25">
       <div class="flex flex-col w-full pb-2">
         <div class="flex justify-between items-center space-x-2 py-3">
@@ -170,7 +182,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
           <div class="flex items-center space-x-2">
             ${this.getSearchIconButton()}
             ${this.getSortButton()}
-            ${this.getTrackControlButton(playerContext)}
+            ${await this.getTrackControlButton(playerContext)}
           </div>
         </div>
         ${likedFolder}
@@ -182,23 +194,19 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
   }
 
   private buildRecommendationSidebar(recommendationInfo: any, playerContext: PlayerContext) {
-    if (recommendationInfo?.tracks?.length) {
-      return `<div class="flex flex-col w-full space-y-2">
-        <div class="flex justify-between items-center space-x-2 py-3">
-          <div class="text-gray-500 text-xs font-semibold">${recommendationInfo.label}</div>
-          <div class="flex items-center space-x-2">
-            ${this.getMoodSelectorIconButton()}
-            ${this.getGenreSelectorIconButton()}
-            ${this.getTrackControlButton(playerContext)}
-          </div>
+    return `<div class="flex flex-col w-full space-y-2">
+      <div class="flex justify-between items-center space-x-2 py-3">
+        <div class="text-gray-500 text-xs font-semibold">${recommendationInfo.label}</div>
+        <div class="flex items-center space-x-2">
+          ${this.getMoodSelectorIconButton()}
+          ${this.getGenreSelectorIconButton()}
+          ${this.getTrackControlButton(playerContext)}
         </div>
-        <div class="flex flex-col">
-          ${this.buildRecommendationTracks(recommendationInfo)}
-        </div>
-      </div>`
-    } else {
-      return `<div class="flex flex-col w-full space-y-2"></div>`
-    }
+      </div>
+      <div class="flex flex-col">
+        ${this.buildRecommendationTracks(recommendationInfo)}
+      </div>
+    </div>`
   }
 
   private buildPlaylistItem(item: any, playlistId: any, tracks: any, refreshOpenFolder: boolean = false) {
@@ -347,25 +355,35 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
 
   private getLikedActionButton(track: PlaylistItem, playlistId) {
     if (playlistId === SPOTIFY_LIKED_SONGS_PLAYLIST_ID || track['liked'] === true) {
-      return `<a href class="rounded block py-2 text-xs focus:outline-none"
-        onclick="onCmdClick('unlike', { trackId: '${track.id}', playlistId: '${playlistId}' })"
-        role="menuitem" tabindex="-1" id="menu-item-1">
-        <div class="flex items-center space-x-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 hover:text-blue-500" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
-          </svg>
-          <p>Remove from your library</p>
-        </div>
-      </a>`
+      return this.getRemoveLikedSongButton(track.id, playlistId, true);
     }
+    return this.getAddToLikedPlaylistButton(track.id, playlistId, true);
+  }
+
+  private getRemoveLikedSongButton(trackId, playlistId, showText) {
     return `<a href class="rounded block py-2 text-xs focus:outline-none"
-      onclick="onCmdClick('like', { trackId: '${track.id}', playlistId: '${playlistId}' })"
+      title="Remove from your library"
+      onclick="onCmdClick('unlike', { trackId: '${trackId}', playlistId: '${playlistId}' })"
+      role="menuitem" tabindex="-1" id="menu-item-1">
+      <div class="flex items-center space-x-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 hover:text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+        </svg>
+        ${(showText) ? '<p>Remove from your library</p>' : ''}
+      </div>
+    </a>`
+  }
+
+  private getAddToLikedPlaylistButton(trackId, playlistId, showText) {
+    return `<a href class="rounded block py-2 text-xs focus:outline-none"
+      title="Save to your library"
+      onclick="onCmdClick('like', { trackId: '${trackId}', playlistId: '${playlistId}' })"
       role="menuitem" tabindex="-1" id="menu-item-1">
       <div class="flex items-center space-x-2">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 hover:text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
         </svg>
-        <p>Save to your library</p>
+        ${(showText) ? '<p>Save to your library</p>' : ''}
       </div>
     </a>`
   }
@@ -449,7 +467,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
     </button>`
   }
 
-  private getTrackControlButton(playerContext: PlayerContext) {
+  private async getTrackControlButton(playerContext: PlayerContext) {
     return `<div class="relative inline-block text-left">
       <div>
         <button
@@ -481,7 +499,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
             ${this.getDeviceItemInfoHtml(playerContext)}
           </div>
           <div class="flex flex-col pl-1 pr-2 py-2 space-y-2" role="none">
-            ${this.getPlayingTrackItemHtml(playerContext)}
+            ${await this.getPlayingTrackItemHtml(playerContext)}
             ${this.getPlayControlButtonsItemHtml(playerContext)}
           </div>
         </div>
@@ -505,11 +523,16 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
       </a>`
   }
 
-  private getPlayingTrackItemHtml(playerContext: PlayerContext) {
+  private async getPlayingTrackItemHtml(playerContext: PlayerContext) {
     if (playerContext?.item?.name) {
-      return `<div class="flex flex-col py-2 space-y-1">
-        <p class="text-sm text-blue-500">${playerContext.item.name}</p>
-        <p class="text-xs text-gray-500 font-medium">${playerContext.item.artist}</p>
+      const isLikedTrack = await isLikedTrackId(playerContext.item.id);
+      const playlistId = getSelectedPlaylistId();
+      return `<div class="flex items-center justify-between">
+        <div class="flex flex-col py-2 space-y-1">
+          <p class="text-sm text-blue-500">${playerContext.item.name}</p>
+          <p class="text-xs text-gray-500 font-medium">${playerContext.item.artist}</p>
+        </div>
+        <div>${(isLikedTrack) ? this.getRemoveLikedSongButton(playerContext.item.id, playlistId, false) : this.getAddToLikedPlaylistButton(playerContext.item.id, playlistId, false)}</div>
       </div>`
     }
     return `<div class="flex flex-col py-2">

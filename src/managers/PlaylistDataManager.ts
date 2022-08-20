@@ -30,7 +30,7 @@ import { MusicCommandManager } from "../music/MusicCommandManager";
 import { MusicCommandUtil } from "../music/MusicCommandUtil";
 import { MusicControlManager } from "../music/MusicControlManager";
 import { getCodyErrorMessage, isMac, launchWebUrl, getItem, logIt } from "../Util";
-import { getSpotifyIntegration, populateSpotifyUser, updateSpotifyClientInfo } from "./SpotifyManager";
+import { getSpotifyIntegration, populateSpotifyUser, updateCodyConfig, updateSpotifyClientInfo } from "./SpotifyManager";
 
 let currentDevices: PlayerDevice[] = [];
 let spotifyLikedTracks: PlaylistItem[] = undefined;
@@ -770,6 +770,9 @@ export async function requiresSpotifyAccess() {
 export async function initializeSpotify(reload: boolean = true) {
   // get the client id and secret
   await updateSpotifyClientInfo();
+
+  // ensure cody-music has the latest access token
+  await updateCodyConfig();
 
   // get the spotify user
   await populateSpotifyUser(true);
