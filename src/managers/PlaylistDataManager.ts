@@ -5,6 +5,7 @@ import {
   getPlaylists,
   getPlaylistTracks,
   getRecommendationsForTracks,
+  getRunningTrack,
   getSpotifyAlbumTracks,
   getSpotifyAudioFeatures,
   getSpotifyDevices,
@@ -235,6 +236,13 @@ export function getPlaylistById(playlist_id) {
 }
 
 export async function getTrackByPlaylistIdAndTrackId(playlist_id, track_id) {
+  if (!track_id) {
+    // get the current spotify context
+    const playerContext = await getPlayerContext();
+    if (playerContext?.item) {
+      track_id = playerContext.item.id;
+    }
+  }
   let tracks: PlaylistItem[] = [];
   if (!playlist_id) {
     tracks.push(...await getCachedLikedSongsTracks())
@@ -253,6 +261,10 @@ export async function getTrackByPlaylistIdAndTrackId(playlist_id, track_id) {
     if (trackItem) {
       return trackItem;
     }
+  }
+  const currentTrack: Track = await getRunningTrack();
+  if (currentTrack) {
+    return createPlaylistItemFromTrack(currentTrack)
   }
   return null;
 }
