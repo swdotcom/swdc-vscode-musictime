@@ -269,7 +269,6 @@ export function createCommands(
       if (!getBestActiveDevice()) {
         await populateSpotifyDevices(false);
       }
-      commands.executeCommand("workbench.view.extension.music-time-sidebar");
       setTimeout(async() => {
         commands.executeCommand("musictime.refreshMusicTimeView");
         MusicCommandManager.syncControls();
