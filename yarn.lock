@@ -101,10 +101,10 @@
   resolved "https://registry.yarnpkg.com/@slack/types/-/types-2.7.0.tgz#54459d92866b9255880a62a47f03fa76d23af40f"
   integrity sha512-QUrHBilZeWyXAuHfEbSnzBwvFm4u/75LHKRKu8xRUnGNt35Amz8y9YQwb6voU1S5FmTYxMNAL+ZbAPTor4aRdw==
 
-"@slack/web-api@^6.5.0":
-  version "6.7.2"
-  resolved "https://registry.yarnpkg.com/@slack/web-api/-/web-api-6.7.2.tgz#13b585bdac9e18a578aeb5e5e44d88a09b11e384"
-  integrity sha512-qgWMxdy1A2uNvhETfRl349UjTEvnUzHl947Ly5c+lqOrXJIwsG12szL4tD3WrRlTuxCijDemF3FjtUNz18YAxg==
+"@slack/web-api@^6.8.0":
+  version "6.8.0"
+  resolved "https://registry.yarnpkg.com/@slack/web-api/-/web-api-6.8.0.tgz#6ef0ca7e3ff432ba0b7871b0d2939ef3d75f2a7f"
+  integrity sha512-DI0T7pQy2SM14s+zJKlarzkyOqhpu2Qk3rL19g+3m7VDZ+lSMB/dt9nwf3BZIIp49/CoLlBjEmKMoakm69OD4Q==
   dependencies:
     "@slack/logger" "^3.0.0"
     "@slack/types" "^2.0.0"
@@ -200,10 +200,10 @@
   resolved "https://registry.yarnpkg.com/@types/vscode/-/vscode-1.69.0.tgz#a472011af392fbcf82cbb82f60b4c239c21b921c"
   integrity sha512-RlzDAnGqUoo9wS6d4tthNyAdZLxOIddLiX3djMoWk29jFfSA1yJbIwr0epBYqqYarWB6s2Z+4VaZCQ80Jaa3kA==
 
-"@types/ws@^8.5.3":
-  version "8.5.3"
-  resolved "https://registry.yarnpkg.com/@types/ws/-/ws-8.5.3.tgz#7d25a1ffbecd3c4f2d35068d0b283c037003274d"
-  integrity sha512-6YOoWjruKj1uLf3INHH7D3qTXwFfEsg1kf3c0uDdSBJwfa/llkwIjrAGV7j7mVgGNbzTQ3HiHKKDXl6bJPD97w==
+"@types/ws@^8.5.4":
+  version "8.5.4"
+  resolved "https://registry.yarnpkg.com/@types/ws/-/ws-8.5.4.tgz#bb10e36116d6e570dd943735f86c933c1587b8a5"
+  integrity sha512-zdQDHKUgcX/zBc4GrwsE/7dVdAD8JR4EuiAXiiUhhfyIJXXb2+PrGshFyeXWQPMmmZ2XxgaqclgpIC7eTXc1mg==
   dependencies:
     "@types/node" "*"
 
@@ -493,6 +493,15 @@ axios@^0.27.2:
   dependencies:
     follow-redirects "^1.14.9"
     form-data "^4.0.0"
+
+axios@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-1.2.2.tgz#72681724c6e6a43a9fea860fc558127dbe32f9f1"
+  integrity sha512-bz/J4gS2S3I7mpN/YZfGFTqhXTYzRho8Ay38w2otuuDR322KzFIWm/4W2K6gIwvWaws5n+mnb7D1lN9uD+QH6Q==
+  dependencies:
+    follow-redirects "^1.15.0"
+    form-data "^4.0.0"
+    proxy-from-env "^1.1.0"
 
 balanced-match@^1.0.0:
   version "1.0.2"
@@ -909,6 +918,11 @@ follow-redirects@^1.14.9:
   version "1.15.1"
   resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.15.1.tgz#0ca6a452306c9b276e4d3127483e29575e207ad5"
   integrity sha512-yLAMQs+k0b2m7cVxpS1VKJVvoz7SS9Td1zss3XRwXj+ZDH00RJgnuLx7E44wx02kQLrdM3aOOy+FpzS7+8OizA==
+
+follow-redirects@^1.15.0:
+  version "1.15.2"
+  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.15.2.tgz#b460864144ba63f2681096f274c4e57026da2c13"
+  integrity sha512-VQLG33o04KaQ8uYi2tVNbdrWp1QWxNNea+nmIB4EVM28v0hmP17z7aG1+wAkNzVq4KeXTq3221ye5qTJP91JwA==
 
 form-data@^2.5.0:
   version "2.5.1"
@@ -1382,6 +1396,11 @@ pkg-dir@^4.2.0:
   dependencies:
     find-up "^4.0.0"
 
+proxy-from-env@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/proxy-from-env/-/proxy-from-env-1.1.0.tgz#e102f16ca355424865755d2c9e8ea4f24d58c3e2"
+  integrity sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==
+
 pump@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/pump/-/pump-3.0.0.tgz#b4a2116815bde2f4e1ea602354e8c75565107a64"
@@ -1809,10 +1828,10 @@ wrappy@1:
   resolved "https://registry.yarnpkg.com/wrappy/-/wrappy-1.0.2.tgz#b5243d8f3ec1aa35f1364605bc0d1036e30ab69f"
   integrity sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==
 
-ws@^8.8.1:
-  version "8.8.1"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-8.8.1.tgz#5dbad0feb7ade8ecc99b830c1d77c913d4955ff0"
-  integrity sha512-bGy2JzvzkPowEJV++hF07hAD6niYSr0JzBNo/J29WsB57A2r7Wlc1UFcTR9IzrPvuNVO4B8LGqF8qcpsVOhJCA==
+ws@^8.11.0:
+  version "8.11.0"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-8.11.0.tgz#6a0d36b8edfd9f96d8b25683db2f8d7de6e8e143"
+  integrity sha512-HPG3wQd9sNQoT9xHyNCXoDUa+Xw/VevmY9FoHyQ+g+rrMn4j6FB4np7Z0OhdTgjx6MgQLK7jwSy1YecU1+4Asg==
 
 yallist@^4.0.0:
   version "4.0.0"
