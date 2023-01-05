@@ -1,17 +1,5 @@
 # Music Time for Spotify
 
-<p>
-  <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.music-time">
-    <img alt="Music Time for Spotify in the VS Code Marketplace" src="https://vsmarketplacebadge.apphb.com/version-short/softwaredotcom.music-time.svg?style=flat-square&color=00b4ee&label=marketplace">
-  </a>
-  <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.music-time">
-    <img alt="Music Time for Spotify Installs" src="https://vsmarketplacebadge.apphb.com/installs-short/softwaredotcom.music-time.svg?style=flat-square&color=00b4ee">
-  </a>
-  <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.music-time">
-    <img alt="Music Time for Spotify Rating" src="https://vsmarketplacebadge.apphb.com/rating-short/softwaredotcom.music-time.svg?style=flat-square&color=00b4ee">
-  </a>
-</p>
-
 <p><a href="https://www.software.com"><img alt="Software.com" src="https://assets.software.com/readme/software-logo-light.png" width="100px"></a></p>
 
 [Music Time for Spotify](https://www.software.com) is a VS Code extension that discovers the most productive music to listen to as you code. Music Time is built on the [Code Time](https://www.software.com/code-time) extension and performs machine learning against a range of music metrics plus productivity data from over 150,000 developers to determine song recommendations.
