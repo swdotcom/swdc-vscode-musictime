@@ -1,6 +1,7 @@
 import { window, ExtensionContext } from "vscode";
-import { getOsUsername, getHostname, getAuthCallbackState, getItem, getPluginUuid, setAuthCallbackState, setItem } from "./Util";
+import { getAuthCallbackState, getItem, getPluginUuid, setAuthCallbackState, setItem } from "./Util";
 import { isResponseOk, appPost } from "./HttpClient";
+import { getHostname, getOsUsername } from "./managers/DeviceManager";
 
 let retry_counter = 0;
 const one_min_millis = 1000 * 60;

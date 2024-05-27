@@ -13,7 +13,7 @@ import { commands, window } from "vscode";
 import { RECOMMENDATION_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from "../Constants";
 import { MusicCommandUtil } from "../music/MusicCommandUtil";
 import { MusicControlManager } from '../music/MusicControlManager';
-import { createSpotifyIdFromUri, createUriFromPlaylistId, createUriFromTrackId, isMac } from "../Util";
+import { createSpotifyIdFromUri, createUriFromPlaylistId, createUriFromTrackId } from "../Util";
 import {
   getBestActiveDevice,
   getCachedLikedSongsTracks,
@@ -33,6 +33,7 @@ import {
   getPlayerContext,
 } from "./PlaylistDataManager";
 import { hasSpotifyUser, isPremiumUser, populateSpotifyUser } from "./SpotifyManager";
+import { isMac } from "./DeviceManager";
 
 // Play selected tracks
 export async function playSelectedItems(playlistItems: PlaylistItem[]) {

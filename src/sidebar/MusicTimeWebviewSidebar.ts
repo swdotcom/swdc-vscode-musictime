@@ -218,7 +218,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
         updateExpandedPlaylistId(playlistId);
         chevronSvg = this.getChevronDown();
 
-        if (tracks.length) {
+        if (tracks?.length) {
           tracksHtml = [
             '<div class="pl-2 -m-1">',
             ...tracks.map((item: any) => this.buildTrackItem(item, playlistId)),

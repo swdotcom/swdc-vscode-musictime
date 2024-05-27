@@ -147,28 +147,6 @@ async function getWorkspaceAccessToken(team_domain) {
   return null;
 }
 
-async function showSlackWorkspacesToDisconnect() {
-  const workspaces = await getSlackWorkspaces();
-  const items = workspaces.map((n) => {
-    if (n.meta) {
-      return { label: n.meta.team.name, value: n.auth_id };
-    } else {
-      return { label: n.team_domain, value: n.authId };
-    }
-  });
-  items.push({ label: "all", value: "all" });
-  let menuOptions = {
-    items,
-    placeholder: "Select a workspace to disconnect",
-  };
-
-  const pick = await showQuickPick(menuOptions);
-  if (pick && pick.label) {
-    return pick.value;
-  }
-  return null;
-}
-
 async function checkRegistration(showSignup = true) {
   if (!getItem("name")) {
     if (showSignup) {

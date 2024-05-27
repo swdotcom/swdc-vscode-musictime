@@ -1,7 +1,8 @@
 import { api_endpoint } from './Constants';
+import { getOs } from './managers/DeviceManager';
 import { handleAuthenticatedPluginUser } from './message_handlers/authenticated_plugin_user';
 import { handleIntegrationConnectionSocketEvent } from './message_handlers/integration_connection';
-import { getItem, getMusicTimePluginId, getOffsetSeconds, getOs, getPluginName, getPluginUuid, getVersion, logIt } from './Util';
+import { getItem, getMusicTimePluginId, getOffsetSeconds, getPluginName, getPluginUuid, getVersion, logIt } from './Util';
 
 const WebSocket = require("ws");
 
@@ -79,7 +80,7 @@ export function initializeWebsockets() {
 	ws.on("ping", heartbeat);
 
 	ws.on("close", function close(code, reason) {
-		logIt(`Websockets closed`);
+		logIt(`Websockets closed`, true);
 		if (code !== 1000) {
       retryConnection();
     }

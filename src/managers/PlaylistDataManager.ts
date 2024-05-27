@@ -30,8 +30,9 @@ import AudioFeatures from '../model/AudioFeatures';
 import { MusicCommandManager } from "../music/MusicCommandManager";
 import { MusicCommandUtil } from "../music/MusicCommandUtil";
 import { MusicControlManager } from "../music/MusicControlManager";
-import { getCodyErrorMessage, isMac, launchWebUrl, getItem, logIt } from "../Util";
+import { getCodyErrorMessage, launchWebUrl, getItem, logIt } from "../Util";
 import { getSpotifyIntegration, populateSpotifyUser, updateCodyConfig, updateSpotifyClientInfo } from "./SpotifyManager";
+import { isMac } from "./DeviceManager";
 
 let currentDevices: PlayerDevice[] = [];
 let spotifyLikedTracks: PlaylistItem[] = undefined;

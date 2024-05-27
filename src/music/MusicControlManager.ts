@@ -15,7 +15,6 @@ import {
   playSpotifyMacDesktopTrack,
   playSpotifyTrack,
   playSpotifyPlaylist,
-  TrackStatus,
   setShuffle,
   setRepeatPlaylist,
   setRepeatTrack,
@@ -23,13 +22,12 @@ import {
   unmute,
   getRunningTrack,
   PlayerContext,
-  getSpotifyPlayerContext,
 } from "cody-music";
 import { window, commands } from "vscode";
 import { MusicCommandManager } from "./MusicCommandManager";
 import { showQuickPick } from "../MenuManager";
-import { playInitialization, playNextLikedSong, playPreviousLikedSongs } from "../managers/PlaylistControlManager";
-import { createSpotifyIdFromUri, createUriFromTrackId, isMac, getCodyErrorMessage, isWindows } from "../Util";
+import { playInitialization } from "../managers/PlaylistControlManager";
+import { createSpotifyIdFromUri, createUriFromTrackId, getCodyErrorMessage } from "../Util";
 import {
   SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
   OK_LABEL,
@@ -45,7 +43,6 @@ import {
   getDeviceSet,
   getSelectedTrackItem,
   getSpotifyPlaylists,
-  isLikedSongPlaylistSelected,
   isTrackRepeating,
   removeTracksFromRecommendations,
   sortPlaylists,
@@ -59,6 +56,7 @@ import {
   getPlayerContext
 } from "../managers/PlaylistDataManager";
 import { connectSlackWorkspace, hasSlackWorkspaces } from "../managers/SlackManager";
+import { isMac, isWindows } from "../managers/DeviceManager";
 
 const clipboardy = require("clipboardy");
 

@@ -6,13 +6,13 @@ import {
     getPluginName,
     getMusicTimePluginId,
     getVersion,
-    getOs,
     getOffsetSeconds,
     getEditorName,
     logIt,
     getItem,
     getPluginUuid,
 } from "./Util";
+import { getOs } from "./managers/DeviceManager";
 
 const appApi: any = axios.create({
     baseURL: `${app_endpoint}`,
