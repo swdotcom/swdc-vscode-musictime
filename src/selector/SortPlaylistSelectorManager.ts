@@ -2,7 +2,7 @@ import { showQuickPick } from "../MenuManager";
 
 export async function showSortPlaylistMenu() {
   const items = getSortItems();
-  let menuOptions = {
+  const menuOptions = {
     items,
     placeholder: "Sort by",
   };

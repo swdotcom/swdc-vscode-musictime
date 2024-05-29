@@ -19,7 +19,7 @@ export async function connectSlackWorkspace() {
 }
 
 export async function showSlackChannelMenu() {
-  let menuOptions = {
+  const menuOptions = {
     items: [],
     placeholder: "Select a channel",
   };
@@ -102,7 +102,7 @@ async function getChannels() {
 }
 
 async function showSlackWorkspaceSelection() {
-  let menuOptions = {
+  const menuOptions = {
     items: [],
     placeholder: `Select a Slack workspace`,
   };
@@ -143,28 +143,6 @@ async function getWorkspaceAccessToken(team_domain) {
   });
   if (integration) {
     return integration.access_token;
-  }
-  return null;
-}
-
-async function showSlackWorkspacesToDisconnect() {
-  const workspaces = await getSlackWorkspaces();
-  const items = workspaces.map((n) => {
-    if (n.meta) {
-      return { label: n.meta.team.name, value: n.auth_id };
-    } else {
-      return { label: n.team_domain, value: n.authId };
-    }
-  });
-  items.push({ label: "all", value: "all" });
-  let menuOptions = {
-    items,
-    placeholder: "Select a workspace to disconnect",
-  };
-
-  const pick = await showQuickPick(menuOptions);
-  if (pick && pick.label) {
-    return pick.value;
   }
   return null;
 }

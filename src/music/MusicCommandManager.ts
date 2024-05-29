@@ -90,7 +90,7 @@ export class MusicCommandManager {
       track = new Track();
     }
 
-    let pauseIt = track.state === TrackStatus.Playing;
+    const pauseIt = track.state === TrackStatus.Playing;
 
     const requiresAccessToken = await requiresSpotifyAccess();
     let requiresReAuth = requiresSpotifyReAuthentication();
@@ -121,12 +121,12 @@ export class MusicCommandManager {
    * @param priority
    */
   private static createButton(text: string, tooltip: string, command: string, priority: number) {
-    let statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, priority);
+    const statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, priority);
     statusBarItem.text = text;
     statusBarItem.command = command;
     statusBarItem.tooltip = tooltip;
 
-    let button: Button = {
+    const button: Button = {
       id: command,
       statusBarItem,
       tooltip: tooltip,

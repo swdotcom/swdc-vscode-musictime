@@ -6,13 +6,13 @@ import {
     getPluginName,
     getMusicTimePluginId,
     getVersion,
-    getOs,
     getOffsetSeconds,
     getEditorName,
     logIt,
     getItem,
     getPluginUuid,
 } from "./Util";
+import { getOs } from "./managers/DeviceManager";
 
 const appApi: any = axios.create({
     baseURL: `${app_endpoint}`,
@@ -41,7 +41,7 @@ export async function appPost(api: string, payload: any) {
 }
 
 export function isResponseOk(resp: any) {
-  let status = getResponseStatus(resp);
+  const status = getResponseStatus(resp);
   if (status && resp && status < 300) {
     return true;
   }

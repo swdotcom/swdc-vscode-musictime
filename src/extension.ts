@@ -11,15 +11,19 @@ import { initializeSpotify } from "./managers/PlaylistDataManager";
 import { displayReadmeIfNotExists } from './DataController';
 import { getUser } from './managers/UserStatusManager';
 import { clearSpotifyAccessToken } from './managers/SpotifyManager';
+import { LocalStorageManager } from './managers/LocalStorageManager';
 
 let currentColorKind: number = undefined;
+let storageManager: LocalStorageManager | undefined = undefined;
 
 export function deactivate(ctx: ExtensionContext) {
+	if (storageManager) storageManager.clearDupStorageKeys();
   clearWebsocketClient();
   clearSpotifyAccessToken();
 }
 
 export async function activate(ctx: ExtensionContext) {
+	storageManager = LocalStorageManager.getInstance(ctx);
   // has a session file, continue with initialization of the plugin
   onboardPlugin(ctx, intializePlugin);
 }

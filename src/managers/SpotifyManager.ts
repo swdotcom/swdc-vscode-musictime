@@ -3,10 +3,11 @@ import { window } from "vscode";
 import { app_endpoint, YES_LABEL } from "../Constants";
 import { appGet, isResponseOk } from "../HttpClient";
 import SoftwareIntegration from "../model/SoftwareIntegration";
-import { isMac, launchWebUrl, logIt } from "../Util";
+import { launchWebUrl } from "../Util";
 import { SpotifyUser } from "cody-music/dist/lib/profile";
 import { getCachedSpotifyIntegrations } from "./UserStatusManager";
 import { initializeSpotify } from './PlaylistDataManager';
+import { isMac } from "./DeviceManager";
 
 let spotifyUser: SpotifyUser = null;
 let spotifyAccessToken: string = "";

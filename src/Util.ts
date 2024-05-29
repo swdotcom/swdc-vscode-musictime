@@ -1,13 +1,13 @@
 import { workspace, extensions, window, commands } from "vscode";
 import { MUSIC_TIME_EXT_ID, app_endpoint, MUSIC_TIME_PLUGIN_ID, MUSIC_TIME_TYPE, CODE_TIME_EXT_ID, EDITOR_OPS_EXT_ID, SOFTWARE_DIRECTORY } from "./Constants";
 import { CodyResponse, CodyResponseType } from "cody-music";
-import { storeJsonData } from "./managers/FileManager";
-import { execCmd } from "./managers/ExecManager";
+import { getJsonItem, setJsonItem, storeJsonData } from "./managers/FileManager";
+
 import { formatISO } from 'date-fns';
 import { v4 as uuidv4 } from "uuid";
 import { initializeWebsockets, websocketAlive } from './websockets';
+import { isWindows } from "./managers/DeviceManager";
 
-const fileIt = require("file-it");
 const open = require("open");
 const fs = require("fs");
 const path = require('path');
@@ -105,11 +105,11 @@ function getFile(name: string, default_data: any = {}) {
 }
 
 export function setItem(key, value) {
-  fileIt.setJsonValue(getSoftwareSessionFile(), key, value);
+  setJsonItem(getSoftwareSessionFile(), key, value);
 }
 
 export function getItem(key) {
-  return fileIt.getJsonValue(getSoftwareSessionFile(), key);
+  return getJsonItem(getSoftwareSessionFile(), key);
 }
 
 export function getExtensionDisplayName() {
@@ -146,7 +146,7 @@ export function editorOpsExtInstalled() {
 }
 
 export function getRootPathForFile(fileName) {
-  let folder = getProjectFolder(fileName);
+  const folder = getProjectFolder(fileName);
   if (folder) {
     return folder.uri.fsPath;
   }
@@ -157,13 +157,13 @@ export function getProjectFolder(fileName) {
   let liveshareFolder = null;
   if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     for (let i = 0; i < workspace.workspaceFolders.length; i++) {
-      let workspaceFolder = workspace.workspaceFolders[i];
+      const workspaceFolder = workspace.workspaceFolders[i];
       if (workspaceFolder.uri) {
-        let isVslsScheme = workspaceFolder.uri.scheme === "vsls" ? true : false;
+        const isVslsScheme = workspaceFolder.uri.scheme === "vsls" ? true : false;
         if (isVslsScheme) {
           liveshareFolder = workspaceFolder;
         }
-        let folderUri = workspaceFolder.uri;
+        const folderUri = workspaceFolder.uri;
         if (folderUri && folderUri.fsPath && !isVslsScheme && fileName.includes(folderUri.fsPath)) {
           return workspaceFolder;
         }
@@ -177,68 +177,22 @@ export function getProjectFolder(fileName) {
   return null;
 }
 
-export function isLinux() {
-  return isWindows() || isMac() ? false : true;
-}
-
-// process.platform return the following...
-//   -> 'darwin', 'freebsd', 'linux', 'sunos' or 'win32'
-export function isWindows() {
-  return process.platform.indexOf("win32") !== -1;
-}
-
-export function isMac() {
-  return process.platform.indexOf("darwin") !== -1;
-}
-
-export async function getHostname() {
-  let hostname = execCmd("hostname");
-  return hostname;
-}
-
-export function getOs() {
-  let parts = [];
-  let osType = os.type();
-  if (osType) {
-    parts.push(osType);
-  }
-  let osRelease = os.release();
-  if (osRelease) {
-    parts.push(osRelease);
-  }
-  let platform = os.platform();
-  if (platform) {
-    parts.push(platform);
-  }
-  if (parts.length > 0) {
-    return parts.join("_");
-  }
-  return "";
-}
-
-export async function getOsUsername() {
-  let username = os.userInfo().username;
-  if (!username || username.trim() === "") {
-    username = execCmd("whoami");
-  }
-  return username;
-}
 
 export function getPluginUuid() {
-  let plugin_uuid = fileIt.getJsonValue(getDeviceFile(), "plugin_uuid");
+  let plugin_uuid = getJsonItem(getDeviceFile(), "plugin_uuid");
   if (!plugin_uuid) {
     // set it for the 1st and only time
     plugin_uuid = uuidv4();
-    fileIt.setJsonValue(getDeviceFile(), "plugin_uuid", plugin_uuid);
+    setJsonItem(getDeviceFile(), "plugin_uuid", plugin_uuid);
   }
   return plugin_uuid;
 }
 
 export function getAuthCallbackState(autoCreate = true) {
-  let auth_callback_state = fileIt.getJsonValue(getDeviceFile(), "auth_callback_state");
+  let auth_callback_state = getJsonItem(getDeviceFile(), "auth_callback_state");
   if (!auth_callback_state && autoCreate) {
     auth_callback_state = uuidv4();
-    fileIt.setJsonValue(getDeviceFile(), "auth_callback_state", auth_callback_state);
+    setJsonItem(getDeviceFile(), "auth_callback_state", auth_callback_state);
   }
   return auth_callback_state;
 }
@@ -250,15 +204,18 @@ export function getLocalREADMEFile() {
 }
 
 export function setAuthCallbackState(value: string) {
-  fileIt.setJsonValue(getDeviceFile(), "auth_callback_state", value);
+  setJsonItem(getDeviceFile(), "auth_callback_state", value);
 }
 
 export function getLogId() {
   return 'MusicTime';
 }
 
-export function logIt(message: string) {
+export function logIt(message: string, isError: boolean = false) {
   outputChannel.appendLine(`${formatISO(new Date())} ${getLogId()}: ${message}`);
+	if (isError) {
+    console.error(message)
+  }
 }
 
 export async function showOfflinePrompt(addReconnectMsg = false) {
@@ -278,7 +235,7 @@ export function nowInSecs() {
 }
 
 export function getOffsetSeconds() {
-  let d = new Date();
+  const d = new Date();
   return d.getTimezoneOffset() * 60;
 }
 
