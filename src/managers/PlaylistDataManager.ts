@@ -39,7 +39,7 @@ let spotifyLikedTracks: PlaylistItem[] = undefined;
 let spotifyPlaylists: PlaylistItem[] = undefined;
 let softwareTop40Playlist: PlaylistItem = undefined;
 let recommendedTracks: PlaylistItem[] = undefined;
-let playlistTracks: any = {};
+const playlistTracks: any = {};
 let selectedPlaylistId = undefined;
 let expandedPlaylistId: string = '';
 let selectedTrackItem: PlaylistItem = undefined;
@@ -291,7 +291,7 @@ function createUriFromTrackId(track_id: string) {
 }
 
 function getTracksFromTrackId(trackId, existingTracks) {
-  let uris = [];
+  const uris = [];
   let foundTrack = false;
   if (existingTracks?.length) {
     for (const track of existingTracks) {
@@ -390,7 +390,7 @@ export async function fetchTracksForPlaylist(playlist_id) {
 
   if (!playlistTracks[playlist_id] && playlist_id !== SPOTIFY_LIKED_SONGS_PLAYLIST_ID) {
     const results: CodyResponse = await getPlaylistTracks(PlayerName.SpotifyWeb, playlist_id);
-    let tracks: PlaylistItem[] = await getPlaylistItemTracksFromCodyResponse(results);
+    const tracks: PlaylistItem[] = await getPlaylistItemTracksFromCodyResponse(results);
     // add the playlist id to the tracks
     if (tracks?.length) {
       for await (const t of tracks) {
@@ -489,14 +489,14 @@ export function getTrackRecommendations(playlistItem: PlaylistItem) {
 
 export async function getAlbumForTrack(playlistItem: PlaylistItem) {
   let albumId = playlistItem["albumId"];
-  let albumName = playlistItem["album"] ? playlistItem["album"]["name"] : "";
+  const albumName = playlistItem["album"] ? playlistItem["album"]["name"] : "";
   if (!albumId && playlistItem["album"]) {
     albumId = playlistItem["album"]["id"];
   }
 
   if (albumId) {
     const albumTracks: Track[] = await getSpotifyAlbumTracks(albumId);
-    let items: PlaylistItem[] = [];
+    const items: PlaylistItem[] = [];
 
     if (albumTracks?.length) {
       let idx = 1;
@@ -565,7 +565,7 @@ export async function getRecommendations(
       features
     );
 
-    let items: PlaylistItem[] = [];
+    const items: PlaylistItem[] = [];
     if (tracks?.length) {
       let idx = 1;
       for await (const t of tracks) {
@@ -908,9 +908,9 @@ export function createSpotifyIdFromUri(id: string) {
 }
 
 async function getPlaylistItemTracksFromCodyResponse(codyResponse: CodyResponse): Promise<PlaylistItem[]> {
-  let playlistItems: PlaylistItem[] = [];
+  const playlistItems: PlaylistItem[] = [];
   if (codyResponse && codyResponse.state === CodyResponseType.Success) {
-    let paginationItem: PaginationItem = codyResponse.data;
+    const paginationItem: PaginationItem = codyResponse.data;
 
     if (paginationItem && paginationItem.items) {
       let idx = 1;
@@ -930,7 +930,7 @@ export function createPlaylistItemFromTrack(track: Track, position: number = und
   if (position === undefined) {
     position = track.track_number;
   }
-  let playlistItem: PlaylistItem = new PlaylistItem();
+  const playlistItem: PlaylistItem = new PlaylistItem();
   playlistItem.type = "track";
   playlistItem.name = track.name;
   playlistItem.tooltip = getTrackTooltip(track);
@@ -1024,7 +1024,7 @@ async function getTrackIdsForRecommendations(seedLimit: number = 5, seedTracks =
     });
   }
 
-  let trackIds = seedTracks.map((n) => n.id);
+  const trackIds = seedTracks.map((n) => n.id);
   return trackIds;
 }
 

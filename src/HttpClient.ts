@@ -41,7 +41,7 @@ export async function appPost(api: string, payload: any) {
 }
 
 export function isResponseOk(resp: any) {
-  let status = getResponseStatus(resp);
+  const status = getResponseStatus(resp);
   if (status && resp && status < 300) {
     return true;
   }

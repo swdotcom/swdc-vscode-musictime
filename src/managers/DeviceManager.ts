@@ -1,6 +1,5 @@
 import { execCmd } from "./ExecManager";
 
-
 const os = require("os");
 
 export function isLinux() {
@@ -18,21 +17,21 @@ export function isMac() {
 }
 
 export async function getHostname() {
-  let hostname = execCmd("hostname");
+  const hostname = execCmd("hostname");
   return hostname;
 }
 
 export function getOs() {
-  let parts = [];
-  let osType = os.type();
+  const parts = [];
+  const osType = os.type();
   if (osType) {
     parts.push(osType);
   }
-  let osRelease = os.release();
+  const osRelease = os.release();
   if (osRelease) {
     parts.push(osRelease);
   }
-  let platform = os.platform();
+  const platform = os.platform();
   if (platform) {
     parts.push(platform);
   }

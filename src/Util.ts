@@ -146,7 +146,7 @@ export function editorOpsExtInstalled() {
 }
 
 export function getRootPathForFile(fileName) {
-  let folder = getProjectFolder(fileName);
+  const folder = getProjectFolder(fileName);
   if (folder) {
     return folder.uri.fsPath;
   }
@@ -157,13 +157,13 @@ export function getProjectFolder(fileName) {
   let liveshareFolder = null;
   if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     for (let i = 0; i < workspace.workspaceFolders.length; i++) {
-      let workspaceFolder = workspace.workspaceFolders[i];
+      const workspaceFolder = workspace.workspaceFolders[i];
       if (workspaceFolder.uri) {
-        let isVslsScheme = workspaceFolder.uri.scheme === "vsls" ? true : false;
+        const isVslsScheme = workspaceFolder.uri.scheme === "vsls" ? true : false;
         if (isVslsScheme) {
           liveshareFolder = workspaceFolder;
         }
-        let folderUri = workspaceFolder.uri;
+        const folderUri = workspaceFolder.uri;
         if (folderUri && folderUri.fsPath && !isVslsScheme && fileName.includes(folderUri.fsPath)) {
           return workspaceFolder;
         }
@@ -235,7 +235,7 @@ export function nowInSecs() {
 }
 
 export function getOffsetSeconds() {
-  let d = new Date();
+  const d = new Date();
   return d.getTimezoneOffset() * 60;
 }
 

@@ -97,7 +97,6 @@ export class MusicControlManager {
    * {status, state, statusText, message, data.status, error}
    */
   async playSong(tries = 0) {
-    let result: any = null;
     const deviceId = getBestActiveDevice();
     const controlMgr: MusicControlManager = MusicControlManager.getInstance();
     if (!deviceId && tries === 1) {
@@ -106,6 +105,7 @@ export class MusicControlManager {
     } else {
       let playerContext: PlayerContext = await getPlayerContext();
       if (!playerContext.is_playing) {
+				let result: any = null;
         if (controlMgr.useSpotifyDesktop()) {
           result = await play(PlayerName.SpotifyDesktop);
         } else {
@@ -174,7 +174,7 @@ export class MusicControlManager {
   async setMuteOff() {
     const playerDevice: PlayerDevice = getBestActiveDevice();
     // setVolume(PlayerName.SpotifyWeb, 50);
-    const result = await MusicCommandUtil.getInstance().runSpotifyCommand(unmute, [PlayerName.SpotifyWeb, playerDevice?.id]);
+    await MusicCommandUtil.getInstance().runSpotifyCommand(unmute, [PlayerName.SpotifyWeb, playerDevice?.id]);
   }
 
   useSpotifyDesktop() {
@@ -383,7 +383,7 @@ export class MusicControlManager {
   }
 
   async showMenu() {
-    let menuOptions = {
+    const menuOptions = {
       items: [],
     };
 
@@ -472,7 +472,7 @@ export class MusicControlManager {
     const placeholder: string = hasPlaylistItemToAdd
       ? `${musicControlMgr.currentTrackToAdd.artist} - ${musicControlMgr.currentTrackToAdd.name}`
       : "New Playlist";
-    let playlistName = await musicControlMgr.showCreatePlaylistInputPrompt(placeholder);
+    const playlistName = await musicControlMgr.showCreatePlaylistInputPrompt(placeholder);
 
     if (playlistName && playlistName.trim().length === 0) {
       window.showInformationMessage("Please enter a playlist name to continue.");
@@ -489,7 +489,7 @@ export class MusicControlManager {
 
   async addToPlaylistMenu(playlistItem: PlaylistItem) {
     this.currentTrackToAdd = playlistItem;
-    let menuOptions = {
+    const menuOptions = {
       items: [
         {
           label: "New Playlist",
@@ -498,7 +498,7 @@ export class MusicControlManager {
       ],
       placeholder: "Select or Create a playlist",
     };
-    let playlists: PlaylistItem[] = await getSpotifyPlaylists();
+    const playlists: PlaylistItem[] = await getSpotifyPlaylists();
 
     sortPlaylists(playlists);
 

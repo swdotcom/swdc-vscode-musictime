@@ -83,7 +83,7 @@ export async function launchLogin(loginType: string = "software", switching_acco
 
   let url = "";
 
-  let obj = {
+  const obj = {
     plugin_id: getMusicTimePluginId(),
     plugin_uuid: getPluginUuid(),
     auth_callback_state,

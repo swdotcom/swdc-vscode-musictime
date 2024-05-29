@@ -55,7 +55,7 @@ export function createCommands(
 ): {
   dispose: () => void;
 } {
-  let cmds = [];
+  const cmds = [];
 
   const controller: MusicControlManager = MusicControlManager.getInstance();
 
@@ -318,7 +318,7 @@ export function createCommands(
 
   // DISCONNECT SLACK
   cmds.push(
-    commands.registerCommand("musictime.disconnectSlack", (item: any) => {
+    commands.registerCommand("musictime.disconnectSlack", () => {
       launchWebUrl(`${app_endpoint}/data_sources/integration_types/slack`);
     })
   );
@@ -390,7 +390,7 @@ export function createCommands(
   );
 
   cmds.push(
-    commands.registerCommand("musictime.refreshRecommendations", (args) => {
+    commands.registerCommand("musictime.refreshRecommendations", () => {
       refreshRecommendations();
     })
   );

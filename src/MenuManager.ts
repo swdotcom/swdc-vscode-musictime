@@ -11,7 +11,7 @@ export function showQuickPick(pickOptions): any {
     if (!pickOptions || !pickOptions["items"]) {
         return;
     }
-    let options: QuickPickOptions = {
+    const options: QuickPickOptions = {
         matchOnDescription: false,
         matchOnDetail: false,
         placeHolder: pickOptions.placeholder || ""
@@ -40,6 +40,6 @@ export async function buildWebDashboardUrl() {
 }
 
 export async function launchWebDashboardView() {
-    let webUrl = await buildWebDashboardUrl();
+    const webUrl = await buildWebDashboardUrl();
     launchWebUrl(`${webUrl}/login`);
 }

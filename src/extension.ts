@@ -17,6 +17,7 @@ let currentColorKind: number = undefined;
 let storageManager: LocalStorageManager | undefined = undefined;
 
 export function deactivate(ctx: ExtensionContext) {
+	if (storageManager) storageManager.clearDupStorageKeys();
   clearWebsocketClient();
   clearSpotifyAccessToken();
 }

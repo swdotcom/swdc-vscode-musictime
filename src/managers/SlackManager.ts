@@ -19,7 +19,7 @@ export async function connectSlackWorkspace() {
 }
 
 export async function showSlackChannelMenu() {
-  let menuOptions = {
+  const menuOptions = {
     items: [],
     placeholder: "Select a channel",
   };
@@ -102,7 +102,7 @@ async function getChannels() {
 }
 
 async function showSlackWorkspaceSelection() {
-  let menuOptions = {
+  const menuOptions = {
     items: [],
     placeholder: `Select a Slack workspace`,
   };

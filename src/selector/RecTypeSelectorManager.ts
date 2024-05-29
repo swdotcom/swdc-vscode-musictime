@@ -1,7 +1,7 @@
 import { showQuickPick } from "../MenuManager";
 
 export async function showGenreSelections() {
-    let menuOptions = {
+    const menuOptions = {
         items: [],
         placeholder: "Select a genre",
     };
@@ -32,7 +32,7 @@ export async function showGenreSelections() {
 }
 
 export async function showMoodSelections() {
-    let menuOptions = {
+    const menuOptions = {
         items: [],
         placeholder: "Select a mood",
     };

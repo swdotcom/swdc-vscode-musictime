@@ -44,7 +44,7 @@ export class MusicCommandUtil {
 
   async checkIfAccessExpired(result) {
     if (this.getResponseStatus(result) === 401) {
-      let expired = await accessExpired();
+      const expired = await accessExpired();
       if (expired) {
         console.error("Spotify access expired: ", result);
       }

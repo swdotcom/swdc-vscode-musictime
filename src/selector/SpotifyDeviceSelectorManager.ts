@@ -6,7 +6,7 @@ export async function showDeviceSelectorMenu() {
   const devices: PlayerDevice[] = getCurrentDevices();
 
   // list all devices that are found
-  let items: any[] = [];
+  const items: any[] = [];
   if (devices && devices.length) {
     devices.forEach((d: PlayerDevice) => {
       const detail = d.is_active ? `Active at ${d.volume_percent}% volume` : `Inactive at ${d.volume_percent}% volume`;
@@ -37,7 +37,7 @@ export async function showDeviceSelectorMenu() {
       command: "musictime.launchSpotify",
     });
   }
-  let menuOptions = {
+  const menuOptions = {
     items,
     placeholder: "Launch a Spotify device",
   };

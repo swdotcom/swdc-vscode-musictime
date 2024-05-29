@@ -742,7 +742,7 @@ export class MusicTimeWebviewSidebar implements Disposable, WebviewViewProvider 
     let selectedPlaylistId = undefined;
     let audioMetrics: any = {};
     let recommendationInfo = {tracks: [], label: ''};
-    let likedPlaylistItem = getSpotifyLikedPlaylist();
+    const likedPlaylistItem = getSpotifyLikedPlaylist();
     let likedTracks = [];
     let playerContext: PlayerContext = undefined;
 

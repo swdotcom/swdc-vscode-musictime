@@ -13,7 +13,7 @@ import { commands, window } from "vscode";
 import { RECOMMENDATION_PLAYLIST_ID, SPOTIFY_LIKED_SONGS_PLAYLIST_ID } from "../Constants";
 import { MusicCommandUtil } from "../music/MusicCommandUtil";
 import { MusicControlManager } from '../music/MusicControlManager';
-import { createSpotifyIdFromUri, createUriFromPlaylistId, createUriFromTrackId } from "../Util";
+import { createSpotifyIdFromUri, createUriFromPlaylistId, createUriFromTrackId, logIt } from "../Util";
 import {
   getBestActiveDevice,
   getCachedLikedSongsTracks,
@@ -51,7 +51,7 @@ export async function playSelectedItem(playlistItem: PlaylistItem) {
 }
 
 export async function launchTrackPlayer(playerName: PlayerName = null, callback: any = null) {
-  const { webPlayer, desktop, activeDevice, activeComputerDevice, activeWebPlayerDevice, activeDesktopPlayerDevice } = getDeviceSet();
+  const { desktop, activeDesktopPlayerDevice } = getDeviceSet();
 
   const hasDesktopDevice = activeDesktopPlayerDevice || desktop ? true : false;
 
@@ -196,7 +196,7 @@ async function checkPlayingState(deviceId: string, tries = 3) {
   // get the selected track and execute post play commands like 'repeat'
   setTimeout(() => {
     const trackItem:PlaylistItem = getSelectedTrackItem();
-    if (!!trackItem['repeat']) {
+    if (trackItem['repeat']) {
       MusicControlManager.getInstance().setRepeatTrackOn();
     }
     commands.executeCommand("musictime.refreshMusicTimeView");
@@ -256,7 +256,9 @@ async function playMusicSelection() {
         const likedTrackUris = getLikedURIsFromTrackId(trackId);
         play(PlayerName.SpotifyWeb, { device_id: device?.id, uris: likedTrackUris, offset: 0 });
       }
-    } catch (e) {}
+    } catch (e) {
+			logIt(`Unable to play the selected track: ${e.message}`, true);
+		}
   } else {
     if (isMac() && desktopSelected) {
       // play it using applescript
@@ -281,7 +283,7 @@ export async function playNextLikedSong() {
   const likedSongs: PlaylistItem[] = await getCachedLikedSongsTracks();
   const nextIdx = await getNextOrPrevLikedIndex(true);
 
-  let nextLikedTrack = likedSongs[nextIdx];
+  const nextLikedTrack = likedSongs[nextIdx];
 
   const selectedPlayer = getSelectedPlayerName() || PlayerName.SpotifyWeb;
   playTrackInContext(selectedPlayer, [createUriFromTrackId(nextLikedTrack.id)]);
@@ -291,7 +293,7 @@ export async function playPreviousLikedSongs() {
   const likedSongs: PlaylistItem[] = await getCachedLikedSongsTracks();
   const prevIdx = await getNextOrPrevLikedIndex(false);
 
-  let nextLikedTrack = likedSongs[prevIdx];
+  const nextLikedTrack = likedSongs[prevIdx];
 
   const selectedPlayer = getSelectedPlayerName() || PlayerName.SpotifyWeb;
   playTrackInContext(selectedPlayer, [createUriFromTrackId(nextLikedTrack.id)]);

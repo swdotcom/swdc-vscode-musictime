@@ -35,7 +35,7 @@ export class SocialShareManager {
     }
 
     shareIt(sharer: string, options: any) {
-        let shareUrl = this.getShareUrl(sharer, options);
+        const shareUrl = this.getShareUrl(sharer, options);
         launchWebUrl(shareUrl);
     }
 
@@ -93,7 +93,7 @@ export class SocialShareManager {
         musicId = id;
         playlistSelected = isPlaylist;
 
-        let menuOptions = {
+        const menuOptions = {
             items: []
         };
 
