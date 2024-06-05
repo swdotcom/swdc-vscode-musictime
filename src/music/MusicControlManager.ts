@@ -178,7 +178,7 @@ export class MusicControlManager {
   }
 
   useSpotifyDesktop() {
-    const { webPlayer, desktop, activeDevice, activeComputerDevice, activeWebPlayerDevice, activeDesktopPlayerDevice } = getDeviceSet();
+    const { desktop, activeDesktopPlayerDevice } = getDeviceSet();
 
     if (isMac() && (desktop || activeDesktopPlayerDevice)) {
       return true;
