@@ -28,12 +28,7 @@ import { MusicCommandManager } from "./MusicCommandManager";
 import { showQuickPick } from "../MenuManager";
 import { playInitialization } from "../managers/PlaylistControlManager";
 import { createSpotifyIdFromUri, createUriFromTrackId, getCodyErrorMessage } from "../Util";
-import {
-  SPOTIFY_LIKED_SONGS_PLAYLIST_NAME,
-  OK_LABEL,
-  SPOTIFY_LIKED_SONGS_PLAYLIST_ID,
-  RECOMMENDATION_PLAYLIST_ID,
-} from "../Constants";
+import { SPOTIFY_LIKED_SONGS_PLAYLIST_NAME, OK_LABEL, SPOTIFY_LIKED_SONGS_PLAYLIST_ID, RECOMMENDATION_PLAYLIST_ID } from "../Constants";
 import { SocialShareManager } from "../social/SocialShareManager";
 import { MusicPlaylistManager } from "./MusicPlaylistManager";
 import { MusicCommandUtil } from "./MusicCommandUtil";
@@ -53,7 +48,7 @@ import {
   createPlaylistItemFromTrack,
   getSelectedPlaylistId,
   updateLikedStatusInPlaylist,
-  getPlayerContext
+  getPlayerContext,
 } from "../managers/PlaylistDataManager";
 import { connectSlackWorkspace, hasSlackWorkspaces } from "../managers/SlackManager";
 import { isMac, isWindows } from "../managers/DeviceManager";
@@ -105,7 +100,7 @@ export class MusicControlManager {
     } else {
       let playerContext: PlayerContext = await getPlayerContext();
       if (!playerContext.is_playing) {
-				let result: any = null;
+        let result: any = null;
         if (controlMgr.useSpotifyDesktop()) {
           result = await play(PlayerName.SpotifyDesktop);
         } else {
@@ -178,7 +173,7 @@ export class MusicControlManager {
   }
 
   useSpotifyDesktop() {
-    const { webPlayer, desktop, activeDevice, activeComputerDevice, activeWebPlayerDevice, activeDesktopPlayerDevice } = getDeviceSet();
+    const { desktop, activeDesktopPlayerDevice } = getDeviceSet();
 
     if (isMac() && (desktop || activeDesktopPlayerDevice)) {
       return true;
@@ -321,20 +316,14 @@ export class MusicControlManager {
 
     if (isRecommendationTrack) {
       updateLikedStatusInPlaylist(selectedPlaylistId, trackId, liked);
-      commands.executeCommand(
-        "musictime.refreshMusicTimeView",
-        { tabView: "recommendations", playlistId: selectedPlaylistId }
-      );
+      commands.executeCommand("musictime.refreshMusicTimeView", { tabView: "recommendations", playlistId: selectedPlaylistId });
     } else {
       // update liked state in the playlist the track is in
       if (selectedPlaylistId !== SPOTIFY_LIKED_SONGS_PLAYLIST_ID) {
         updateLikedStatusInPlaylist(selectedPlaylistId, trackId, liked);
       }
       if (selectedPlaylistId) {
-        commands.executeCommand(
-          "musictime.refreshMusicTimeView",
-          { tabView: "playlists", playlistId: selectedPlaylistId, refreshOpenFolder: true }
-        );
+        commands.executeCommand("musictime.refreshMusicTimeView", { tabView: "playlists", playlistId: selectedPlaylistId, refreshOpenFolder: true });
       }
     }
   }

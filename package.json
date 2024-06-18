@@ -1,7 +1,7 @@
 {
   "name": "music-time",
   "displayName": "Music Time for Spotify",
-  "version": "2.2.44",
+  "version": "2.2.45",
   "publisher": "softwaredotcom",
   "description": "Music Time for Spotify is a VS Code extension that discovers the most productive music to listen to as you code.",
   "author": {
@@ -202,7 +202,7 @@
     "@eslint/js": "^9.3.0",
     "@types/copy-webpack-plugin": "^8.0.1",
     "@types/mocha": "^9.0.0",
-    "@types/node": "^16.10.3",
+    "@types/node": "^20.14.1",
     "@types/vscode": "^1.52.0",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
@@ -213,7 +213,7 @@
     "ts-loader": "^9.2.6",
     "tslint": "^6.1.3",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "^4.5.5",
+    "typescript": "^5.4.5",
     "typescript-eslint": "^7.11.0",
     "webpack": "^5.76.0",
     "webpack-cli": "^4.9.2"
@@ -224,7 +224,7 @@
     "@types/ws": "^8.5.10",
     "axios": "^1.7.2",
     "clipboardy": "^4.0.0",
-    "cody-music": "2.10.7",
+    "cody-music": "2.10.8",
     "date-fns": "^3.6.0",
     "open": "^8.4.0",
     "query-string": "^7.0.1",

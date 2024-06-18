@@ -484,7 +484,7 @@ export function getMixedAudioFeatureRecs(features) {
 }
 
 export function getTrackRecommendations(playlistItem: PlaylistItem) {
-  return getRecommendations(playlistItem.name, 4, [], {}, 0, [playlistItem]);
+  return getRecommendations(playlistItem.name, 5, [], {}, 0, [playlistItem]);
 }
 
 export async function getAlbumForTrack(playlistItem: PlaylistItem) {
