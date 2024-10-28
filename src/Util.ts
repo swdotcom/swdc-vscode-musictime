@@ -10,10 +10,10 @@ import { isWindows } from "./managers/DeviceManager";
 
 import open from 'open';
 
-import fs = require("fs");
-import path = require('path');
-import os = require("os");
-import crypto = require("crypto");
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
+import * as crypto from 'crypto';
 
 const outputChannel = window.createOutputChannel('MusicTime');
 
@@ -96,7 +96,7 @@ export function getSoftwareDir() {
   return softwareDataDir;
 }
 
-function getFile(name: string, default_data: any = {}) {
+function getFile(name: string, default_data = {}) {
   const file_path = getSoftwareDir();
   const file = isWindows() ? `${file_path}\\${name}` : `${file_path}/${name}`;
   if (!fs.existsSync(file)) {
@@ -260,7 +260,7 @@ export function deleteFile(file) {
  */
 export function formatPathIfNecessary(pathString: string) {
   if (process.platform === "win32") {
-    pathString = pathString.replace(/^([a-zA-Z])\:\\/, (_, $1) => `${$1.toUpperCase()}:\\`);
+    pathString = pathString.replace(/^([a-zA-Z]):\\/, (_, $1) => `${$1.toUpperCase()}:\\`);
   }
   return pathString;
 }
