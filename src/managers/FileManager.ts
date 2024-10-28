@@ -3,7 +3,7 @@ import { logIt } from "../Util";
 import { isWindows } from "./DeviceManager";
 import { LocalStorageManager } from "./LocalStorageManager";
 
-const fs = require('fs');
+import fs = require('fs');
 
 let storageMgr: LocalStorageManager | undefined = undefined;
 

@@ -682,7 +682,7 @@ export async function showReconnectPrompt(email) {
 
   if (selection === reconnectButtonLabel) {
     // now launch re-auth
-    launchWebUrl(`${app_endpoint}/data_sources/integration_types/spotify`);
+    launchWebUrl(`${app_endpoint}/code_time/integration_type/spotify`);
   }
 }
 

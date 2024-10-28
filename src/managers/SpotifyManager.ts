@@ -81,7 +81,7 @@ export async function populateSpotifyUser(hardRefresh = false) {
 export async function switchSpotifyAccount() {
   const selection = await window.showInformationMessage(`Are you sure you would like to connect to a different Spotify account?`, ...[YES_LABEL]);
   if (selection === YES_LABEL) {
-    launchWebUrl(`${app_endpoint}/data_sources/integration_types/spotify`);
+    launchWebUrl(`${app_endpoint}/code_time/integration_type/spotify`);
   }
 }
 

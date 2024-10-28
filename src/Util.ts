@@ -8,11 +8,12 @@ import { v4 as uuidv4 } from "uuid";
 import { initializeWebsockets, websocketAlive } from './websockets';
 import { isWindows } from "./managers/DeviceManager";
 
-const open = require("open");
-const fs = require("fs");
-const path = require('path');
-const os = require("os");
-const crypto = require("crypto");
+import open from 'open';
+
+import fs = require("fs");
+import path = require('path');
+import os = require("os");
+import crypto = require("crypto");
 
 const outputChannel = window.createOutputChannel('MusicTime');
 
