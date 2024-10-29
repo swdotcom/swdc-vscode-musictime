@@ -8,11 +8,12 @@ import { v4 as uuidv4 } from "uuid";
 import { initializeWebsockets, websocketAlive } from './websockets';
 import { isWindows } from "./managers/DeviceManager";
 
-const open = require("open");
-const fs = require("fs");
-const path = require('path');
-const os = require("os");
-const crypto = require("crypto");
+import open from 'open';
+
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
+import * as crypto from 'crypto';
 
 const outputChannel = window.createOutputChannel('MusicTime');
 
@@ -95,7 +96,7 @@ export function getSoftwareDir() {
   return softwareDataDir;
 }
 
-function getFile(name: string, default_data: any = {}) {
+function getFile(name: string, default_data = {}) {
   const file_path = getSoftwareDir();
   const file = isWindows() ? `${file_path}\\${name}` : `${file_path}/${name}`;
   if (!fs.existsSync(file)) {
@@ -259,7 +260,7 @@ export function deleteFile(file) {
  */
 export function formatPathIfNecessary(pathString: string) {
   if (process.platform === "win32") {
-    pathString = pathString.replace(/^([a-zA-Z])\:\\/, (_, $1) => `${$1.toUpperCase()}:\\`);
+    pathString = pathString.replace(/^([a-zA-Z]):\\/, (_, $1) => `${$1.toUpperCase()}:\\`);
   }
   return pathString;
 }

@@ -45,7 +45,7 @@ import { app_endpoint, vscode_mt_issues_url } from "./Constants";
 import { displayReadmeIfNotExists } from './DataController';
 import { MusicCommandManager } from './music/MusicCommandManager';
 
-const queryString = require("query-string");
+import queryString = require("query-string");
 
 /**
  * add the commands to vscode....
@@ -291,7 +291,7 @@ export function createCommands(
         plugin_id: getMusicTimePluginId()
       });
 
-      const url = `${app_endpoint}/data_sources/integration_types/spotify}?${qryStr}`;
+      const url = `${app_endpoint}/code_time/integration_type/spotify}?${qryStr}`;
       launchWebUrl(url);
     })
   );
@@ -299,27 +299,27 @@ export function createCommands(
   // CONNECT SLACK
   cmds.push(
     commands.registerCommand("musictime.connectSlack", () => {
-      launchWebUrl(`${app_endpoint}/data_sources/integration_types/slack`);
+      launchWebUrl(`${app_endpoint}/code_time/integration_type/slack`);
     })
   );
 
   cmds.push(
     commands.registerCommand("musictime.connectSlackWorkspace", () => {
-      launchWebUrl(`${app_endpoint}/data_sources/integration_types/slack`);
+      launchWebUrl(`${app_endpoint}/code_time/integration_type/slack`);
     })
   );
 
   // DISCONNECT SPOTIFY
   cmds.push(
     commands.registerCommand("musictime.disconnectSpotify", () => {
-      launchWebUrl(`${app_endpoint}/data_sources/integration_types/spotify`);
+      launchWebUrl(`${app_endpoint}/code_time/integration_type/spotify`);
     })
   );
 
   // DISCONNECT SLACK
   cmds.push(
     commands.registerCommand("musictime.disconnectSlack", () => {
-      launchWebUrl(`${app_endpoint}/data_sources/integration_types/slack`);
+      launchWebUrl(`${app_endpoint}/code_time/integration_type/slack`);
     })
   );
 
@@ -451,7 +451,7 @@ export function createCommands(
 
   cmds.push(
     commands.registerCommand("musictime.refreshMusicTimeView", async (
-      payload: any = {refreshOpenFolder: true, playlistId: getSelectedPlaylistId(), tabView: getSelectedTabView()}
+      payload = {refreshOpenFolder: true, playlistId: getSelectedPlaylistId(), tabView: getSelectedTabView()}
     ) => {
       let reload: boolean = false;
       if (payload.playlistId) {
@@ -563,8 +563,8 @@ export function createCommands(
   );
 
   cmds.push(
-    commands.registerCommand("musictime.playRecommendations", async (payload: any) => {
-      const recs: any = getCachedRecommendationInfo();
+    commands.registerCommand("musictime.playRecommendations", async (payload) => {
+      const recs = getCachedRecommendationInfo();
       // find the track index
       const offset: number = recs.tracks.findIndex(n => {
         return n.id === payload.trackId;
@@ -601,7 +601,7 @@ export function createCommands(
   );
 
   cmds.push(
-    commands.registerCommand("musictime.installCodeTime", async (item: PlaylistItem) => {
+    commands.registerCommand("musictime.installCodeTime", async () => {
       launchWebUrl("vscode:extension/softwaredotcom.swdc-vscode");
     })
   );

@@ -12,7 +12,7 @@ export async function connectSlackWorkspace() {
     return;
   }
 
-  const url = `${app_endpoint}/data_sources/integration_types/slack`;
+  const url = `${app_endpoint}/code_time/integration_type/slack`;
 
   // authorize the user for slack
   launchWebUrl(url);

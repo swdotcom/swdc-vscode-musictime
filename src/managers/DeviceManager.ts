@@ -1,6 +1,6 @@
 import { execCmd } from "./ExecManager";
 
-const os = require("os");
+import * as os from "os";
 
 export function isLinux() {
   return isWindows() || isMac() ? false : true;

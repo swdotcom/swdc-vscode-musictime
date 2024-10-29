@@ -3,7 +3,7 @@ import { logIt } from "../Util";
 import { isWindows } from "./DeviceManager";
 import { LocalStorageManager } from "./LocalStorageManager";
 
-const fs = require('fs');
+import * as fs from 'fs';
 
 let storageMgr: LocalStorageManager | undefined = undefined;
 
@@ -26,7 +26,7 @@ export async function storeJsonData(fileName, json) {
 	try {
     const content: string = JSON.stringify(json);
     fs.writeFileSync(fileName, content, 'utf8');
-  } catch (e: any) {
+  } catch (e) {
     logIt(`Unable to write ${fileName} info: ${e.message}`, true);
   }
 }

@@ -50,7 +50,7 @@ export async function playSelectedItem(playlistItem: PlaylistItem) {
   await playInitialization(playMusicSelection);
 }
 
-export async function launchTrackPlayer(playerName: PlayerName = null, callback: any = null) {
+export async function launchTrackPlayer(playerName: PlayerName = null, callback = null) {
   const { desktop, activeDesktopPlayerDevice } = getDeviceSet();
 
   const hasDesktopDevice = activeDesktopPlayerDevice || desktop ? true : false;
@@ -103,7 +103,7 @@ export async function launchTrackPlayer(playerName: PlayerName = null, callback:
 
 // PRIVATE FUNCTIONS
 
-export async function playInitialization(callback: any = null) {
+export async function playInitialization(callback) {
   const { desktop } = getDeviceSet();
   const device = getBestActiveDevice();
 
@@ -129,7 +129,7 @@ export async function playInitialization(callback: any = null) {
   }
 }
 
-export async function showPlayerLaunchConfirmation(callback: any = null) {
+export async function showPlayerLaunchConfirmation(callback) {
   // if they're a mac non-premium user, just launch the desktop player
 
   if (isMac() && !isPremiumUser()) {
@@ -153,7 +153,7 @@ export async function showPlayerLaunchConfirmation(callback: any = null) {
   return;
 }
 
-async function checkDeviceLaunch(playerName: PlayerName, tries: number = 5, callback: any = null) {
+async function checkDeviceLaunch(playerName: PlayerName, tries: number = 5, callback) {
   setTimeout(async () => {
     await populateSpotifyDevices(true /*retry*/);
 
@@ -196,7 +196,7 @@ async function checkPlayingState(deviceId: string, tries = 3) {
   // get the selected track and execute post play commands like 'repeat'
   setTimeout(() => {
     const trackItem:PlaylistItem = getSelectedTrackItem();
-    if (trackItem['repeat']) {
+    if (trackItem && trackItem['repeat']) {
       MusicControlManager.getInstance().setRepeatTrackOn();
     }
     commands.executeCommand("musictime.refreshMusicTimeView");
@@ -206,7 +206,7 @@ async function checkPlayingState(deviceId: string, tries = 3) {
 async function playSelectedTrackItems() {
   const selectedTrackItems = getSelectedTrackItems();
   const device = getBestActiveDevice();
-  const uris: any[] = selectedTrackItems.map((item: PlaylistItem) => {
+  const uris = selectedTrackItems.map((item: PlaylistItem) => {
     let track_id = item.id ? item.id : item["song_id"];
     if (track_id && !track_id.includes("spotify:track:")) {
       track_id = `spotify:track:${track_id}`;
@@ -266,7 +266,9 @@ async function playMusicSelection() {
       const params = [trackUri, playlistUri];
       try {
         result = await playTrackInContext(selectedPlayer, params);
-      } catch (e) {}
+      } catch (e) {
+				logIt(`Unable to play the selected track: ${e.message}`, true);
+			}
     }
     if (!result || result !== "ok") {
       // try with the web player
