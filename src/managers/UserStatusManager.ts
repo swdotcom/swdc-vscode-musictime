@@ -11,10 +11,6 @@ const queryString = require("query-string");
 
 let currentUser: any | null = null;
 
-export function getCachedUser() {
-  return currentUser;
-}
-
 export async function getUser(useCache = false) {
   if (useCache && currentUser) {
     updateCodyConfig();
@@ -190,29 +186,4 @@ export async function getCachedSpotifyIntegrations() {
       (integration: any) => integration.status === 'ACTIVE' && (integration.integration_type_id === 12));
   }
   return [];
-}
-
-export async function getLatestSpotifyIntegration() {
-  const spotifyIntegrations: any[] = await getCachedSpotifyIntegrations();
-  if (spotifyIntegrations?.length) {
-    const sorted = spotifyIntegrations.sort((a, b) => {
-      const aDate = a.updatedAt ? new Date(a.updatedAt).getTime() : new Date(a.updated_at).getTime();
-      const bDate = b.updatedAt ? new Date(b.updatedAt).getTime() : new Date(b.updated_at).getTime();
-      if (aDate > bDate) return 1;
-      if (aDate < bDate) return -1;
-      return 0;
-    });
-    return sorted[0];
-  }
-  return null;
-}
-
-export function isActiveIntegration(type: string, integration: any) {
-  if (integration && integration.status.toLowerCase() === "active") {
-    if (integration.integration_type) {
-      return !!(integration.integration_type.type.toLowerCase() === type.toLowerCase())
-    }
-    return !!(integration.name.toLowerCase() === type.toLowerCase())
-  }
-  return false;
 }

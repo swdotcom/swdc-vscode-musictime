@@ -139,12 +139,6 @@ export class SocialShareManager {
     });
   }
 
-  async validateMessage(name: string) {
-    // ...validate...
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    // return name === 'vscode' ? 'Name not unique' : undefined;
-  }
-
   async shareSlack() {
     const { selectedChannel, access_token } = await showSlackChannelMenu();
     if (!selectedChannel) {

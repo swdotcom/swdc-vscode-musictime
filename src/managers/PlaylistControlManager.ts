@@ -180,7 +180,8 @@ async function checkDeviceLaunch(playerName: PlayerName, tries: number = 5, call
 async function checkPlayingState(deviceId: string, tries = 3) {
   tries--;
   const playerContext: PlayerContext = await getPlayerContext();
-  if (!playerContext || !playerContext.item || playerContext.item !== TrackStatus.Playing) {
+	// is_playing is true whether the track is paused or playing
+  if (!playerContext || playerContext.is_playing === false) {
     if (tries >= 0) {
       setTimeout(() => {
         checkPlayingState(deviceId, tries);
@@ -217,7 +218,7 @@ async function playSelectedTrackItems() {
   play(PlayerName.SpotifyWeb, { device_id: device?.id, uris, offset: 0 });
   setTimeout(() => {
     checkPlayingState(device.id);
-  }, 1000);
+  }, 1500);
 }
 
 async function playMusicSelection() {
@@ -278,27 +279,7 @@ async function playMusicSelection() {
 
   setTimeout(() => {
     checkPlayingState(device.id);
-  }, 1000);
-}
-
-export async function playNextLikedSong() {
-  const likedSongs: PlaylistItem[] = await getCachedLikedSongsTracks();
-  const nextIdx = await getNextOrPrevLikedIndex(true);
-
-  const nextLikedTrack = likedSongs[nextIdx];
-
-  const selectedPlayer = getSelectedPlayerName() || PlayerName.SpotifyWeb;
-  playTrackInContext(selectedPlayer, [createUriFromTrackId(nextLikedTrack.id)]);
-}
-
-export async function playPreviousLikedSongs() {
-  const likedSongs: PlaylistItem[] = await getCachedLikedSongsTracks();
-  const prevIdx = await getNextOrPrevLikedIndex(false);
-
-  const nextLikedTrack = likedSongs[prevIdx];
-
-  const selectedPlayer = getSelectedPlayerName() || PlayerName.SpotifyWeb;
-  playTrackInContext(selectedPlayer, [createUriFromTrackId(nextLikedTrack.id)]);
+  }, 1500);
 }
 
 async function getNextOrPrevLikedIndex(get_next: boolean) {

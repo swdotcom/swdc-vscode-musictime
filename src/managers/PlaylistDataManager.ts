@@ -59,10 +59,6 @@ let audioFeatures: AudioFeatures = undefined;
 // UPDATE EXPORTS
 ////////////////////////////////////////////////////////////////
 
-export function updateSpotifyLikedTracks(songs) {
-  spotifyLikedTracks = songs;
-}
-
 export function removeTrackFromLikedPlaylist(trackId) {
   spotifyLikedTracks = spotifyLikedTracks.filter((n) => n.id !== trackId);
 }
@@ -71,11 +67,6 @@ export function addTrackToLikedPlaylist(playlistItem: PlaylistItem) {
   playlistItem["liked"] = true;
   playlistItem["playlist_id"] = SPOTIFY_LIKED_SONGS_PLAYLIST_ID;
   spotifyLikedTracks.unshift(playlistItem);
-}
-
-export function clearSelectedTrackInfo() {
-  selectedPlaylistId = undefined;
-  selectedTrackItem = undefined;
 }
 
 export function updateSelectedTrackStatus(status: TrackStatus) {
@@ -130,10 +121,6 @@ export async function getCachedAudioMetrics() {
 export async function getCachedFeaturesForRecomendations() {
   await getCachedAudioMetrics();
   return audioFeatures.getFeaturesForRecommendations();
-}
-
-export function updateCachedRunningTrack(track: Track) {
-  cachedRunningTrack = track;
 }
 
 export function updateLikedStatusInPlaylist(playlist_id, track_id, liked_state) {

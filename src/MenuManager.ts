@@ -1,6 +1,5 @@
 import { window, QuickPickOptions, commands } from "vscode";
 import { launchWebUrl } from "./Util";
-import { app_endpoint } from "./Constants";
 
 /**
  * Pass in the following array of objects
@@ -33,13 +32,4 @@ export function showQuickPick(pickOptions): any {
         }
         return item;
     });
-}
-
-export async function buildWebDashboardUrl() {
-    return app_endpoint;
-}
-
-export async function launchWebDashboardView() {
-    const webUrl = await buildWebDashboardUrl();
-    launchWebUrl(`${webUrl}/login`);
 }

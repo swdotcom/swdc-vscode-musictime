@@ -182,39 +182,6 @@ export class MusicControlManager {
   }
 
   /**
-   * Launch and play a spotify track via the web player.
-   * @param isTrack boolean
-   */
-  async playSpotifyWebPlaylistTrack(isTrack: boolean, devices: PlayerDevice[]) {
-    const trackRepeating = await isTrackRepeating();
-
-    // get the selected track
-    const selectedTrack = getSelectedTrackItem();
-
-    const isLikedSongsPlaylist = selectedTrack["playlist_id"] === SPOTIFY_LIKED_SONGS_PLAYLIST_NAME;
-    const playlistId = isLikedSongsPlaylist ? "" : selectedTrack["playlist_id"];
-
-    if (isLikedSongsPlaylist) {
-      await this.playSpotifyByTrack(selectedTrack, devices);
-    } else if (isTrack) {
-      await this.playSpotifyByTrackAndPlaylist(playlistId, selectedTrack.id);
-    } else {
-      // play the playlist
-      await this.playSpotifyByTrackAndPlaylist(playlistId, "");
-    }
-
-    setTimeout(async () => {
-      if (trackRepeating) {
-        // make sure it set to repeat
-        commands.executeCommand("musictime.repeatOn");
-      } else {
-        // set it to not repeat
-        commands.executeCommand("musictime.repeatOff");
-      }
-    }, 2000);
-  }
-
-  /**
    * Helper function to play a track or playlist if we've determined to play
    * against the mac spotify desktop app.
    */
