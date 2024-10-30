@@ -181,7 +181,7 @@ async function checkPlayingState(deviceId: string, tries = 3) {
   tries--;
   const playerContext: PlayerContext = await getPlayerContext();
 	// is_playing is true whether the track is paused or playing
-  if (!playerContext || playerContext.is_playing === false) {
+  if (!playerContext || !playerContext.is_playing) {
     if (tries >= 0) {
       setTimeout(() => {
         checkPlayingState(deviceId, tries);
