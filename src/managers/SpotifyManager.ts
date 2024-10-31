@@ -13,10 +13,6 @@ let spotifyUser: SpotifyUser = null;
 let spotifyAccessToken: string = "";
 let spotifyAccessTokenTimer: any = undefined;
 
-export function hasSpotifyAccessToken() {
-  return !!spotifyAccessToken;
-}
-
 export function clearSpotifyAccessToken() {
   if (spotifyAccessTokenTimer) {
     clearTimeout(spotifyAccessTokenTimer);

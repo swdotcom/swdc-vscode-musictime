@@ -39,16 +39,4 @@ export default class MusicMetrics {
     thatVal = thatVal ?? 0;
     return thisVal + thatVal;
   }
-
-  public setAverages(count: number) {
-    this.acousticness = this.acousticness / count;
-    this.danceability = this.danceability / count;
-    this.energy = this.energy / count;
-    this.instrumentalness = this.instrumentalness / count;
-    this.liveness = this.liveness / count;
-    this.loudness = this.loudness / count;
-    this.speechiness = this.speechiness / count;
-    this.tempo = this.tempo / count;
-    this.valence = this.valence / count;
-  }
 }

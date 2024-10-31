@@ -22,4 +22,4 @@ export function execCmd(cmd = "", projectDir = null, returnLines = false): any {
 	  console.error("command error: ", e);
 	}
 	return result;
-  }
+}

@@ -60,17 +60,6 @@ export class MusicCommandUtil {
     return this.getResponseStatus(result) === 429 ? true : false;
   }
 
-  async isDeviceError(result) {
-    if (result && this.getResponseStatus(result) === 404) {
-      // check to see if there's an active device
-      const { webPlayer, desktop, activeDevice, activeComputerDevice, activeWebPlayerDevice } = getDeviceSet();
-      if (!webPlayer && !desktop) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   // error.response.data.error has...
   // {message, reason, status}
   getResponseError(resp) {
