@@ -222,7 +222,7 @@
     "@slack/web-api": "^7.7.0",
     "@types/uuid": "^10.0.0",
     "@types/ws": "^8.5.12",
-    "axios": "^1.12.0",
+    "axios": "^1.13.5",
     "clipboardy": "^4.0.0",
     "cody-music": "2.10.8",
     "date-fns": "^4.1.0",
