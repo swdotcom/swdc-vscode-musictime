@@ -1,31 +1,31 @@
 # Music Time for Spotify
 
-<p><a href="https://www.software.com"><img alt="Software.com" src="https://assets.software.com/readme/software-logo-light.png" width="100px"></a></p>
+<p><a href="https://www.antenna.dev"><img alt="Antenna" src="https://assets.antenna.dev/readme/antenna-dev-logo-light.png" width="100px"></a></p>
 
-[Music Time for Spotify](https://www.software.com) is a VS Code extension that discovers the most productive music to listen to as you code. Music Time is built on the [Code Time](https://www.software.com/code-time) extension and performs machine learning against a range of music metrics plus productivity data from over 150,000 developers to determine song recommendations.
+[Music Time for Spotify](https://www.antenna.dev) is a VS Code extension that discovers the most productive music to listen to as you code. Music Time is built on the [Code Time](https://www.antenna.dev/code-time) extension and performs machine learning against a range of music metrics plus productivity data from over 150,000 developers to determine song recommendations.
 
 **You will need the following to use Music Time:**
 
 * [Code Time](https://marketplace.visualstudio.com/items?itemName=softwaredotcom.swdc-vscode): Our Code Time extension provides automatic programming metrics and time tracking. Music Time works with Code Time to combine your music and coding data to find your most productive music.
 * [Spotify](https://www.spotify.com): To get started, you will need a Spotify account. We currently do not support Apple Music, Google Play, or any other players, but may in a future plugin.
 
-![Music Time features](https://assets.software.com/readme/music-time/vscode/features-2.1.15.png)
+![Music Time features](https://assets.antenna.dev/readme/music-time/vscode/features-2.1.15.png)
 
 ## Features
 
--   **Integrated player controls**: Control your music right from the status bar of your editor.
+* **Integrated player controls**: Control your music right from the status bar of your editor.
 
--   **Embedded playlists**: Browse and play your Spotify playlists and songs from your editor.
+* **Embedded playlists**: Browse and play your Spotify playlists and songs from your editor.
 
--   **Song recommendations**: Get personalized recommendations generated using machine learning to help you focus.
+* **Song recommendations**: Get personalized recommendations generated using machine learning to help you focus.
 
--   **Personal top 40**: See your most productive songs and artists every week in your weekly top 40.
+* **Personal top 40**: See your most productive songs and artists every week in your weekly top 40.
 
--   **Global top 40**: Discover new music from developers around the world in our Software Top 40 playlist.
+* **Global top 40**: Discover new music from developers around the world in our Software Top 40 playlist.
 
--   **Music metrics**: Learn how the underlying metrics of music (including tempo, loudness, speechiness, energy, and valence) impact how you code.
+* **Music metrics**: Learn how the underlying metrics of music (including tempo, loudness, speechiness, energy, and valence) impact how you code.
 
--   **Slack integration**: Connect Slack to share songs and playlists in channels in your workspace.
+* **Slack integration**: Connect Slack to share songs and playlists in channels in your workspace.
 
 ## Getting started
 
@@ -73,15 +73,15 @@ Open the Music Time view then expand the dropdown menu next to your email addres
 
 ### Explore your music metrics
 
-Open the Music Time view and click the dropdown next to your account email. Click **More data at Software.com** to see your most productive songs, artists, and genres by productivity score.
+Open the Music Time view and click the dropdown next to your account email. Click **More data at Antenna** to see your most productive songs, artists, and genres by productivity score.
 
-Discover how the underlying [metrics of music](https://app.software.com/music/metrics) (including tempo, loudness, speechiness, energy, and valence) impact how you code.
+Discover how the underlying [metrics of music](https://app.antenna.dev/music/metrics) (including tempo, loudness, speechiness, energy, and valence) impact how you code.
 
 ![Music Time metrics](https://swdc-vscode.s3-us-west-1.amazonaws.com/music-metrics.png)
 
 ### Visualize your Code Time metrics
 
-Music Time is built on our [Code Time plugin](https://www.software.com/code-time). With Code Time, you can track and visualize your time spent coding, top projects, work-life balance, and more. [Visit your dashboard](https://app.software.com) to see visualizations of your Code Time data.
+Music Time is built on our [Code Time plugin](https://www.antenna.dev/code-time). With Code Time, you can track and visualize your time spent coding, top projects, work-life balance, and more. [Visit your dashboard](https://app.antenna.dev) to see visualizations of your Code Time data.
 
 ## Share Music
 
@@ -95,4 +95,4 @@ Connecting Slack requires team member permissions or above. You will not be able
 
 Enjoying Music Time? Let us know how it’s going by tweeting or following us at [@software_hq](https://twitter.com/software_hq).
 
-Have any questions? Create an issue in the [Music Time project](https://github.com/swdotcom/swdc-vscode-musictime) on GitHub or send us an email at [support@software.com](mailto:support@software.com) and we’ll get back to you as soon as we can.
+Have any questions? Create an issue in the [Music Time project](https://github.com/swdotcom/swdc-vscode-musictime) on GitHub or send us an email at [support@antenna.dev](mailto:support@antenna.dev) and we’ll get back to you as soon as we can.
