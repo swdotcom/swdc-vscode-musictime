@@ -91,8 +91,4 @@ Share your top songs on Facebook, Twitter, WhatsApp, and Tumblr by clicking on t
 
 Connecting Slack requires team member permissions or above. You will not be able to connect Slack as a single or multi-channel guest.
 
-## Join the Community
-
-Enjoying Music Time? Let us know how it’s going by tweeting or following us at [@software_hq](https://twitter.com/software_hq).
-
 Have any questions? Create an issue in the [Music Time project](https://github.com/swdotcom/swdc-vscode-musictime) on GitHub or send us an email at [support@antenna.dev](mailto:support@antenna.dev) and we’ll get back to you as soon as we can.
